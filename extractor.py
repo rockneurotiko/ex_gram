@@ -33,6 +33,10 @@ def parse_types(text):
             name = ":string"
         elif t == "Boolean":
             name = ":boolean"
+        elif t == "Float":
+            name = ":float"
+        elif t == "True":
+            name = ":boolean"
         elif t == "Float number":
             name = ":float"
         elif t == "InputFile":
@@ -109,11 +113,12 @@ def extract_return_type(text):
 
 def struct_t(name, types, opt):
     t = ":any" if len(types) == 0 else types[0]
+    # t = t + ".t" if t[0].isupper() and t != "String" else t
     extra = "" if not opt else ", :optional"
     return "{:%s, %s%s}" % (name, t, extra)
 
 
-def extract_type(h4):
+def extract_model(h4):
     name = h4.text
     debug("Extracting type: " + name)
     table = h4.find_next("table")
@@ -137,6 +142,7 @@ h4s = soup.find(href="#getting-updates").parent.findAllNext("h4")
 
 # h4s = soup.find(href="#available-methods").parent.findAllNext("h4")
 
+skip = ["InlineQueryResult", "InputMessageContent"]
 not_parameters = ["getMe", "deleteWebhook", "getWebhookInfo"]
 
 models = []
@@ -144,9 +150,14 @@ methods = []
 
 for h4 in h4s:
     name = h4.text
+
+    if name in skip:
+        debug("Skipping {}".format(name))
+        continue
+
     if name[0].isupper():
         if len(name.split(" ")) == 1:
-            models.append(extract_type(h4))
+            models.append(extract_model(h4))
         continue
 
     debug(name)

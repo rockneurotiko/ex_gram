@@ -8,6 +8,36 @@ defmodule Telex.Model do
 
   import Telex.Macros
 
+  # Do this apart?
+  defmodule InlineQueryResult do
+    @type t :: Telex.Model.InlineQueryResultArticle.t |
+    Telex.Model.InlineQueryResultPhoto.t |
+    Telex.Model.InlineQueryResultGif.t |
+    Telex.Model.InlineQueryResultMpeg4Gif.t |
+    Telex.Model.InlineQueryResultVideo.t |
+    Telex.Model.InlineQueryResultAudio.t |
+    Telex.Model.InlineQueryResultVoice.t |
+    Telex.Model.InlineQueryResultDocument.t |
+    Telex.Model.InlineQueryResultLocation.t |
+    Telex.Model.InlineQueryResultVenue.t |
+    Telex.Model.InlineQueryResultContact.t |
+    Telex.Model.InlineQueryResultCachedPhoto.t |
+    Telex.Model.InlineQueryResultCachedGif.t |
+    Telex.Model.InlineQueryResultCachedMpeg4Gif.t |
+    Telex.Model.InlineQueryResultCachedSticker.t |
+    Telex.Model.InlineQueryResultCachedDocument.t |
+    Telex.Model.InlineQueryResultCachedVideo.t |
+    Telex.Model.InlineQueryResultCachedVoice.t |
+    Telex.Model.InlineQueryResultCachedAudio.t
+  end
+
+  defmodule InputMessageContent do
+    @type t :: Telex.Model.InputTextMessageContent.t |
+    Telex.Model.InputLocationMessageContent.t |
+    Telex.Model.InputVenueMessageContent.t |
+    Telex.Model.InputContactMessageContent.t
+  end
+
   # AUTO GENERATED
 
   model Update, [{:update_id, :integer}, {:message, Message}, {:edited_message, Message}, {:channel_post, Message}, {:edited_channel_post, Message}, {:inline_query, InlineQuery}, {:chosen_inline_result, ChosenInlineResult}, {:callback_query, CallbackQuery}]
@@ -18,7 +48,7 @@ defmodule Telex.Model do
 
   model Chat, [{:id, :integer}, {:type, :string}, {:title, :string}, {:username, :string}, {:first_name, :string}, {:last_name, :string}, {:all_members_are_administrators, :boolean}]
 
-  model Message, [{:message_id, :integer}, {:from, User}, {:date, :integer}, {:chat, Chat}, {:forward_from, User}, {:forward_from_chat, Chat}, {:forward_from_message_id, :integer}, {:forward_date, :integer}, {:reply_to_message, Message}, {:edit_date, :integer}, {:text, :string}, {:entities, {:array, MessageEntity}}, {:audio, Audio}, {:document, Document}, {:game, Game}, {:photo, {:array, PhotoSize}}, {:sticker, Sticker}, {:video, Video}, {:voice, Voice}, {:caption, :string}, {:contact, Contact}, {:location, Location}, {:venue, Venue}, {:new_chat_member, User}, {:left_chat_member, User}, {:new_chat_title, :string}, {:new_chat_photo, {:array, PhotoSize}}, {:delete_chat_photo, True}, {:group_chat_created, True}, {:supergroup_chat_created, True}, {:channel_chat_created, True}, {:migrate_to_chat_id, :integer}, {:migrate_from_chat_id, :integer}, {:pinned_message, Message}]
+  model Message, [{:message_id, :integer}, {:from, User}, {:date, :integer}, {:chat, Chat}, {:forward_from, User}, {:forward_from_chat, Chat}, {:forward_from_message_id, :integer}, {:forward_date, :integer}, {:reply_to_message, Message}, {:edit_date, :integer}, {:text, :string}, {:entities, {:array, MessageEntity}}, {:audio, Audio}, {:document, Document}, {:game, Game}, {:photo, {:array, PhotoSize}}, {:sticker, Sticker}, {:video, Video}, {:voice, Voice}, {:caption, :string}, {:contact, Contact}, {:location, Location}, {:venue, Venue}, {:new_chat_member, User}, {:left_chat_member, User}, {:new_chat_title, :string}, {:new_chat_photo, {:array, PhotoSize}}, {:delete_chat_photo, :boolean}, {:group_chat_created, :boolean}, {:supergroup_chat_created, :boolean}, {:channel_chat_created, :boolean}, {:migrate_to_chat_id, :integer}, {:migrate_from_chat_id, :integer}, {:pinned_message, Message}]
 
   model MessageEntity, [{:type, :string}, {:offset, :integer}, {:length, :integer}, {:url, :string}, {:user, User}]
 
@@ -36,7 +66,7 @@ defmodule Telex.Model do
 
   model Contact, [{:phone_number, :string}, {:first_name, :string}, {:last_name, :string}, {:user_id, :integer}]
 
-  model Location, [{:longitude, Float}, {:latitude, Float}]
+  model Location, [{:longitude, :float}, {:latitude, :float}]
 
   model Venue, [{:location, Location}, {:title, :string}, {:address, :string}, {:foursquare_id, :string}]
 
@@ -48,7 +78,7 @@ defmodule Telex.Model do
 
   model KeyboardButton, [{:text, :string}, {:request_contact, :boolean}, {:request_location, :boolean}]
 
-  model ReplyKeyboardRemove, [{:remove_keyboard, True}, {:selective, :boolean}]
+  model ReplyKeyboardRemove, [{:remove_keyboard, :boolean}, {:selective, :boolean}]
 
   model InlineKeyboardMarkup, [{:inline_keyboard, {:array, InlineKeyboardButton}}]
 
@@ -56,7 +86,7 @@ defmodule Telex.Model do
 
   model CallbackQuery, [{:id, :string}, {:from, User}, {:message, Message}, {:inline_message_id, :string}, {:chat_instance, :string}, {:data, :string}, {:game_short_name, :string}]
 
-  model ForceReply, [{:force_reply, True}, {:selective, :boolean}]
+  model ForceReply, [{:force_reply, :boolean}, {:selective, :boolean}]
 
   model ChatMember, [{:user, User}, {:status, :string}]
 
@@ -65,8 +95,6 @@ defmodule Telex.Model do
   model InputFile, [{:chat_id, :integer}, {:text, :string}, {:parse_mode, :string, :optional}, {:disable_web_page_preview, :boolean, :optional}, {:disable_notification, :boolean, :optional}, {:reply_to_message_id, :integer, :optional}, {:reply_markup, InlineKeyboardMarkup, :optional}]
 
   model InlineQuery, [{:id, :string}, {:from, User}, {:location, Location}, {:query, :string}, {:offset, :string}]
-
-  model InlineQueryResult, [{:type, :string}, {:id, :string}, {:title, :string}, {:input_message_content, InputMessageContent}, {:reply_markup, InlineKeyboardMarkup}, {:url, :string}, {:hide_url, :boolean}, {:description, :string}, {:thumb_url, :string}, {:thumb_width, :integer}, {:thumb_height, :integer}]
 
   model InlineQueryResultArticle, [{:type, :string}, {:id, :string}, {:title, :string}, {:input_message_content, InputMessageContent}, {:reply_markup, InlineKeyboardMarkup}, {:url, :string}, {:hide_url, :boolean}, {:description, :string}, {:thumb_url, :string}, {:thumb_width, :integer}, {:thumb_height, :integer}]
 
@@ -86,7 +114,7 @@ defmodule Telex.Model do
 
   model InlineQueryResultLocation, [{:type, :string}, {:id, :string}, {:latitude, :float}, {:longitude, :float}, {:title, :string}, {:reply_markup, InlineKeyboardMarkup}, {:input_message_content, InputMessageContent}, {:thumb_url, :string}, {:thumb_width, :integer}, {:thumb_height, :integer}]
 
-  model InlineQueryResultVenue, [{:type, :string}, {:id, :string}, {:latitude, Float}, {:longitude, Float}, {:title, :string}, {:address, :string}, {:foursquare_id, :string}, {:reply_markup, InlineKeyboardMarkup}, {:input_message_content, InputMessageContent}, {:thumb_url, :string}, {:thumb_width, :integer}, {:thumb_height, :integer}]
+  model InlineQueryResultVenue, [{:type, :string}, {:id, :string}, {:latitude, :float}, {:longitude, :float}, {:title, :string}, {:address, :string}, {:foursquare_id, :string}, {:reply_markup, InlineKeyboardMarkup}, {:input_message_content, InputMessageContent}, {:thumb_url, :string}, {:thumb_width, :integer}, {:thumb_height, :integer}]
 
   model InlineQueryResultContact, [{:type, :string}, {:id, :string}, {:phone_number, :string}, {:first_name, :string}, {:last_name, :string}, {:reply_markup, InlineKeyboardMarkup}, {:input_message_content, InputMessageContent}, {:thumb_url, :string}, {:thumb_width, :integer}, {:thumb_height, :integer}]
 
@@ -108,13 +136,11 @@ defmodule Telex.Model do
 
   model InlineQueryResultCachedAudio, [{:type, :string}, {:id, :string}, {:audio_file_id, :string}, {:caption, :string}, {:reply_markup, InlineKeyboardMarkup}, {:input_message_content, InputMessageContent}]
 
-  model InputMessageContent, [{:message_text, :string}, {:parse_mode, :string}, {:disable_web_page_preview, :boolean}]
-
   model InputTextMessageContent, [{:message_text, :string}, {:parse_mode, :string}, {:disable_web_page_preview, :boolean}]
 
-  model InputLocationMessageContent, [{:latitude, Float}, {:longitude, Float}]
+  model InputLocationMessageContent, [{:latitude, :float}, {:longitude, :float}]
 
-  model InputVenueMessageContent, [{:latitude, Float}, {:longitude, Float}, {:title, :string}, {:address, :string}, {:foursquare_id, :string}]
+  model InputVenueMessageContent, [{:latitude, :float}, {:longitude, :float}, {:title, :string}, {:address, :string}, {:foursquare_id, :string}]
 
   model InputContactMessageContent, [{:phone_number, :string}, {:first_name, :string}, {:last_name, :string}]
 
@@ -127,5 +153,4 @@ defmodule Telex.Model do
   model CallbackGame, [{:user_id, :integer}, {:score, :integer}, {:force, :boolean, :optional}, {:disable_edit_message, :boolean, :optional}, {:chat_id, :integer, :optional}, {:message_id, :integer, :optional}, {:inline_message_id, :string, :optional}]
 
   model GameHighScore, [{:position, :integer}, {:user, User}, {:score, :integer}]
-
 end

@@ -24,7 +24,11 @@ defmodule Telex.Macros do
   def type_to_spec({:array, t}), do: {:list, [], [type_to_spec(t)]}
   def type_to_spec(:int), do: type_to_spec(:integer)
   def type_to_spec(:bool), do: type_to_spec(:boolean)
-  def type_to_spec({:__aliases__, _a, _t} = f), do: f
+  def type_to_spec({:__aliases__, _a, _t} = f) do
+    quote do
+      Telex.Model.unquote(f).t
+    end
+  end
   def type_to_spec(t) when is_atom(t), do: {t, [], Elixir}
 
 
@@ -109,7 +113,7 @@ defmodule Telex.Macros do
   def filter_map(m), do: m
 
   def encode(%{__struct__: _} = x) do
-    IO.inspect(x)
+    # IO.inspect(x)
     x
     |> Map.from_struct
     |> filter_map
@@ -123,7 +127,6 @@ defmodule Telex.Macros do
       body
       |> Enum.map( fn {key, value} -> {key, encode(value)} end)
       |> Enum.into(%{})
-      |> IO.inspect
     else
       body
     end
@@ -206,7 +209,6 @@ defmodule Telex.Macros do
     mand_vnames = mand_names |> Enum.map(&nid/1)
     mand_body  = Enum.zip(mand_names, mand_vnames)
 
-    IO.inspect returned
     result_transformer =
       case returned do
         [{:__aliases__, _l, _t} = t] -> quote do
@@ -221,6 +223,20 @@ defmodule Telex.Macros do
             (fn x -> x end).()
           end
       end
+
+    # Change Telex.Model.Type for Telex.Model.Type.t
+    returned =
+      case returned do
+        [{:__aliases__, _l, _t} = t] -> quote do
+            [unquote(t).t]
+          end
+        {:__aliases__, _l, _t} = t ->
+          quote do
+            unquote(t).t
+          end
+        _ ->  returned
+      end
+
 
     putbody =
       case verb do
