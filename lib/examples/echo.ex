@@ -1,4 +1,4 @@
-defmodule Echo do
+defmodule Examples.Echo do
   def cmd(), do: "/test"
 
   def execute() do
