@@ -1,4 +1,5 @@
 defmodule Telex.Macros do
+  require Logger
 
   def transform_param({:{}, line, [{name, _line, nil}]}), do: {{name, line, nil},
                                                                [name, [:any]]}
@@ -113,7 +114,6 @@ defmodule Telex.Macros do
   def filter_map(m), do: m
 
   def encode(%{__struct__: _} = x) do
-    # IO.inspect(x)
     x
     |> Map.from_struct
     |> filter_map
@@ -146,8 +146,8 @@ defmodule Telex.Macros do
   end
 
   def struct_types(x, acc) do
-    IO.puts "WTF"
-    IO.inspect x
+    Logger.error "WTF struct?"
+    Logger.error inspect(x)
     struct_types(acc)
   end
 

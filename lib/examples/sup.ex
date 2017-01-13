@@ -1,6 +1,8 @@
 defmodule Examples.Sup do
   use Application
 
+  def start, do: start(1, 1)
+
   def start(_, _) do
     import Supervisor.Spec
 

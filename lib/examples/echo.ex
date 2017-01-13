@@ -1,7 +1,10 @@
 defmodule Examples.Echo do
-  def cmd(), do: "/test"
+  use Telex.Dsl.Command, "echo"
 
-  def execute() do
-    IO.puts "EXECUTING"
+  require Logger
+
+  def execute(%{text: t} = msg) do
+    Logger.debug "Executing echo on #{inspect(msg)}"
+    answer msg, t
   end
 end
