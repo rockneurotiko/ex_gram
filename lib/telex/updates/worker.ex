@@ -2,22 +2,24 @@ defmodule Telex.Updates.Worker do
   use GenServer
   require Logger
 
-  def start_link({:bot, pid}) do
+  def start_link({:bot, pid, :token, token}) do
     Logger.debug "START WORKER"
-    GenServer.start_link(__MODULE__, {:ok, pid})
+    GenServer.start_link(__MODULE__, {:ok, pid, token})
   end
 
-  def init({:ok, pid}) do
+  def init({:ok, pid, token}) do
+    Telex.delete_webhook token: token # Clean webhook
+
     Process.send_after(self(), {:fetch, :update_id, -1}, 1000)
-    {:ok, pid}
+    {:ok, {pid, token}}
   end
 
   def handle_cast({:fetch, :update_id, _} = m, state), do: handle_info(m, state)
 
-  def handle_info({:fetch, :update_id, uid}, pid) do
+  def handle_info({:fetch, :update_id, uid}, {pid, token} = state) do
     Logger.debug "GetUpdates!"
-    # If timeout, keep going!
-    updates = Telex.get_updates! offset: uid, timeout: 30000
+    # TODO: If timeout, keep going!
+    updates = Telex.get_updates! offset: uid, timeout: 30000, token: token
 
     Enum.map(updates, &(GenServer.call(pid, {:update, &1})))
 
@@ -25,7 +27,7 @@ defmodule Telex.Updates.Worker do
 
     GenServer.cast(self(), {:fetch, :update_id, nid + 1})
 
-    {:noreply, pid}
+    {:noreply, state}
   end
 
   defp extract_last_pid(actual, []), do: actual

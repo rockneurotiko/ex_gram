@@ -1,4 +1,6 @@
 defmodule Telex.Updates.Supervisor do
+  # No longer in use
+
   use Supervisor
   require Logger
 

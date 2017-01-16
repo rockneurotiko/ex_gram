@@ -60,7 +60,21 @@ defmodule Telex.Macros do
       end
   end
   def check_type(:any, _x), do: true
-  def check_type(t1, %{__struct__: t2}), do: t1 == t2
+  def check_type(t1, %{__struct__: t2}) do
+    t1 == t2 || (
+      t2s = Atom.to_string t2
+
+      t2 = if String.starts_with?(t2s, "Elixir.Telex.Model.") do
+        name = String.split(t2s, ".") |> List.last
+        String.to_atom("Elixir.#{name}")
+      else
+        t2
+      end
+
+      t1 == t2
+    )
+  end
+  # def check_type(t1, %{__struct__: t2}), do: t1 == t2
   def check_type(%{}, x), do: is_map(x)
 
   def check_all_types([x, types]), do: Enum.any?(types, &check_type(&1, x))
@@ -262,6 +276,14 @@ defmodule Telex.Macros do
           Enum.map(unquote(types_mand), &check_all_types_ignore_opt/1)
           |> Enum.all?
 
+        token = case {Keyword.get(ops, :token), Keyword.get(ops, :bot)} do
+                  {nil, nil} -> Config.get(:telex, :token)
+                  {token, nil}  -> token
+                  {nil, bot} ->
+                    [{_, token}] = Registry.lookup(Registry.Telex, bot)
+                    token
+                end
+
         ops = Keyword.take(ops, unquote(opt_par)) # Remove not valids
 
         ops_checks =
@@ -313,8 +335,10 @@ defmodule Telex.Macros do
           lambda_putbody = fn x -> apply(Maxwell.Conn, unquote(putbody), [x, encode_body(body)]) end
           lambda_callverb = fn x -> apply(Telex, unquote(verb), [x]) end
 
+          path = "/bot#{token}/#{unquote(name)}"
+
           new()
-          |> put_path("/#{unquote(name)}")
+          |> put_path(path)
           |> lambda_putbody.()
           |> lambda_callverb.()
         end

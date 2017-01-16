@@ -1,59 +1,51 @@
 defmodule Telex.Bot do
-  defmacro __using__(_) do
+  defmacro __using__([name: name]) do
     quote do
-      use GenServer
+      use Supervisor
 
-      import Telex.Commands
       require Logger
 
-      Module.register_attribute(__MODULE__, :commands, accumulate: true)
+      Module.register_attribute(__MODULE__, :dispatchers, accumulate: true)
+      # Module.register_attribute(__MODULE__, :commands, accumulate: true)
+      # Module.register_attribute(__MODULE__, :edited_msg, accumulate: true)
+      # Module.register_attribute(__MODULE__, :channel_post, accumulate: true)
+      # Module.register_attribute(__MODULE__, :channel_edited_post, accumulate: true)
+      # Module.register_attribute(__MODULE__, :inline_query, accumulate: true)
+      # Module.register_attribute(__MODULE__, :chosen_inline_result, accumulate: true)
+      # Module.register_attribute(__MODULE__, :callback_query, accumulate: true)
 
-      def start_link(:webhook) do
+      def start_link(t, token \\ nil) do
+        start_link(t, token, unquote(name))
+      end
+
+      def start_link(:webhook, _token, _name) do
         raise "Not implemented yet"
       end
 
-      def start_link(t) do
-        Logger.debug "Start bot"
-        {:ok, pid} = GenServer.start_link(__MODULE__, {:ok, :updates})
-
-        Logger.debug "Start updates"
-        # who supervises this supervisor? xD
-        {:ok, _} = Telex.Updates.Supervisor.start_link(pid)
-        Logger.debug "END"
-        # send
-        {:ok, pid}
+      def start_link(_t, token, name) do
+        Supervisor.start_link(__MODULE__, {:ok, token, name})
       end
 
-      def init({:ok, t}) do
-        {:ok, [type: t]}
-      end
+      def init({:ok, token, name}) do
+        {:ok, _} = Registry.register(Registry.Telex, name, token)
 
-      defp is_implemented?(handler, behaviour) do
-        case handler.module_info[:attributes][:behaviour] do
-          nil -> false
-          ls -> Enum.any?(ls, fn l -> l == behaviour end)
-        end
-      end
+        children = [
+          worker(Telex.Dispatcher, [[name: name,
+                                     dispatchers: dispatchers()
+                                     # commands: commands(),
+                                     # edited_msg: edited_msg(),
+                                     # channel_post: channel_post(),
+                                     # channel_edited_post: channel_edited_post(),
+                                     # inline_query: inline_query(),
+                                     # chosen_inline_result: chosen_inline_result(),
+                                     # callback_query: callback_query()
+                                    ]]),
+          worker(Telex.Updates.Worker, [{:bot, name, :token, token}])
+        ]
 
-      # Handle messages!
-      defp handle_message(handler,  u) do
-        if is_implemented?(handler, Telex.Dsl.Base) do
-          if handler.test(u) do
-            handler.execute(u)
-          end
-        end
-      end
+        Logger.info "Starting bot!"
 
-      # Message
-      def handle_call({:update, %Telex.Model.Update{message: m} = u}, _f, s) when not is_nil(m) do
-        Logger.debug("Handle message")
-        commands() |> Enum.map(fn c -> handle_message(c, u) end)
-        {:reply, :ok, s}
-      end
-
-      def handle_call({:update, u}, _from, s) do
-        Logger.error "Update, not update? #{inspect(u)}"
-        {:reply, :error, s}
+        supervise(children, strategy: :one_for_one)
       end
 
       @before_compile Telex.Bot
@@ -62,7 +54,14 @@ defmodule Telex.Bot do
 
   defmacro __before_compile__(_env) do
     quote do
-      defp commands, do: @commands
+      defp dispatchers, do: @dispatchers
+      # defp commands, do: @commands
+      # defp edited_msg, do: @edited_msg
+      # defp channel_post, do: @channel_post
+      # defp channel_edited_post, do: @channel_edited_post
+      # defp inline_query, do: @inline_query
+      # defp chosen_inline_result, do: @chosen_inline_result
+      # defp callback_query, do: @callback_query
     end
   end
 end

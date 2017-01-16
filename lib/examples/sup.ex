@@ -7,7 +7,8 @@ defmodule Examples.Sup do
     import Supervisor.Spec
 
     children = [
-      worker(Examples.Simple, [:updates])
+      supervisor(Telex, []),
+      worker(Examples.Simple, [:updates, Config.get(:telex, :token)])
     ]
 
     opts = [strategy: :one_for_one, name: Sup]

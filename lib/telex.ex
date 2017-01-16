@@ -1,4 +1,6 @@
 defmodule Telex do
+  use Supervisor
+
   use Maxwell.Builder, ~w(get post)a
   import Telex.Macros
   import Telex.Model
@@ -8,12 +10,26 @@ defmodule Telex do
   middleware Maxwell.Middleware.Opts, [connect_timeout: 5000, recv_timeout: 30000]
   middleware Maxwell.Middleware.Json, [decode_func: &Telex.custom_decode/1]
   # middleware Maxwell.Middleware.Json
-  middleware Telex.Middleware, Config.get(:telex, :token, "<TOKEN>")
+  # middleware Telex.Middleware, Config.get(:telex, :token, "<TOKEN>")
   middleware Maxwell.Middleware.Logger
 
   adapter Maxwell.Adapter.Hackney
 
   def custom_decode(x), do: Poison.Parser.parse(x, keys: :atoms)
+
+  def start_link() do
+    Supervisor.start_link(__MODULE__, :ok)
+  end
+
+  def init(:ok) do
+    import Supervisor.Spec
+
+    children = [
+      supervisor(Registry, [:unique, Registry.Telex])
+    ]
+
+    supervise(children, strategy: :one_for_one)
+  end
 
   # AUTO GENERATED
 
