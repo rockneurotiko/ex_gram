@@ -3,12 +3,12 @@ defmodule Telex.Dispatcher do
 
   require Logger
 
-  def start_link([{:name, name} | rest]) do
-    GenServer.start_link(__MODULE__, [:ok | rest], [name: name])
+  def start_link(%{name: name} = ops) do
+    GenServer.start_link(__MODULE__, {:ok, ops}, [name: name])
   end
 
-  def init([:ok | rest]) do
-    {:ok, Enum.into(rest, %{})}
+  def init({:ok, ops}) do
+    {:ok, ops}
   end
 
   defp is_implemented?(handler, behaviour) do
@@ -57,6 +57,38 @@ defmodule Telex.Dispatcher do
   # InlineQuery
   # ChosenInlineResult
 
+  defp extract_info(%{message: %{text: t} = message}) when is_bitstring(t) do
+    if String.starts_with?(t, "/") do
+      cmd =
+        t
+        |> String.split(" ")
+        |> Enum.at(0)
+        |> String.replace_prefix("/", "")
+        |> String.split("@")
+        |> Enum.at(0)
+
+      t = t |> String.split(" ") |> Enum.drop(1) |> Enum.join(" ")
+
+      {:command, cmd, %{message | text: t}}
+    else
+      {:text, t, message}
+    end
+  end
+
+  defp extract_info(%{message: message}) do
+    {:message, message}
+  end
+
+  defp extract_info(update) do
+    {:update, update}
+  end
+
+  def handle_call({:update, u}, _from, %{handler: handler, name: name} = s) do
+    info = extract_info(u)
+    spawn fn -> handler.(info, name) end
+    {:reply, :ok, s}
+  end
+
   def handle_call({:update, u}, _from, %{dispatchers: dispatchers} = s) do
     Enum.map(dispatchers, &(dispatch_update(&1, u)))
     {:reply, :ok, s}
@@ -65,5 +97,10 @@ defmodule Telex.Dispatcher do
   def handle_call({:update, u}, _from, s) do
     Logger.error "Update, not update? #{inspect(u)}\nState: #{inspect(s)}"
     {:reply, :error, s}
+  end
+
+  def handle_call({:message, origin, msg}, _from, %{handler: handler, name: name} = s) do
+    response = handler.({:bot_message, origin, msg}, name)
+    {:reply, response, s}
   end
 end

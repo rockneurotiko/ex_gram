@@ -31,6 +31,6 @@ defmodule Telex.Dsl do
 
   # def answer(m, text, ops \\ []), do: answer(m, text, nil, ops)
   def answer(m, text, ops) do
-    Telex.send_message!(extract_id(m), text, ops)
+    Telex.send_message(extract_id(m), text, ops)
   end
 end

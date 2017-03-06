@@ -19,13 +19,18 @@ defmodule Telex.Updates.Worker do
   def handle_info({:fetch, :update_id, uid}, {pid, token} = state) do
     Logger.debug "GetUpdates!"
     # TODO: If timeout, keep going!
-    updates = Telex.get_updates! offset: uid, timeout: 30000, token: token
+    try do
+      updates = Telex.get_updates!(limit: 100, offset: uid, timeout: 30000, token: token)
+      Enum.map(updates, &(GenServer.call(pid, {:update, &1})))
 
-    Enum.map(updates, &(GenServer.call(pid, {:update, &1})))
+      nid = extract_last_pid(uid, updates)
 
-    nid = extract_last_pid(uid, updates)
+      GenServer.cast(self(), {:fetch, :update_id, nid + 1})
 
-    GenServer.cast(self(), {:fetch, :update_id, nid + 1})
+    rescue
+      Maxwell.Error ->
+        Process.send_after(self(), {:fetch, :update_id, uid}, 1)
+    end
 
     {:noreply, state}
   end

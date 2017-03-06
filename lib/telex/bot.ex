@@ -3,6 +3,8 @@ defmodule Telex.Bot do
     quote do
       use Supervisor
 
+      @behaviour Telex.Dsl.Handler
+
       require Logger
 
       Module.register_attribute(__MODULE__, :dispatchers, accumulate: true)
@@ -13,6 +15,8 @@ defmodule Telex.Bot do
       # Module.register_attribute(__MODULE__, :inline_query, accumulate: true)
       # Module.register_attribute(__MODULE__, :chosen_inline_result, accumulate: true)
       # Module.register_attribute(__MODULE__, :callback_query, accumulate: true)
+
+      defp name(), do: unquote(name)
 
       def start_link(t, token \\ nil) do
         start_link(t, token, unquote(name))
@@ -26,12 +30,17 @@ defmodule Telex.Bot do
         Supervisor.start_link(__MODULE__, {:ok, token, name})
       end
 
+      def message(from, message) do
+        GenServer.call(name(), {:message, from, message})
+      end
+
       def init({:ok, token, name}) do
         {:ok, _} = Registry.register(Registry.Telex, name, token)
 
         children = [
-          worker(Telex.Dispatcher, [[name: name,
-                                     dispatchers: dispatchers()
+          worker(Telex.Dispatcher, [%{name: name,
+                                      dispatchers: dispatchers(),
+                                      handler: &handle/2
                                      # commands: commands(),
                                      # edited_msg: edited_msg(),
                                      # channel_post: channel_post(),
@@ -39,7 +48,7 @@ defmodule Telex.Bot do
                                      # inline_query: inline_query(),
                                      # chosen_inline_result: chosen_inline_result(),
                                      # callback_query: callback_query()
-                                    ]]),
+                                    }]),
           worker(Telex.Updates.Worker, [{:bot, name, :token, token}])
         ]
 
