@@ -1,5 +1,16 @@
 defmodule Telex.Bot do
-  defmacro __using__([name: name]) do
+  defmacro __using__(ops) do
+    name = case Keyword.get(ops, :name) do
+             nil -> raise "name parameter is mandatory"
+             n -> n
+           end
+    commands = Keyword.get(ops, :commands, [])
+    # Check commands are [command: "", name: ""]
+    regexes =
+      Keyword.get(ops, :regex, [])
+      |> Enum.map(fn [regex: r, name: n] -> [regex: Regex.compile!(r), name: n] end)
+    # Check regex are [regex: "", name: ""]
+
     quote do
       use Supervisor
 
@@ -22,11 +33,11 @@ defmodule Telex.Bot do
         start_link(t, token, unquote(name))
       end
 
-      def start_link(:webhook, _token, _name) do
+      defp start_link(:webhook, _token, _name) do
         raise "Not implemented yet"
       end
 
-      def start_link(_t, token, name) do
+      defp start_link(_t, token, name) do
         Supervisor.start_link(__MODULE__, {:ok, token, name})
       end
 
@@ -40,6 +51,8 @@ defmodule Telex.Bot do
         children = [
           worker(Telex.Dispatcher, [%{name: name,
                                       dispatchers: dispatchers(),
+                                      commands: unquote(commands),
+                                      regex: unquote(regexes),
                                       handler: &handle/2
                                      # commands: commands(),
                                      # edited_msg: edited_msg(),

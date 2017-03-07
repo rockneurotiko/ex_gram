@@ -3,6 +3,9 @@ defmodule Telex.Dispatcher do
 
   require Logger
 
+  # commands: [command: "echo", name: :echo]
+  # regex: [regex: "^/echo", name: :echor]
+
   def start_link(%{name: name} = ops) do
     GenServer.start_link(__MODULE__, {:ok, ops}, [name: name])
   end
@@ -57,34 +60,46 @@ defmodule Telex.Dispatcher do
   # InlineQuery
   # ChosenInlineResult
 
-  defp extract_info(%{message: %{text: t} = message}) when is_bitstring(t) do
-    if String.starts_with?(t, "/") do
-      cmd =
-        t
-        |> String.split(" ")
-        |> Enum.at(0)
-        |> String.replace_prefix("/", "")
-        |> String.split("@")
-        |> Enum.at(0)
+  defp clean_command(cmd), do: cmd |> String.split(" ") |> Enum.at(0) |> String.replace_prefix("/", "") |> String.split("@") |> Enum.at(0)
 
-      t = t |> String.split(" ") |> Enum.drop(1) |> Enum.join(" ")
-
-      {:command, cmd, %{message | text: t}}
+  defp handle_text(text, %{commands: commands, regex: regex}) do
+    if String.starts_with?(text, "/") do
+      cmd = clean_command(text)
+      t = text |> String.split(" ") |> Enum.drop(1) |> Enum.join(" ")
+      case Enum.find(commands, &(Keyword.get(&1, :command) == cmd)) do
+        nil ->
+          {:command, cmd, t}
+        cmd ->
+          {:command, Keyword.get(cmd, :name), t}
+      end
     else
-      {:text, t, message}
+      case Enum.find(regex, &(Regex.match?(Keyword.get(&1, :regex), text))) do
+        nil ->
+          {:text, text}
+        reg ->
+          {:regex, Keyword.get(reg, :name), text}
+      end
     end
   end
 
-  defp extract_info(%{message: message}) do
+  defp extract_info(%{message: %{text: t} = message}, s) when is_bitstring(t) do
+    case handle_text(t, s) do
+      {:command, key, text} -> {:command, key, %{message | text: text}}
+      {:text, text} -> {:text, text, %{message | text: text}}
+      {:regex, key, text} -> {:regex, key, %{message | text: text}}
+    end
+  end
+
+  defp extract_info(%{message: message}, _s) do
     {:message, message}
   end
 
-  defp extract_info(update) do
+  defp extract_info(update, _s) do
     {:update, update}
   end
 
   def handle_call({:update, u}, _from, %{handler: handler, name: name} = s) do
-    info = extract_info(u)
+    info = extract_info(u, s)
     spawn fn -> handler.(info, name) end
     {:reply, :ok, s}
   end
