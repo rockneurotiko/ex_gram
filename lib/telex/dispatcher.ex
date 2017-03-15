@@ -116,8 +116,9 @@ defmodule Telex.Dispatcher do
 
   def handle_call({:update, u}, _from, %{handler: handler, name: name, middlewares: middlewares} = s) do
     Logger.info "Update received: #{inspect u}"
-    case apply_middlewares(middlewares, {:ok, %{}}) do
-      {:ok, extra} ->
+    case apply_middlewares(middlewares, {:ok, %{update: u}}) do
+      {:ok, extra} when is_map(extra) ->
+        u = Map.get(extra, :update, u) # Get the update from the middlewares
         info = extract_info(u, s)
         spawn fn -> handler.(info, name, extra) end
       _ ->
