@@ -29,6 +29,14 @@ defmodule Telex.Dsl do
   def extract_id(%{chat: c}) when not is_nil(c), do: c[:id]
   def extract_id(%{from: u}) when not is_nil(u), do: u[:id]
 
+  def extract_id(%{message: m}) when not is_nil(m), do: extract_id(m)
+  def extract_id(%{callback_query: m}) when not is_nil(m), do: extract_id(m)
+  def extract_id(%{channel_post: m}) when not is_nil(m), do: extract_id(m)
+  def extract_id(%{chosen_inline_result: m}) when not is_nil(m), do: extract_id(m)
+  def extract_id(%{edited_channel_post: m}) when not is_nil(m), do: extract_id(m)
+  def extract_id(%{edited_message: m}) when not is_nil(m), do: extract_id(m)
+  def extract_id(%{inline_query: m}) when not is_nil(m), do: extract_id(m)
+
   # def answer(m, text, ops \\ []), do: answer(m, text, nil, ops)
   def answer(m, text, ops) do
     Telex.send_message(extract_id(m), text, ops)
