@@ -14,44 +14,44 @@ defmodule Telex.Dispatcher do
     {:ok, ops}
   end
 
-  defp is_implemented?(handler, behaviour) do
-    case handler.module_info[:attributes][:behaviour] do
-      nil -> false
-      ls -> Enum.any?(ls, fn l -> l == behaviour end)
-    end
-  end
+  # defp is_implemented?(handler, behaviour) do
+  #   case handler.module_info[:attributes][:behaviour] do
+  #     nil -> false
+  #     ls -> Enum.any?(ls, fn l -> l == behaviour end)
+  #   end
+  # end
 
-  defp handle_test_execute(handler, base, u) do
-    if not is_nil(u) and is_implemented?(handler, base) do
-      ht = handler.test(u)
-      if ht do
-        handler.execute(u)
-      end
-      ht
-    else
-      false
-    end
-  end
+  # defp handle_test_execute(handler, base, u) do
+  #   if not is_nil(u) and is_implemented?(handler, base) do
+  #     ht = handler.test(u)
+  #     if ht do
+  #       handler.execute(u)
+  #     end
+  #     ht
+  #   else
+  #     false
+  #   end
+  # end
 
   # Handle messages!
-  defp handle_message(handler,  u) do
-    handle_test_execute(handler, Telex.Dsl.Message, u)
-  end
+  # defp handle_message(handler,  u) do
+  #   handle_test_execute(handler, Telex.Dsl.Message, u)
+  # end
 
-  defp handle_callback_query(handler, u) do
-    handle_test_execute(handler, Telex.Dsl.CallbackQuery, u)
-  end
+  # defp handle_callback_query(handler, u) do
+  #   handle_test_execute(handler, Telex.Dsl.CallbackQuery, u)
+  # end
 
-  defp dispatch_update(handler, u) do
-    handle_test_execute(handler, Telex.Dsl.Base, u) ||
-      handle_message(handler, u.message) ||
-      handle_test_execute(handler, Telex.Dsl.EditedMessage, u.edited_message) ||
-      handle_test_execute(handler, Telex.Dsl.ChannelPost, u.channel_post) ||
-      handle_test_execute(handler, Telex.Dsl.EditedChannelPost, u.edited_channel_post) ||
-      handle_test_execute(handler, Telex.Dsl.InlineQuery, u.inline_query) ||
-      handle_test_execute(handler, Telex.Dsl.ChosenInlineResult, u.chosen_inline_result) ||
-      handle_callback_query(handler, u.callback_query)
-  end
+  # defp dispatch_update(handler, u) do
+  #   handle_test_execute(handler, Telex.Dsl.Base, u) ||
+  #     handle_message(handler, u.message) ||
+  #     handle_test_execute(handler, Telex.Dsl.EditedMessage, u.edited_message) ||
+  #     handle_test_execute(handler, Telex.Dsl.ChannelPost, u.channel_post) ||
+  #     handle_test_execute(handler, Telex.Dsl.EditedChannelPost, u.edited_channel_post) ||
+  #     handle_test_execute(handler, Telex.Dsl.InlineQuery, u.inline_query) ||
+  #     handle_test_execute(handler, Telex.Dsl.ChosenInlineResult, u.chosen_inline_result) ||
+  #     handle_callback_query(handler, u.callback_query)
+  # end
 
 
   # EditedMessage
@@ -90,24 +90,46 @@ defmodule Telex.Dispatcher do
     end
   end
 
-  defp extract_info(%{message: message}, _s) do
+  defp extract_info(%{message: message}, _s) when not is_nil(message) do
     {:message, message}
+  end
+
+  defp extract_info(%{callback_query: cbq}, _s) when not is_nil(cbq) do
+    {:callback_query, cbq}
   end
 
   defp extract_info(update, _s) do
     {:update, update}
   end
 
-  def handle_call({:update, u}, _from, %{handler: handler, name: name} = s) do
-    info = extract_info(u, s)
-    spawn fn -> handler.(info, name) end
+  defp apply_middlewares([], st), do: st
+  defp apply_middlewares(_, {:error, _} = st), do: st
+  defp apply_middlewares([x|xs], {:ok, state}) when is_function(x) do
+    state = x.(state)
+    apply_middlewares(xs, state)
+  end
+  defp apply_middlewares([x|xs], {:ok, state}) when is_atom(x) do
+    state = x.apply(state)
+    apply_middlewares(xs, state)
+  end
+  defp apply_middlewares([_|xs], state), do: apply_middlewares(xs, state)
+
+  def handle_call({:update, u}, _from, %{handler: handler, name: name, middlewares: middlewares} = s) do
+    Logger.info "Update received: #{inspect u}"
+    case apply_middlewares(middlewares, {:ok, %{}}) do
+      {:ok, extra} ->
+        info = extract_info(u, s)
+        spawn fn -> handler.(info, name, extra) end
+      _ ->
+        Logger.info "Middleware cancel"
+    end
     {:reply, :ok, s}
   end
 
-  def handle_call({:update, u}, _from, %{dispatchers: dispatchers} = s) do
-    Enum.map(dispatchers, &(dispatch_update(&1, u)))
-    {:reply, :ok, s}
-  end
+  # def handle_call({:update, u}, _from, %{dispatchers: dispatchers} = s) do
+  #   Enum.map(dispatchers, &(dispatch_update(&1, u)))
+  #   {:reply, :ok, s}
+  # end
 
   def handle_call({:update, u}, _from, s) do
     Logger.error "Update, not update? #{inspect(u)}\nState: #{inspect(s)}"

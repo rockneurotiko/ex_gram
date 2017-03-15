@@ -4,12 +4,15 @@ defmodule Telex.Bot do
              nil -> raise "name parameter is mandatory"
              n -> n
            end
-    commands = Keyword.get(ops, :commands, [])
+    commands = Keyword.get(ops, :commands, []) |> Enum.map(fn [command: _c, name: _n] = t -> t end)
     # Check commands are [command: "", name: ""]
     regexes =
       Keyword.get(ops, :regex, [])
       |> Enum.map(fn [regex: r, name: n] -> [regex: Regex.compile!(r), name: n] end)
     # Check regex are [regex: "", name: ""]
+
+    middlewares =
+      Keyword.get(ops, :middlewares, [])
 
     quote do
       use Supervisor
@@ -53,7 +56,8 @@ defmodule Telex.Bot do
                                       dispatchers: dispatchers(),
                                       commands: unquote(commands),
                                       regex: unquote(regexes),
-                                      handler: &handle/2
+                                      middlewares: unquote(middlewares),
+                                      handler: &handle/3
                                      # commands: commands(),
                                      # edited_msg: edited_msg(),
                                      # channel_post: channel_post(),

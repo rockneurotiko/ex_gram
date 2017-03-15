@@ -2,21 +2,21 @@ defmodule Examples.Simple do
   @bot :simple_bot
   def bot(), do: @bot
 
-  use Telex.Bot, name: @bot
+  use Telex.Bot, name: @bot, commands: [[command: "echo", name: :echo]]
   use Telex.Dsl
 
   require Logger
 
-  def handle({:command, "echo", %{text: t} = msg}, name) do
+  def handle({:command, :echo, %{text: t} = msg}, name, _e) do
     answer msg, t, bot: name
   end
 
-  def handle({:bot_message, from, msg}, name) do
+  def handle({:bot_message, from, msg}, name, _e) do
     Logger.info "Message from bot #{inspect from} to #{inspect name}  : #{inspect msg}"
     :hi
   end
 
-  def handle(msg, _) do
+  def handle(msg, _, _) do
     IO.puts "Unknown message #{inspect msg}"
   end
 
