@@ -137,8 +137,18 @@ defmodule Telex.Dispatcher do
     {:reply, :error, s}
   end
 
-  def handle_call({:message, origin, msg}, _from, %{handler: handler, name: name} = s) do
-    response = handler.({:bot_message, origin, msg}, name)
+  def handle_call({:message, origin, msg}, from, %{handler: handler, name: name} = s) do
+    response = handler.({:bot_message, origin, msg}, name, %{from: from})
     {:reply, response, s}
+  end
+
+  def handle_call(msg, from, %{handler: handler, name: name} = s) do
+    response = handler.({:call, msg}, name, %{from: from})
+    {:reply, response, s}
+  end
+
+  def handle_cast(msg, %{handler: handler, name: name} = s) do
+    spawn fn -> handler.({cast, msg}, name, %{}) end
+    {:noreply, s}
   end
 end
