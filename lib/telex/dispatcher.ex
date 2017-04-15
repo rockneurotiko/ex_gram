@@ -127,11 +127,6 @@ defmodule Telex.Dispatcher do
     {:reply, :ok, s}
   end
 
-  # def handle_call({:update, u}, _from, %{dispatchers: dispatchers} = s) do
-  #   Enum.map(dispatchers, &(dispatch_update(&1, u)))
-  #   {:reply, :ok, s}
-  # end
-
   def handle_call({:update, u}, _from, s) do
     Logger.error "Update, not update? #{inspect(u)}\nState: #{inspect(s)}"
     {:reply, :error, s}
@@ -148,7 +143,7 @@ defmodule Telex.Dispatcher do
   end
 
   def handle_cast(msg, %{handler: handler, name: name} = s) do
-    spawn fn -> handler.({cast, msg}, name, %{}) end
+    spawn fn -> handler.({:cast, msg}, name, %{}) end
     {:noreply, s}
   end
 end

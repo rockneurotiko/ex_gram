@@ -21,7 +21,7 @@ defmodule Telex.Bot do
 
       require Logger
 
-      Module.register_attribute(__MODULE__, :dispatchers, accumulate: true)
+      # Module.register_attribute(__MODULE__, :dispatchers, accumulate: true)
       # Module.register_attribute(__MODULE__, :commands, accumulate: true)
       # Module.register_attribute(__MODULE__, :edited_msg, accumulate: true)
       # Module.register_attribute(__MODULE__, :channel_post, accumulate: true)
@@ -53,7 +53,7 @@ defmodule Telex.Bot do
 
         children = [
           worker(Telex.Dispatcher, [%{name: name,
-                                      dispatchers: dispatchers(),
+                                      # dispatchers: dispatchers(),
                                       commands: unquote(commands),
                                       regex: unquote(regexes),
                                       middlewares: unquote(middlewares),
@@ -74,20 +74,20 @@ defmodule Telex.Bot do
         supervise(children, strategy: :one_for_one)
       end
 
-      @before_compile Telex.Bot
+      # @before_compile Telex.Bot
     end
   end
 
-  defmacro __before_compile__(_env) do
-    quote do
-      defp dispatchers, do: @dispatchers
-      # defp commands, do: @commands
-      # defp edited_msg, do: @edited_msg
-      # defp channel_post, do: @channel_post
-      # defp channel_edited_post, do: @channel_edited_post
-      # defp inline_query, do: @inline_query
-      # defp chosen_inline_result, do: @chosen_inline_result
-      # defp callback_query, do: @callback_query
-    end
-  end
+  # defmacro __before_compile__(_env) do
+  #   quote do
+  #     # defp dispatchers, do: @dispatchers
+  #     # defp commands, do: @commands
+  #     # defp edited_msg, do: @edited_msg
+  #     # defp channel_post, do: @channel_post
+  #     # defp channel_edited_post, do: @channel_edited_post
+  #     # defp inline_query, do: @inline_query
+  #     # defp chosen_inline_result, do: @chosen_inline_result
+  #     # defp callback_query, do: @callback_query
+  #   end
+  # end
 end
