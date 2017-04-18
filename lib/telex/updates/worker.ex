@@ -4,7 +4,7 @@ defmodule Telex.Updates.Worker do
 
   def start_link({:bot, pid, :token, token}) do
     Logger.debug "START WORKER"
-    GenServer.start_link(__MODULE__, {:ok, pid, token})
+    GenServer.start_link(__MODULE__, {:ok, pid, token}) # TODO: Use name
   end
 
   def init({:ok, pid, token}) do
@@ -25,9 +25,11 @@ defmodule Telex.Updates.Worker do
 
       nid = extract_last_pid(uid, updates)
 
-      GenServer.cast(self(), {:fetch, :update_id, nid + 1})
+      send(self(), {:fetch, :update_id, nid + 1})
+      # GenServer.cast(self(), )
 
     rescue
+    # If timeout don't wait?
       Maxwell.Error ->
         Process.send_after(self(), {:fetch, :update_id, uid}, 1)
     end

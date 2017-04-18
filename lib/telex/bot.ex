@@ -36,20 +36,24 @@ defmodule Telex.Bot do
         start_link(t, token, unquote(name))
       end
 
-      defp start_link(:webhook, _token, _name) do
-        raise "Not implemented yet"
+      # defp start_link(:webhook, _token, _name) do
+      #   Supervisor.start_link(__MODULE__, {:ok, m, token, name})
+      # end
+
+      defp start_link(m, token, name) do
+        Supervisor.start_link(__MODULE__, {:ok, m, token, name}) # Use name too!
       end
 
-      defp start_link(_t, token, name) do
-        Supervisor.start_link(__MODULE__, {:ok, token, name})
-      end
-
-      def message(from, message) do
-        GenServer.call(name(), {:message, from, message})
-      end
-
-      def init({:ok, token, name}) do
+      def init({:ok, updates_method, token, name}) do
         {:ok, _} = Registry.register(Registry.Telex, name, token)
+
+        updates_worker = case updates_method do
+                           :webhook ->
+                             raise "Not implemented yet"
+                             Telex.Webhook.Worker
+                           :noup -> Telex.Noup
+                           _ -> Telex.Updates.Worker
+                         end
 
         children = [
           worker(Telex.Dispatcher, [%{name: name,
@@ -66,12 +70,16 @@ defmodule Telex.Bot do
                                      # chosen_inline_result: chosen_inline_result(),
                                      # callback_query: callback_query()
                                     }]),
-          worker(Telex.Updates.Worker, [{:bot, name, :token, token}])
+          worker(updates_worker, [{:bot, name, :token, token}])
         ]
 
         Logger.info "Starting bot!"
 
         supervise(children, strategy: :one_for_one)
+      end
+
+      def message(from, message) do
+        GenServer.call(name(), {:message, from, message})
       end
 
       # @before_compile Telex.Bot
