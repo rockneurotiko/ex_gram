@@ -1,5 +1,5 @@
 defmodule Telex.Macros do
-  require Logger
+  # require Logger
 
   def transform_param({:{}, line, [{name, _line, nil}]}), do: {{name, line, nil},
                                                                [name, [:any]]}
@@ -159,9 +159,9 @@ defmodule Telex.Macros do
     |> struct_types(act)
   end
 
-  def struct_types(x, acc) do
-    Logger.error "WTF struct?"
-    Logger.error inspect(x)
+  def struct_types(_x, acc) do
+    # Logger.error "WTF struct?"
+    # Logger.error inspect(x)
     struct_types(acc)
   end
 
@@ -336,7 +336,7 @@ defmodule Telex.Macros do
           lambda_callverb = fn x -> apply(Telex, unquote(verb), [x]) end
 
           path = "/bot#{token}/#{unquote(name)}"
-
+          # IO.puts("Path: #{inspect path}\nbody: #{inspect body}")
           new()
           |> put_path(path)
           |> lambda_putbody.()

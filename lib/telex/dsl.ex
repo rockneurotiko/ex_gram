@@ -41,4 +41,33 @@ defmodule Telex.Dsl do
   def answer(m, text, ops) do
     Telex.send_message(extract_id(m), text, ops)
   end
+
+  def answer_callback(id, ops) do
+    Telex.answer_callback_query(id, ops)
+  end
+
+
+  defp inline_id(ops, %{message: %{message_id: mid}} = m), do: ops |> Keyword.put(:message_id, mid) |> Keyword.put(:chat_id, extract_id(m))
+  defp inline_id(ops, %{inline_message_id: mid}), do: ops |> Keyword.put(:inline_message_id, mid)
+  # defp inline_id(ops, _), do: ops
+
+  def edit(:inline, m, text, ops) do
+    ops = inline_id(ops, m)
+    Telex.edit_message_text(text, ops)
+  end
+
+  def edit(:markup, m, _, ops) do
+    edit(:markup, m, ops)
+  end
+
+  def edit(_, _, _, _), do: {:error, "Wrong params"}
+
+  def edit(:markup, m, ops) do
+    ops = inline_id(ops, m)
+    Telex.edit_message_reply_markup(ops)
+  end
+
+
+
+
 end

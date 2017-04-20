@@ -11,7 +11,7 @@ defmodule Telex do
   middleware Maxwell.Middleware.Json, [decode_func: &Telex.custom_decode/1]
   # middleware Maxwell.Middleware.Json
   # middleware Telex.Middleware, Config.get(:telex, :token, "<TOKEN>")
-  middleware Maxwell.Middleware.Logger
+  # middleware Maxwell.Middleware.Logger
 
   adapter Maxwell.Adapter.Hackney
 

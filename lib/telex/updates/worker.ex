@@ -1,9 +1,9 @@
 defmodule Telex.Updates.Worker do
   use GenServer
-  require Logger
+  # require Logger
 
   def start_link({:bot, pid, :token, token}) do
-    Logger.debug "START WORKER"
+    # Logger.debug "START WORKER"
     GenServer.start_link(__MODULE__, {:ok, pid, token}) # TODO: Use name
   end
 
@@ -17,7 +17,7 @@ defmodule Telex.Updates.Worker do
   def handle_cast({:fetch, :update_id, _} = m, state), do: handle_info(m, state)
 
   def handle_info({:fetch, :update_id, uid}, {pid, token} = state) do
-    Logger.debug "GetUpdates!"
+    # Logger.debug "GetUpdates!"
     # TODO: If timeout, keep going!
     try do
       updates = Telex.get_updates!(limit: 100, offset: uid, timeout: 30000, token: token)

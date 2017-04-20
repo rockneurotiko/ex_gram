@@ -1,7 +1,7 @@
 defmodule Telex.Dispatcher do
   use GenServer
 
-  require Logger
+  # require Logger
 
   # commands: [command: "echo", name: :echo]
   # regex: [regex: "^/echo", name: :echor]
@@ -115,20 +115,20 @@ defmodule Telex.Dispatcher do
   defp apply_middlewares([_|xs], state), do: apply_middlewares(xs, state)
 
   def handle_call({:update, u}, _from, %{handler: handler, name: name, middlewares: middlewares} = s) do
-    Logger.info "Update received: #{inspect u}"
     case apply_middlewares(middlewares, {:ok, %{update: u}}) do
       {:ok, extra} when is_map(extra) ->
         u = Map.get(extra, :update, u) # Get the update from the middlewares
         info = extract_info(u, s)
         spawn fn -> handler.(info, name, extra) end
       _ ->
-        Logger.info "Middleware cancel"
+        # Logger.info "Middleware cancel"
+        true
     end
     {:reply, :ok, s}
   end
 
-  def handle_call({:update, u}, _from, s) do
-    Logger.error "Update, not update? #{inspect(u)}\nState: #{inspect(s)}"
+  def handle_call({:update, _u}, _from, s) do
+    # Logger.error "Update, not update? #{inspect(u)}\nState: #{inspect(s)}"
     {:reply, :error, s}
   end
 

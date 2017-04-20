@@ -19,7 +19,7 @@ defmodule Telex.Bot do
 
       @behaviour Telex.Dsl.Handler
 
-      require Logger
+      # require Logger
 
       # Module.register_attribute(__MODULE__, :dispatchers, accumulate: true)
       # Module.register_attribute(__MODULE__, :commands, accumulate: true)
@@ -73,7 +73,7 @@ defmodule Telex.Bot do
           worker(updates_worker, [{:bot, name, :token, token}])
         ]
 
-        Logger.info "Starting bot!"
+        # Logger.info "Starting bot!"
 
         supervise(children, strategy: :one_for_one)
       end
