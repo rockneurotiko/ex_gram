@@ -3,7 +3,7 @@ defmodule Telex.Mixfile do
 
   def project do
     [app: :telex,
-     version: "0.1.3",
+     version: "0.1.5",
      elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
@@ -31,7 +31,7 @@ defmodule Telex.Mixfile do
     [
       {:poison, "~> 2.1"},
       {:maxwell, "~> 2.1.0"},
-      {:hackney, "~> 1.6.5"},
+      {:hackney, "~> 1.6.6"},
       {:dialyxir, "~> 0.4", only: [:dev], runtime: false}
     ]
   end
