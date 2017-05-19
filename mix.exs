@@ -31,7 +31,7 @@ defmodule Telex.Mixfile do
     [
       {:poison, "~> 2.1"},
       {:maxwell, "~> 2.2.1"},
-      {:hackney, "~> 1.6.5"},
+      {:hackney, "~> 1.8.0"},
       {:dialyxir, "~> 0.5.0", only: [:dev], runtime: false}
     ]
   end
