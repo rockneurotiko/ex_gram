@@ -33,6 +33,8 @@ defmodule Telex do
 
   # AUTO GENERATED
 
+  # Methods
+
   method :get, "getUpdates", [{offset, [:integer], :optional}, {limit, [:integer], :optional}, {timeout, [:integer], :optional}, {allowed_updates, [{:array, :string}], :optional}], [Telex.Model.Update]
 
   method :post, "setWebhook", [{url, [:string]}, {certificate, [:file], :optional}, {max_connections, [:integer], :optional}, {allowed_updates, [{:array, :string}], :optional}], true
@@ -73,9 +75,27 @@ defmodule Telex do
 
   method :get, "getFile", [{file_id, [:string]}], Telex.Model.File
 
-  method :post, "kickChatMember", [{chat_id, [:integer, :string]}, {user_id, [:integer]}], true
+  method :post, "kickChatMember", [{chat_id, [:integer, :string]}, {user_id, [:integer]}, {until_date, [:integer]}], true
 
   method :post, "unbanChatMember", [{chat_id, [:integer, :string]}, {user_id, [:integer]}], true
+
+  method :post, "restrictChatMember", [{chat_id, [:integer, :string]}, {user_id, [:integer]}, {until_date, [:integer]}, {can_send_messages, [:boolean]}, {can_send_media_messages, [:boolean]}, {can_send_other_messages, [:boolean]}, {can_add_web_page_previews, [:boolean]}], true
+
+  method :post, "promoteChatMember", [{chat_id, [:integer, :string]}, {user_id, [:integer]}, {can_change_info, [:boolean]}, {can_post_messages, [:boolean]}, {can_edit_messages, [:boolean]}, {can_delete_messages, [:boolean]}, {can_invite_users, [:boolean]}, {can_restrict_members, [:boolean]}, {can_pin_messages, [:boolean]}, {can_promote_members, [:boolean]}], true
+
+  method :post, "exportChatInviteLink", [{chat_id, [:integer, :string]}], Telex.Model.exported
+
+  method :post, "setChatPhoto", [{chat_id, [:integer, :string]}, {photo, [:file]}], true
+
+  method :post, "deleteChatPhoto", [{chat_id, [:integer, :string]}], true
+
+  method :post, "setChatTitle", [{chat_id, [:integer, :string]}, {title, [:string]}], true
+
+  method :post, "setChatDescription", [{chat_id, [:integer, :string]}, {description, [:string]}], true
+
+  method :post, "pinChatMessage", [{chat_id, [:integer, :string]}, {message_id, [:integer]}, {disable_notification, [:boolean]}], true
+
+  method :post, "unpinChatMessage", [{chat_id, [:integer, :string]}], true
 
   method :post, "leaveChat", [{chat_id, [:integer, :string]}], true
 
@@ -99,7 +119,7 @@ defmodule Telex do
 
   method :post, "answerInlineQuery", [{inline_query_id, [:string]}, {results, [{:array, InlineQueryResult}]}, {cache_time, [:integer], :optional}, {is_personal, [:boolean], :optional}, {next_offset, [:string], :optional}, {switch_pm_text, [:string], :optional}, {switch_pm_parameter, [:string], :optional}], true
 
-  method :post, "sendInvoice", [{chat_id, [:integer]}, {title, [:string]}, {description, [:string]}, {payload, [:string]}, {provider_token, [:string]}, {start_parameter, [:string]}, {currency, [:string]}, {prices, [{:array, LabeledPrice}]}, {photo_url, [:string], :optional}, {photo_size, [:integer], :optional}, {photo_width, [:integer], :optional}, {photo_height, [:integer], :optional}, {need_name, [Bool], :optional}, {need_phone_number, [:boolean], :optional}, {need_email, [Bool], :optional}, {need_shipping_address, [:boolean], :optional}, {is_flexible, [:boolean], :optional}, {disable_notification, [:boolean], :optional}, {reply_to_message_id, [:integer], :optional}, {reply_markup, [InlineKeyboardMarkup], :optional}], Telex.Model.Message
+  method :post, "sendInvoice", [{chat_id, [:integer]}, {title, [:string]}, {payload, [:string]}, {provider_token, [:string]}, {start_parameter, [:string]}, {currency, [:string]}, {prices, [{:array, LabeledPrice}]}, {photo_url, [:string], :optional}, {description, [:string], :optional}, {photo_size, [:integer], :optional}, {photo_width, [:integer], :optional}, {photo_height, [:integer], :optional}, {need_name, [:boolean], :optional}, {need_phone_number, [:boolean], :optional}, {need_email, [:boolean], :optional}, {need_shipping_address, [:boolean], :optional}, {is_flexible, [:boolean], :optional}, {disable_notification, [:boolean], :optional}, {reply_to_message_id, [:integer], :optional}, {reply_markup, [InlineKeyboardMarkup], :optional}], Telex.Model.Message
 
   method :post, "answerShippingQuery", [{shipping_query_id, [:string]}, {ok, [:boolean]}, {shipping_options, [{:array, ShippingOption}], :optional}, {error_message, [:string], :optional}], true
 
@@ -110,13 +130,16 @@ defmodule Telex do
   method :post, "setGameScore", [{user_id, [:integer]}, {score, [:integer]}, {force, [:boolean], :optional}, {disable_edit_message, [:boolean], :optional}, {chat_id, [:integer], :optional}, {message_id, [:integer], :optional}, {inline_message_id, [:string], :optional}], Telex.Model.Message
 
   method :get, "getGameHighScores", [{user_id, [:integer]}, {chat_id, [:integer], :optional}, {message_id, [:integer], :optional}, {inline_message_id, [:string], :optional}], [Telex.Model.GameHighScore]
+
+  # Models
+
   model Update, [{:update_id, :integer}, {:message, Message}, {:edited_message, Message}, {:channel_post, Message}, {:edited_channel_post, Message}, {:inline_query, InlineQuery}, {:chosen_inline_result, ChosenInlineResult}, {:callback_query, CallbackQuery}, {:shipping_query, ShippingQuery}, {:pre_checkout_query, PreCheckoutQuery}]
 
   model WebhookInfo, [{:url, :string}, {:has_custom_certificate, :boolean}, {:pending_update_count, :integer}, {:last_error_date, :integer}, {:last_error_message, :string}, {:max_connections, :integer}, {:allowed_updates, {:array, :string}}]
 
   model User, [{:id, :integer}, {:first_name, :string}, {:last_name, :string}, {:username, :string}, {:language_code, :string}]
 
-  model Chat, [{:id, :integer}, {:type, :string}, {:title, :string}, {:username, :string}, {:first_name, :string}, {:last_name, :string}, {:all_members_are_administrators, :boolean}]
+  model Chat, [{:id, :integer}, {:type, :string}, {:title, :string}, {:username, :string}, {:first_name, :string}, {:last_name, :string}, {:all_members_are_administrators, :boolean}, {:photo, ChatPhoto}, {:description, :string}, {:invite_link, :string}]
 
   model Message, [{:message_id, :integer}, {:from, User}, {:date, :integer}, {:chat, Chat}, {:forward_from, User}, {:forward_from_chat, Chat}, {:forward_from_message_id, :integer}, {:forward_date, :integer}, {:reply_to_message, Message}, {:edit_date, :integer}, {:text, :string}, {:entities, {:array, MessageEntity}}, {:audio, Audio}, {:document, Document}, {:game, Game}, {:photo, {:array, PhotoSize}}, {:sticker, Sticker}, {:video, Video}, {:voice, Voice}, {:video_note, VideoNote}, {:new_chat_members, {:array, User}}, {:caption, :string}, {:contact, Contact}, {:location, Location}, {:venue, Venue}, {:new_chat_member, User}, {:left_chat_member, User}, {:new_chat_title, :string}, {:new_chat_photo, {:array, PhotoSize}}, {:delete_chat_photo, :boolean}, {:group_chat_created, :boolean}, {:supergroup_chat_created, :boolean}, {:channel_chat_created, :boolean}, {:migrate_to_chat_id, :integer}, {:migrate_from_chat_id, :integer}, {:pinned_message, Message}, {:invoice, Invoice}, {:successful_payment, SuccessfulPayment}]
 
@@ -160,7 +183,9 @@ defmodule Telex do
 
   model ForceReply, [{:force_reply, :boolean}, {:selective, :boolean}]
 
-  model ChatMember, [{:user, User}, {:status, :string}]
+  model ChatPhoto, [{:small_file_id, :string}, {:big_file_id, :string}]
+
+  model ChatMember, [{:user, User}, {:status, :string}, {:until_date, :integer}, {:can_be_edited, :boolean}, {:can_change_info, :boolean}, {:can_post_messages, :boolean}, {:can_edit_messages, :boolean}, {:can_delete_messages, :boolean}, {:can_invite_users, :boolean}, {:can_restrict_members, :boolean}, {:can_pin_messages, :boolean}, {:can_promote_members, :boolean}, {:can_send_messages, :boolean}, {:can_send_media_messages, :boolean}, {:can_send_other_messages, :boolean}, {:can_add_web_page_previews, :boolean}]
 
   model ResponseParameters, [{:migrate_to_chat_id, :integer}, {:retry_after, :integer}]
 

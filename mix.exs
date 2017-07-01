@@ -3,7 +3,7 @@ defmodule Telex.Mixfile do
 
   def project do
     [app: :telex,
-     version: "0.2.0-rc1",
+     version: "0.3.0-rc1",
      elixir: "~> 1.4",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,

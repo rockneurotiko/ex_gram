@@ -98,6 +98,14 @@ defmodule Telex.Dispatcher do
     {:callback_query, cbq}
   end
 
+  # edited_message
+  # channel_post
+  # edited_channel_post
+  # inline_query
+  # chosen_inline_result
+  # shipping_query
+  # pre_checkout_query
+
   defp extract_info(update, _s) do
     {:update, update}
   end
