@@ -55,8 +55,6 @@ defmodule Telex do
 
   method :post, "sendDocument", [{chat_id, [:integer, :string]}, {document, [:file, :string]}, {caption, [:string], :optional}, {disable_notification, [:boolean], :optional}, {reply_to_message_id, [:integer], :optional}, {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}], Telex.Model.Message
 
-  method :post, "sendSticker", [{chat_id, [:integer, :string]}, {sticker, [:file, :string]}, {disable_notification, [:boolean], :optional}, {reply_to_message_id, [:integer], :optional}, {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}], Telex.Model.Message
-
   method :post, "sendVideo", [{chat_id, [:integer, :string]}, {video, [:file, :string]}, {duration, [:integer], :optional}, {width, [:integer], :optional}, {height, [:integer], :optional}, {caption, [:string], :optional}, {disable_notification, [:boolean], :optional}, {reply_to_message_id, [:integer], :optional}, {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}], Telex.Model.Message
 
   method :post, "sendVoice", [{chat_id, [:integer, :string]}, {voice, [:file, :string]}, {caption, [:string], :optional}, {duration, [:integer], :optional}, {disable_notification, [:boolean], :optional}, {reply_to_message_id, [:integer], :optional}, {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}], Telex.Model.Message
@@ -117,9 +115,23 @@ defmodule Telex do
 
   method :post, "deleteMessage", [{chat_id, [:integer, :string]}, {message_id, [:integer]}], true
 
+  method :post, "sendSticker", [{chat_id, [:integer, :string]}, {sticker, [:file, :string]}, {disable_notification, [:boolean], :optional}, {reply_to_message_id, [:integer], :optional}, {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}], Telex.Model.Message
+
+  method :get, "getStickerSet", [{name, [:string]}], Telex.Model.object
+
+  method :post, "uploadStickerFile", [{user_id, [:integer]}, {png_sticker, [:file]}], Telex.Model.the
+
+  method :post, "createNewStickerSet", [{user_id, [:integer]}, {name, [:string]}, {title, [:string]}, {png_sticker, [:file, :string]}, {emojis, [:string]}, {contains_masks, [:boolean], :optional}, {mask_position, [MaskPosition], :optional}], true
+
+  method :post, "addStickerToSet", [{user_id, [:integer]}, {name, [:string]}, {png_sticker, [:file, :string]}, {emojis, [:string]}, {mask_position, [MaskPosition], :optional}], true
+
+  method :post, "setStickerPositionInSet", [{sticker, [:string]}, {position, [:integer]}], true
+
+  method :post, "deleteStickerFromSet", [{sticker, [:string]}], true
+
   method :post, "answerInlineQuery", [{inline_query_id, [:string]}, {results, [{:array, InlineQueryResult}]}, {cache_time, [:integer], :optional}, {is_personal, [:boolean], :optional}, {next_offset, [:string], :optional}, {switch_pm_text, [:string], :optional}, {switch_pm_parameter, [:string], :optional}], true
 
-  method :post, "sendInvoice", [{chat_id, [:integer]}, {title, [:string]}, {payload, [:string]}, {provider_token, [:string]}, {start_parameter, [:string]}, {currency, [:string]}, {prices, [{:array, LabeledPrice}]}, {photo_url, [:string], :optional}, {description, [:string], :optional}, {photo_size, [:integer], :optional}, {photo_width, [:integer], :optional}, {photo_height, [:integer], :optional}, {need_name, [:boolean], :optional}, {need_phone_number, [:boolean], :optional}, {need_email, [:boolean], :optional}, {need_shipping_address, [:boolean], :optional}, {is_flexible, [:boolean], :optional}, {disable_notification, [:boolean], :optional}, {reply_to_message_id, [:integer], :optional}, {reply_markup, [InlineKeyboardMarkup], :optional}], Telex.Model.Message
+  method :post, "sendInvoice", [{chat_id, [:integer]}, {title, [:string]}, {description, [:string]}, {payload, [:string]}, {provider_token, [:string]}, {start_parameter, [:string]}, {currency, [:string]}, {prices, [{:array, LabeledPrice}]}, {photo_url, [:string], :optional}, {photo_size, [:integer], :optional}, {photo_width, [:integer], :optional}, {photo_height, [:integer], :optional}, {need_name, [:boolean], :optional}, {need_phone_number, [:boolean], :optional}, {need_email, [:boolean], :optional}, {need_shipping_address, [:boolean], :optional}, {is_flexible, [:boolean], :optional}, {disable_notification, [:boolean], :optional}, {reply_to_message_id, [:integer], :optional}, {reply_markup, [InlineKeyboardMarkup], :optional}], Telex.Model.Message
 
   method :post, "answerShippingQuery", [{shipping_query_id, [:string]}, {ok, [:boolean]}, {shipping_options, [{:array, ShippingOption}], :optional}, {error_message, [:string], :optional}], true
 
@@ -130,6 +142,7 @@ defmodule Telex do
   method :post, "setGameScore", [{user_id, [:integer]}, {score, [:integer]}, {force, [:boolean], :optional}, {disable_edit_message, [:boolean], :optional}, {chat_id, [:integer], :optional}, {message_id, [:integer], :optional}, {inline_message_id, [:string], :optional}], Telex.Model.Message
 
   method :get, "getGameHighScores", [{user_id, [:integer]}, {chat_id, [:integer], :optional}, {message_id, [:integer], :optional}, {inline_message_id, [:string], :optional}], [Telex.Model.GameHighScore]
+  54 methods
 
   # Models
 
@@ -150,8 +163,6 @@ defmodule Telex do
   model Audio, [{:file_id, :string}, {:duration, :integer}, {:performer, :string}, {:title, :string}, {:mime_type, :string}, {:file_size, :integer}]
 
   model Document, [{:file_id, :string}, {:thumb, PhotoSize}, {:file_name, :string}, {:mime_type, :string}, {:file_size, :integer}]
-
-  model Sticker, [{:file_id, :string}, {:width, :integer}, {:height, :integer}, {:thumb, PhotoSize}, {:emoji, :string}, {:file_size, :integer}]
 
   model Video, [{:file_id, :string}, {:width, :integer}, {:height, :integer}, {:duration, :integer}, {:thumb, PhotoSize}, {:mime_type, :string}, {:file_size, :integer}]
 
@@ -190,6 +201,12 @@ defmodule Telex do
   model ResponseParameters, [{:migrate_to_chat_id, :integer}, {:retry_after, :integer}]
 
   model InputFile, [{:chat_id, :integer}, {:text, :string}, {:parse_mode, :string, :optional}, {:disable_web_page_preview, :boolean, :optional}, {:disable_notification, :boolean, :optional}, {:reply_to_message_id, :integer, :optional}, {:reply_markup, InlineKeyboardMarkup, :optional}]
+
+  model Sticker, [{:file_id, :string}, {:width, :integer}, {:height, :integer}, {:thumb, PhotoSize}, {:emoji, :string}, {:set_name, :string}, {:mask_position, MaskPosition}, {:file_size, :integer}]
+
+  model StickerSet, [{:name, :string}, {:title, :string}, {:contains_masks, :boolean}, {:stickers, {:array, Sticker}}]
+
+  model MaskPosition, [{:point, :string}, {:x_shift, :float}, {:y_shift, :float}, {:scale, :float}]
 
   model InlineQuery, [{:id, :string}, {:from, User}, {:location, Location}, {:query, :string}, {:offset, :string}]
 

@@ -26,16 +26,37 @@ defmodule Telex.Dsl do
     end
   end
 
-  def extract_id(%{message: m}) when not is_nil(m), do: extract_id(m)
-  def extract_id(%{callback_query: m}) when not is_nil(m), do: extract_id(m)
-  def extract_id(%{channel_post: m}) when not is_nil(m), do: extract_id(m)
-  def extract_id(%{chosen_inline_result: m}) when not is_nil(m), do: extract_id(m)
-  def extract_id(%{edited_channel_post: m}) when not is_nil(m), do: extract_id(m)
-  def extract_id(%{edited_message: m}) when not is_nil(m), do: extract_id(m)
-  def extract_id(%{inline_query: m}) when not is_nil(m), do: extract_id(m)
+  def extract_id(u) do
+    with {:ok, gid} <- extract_group_id(u) do
+      gid
+    else
+      _ ->
+        case extract_user_id(u) do
+          {:ok, uid} -> uid
+          _ -> -1
+        end
+    end
+  end
 
-  def extract_id(%{chat: c}) when not is_nil(c), do: c[:id]
-  def extract_id(%{from: u}) when not is_nil(u), do: u[:id]
+  def extract_user_id(%{message: m}) when not is_nil(m), do: extract_user_id(m)
+  def extract_user_id(%{callback_query: m}) when not is_nil(m), do: extract_user_id(m)
+  def extract_user_id(%{channel_post: m}) when not is_nil(m), do: extract_user_id(m)
+  def extract_user_id(%{chosen_inline_result: m}) when not is_nil(m), do: extract_user_id(m)
+  def extract_user_id(%{edited_channel_post: m}) when not is_nil(m), do: extract_user_id(m)
+  def extract_user_id(%{edited_message: m}) when not is_nil(m), do: extract_user_id(m)
+  def extract_user_id(%{inline_query: m}) when not is_nil(m), do: extract_user_id(m)
+  def extract_user_id(%{from: u}) when not is_nil(u), do: {:ok, u[:id]}
+  def extract_user_id(_), do: :error
+
+  def extract_group_id(%{message: m}) when not is_nil(m), do: extract_group_id(m)
+  def extract_group_id(%{callback_query: m}) when not is_nil(m), do: extract_group_id(m)
+  def extract_group_id(%{channel_post: m}) when not is_nil(m), do: extract_group_id(m)
+  def extract_group_id(%{chosen_inline_result: m}) when not is_nil(m), do: extract_group_id(m)
+  def extract_group_id(%{edited_channel_post: m}) when not is_nil(m), do: extract_group_id(m)
+  def extract_group_id(%{edited_message: m}) when not is_nil(m), do: extract_group_id(m)
+  def extract_group_id(%{inline_query: m}) when not is_nil(m), do: extract_group_id(m)
+  def extract_group_id(%{chat: c}) when not is_nil(c), do: {:ok, c[:id]}
+  def extract_group_id(_), do: :error
 
   # def answer(m, text, ops \\ []), do: answer(m, text, nil, ops)
   def answer(m, text, ops) do
