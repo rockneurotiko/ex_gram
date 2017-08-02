@@ -69,7 +69,7 @@ defmodule Telex.Dsl do
   def extract_group(%{edited_channel_post: m}) when not is_nil(m), do: extract_group(m)
   def extract_group(%{edited_message: m}) when not is_nil(m), do: extract_group(m)
   def extract_group(%{inline_query: m}) when not is_nil(m), do: extract_group(m)
-  def extract_group(%{chat: c}) when not is_nil(c), do: {:ok, c[:id]}
+  def extract_group(%{chat: c}) when not is_nil(c), do: {:ok, c}
   def extract_group(_), do: :error
 
   # def answer(m, text, ops \\ []), do: answer(m, text, nil, ops)
