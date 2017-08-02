@@ -26,6 +26,20 @@ defmodule Telex.Dsl do
     end
   end
 
+  def create_inline_button(row) do
+    row
+    |> Enum.map(fn ops ->
+      Map.merge(%Telex.Model.InlineKeyboardButton{}, Enum.into(ops, %{})) end)
+  end
+
+  def create_inline(data \\ [[]]) do
+    data =
+      data
+      |> Enum.map(&create_inline_button/1)
+
+    %Telex.Model.InlineKeyboardMarkup{inline_keyboard: data}
+  end
+
   def extract_id(u) do
     with {:ok, gid} <- extract_group_id(u) do
       gid
