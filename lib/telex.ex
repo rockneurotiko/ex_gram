@@ -10,7 +10,7 @@ defmodule Telex do
   middleware Maxwell.Middleware.Opts, [connect_timeout: 5000, recv_timeout: 30000]
   middleware Maxwell.Middleware.Json, [decode_func: &Telex.custom_decode/1]
   # middleware Maxwell.Middleware.Json
-  # middleware Telex.Middleware, Config.get(:telex, :token, "<TOKEN>")
+  # middleware Telex.Middleware, Telex.Config.get(:telex, :token, "<TOKEN>")
   # middleware Maxwell.Middleware.Logger
 
   adapter Maxwell.Adapter.Hackney
@@ -142,7 +142,6 @@ defmodule Telex do
   method :post, "setGameScore", [{user_id, [:integer]}, {score, [:integer]}, {force, [:boolean], :optional}, {disable_edit_message, [:boolean], :optional}, {chat_id, [:integer], :optional}, {message_id, [:integer], :optional}, {inline_message_id, [:string], :optional}], Telex.Model.Message
 
   method :get, "getGameHighScores", [{user_id, [:integer]}, {chat_id, [:integer], :optional}, {message_id, [:integer], :optional}, {inline_message_id, [:string], :optional}], [Telex.Model.GameHighScore]
-  54 methods
 
   # Models
 

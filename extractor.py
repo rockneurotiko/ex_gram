@@ -6,7 +6,7 @@ DEBUG = True
 
 def debug(t):
     if DEBUG:
-        print(t)
+        print("# " + t)
 
 def arg_to_s(arg):
     return "{%s, [%s]%s}" % (arg[0], ", ".join(arg[1]), ", :optional" if arg[2] else "")
@@ -126,7 +126,7 @@ def extract_model(h4):
     model_s = "model {}, [{}]"
 
     ts = [struct_t(name, types, opt) for (name, types, opt) in tabled]
-    print(ts)
+    debug(str(ts))
     return  model_s.format(name, ", ".join(ts))
 
 html = requests.get("https://core.telegram.org/bots/api").content
@@ -164,7 +164,7 @@ for h4 in h4s:
     n += 1
 
     returned = good_type(extract_return_type(h4.find_next("p").text))
-    print("RETURNS: ", returned)
+    debug("RETURNS: " + returned)
 
     if name in not_parameters:
         methods.append(build_method(name, [], returned))
@@ -176,10 +176,10 @@ for h4 in h4s:
     methods.append(build_method(name, tabled, returned))
 
 
-print("----------METHODS-----------\n")
+debug("----------METHODS-----------\n")
 print("\n\n".join(methods))
 debug("{} methods".format(len(methods)))
 
-print("----------MODELS-----------\n")
+debug("----------MODELS-----------\n")
 print("\n\n".join(models))
 debug("{} models".format(len(models)))

@@ -277,7 +277,7 @@ defmodule Telex.Macros do
           |> Enum.all?
 
         token = case {Keyword.get(ops, :token), Keyword.get(ops, :bot)} do
-                  {nil, nil} -> Config.get(:telex, :token)
+                  {nil, nil} -> Telex.Config.get(:telex, :token)
                   {token, nil}  -> token
                   {nil, bot} ->
                     [{_, token}] = Registry.lookup(Registry.Telex, bot)

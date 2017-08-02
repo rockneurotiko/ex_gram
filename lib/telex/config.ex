@@ -1,4 +1,4 @@
-defmodule Config do
+defmodule Telex.Config do
   @moduledoc """
   This module handles fetching values from the config with some additional niceties
   """
