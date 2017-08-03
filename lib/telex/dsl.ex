@@ -52,6 +52,7 @@ defmodule Telex.Dsl do
     end
   end
 
+  def extract_user(%{from: u}) when not is_nil(u), do: {:ok, u}
   def extract_user(%{message: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{callback_query: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{channel_post: m}) when not is_nil(m), do: extract_user(m)
@@ -59,9 +60,9 @@ defmodule Telex.Dsl do
   def extract_user(%{edited_channel_post: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{edited_message: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{inline_query: m}) when not is_nil(m), do: extract_user(m)
-  def extract_user(%{from: u}) when not is_nil(u), do: {:ok, u}
   def extract_user(_), do: :error
 
+  def extract_group(%{chat: c}) when not is_nil(c), do: {:ok, c}
   def extract_group(%{message: m}) when not is_nil(m), do: extract_group(m)
   def extract_group(%{callback_query: m}) when not is_nil(m), do: extract_group(m)
   def extract_group(%{channel_post: m}) when not is_nil(m), do: extract_group(m)
@@ -69,7 +70,6 @@ defmodule Telex.Dsl do
   def extract_group(%{edited_channel_post: m}) when not is_nil(m), do: extract_group(m)
   def extract_group(%{edited_message: m}) when not is_nil(m), do: extract_group(m)
   def extract_group(%{inline_query: m}) when not is_nil(m), do: extract_group(m)
-  def extract_group(%{chat: c}) when not is_nil(c), do: {:ok, c}
   def extract_group(_), do: :error
 
   # def answer(m, text, ops \\ []), do: answer(m, text, nil, ops)
@@ -101,8 +101,4 @@ defmodule Telex.Dsl do
     ops = inline_id(ops, m)
     Telex.edit_message_reply_markup(ops)
   end
-
-
-
-
 end
