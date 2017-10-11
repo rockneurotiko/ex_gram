@@ -61,7 +61,11 @@ defmodule Telex do
 
   method :post, "sendVideoNote", [{chat_id, [:integer, :string]}, {video_note, [:file, :string]}, {duration, [:integer], :optional}, {length, [:integer], :optional}, {disable_notification, [:boolean], :optional}, {reply_to_message_id, [:integer], :optional}, {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}], Telex.Model.Message
 
-  method :post, "sendLocation", [{chat_id, [:integer, :string]}, {latitude, [:float]}, {longitude, [:float]}, {disable_notification, [:boolean], :optional}, {reply_to_message_id, [:integer], :optional}, {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}], Telex.Model.Message
+  method :post, "sendLocation", [{chat_id, [:integer, :string]}, {latitude, [:float]}, {longitude, [:float]}, {live_period, [:integer], :optional}, {disable_notification, [:boolean], :optional}, {reply_to_message_id, [:integer], :optional}, {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}], Telex.Model.Message
+
+  method :post, "editMessageLiveLocation", [{chat_id, [:integer, :string], :optional}, {message_id, [:integer], :optional}, {inline_message_id, [:string], :optional}, {latitude, [:float]}, {longitude, [:float]}, {reply_markup, [InlineKeyboardMarkup], :optional}], Telex.Model.Message
+
+  method :post, "stopMessageLiveLocation", [{chat_id, [:integer, :string], :optional}, {message_id, [:integer], :optional}, {inline_message_id, [:string], :optional}, {reply_markup, [InlineKeyboardMarkup], :optional}], Telex.Model.Message
 
   method :post, "sendVenue", [{chat_id, [:integer, :string]}, {latitude, [:float]}, {longitude, [:float]}, {title, [:string]}, {address, [:string]}, {foursquare_id, [:string], :optional}, {disable_notification, [:boolean], :optional}, {reply_to_message_id, [:integer], :optional}, {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}], Telex.Model.Message
 
@@ -104,6 +108,10 @@ defmodule Telex do
   method :get, "getChatMembersCount", [{chat_id, [:integer, :string]}], integer
 
   method :get, "getChatMember", [{chat_id, [:integer, :string]}, {user_id, [:integer]}], Telex.Model.ChatMember
+
+  method :post, "setChatStickerSet", [{chat_id, [:integer, :string]}, {sticker_set_name, [:string]}], true
+
+  method :post, "deleteChatStickerSet", [{chat_id, [:integer, :string]}], true
 
   method :post, "answerCallbackQuery", [{callback_query_id, [:string]}, {text, [:string], :optional}, {show_alert, [:boolean], :optional}, {url, [:string], :optional}, {cache_time, [:integer], :optional}], true
 
@@ -149,11 +157,11 @@ defmodule Telex do
 
   model WebhookInfo, [{:url, :string}, {:has_custom_certificate, :boolean}, {:pending_update_count, :integer}, {:last_error_date, :integer}, {:last_error_message, :string}, {:max_connections, :integer}, {:allowed_updates, {:array, :string}}]
 
-  model User, [{:id, :integer}, {:first_name, :string}, {:last_name, :string}, {:username, :string}, {:language_code, :string}]
+  model User, [{:id, :integer}, {:is_bot, :boolean}, {:first_name, :string}, {:last_name, :string}, {:username, :string}, {:language_code, :string}]
 
-  model Chat, [{:id, :integer}, {:type, :string}, {:title, :string}, {:username, :string}, {:first_name, :string}, {:last_name, :string}, {:all_members_are_administrators, :boolean}, {:photo, ChatPhoto}, {:description, :string}, {:invite_link, :string}]
+  model Chat, [{:id, :integer}, {:type, :string}, {:title, :string}, {:username, :string}, {:first_name, :string}, {:last_name, :string}, {:all_members_are_administrators, :boolean}, {:photo, ChatPhoto}, {:description, :string}, {:invite_link, :string}, {:pinned_message, Message}, {:sticker_set_name, :string}, {:can_set_sticker_set, :boolean}]
 
-  model Message, [{:message_id, :integer}, {:from, User}, {:date, :integer}, {:chat, Chat}, {:forward_from, User}, {:forward_from_chat, Chat}, {:forward_from_message_id, :integer}, {:forward_date, :integer}, {:reply_to_message, Message}, {:edit_date, :integer}, {:text, :string}, {:entities, {:array, MessageEntity}}, {:audio, Audio}, {:document, Document}, {:game, Game}, {:photo, {:array, PhotoSize}}, {:sticker, Sticker}, {:video, Video}, {:voice, Voice}, {:video_note, VideoNote}, {:new_chat_members, {:array, User}}, {:caption, :string}, {:contact, Contact}, {:location, Location}, {:venue, Venue}, {:new_chat_member, User}, {:left_chat_member, User}, {:new_chat_title, :string}, {:new_chat_photo, {:array, PhotoSize}}, {:delete_chat_photo, :boolean}, {:group_chat_created, :boolean}, {:supergroup_chat_created, :boolean}, {:channel_chat_created, :boolean}, {:migrate_to_chat_id, :integer}, {:migrate_from_chat_id, :integer}, {:pinned_message, Message}, {:invoice, Invoice}, {:successful_payment, SuccessfulPayment}]
+  model Message, [{:message_id, :integer}, {:from, User}, {:date, :integer}, {:chat, Chat}, {:forward_from, User}, {:forward_from_chat, Chat}, {:forward_from_message_id, :integer}, {:forward_signature, :string}, {:forward_date, :integer}, {:reply_to_message, Message}, {:edit_date, :integer}, {:author_signature, :string}, {:text, :string}, {:entities, {:array, MessageEntity}}, {:caption_entities, {:array, MessageEntity}}, {:audio, Audio}, {:document, Document}, {:game, Game}, {:photo, {:array, PhotoSize}}, {:sticker, Sticker}, {:video, Video}, {:voice, Voice}, {:video_note, VideoNote}, {:caption, :string}, {:contact, Contact}, {:location, Location}, {:venue, Venue}, {:new_chat_members, {:array, User}}, {:left_chat_member, User}, {:new_chat_title, :string}, {:new_chat_photo, {:array, PhotoSize}}, {:delete_chat_photo, :boolean}, {:group_chat_created, :boolean}, {:supergroup_chat_created, :boolean}, {:channel_chat_created, :boolean}, {:migrate_to_chat_id, :integer}, {:migrate_from_chat_id, :integer}, {:pinned_message, Message}, {:invoice, Invoice}, {:successful_payment, SuccessfulPayment}]
 
   model MessageEntity, [{:type, :string}, {:offset, :integer}, {:length, :integer}, {:url, :string}, {:user, User}]
 
@@ -225,7 +233,7 @@ defmodule Telex do
 
   model InlineQueryResultDocument, [{:type, :string}, {:id, :string}, {:title, :string}, {:caption, :string}, {:document_url, :string}, {:mime_type, :string}, {:description, :string}, {:reply_markup, InlineKeyboardMarkup}, {:input_message_content, InputMessageContent}, {:thumb_url, :string}, {:thumb_width, :integer}, {:thumb_height, :integer}]
 
-  model InlineQueryResultLocation, [{:type, :string}, {:id, :string}, {:latitude, :float}, {:longitude, :float}, {:title, :string}, {:reply_markup, InlineKeyboardMarkup}, {:input_message_content, InputMessageContent}, {:thumb_url, :string}, {:thumb_width, :integer}, {:thumb_height, :integer}]
+  model InlineQueryResultLocation, [{:type, :string}, {:id, :string}, {:latitude, :float}, {:longitude, :float}, {:title, :string}, {:live_period, :integer, :optional}, {:reply_markup, InlineKeyboardMarkup}, {:input_message_content, InputMessageContent}, {:thumb_url, :string}, {:thumb_width, :integer}, {:thumb_height, :integer}]
 
   model InlineQueryResultVenue, [{:type, :string}, {:id, :string}, {:latitude, :float}, {:longitude, :float}, {:title, :string}, {:address, :string}, {:foursquare_id, :string}, {:reply_markup, InlineKeyboardMarkup}, {:input_message_content, InputMessageContent}, {:thumb_url, :string}, {:thumb_width, :integer}, {:thumb_height, :integer}]
 
@@ -251,7 +259,7 @@ defmodule Telex do
 
   model InputTextMessageContent, [{:message_text, :string}, {:parse_mode, :string}, {:disable_web_page_preview, :boolean}]
 
-  model InputLocationMessageContent, [{:latitude, :float}, {:longitude, :float}]
+  model InputLocationMessageContent, [{:latitude, :float}, {:longitude, :float}, {:live_period, :integer, :optional}]
 
   model InputVenueMessageContent, [{:latitude, :float}, {:longitude, :float}, {:title, :string}, {:address, :string}, {:foursquare_id, :string}]
 
