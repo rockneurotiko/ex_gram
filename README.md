@@ -8,7 +8,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
   1. Add `telex` to your list of dependencies in `mix.exs`:
 
-    ``` elixir
+    ```elixir
     def deps do
       [{:telex, "~> 0.1.0"}]
     end
@@ -16,7 +16,7 @@ If [available in Hex](https://hex.pm/docs/publish), the package can be installed
 
   2. Ensure `telex` is started before your application:
 
-    ``` elixir
+    ```elixir
     def application do
       [applications: [:telex]]
     end
