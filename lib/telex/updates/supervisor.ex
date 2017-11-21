@@ -13,7 +13,7 @@ defmodule Telex.Updates.Supervisor do
       worker(Telex.Updates.Worker, [{:bot, pid}])
     ]
 
-    Logger.debug "SUPERVISOR"
+    Logger.debug("SUPERVISOR")
 
     # supervise/2 is imported from Supervisor.Spec
     supervise(children, strategy: :one_for_one)

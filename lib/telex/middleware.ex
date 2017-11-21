@@ -7,7 +7,7 @@ defmodule Telex.Middleware do
 
   def request(conn, token) do
     path = conn.path
-    path = if (String.starts_with?(path, "/")), do: path, else: "/#{path}"
+    path = if String.starts_with?(path, "/"), do: path, else: "/#{path}"
     npath = "#{@baseurl}#{token}#{path}"
     %{conn | path: npath}
   end

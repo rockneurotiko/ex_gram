@@ -1,6 +1,6 @@
 defmodule Telex.Dsl.Regex do
   defmacro regex(name, regex, callback) do
-    mname = Telex.Dsl.Base.module_name __MODULE__, name
+    mname = Telex.Dsl.Base.module_name(__MODULE__, name)
 
     quote do
       defmodule unquote(mname) do
@@ -14,12 +14,12 @@ defmodule Telex.Dsl.Regex do
   end
 
   defmacro regex(name, regex, module, do: block) do
-    fname = Telex.Dsl.Base.extract_name(name) |> String.downcase |> String.to_atom
+    fname = Telex.Dsl.Base.extract_name(name) |> String.downcase() |> String.to_atom()
 
     quote do
       def unquote(fname)(var!(msg)), do: unquote(block)
 
-      regex unquote(name), unquote(regex), &unquote(module).unquote(fname)/1
+      regex(unquote(name), unquote(regex), &(unquote(module).unquote(fname) / 1))
     end
   end
 

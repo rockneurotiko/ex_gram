@@ -1,5 +1,4 @@
 defmodule Telex.Dsl do
-
   defmacro __using__([]) do
     quote do
       import Telex.Dsl
@@ -17,6 +16,7 @@ defmodule Telex.Dsl do
     quote do
       if is_nil(unquote(command).module_info[:attributes][:behaviour]) do
         [behaviour] = unquote(command).module_info[:attributes][:behaviour]
+
         if not Enum.member?([Telex.Dsl.Base, Telex.Dsl.Message], behaviour) do
           raise "The command #{inspect(unquote(command))} don't provide a valid behaviour"
         end
@@ -29,7 +29,8 @@ defmodule Telex.Dsl do
   def create_inline_button(row) do
     row
     |> Enum.map(fn ops ->
-      Map.merge(%Telex.Model.InlineKeyboardButton{}, Enum.into(ops, %{})) end)
+         Map.merge(%Telex.Model.InlineKeyboardButton{}, Enum.into(ops, %{}))
+       end)
   end
 
   def create_inline(data \\ [[]]) do
@@ -81,8 +82,9 @@ defmodule Telex.Dsl do
     Telex.answer_callback_query(id, ops)
   end
 
+  defp inline_id(ops, %{message: %{message_id: mid}} = m),
+    do: ops |> Keyword.put(:message_id, mid) |> Keyword.put(:chat_id, extract_id(m))
 
-  defp inline_id(ops, %{message: %{message_id: mid}} = m), do: ops |> Keyword.put(:message_id, mid) |> Keyword.put(:chat_id, extract_id(m))
   defp inline_id(ops, %{inline_message_id: mid}), do: ops |> Keyword.put(:inline_message_id, mid)
   # defp inline_id(ops, _), do: ops
 

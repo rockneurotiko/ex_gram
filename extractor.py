@@ -78,7 +78,7 @@ def good_type(t):
         return "integer"
 
     if t == "Telex.Model.String":
-        return "String.t"
+        return "String.t()"
 
     if t.lower() in ["telex.model.true"]:
         return "true"
@@ -99,6 +99,7 @@ def extract_return_type(text):
 
     ts = ["Returns basic information about the bot in form of a ",
           "returns the edited ",
+          "Returns exported invite link as ",
           "Returns a ",
           "returns a ",
           "Returns ",

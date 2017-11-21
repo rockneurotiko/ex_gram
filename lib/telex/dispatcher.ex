@@ -7,7 +7,7 @@ defmodule Telex.Dispatcher do
   # regex: [regex: "^/echo", name: :echor]
 
   def start_link(%{name: name} = ops) do
-    GenServer.start_link(__MODULE__, {:ok, ops}, [name: name])
+    GenServer.start_link(__MODULE__, {:ok, ops}, name: name)
   end
 
   def init({:ok, ops}) do
@@ -53,29 +53,38 @@ defmodule Telex.Dispatcher do
   #     handle_callback_query(handler, u.callback_query)
   # end
 
-
   # EditedMessage
   # ChannelPost
   # EditedChannelPost
   # InlineQuery
   # ChosenInlineResult
 
-  defp clean_command(cmd), do: cmd |> String.split(" ") |> Enum.at(0) |> String.replace_prefix("/", "") |> String.split("@") |> Enum.at(0)
+  defp clean_command(cmd),
+    do:
+      cmd
+      |> String.split(" ")
+      |> Enum.at(0)
+      |> String.replace_prefix("/", "")
+      |> String.split("@")
+      |> Enum.at(0)
 
   defp handle_text(text, %{commands: commands, regex: regex}) do
     if String.starts_with?(text, "/") do
       cmd = clean_command(text)
       t = text |> String.split(" ") |> Enum.drop(1) |> Enum.join(" ")
+
       case Enum.find(commands, &(Keyword.get(&1, :command) == cmd)) do
         nil ->
           {:command, cmd, t}
+
         cmd ->
           {:command, Keyword.get(cmd, :name), t}
       end
     else
-      case Enum.find(regex, &(Regex.match?(Keyword.get(&1, :regex), text))) do
+      case Enum.find(regex, &Regex.match?(Keyword.get(&1, :regex), text)) do
         nil ->
           {:text, text}
+
         reg ->
           {:regex, Keyword.get(reg, :name), text}
       end
@@ -112,26 +121,36 @@ defmodule Telex.Dispatcher do
 
   defp apply_middlewares([], st), do: st
   defp apply_middlewares(_, {:error, _} = st), do: st
-  defp apply_middlewares([x|xs], {:ok, state}) when is_function(x) do
+
+  defp apply_middlewares([x | xs], {:ok, state}) when is_function(x) do
     state = x.(state)
     apply_middlewares(xs, state)
   end
-  defp apply_middlewares([x|xs], {:ok, state}) when is_atom(x) do
+
+  defp apply_middlewares([x | xs], {:ok, state}) when is_atom(x) do
     state = x.apply(state)
     apply_middlewares(xs, state)
   end
-  defp apply_middlewares([_|xs], state), do: apply_middlewares(xs, state)
 
-  def handle_call({:update, u}, _from, %{handler: handler, name: name, middlewares: middlewares} = s) do
+  defp apply_middlewares([_ | xs], state), do: apply_middlewares(xs, state)
+
+  def handle_call(
+        {:update, u},
+        _from,
+        %{handler: handler, name: name, middlewares: middlewares} = s
+      ) do
     case apply_middlewares(middlewares, {:ok, %{update: u}}) do
       {:ok, extra} when is_map(extra) ->
-        u = Map.get(extra, :update, u) # Get the update from the middlewares
+        # Get the update from the middlewares
+        u = Map.get(extra, :update, u)
         info = extract_info(u, s)
-        spawn fn -> handler.(info, name, extra) end
+        spawn(fn -> handler.(info, name, extra) end)
+
       _ ->
         # Logger.info "Middleware cancel"
         true
     end
+
     {:reply, :ok, s}
   end
 
@@ -151,7 +170,7 @@ defmodule Telex.Dispatcher do
   end
 
   def handle_cast(msg, %{handler: handler, name: name} = s) do
-    spawn fn -> handler.({:cast, msg}, name, %{}) end
+    spawn(fn -> handler.({:cast, msg}, name, %{}) end)
     {:noreply, s}
   end
 end

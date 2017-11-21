@@ -1,18 +1,22 @@
 defmodule Telex.Bot do
   defmacro __using__(ops) do
-    name = case Keyword.get(ops, :name) do
-             nil -> raise "name parameter is mandatory"
-             n -> n
-           end
-    commands = Keyword.get(ops, :commands, []) |> Enum.map(fn [command: _c, name: _n] = t -> t end)
+    name =
+      case Keyword.get(ops, :name) do
+        nil -> raise "name parameter is mandatory"
+        n -> n
+      end
+
+    commands =
+      Keyword.get(ops, :commands, []) |> Enum.map(fn [command: _c, name: _n] = t -> t end)
+
     # Check commands are [command: "", name: ""]
     regexes =
       Keyword.get(ops, :regex, [])
       |> Enum.map(fn [regex: r, name: n] -> [regex: Regex.compile!(r), name: n] end)
+
     # Check regex are [regex: "", name: ""]
 
-    middlewares =
-      Keyword.get(ops, :middlewares, [])
+    middlewares = Keyword.get(ops, :middlewares, [])
 
     quote do
       use Supervisor
@@ -41,35 +45,44 @@ defmodule Telex.Bot do
       # end
 
       defp start_link(m, token, name) do
-        Supervisor.start_link(__MODULE__, {:ok, m, token, name}) # Use name too!
+        # Use name too!
+        Supervisor.start_link(__MODULE__, {:ok, m, token, name})
       end
 
       def init({:ok, updates_method, token, name}) do
         {:ok, _} = Registry.register(Registry.Telex, name, token)
 
-        updates_worker = case updates_method do
-                           :webhook ->
-                             raise "Not implemented yet"
-                             Telex.Webhook.Worker
-                           :noup -> Telex.Noup
-                           _ -> Telex.Updates.Worker
-                         end
+        updates_worker =
+          case updates_method do
+            :webhook ->
+              raise "Not implemented yet"
+              Telex.Webhook.Worker
+
+            :noup ->
+              Telex.Noup
+
+            _ ->
+              Telex.Updates.Worker
+          end
 
         children = [
-          worker(Telex.Dispatcher, [%{name: name,
-                                      # dispatchers: dispatchers(),
-                                      commands: unquote(commands),
-                                      regex: unquote(regexes),
-                                      middlewares: unquote(middlewares),
-                                      handler: &handle/3
-                                     # commands: commands(),
-                                     # edited_msg: edited_msg(),
-                                     # channel_post: channel_post(),
-                                     # channel_edited_post: channel_edited_post(),
-                                     # inline_query: inline_query(),
-                                     # chosen_inline_result: chosen_inline_result(),
-                                     # callback_query: callback_query()
-                                    }]),
+          worker(Telex.Dispatcher, [
+            %{
+              name: name,
+              # dispatchers: dispatchers(),
+              commands: unquote(commands),
+              regex: unquote(regexes),
+              middlewares: unquote(middlewares),
+              handler: &handle/3
+              # commands: commands(),
+              # edited_msg: edited_msg(),
+              # channel_post: channel_post(),
+              # channel_edited_post: channel_edited_post(),
+              # inline_query: inline_query(),
+              # chosen_inline_result: chosen_inline_result(),
+              # callback_query: callback_query()
+            }
+          ]),
           worker(updates_worker, [{:bot, name, :token, token}])
         ]
 

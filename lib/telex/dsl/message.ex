@@ -1,8 +1,8 @@
 defmodule Telex.Dsl.Message do
   import Telex.Dsl.Base
 
-  @callback test(Telex.Model.Message.t) :: boolean
-  @callback execute(Telex.Model.Message.t) :: any
+  @callback test(Telex.Model.Message.t()) :: boolean
+  @callback execute(Telex.Model.Message.t()) :: any
 
   defmacro message(name, callback) do
     module_callback(name, Telex.Dsl.Message, callback)

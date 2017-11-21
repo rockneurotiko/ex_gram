@@ -5,7 +5,7 @@ defmodule Examples.Echo do
   require Logger
 
   def execute(%{text: t} = msg) do
-    Logger.debug "Executing echo on #{inspect(msg)}"
+    Logger.debug("Executing echo on #{inspect(msg)}")
     answer msg, t, bot: :simple_bot
   end
 end

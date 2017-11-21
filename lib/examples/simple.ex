@@ -12,12 +12,12 @@ defmodule Examples.Simple do
   end
 
   def handle({:bot_message, from, msg}, name, _e) do
-    Logger.info "Message from bot #{inspect from} to #{inspect name}  : #{inspect msg}"
+    Logger.info("Message from bot #{inspect(from)} to #{inspect(name)}  : #{inspect(msg)}")
     :hi
   end
 
   def handle(msg, _, _) do
-    IO.puts "Unknown message #{inspect msg}"
+    IO.puts("Unknown message #{inspect(msg)}")
   end
 
   # dispatch Examples.Echo
@@ -30,7 +30,6 @@ defmodule Examples.Simple do
   #     answer msg, t, bot: bot()
   #   end
   # end
-
 
   # def echo_c(msg) do
   #   %{text: t} = msg
