@@ -1,9 +1,9 @@
 defmodule Telex.Bot do
   defmacro __using__(ops) do
     name =
-      case Keyword.get(ops, :name) do
-        nil -> raise "name parameter is mandatory"
-        n -> n
+      case Keyword.fetch(ops, :name) do
+        {:ok, n} -> n
+        _ -> raise "name parameter is mandatory"
       end
 
     commands =
@@ -18,21 +18,10 @@ defmodule Telex.Bot do
 
     middlewares = Keyword.get(ops, :middlewares, [])
 
-    quote do
+    quote location: :keep do
       use Supervisor
 
       @behaviour Telex.Dsl.Handler
-
-      # require Logger
-
-      # Module.register_attribute(__MODULE__, :dispatchers, accumulate: true)
-      # Module.register_attribute(__MODULE__, :commands, accumulate: true)
-      # Module.register_attribute(__MODULE__, :edited_msg, accumulate: true)
-      # Module.register_attribute(__MODULE__, :channel_post, accumulate: true)
-      # Module.register_attribute(__MODULE__, :channel_edited_post, accumulate: true)
-      # Module.register_attribute(__MODULE__, :inline_query, accumulate: true)
-      # Module.register_attribute(__MODULE__, :chosen_inline_result, accumulate: true)
-      # Module.register_attribute(__MODULE__, :callback_query, accumulate: true)
 
       defp name(), do: unquote(name)
 
@@ -40,13 +29,9 @@ defmodule Telex.Bot do
         start_link(t, token, unquote(name))
       end
 
-      # defp start_link(:webhook, _token, _name) do
-      #   Supervisor.start_link(__MODULE__, {:ok, m, token, name})
-      # end
-
       defp start_link(m, token, name) do
         # Use name too!
-        Supervisor.start_link(__MODULE__, {:ok, m, token, name})
+        Supervisor.start_link(__MODULE__, {:ok, m, token, name}, name: name)
       end
 
       def init({:ok, updates_method, token, name}) do
@@ -61,32 +46,28 @@ defmodule Telex.Bot do
             :noup ->
               Telex.Noup
 
-            _ ->
+            :polling ->
               Telex.Updates.Worker
+
+            other ->
+              other
           end
+
+        dispatcher_name = String.to_atom(Atom.to_string(name) <> "_dispatcher")
 
         children = [
           worker(Telex.Dispatcher, [
             %{
               name: name,
-              # dispatchers: dispatchers(),
+              dispatcher_name: dispatcher_name,
               commands: unquote(commands),
               regex: unquote(regexes),
               middlewares: unquote(middlewares),
               handler: &handle/3
-              # commands: commands(),
-              # edited_msg: edited_msg(),
-              # channel_post: channel_post(),
-              # channel_edited_post: channel_edited_post(),
-              # inline_query: inline_query(),
-              # chosen_inline_result: chosen_inline_result(),
-              # callback_query: callback_query()
             }
           ]),
-          worker(updates_worker, [{:bot, name, :token, token}])
+          worker(updates_worker, [{:bot, dispatcher_name, :token, token}])
         ]
-
-        # Logger.info "Starting bot!"
 
         supervise(children, strategy: :one_for_one)
       end
@@ -94,21 +75,6 @@ defmodule Telex.Bot do
       def message(from, message) do
         GenServer.call(name(), {:message, from, message})
       end
-
-      # @before_compile Telex.Bot
     end
   end
-
-  # defmacro __before_compile__(_env) do
-  #   quote do
-  #     # defp dispatchers, do: @dispatchers
-  #     # defp commands, do: @commands
-  #     # defp edited_msg, do: @edited_msg
-  #     # defp channel_post, do: @channel_post
-  #     # defp channel_edited_post, do: @channel_edited_post
-  #     # defp inline_query, do: @inline_query
-  #     # defp chosen_inline_result, do: @chosen_inline_result
-  #     # defp callback_query, do: @callback_query
-  #   end
-  # end
 end

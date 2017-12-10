@@ -1,4 +1,7 @@
 defmodule Telex.Dsl do
+  alias Telex.Responses
+  alias Telex.Responses.{Answer, AnswerCallback, EditInline, EditMarkup}
+
   defmacro __using__([]) do
     quote do
       import Telex.Dsl
@@ -73,24 +76,68 @@ defmodule Telex.Dsl do
   def extract_group(%{inline_query: m}) when not is_nil(m), do: extract_group(m)
   def extract_group(_), do: :error
 
-  # def answer(m, text, ops \\ []), do: answer(m, text, nil, ops)
+  def extract_callback_id(%{callback_query: m}) when not is_nil(m), do: extract_callback_id(m)
+  def extract_callback_id(%{id: cid, data: _data}), do: cid
+  def extract_callback_id(cid) when is_binary(cid), do: cid
+  def extract_callback_id(_), do: :error
+
+  def extract_inline_id_params(%{message: %{message_id: mid}} = m),
+    do: %{message_id: mid, chat_id: extract_id(m)}
+
+  def extract_inline_id_params(%{inline_message_id: mid}), do: %{inline_message_id: mid}
+
+  def answer(text), do: answer(text, [])
+
+  def answer(text, ops) when is_binary(text) and is_list(ops) do
+    {:response, Responses.new(Answer, %{text: text, ops: ops})}
+  end
+
+  def answer(m, text) when is_map(m) and is_binary(text), do: answer(m, text, [])
+
   def answer(m, text, ops) do
-    Telex.send_message(extract_id(m), text, ops)
+    response = Answer |> Responses.new(%{text: text, ops: ops}) |> Responses.set_msg(m)
+
+    {:response, response}
+  end
+
+  def answer!(m, text, ops \\ []) do
+    answer(m, text, ops) |> execute_response()
+  end
+
+  def answer_callback(ops) do
+    {:response, Responses.new(AnswerCallback, %{ops: ops})}
   end
 
   def answer_callback(id, ops) do
-    Telex.answer_callback_query(id, ops)
+    response = AnswerCallback |> Responses.new(%{ops: ops}) |> Responses.set_msg(id)
+    {:response, response}
   end
 
-  defp inline_id(ops, %{message: %{message_id: mid}} = m),
-    do: ops |> Keyword.put(:message_id, mid) |> Keyword.put(:chat_id, extract_id(m))
+  def answer_callback!(id, ops) do
+    answer_callback(id, ops) |> execute_response
+  end
 
-  defp inline_id(ops, %{inline_message_id: mid}), do: ops |> Keyword.put(:inline_message_id, mid)
-  # defp inline_id(ops, _), do: ops
+  # /2
+  def edit(:inline, text) when is_binary(text), do: edit(:inline, text, [])
 
+  def edit(:markup, ops) when is_list(ops) do
+    {:response, Responses.new(EditMarkup, %{ops: ops})}
+  end
+
+  # /3
+  def edit(:inline, text, ops) when is_binary(text) do
+    {:response, Responses.new(EditInline, %{text: text, ops: ops})}
+  end
+
+  def edit(:markup, m, ops) do
+    response = EditMarkup |> Responses.new(%{ops: ops}) |> Responses.set_msg(m)
+    {:response, response}
+  end
+
+  # /4
   def edit(:inline, m, text, ops) do
-    ops = inline_id(ops, m)
-    Telex.edit_message_text(text, ops)
+    response = EditInline |> Responses.new(%{text: text, ops: ops}) |> Responses.set_msg(m)
+    {:response, response}
   end
 
   def edit(:markup, m, _, ops) do
@@ -99,8 +146,11 @@ defmodule Telex.Dsl do
 
   def edit(_, _, _, _), do: {:error, "Wrong params"}
 
-  def edit(:markup, m, ops) do
-    ops = inline_id(ops, m)
-    Telex.edit_message_reply_markup(ops)
+  def edit!(mode, msg, text, ops) do
+    edit(mode, msg, text, ops) |> execute_response()
   end
+
+  defp execute_response({:response, response}), do: Responses.execute(response)
+
+  defp execute_response(other), do: other
 end

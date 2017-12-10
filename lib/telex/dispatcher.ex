@@ -1,57 +1,13 @@
 defmodule Telex.Dispatcher do
   use GenServer
 
-  # require Logger
-
-  # commands: [command: "echo", name: :echo]
-  # regex: [regex: "^/echo", name: :echor]
-
-  def start_link(%{name: name} = ops) do
+  def start_link(%{dispatcher_name: name} = ops) do
     GenServer.start_link(__MODULE__, {:ok, ops}, name: name)
   end
 
   def init({:ok, ops}) do
     {:ok, ops}
   end
-
-  # defp is_implemented?(handler, behaviour) do
-  #   case handler.module_info[:attributes][:behaviour] do
-  #     nil -> false
-  #     ls -> Enum.any?(ls, fn l -> l == behaviour end)
-  #   end
-  # end
-
-  # defp handle_test_execute(handler, base, u) do
-  #   if not is_nil(u) and is_implemented?(handler, base) do
-  #     ht = handler.test(u)
-  #     if ht do
-  #       handler.execute(u)
-  #     end
-  #     ht
-  #   else
-  #     false
-  #   end
-  # end
-
-  # Handle messages!
-  # defp handle_message(handler,  u) do
-  #   handle_test_execute(handler, Telex.Dsl.Message, u)
-  # end
-
-  # defp handle_callback_query(handler, u) do
-  #   handle_test_execute(handler, Telex.Dsl.CallbackQuery, u)
-  # end
-
-  # defp dispatch_update(handler, u) do
-  #   handle_test_execute(handler, Telex.Dsl.Base, u) ||
-  #     handle_message(handler, u.message) ||
-  #     handle_test_execute(handler, Telex.Dsl.EditedMessage, u.edited_message) ||
-  #     handle_test_execute(handler, Telex.Dsl.ChannelPost, u.channel_post) ||
-  #     handle_test_execute(handler, Telex.Dsl.EditedChannelPost, u.edited_channel_post) ||
-  #     handle_test_execute(handler, Telex.Dsl.InlineQuery, u.inline_query) ||
-  #     handle_test_execute(handler, Telex.Dsl.ChosenInlineResult, u.chosen_inline_result) ||
-  #     handle_callback_query(handler, u.callback_query)
-  # end
 
   # EditedMessage
   # ChannelPost
@@ -90,6 +46,9 @@ defmodule Telex.Dispatcher do
       end
     end
   end
+
+  defp extract_msg({_, _, msg}), do: msg
+  defp extract_msg({_, msg}), do: msg
 
   defp extract_info(%{message: %{text: t} = message}, s) when is_bitstring(t) do
     case handle_text(t, s) do
@@ -144,7 +103,7 @@ defmodule Telex.Dispatcher do
         # Get the update from the middlewares
         u = Map.get(extra, :update, u)
         info = extract_info(u, s)
-        spawn(fn -> handler.(info, name, extra) end)
+        spawn(fn -> call_handler(handler, info, name, extra) end)
 
       _ ->
         # Logger.info "Middleware cancel"
@@ -160,17 +119,40 @@ defmodule Telex.Dispatcher do
   end
 
   def handle_call({:message, origin, msg}, from, %{handler: handler, name: name} = s) do
-    response = handler.({:bot_message, origin, msg}, name, %{from: from})
+    response = call_handler(handler, {:bot_message, origin, msg}, name, %{from: from})
     {:reply, response, s}
   end
 
   def handle_call(msg, from, %{handler: handler, name: name} = s) do
-    response = handler.({:call, msg}, name, %{from: from})
+    response = call_handler(handler, {:call, msg}, name, %{from: from})
     {:reply, response, s}
   end
 
   def handle_cast(msg, %{handler: handler, name: name} = s) do
-    spawn(fn -> handler.({:cast, msg}, name, %{}) end)
+    spawn(fn -> call_handler(handler, {:cast, msg}, name, %{}) end)
     {:noreply, s}
+  end
+
+  defp call_handler(handler, info, name, extra) do
+    case handler.(info, name, extra) do
+      {:response, response} ->
+        msg = extract_msg(info)
+        new_response = response |> put_name_if_not(name) |> Telex.Responses.set_msg(msg)
+        Telex.Responses.execute(new_response)
+
+      _ ->
+        :noop
+    end
+  end
+
+  defp put_name_if_not(%{ops: ops} = base, name) when is_list(ops) do
+    %{base | ops: put_name_if_not(ops, name)}
+  end
+
+  defp put_name_if_not(keyword, name) do
+    case {Keyword.fetch(keyword, :token), Keyword.fetch(keyword, :bot)} do
+      {:error, :error} -> Keyword.put(keyword, :bot, name)
+      _ -> keyword
+    end
   end
 end

@@ -2,11 +2,9 @@
 # and its dependencies with the aid of the Mix.Config module.
 use Mix.Config
 
-config :maxwell,
-  default_adapter: Maxwell.Adapter.Hackney
+config :maxwell, default_adapter: Maxwell.Adapter.Hackney
 
-config :telex,
-  token: "TOKEN"
+config :telex, token: "TOKEN"
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this

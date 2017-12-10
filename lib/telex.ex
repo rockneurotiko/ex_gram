@@ -4,13 +4,12 @@ defmodule Telex do
   use Maxwell.Builder, ~w(get post)a
   import Telex.Macros
 
-  middleware(Maxwell.Middleware.BaseUrl, "https://api.telegram.org")
+  @base_url "https://api.telegram.org"
+
+  middleware(Maxwell.Middleware.BaseUrl, Telex.Config.get(:telex, :base_url, @base_url))
   middleware(Maxwell.Middleware.Headers, %{"Content-Type" => "application/json"})
   middleware(Maxwell.Middleware.Opts, connect_timeout: 5000, recv_timeout: 30000)
   middleware(Maxwell.Middleware.Json, decode_func: &Telex.custom_decode/1)
-  # middleware Maxwell.Middleware.Json
-  # middleware Telex.Middleware, Telex.Config.get(:telex, :token, "<TOKEN>")
-  # middleware Maxwell.Middleware.Logger
 
   adapter(Maxwell.Adapter.Hackney)
 
