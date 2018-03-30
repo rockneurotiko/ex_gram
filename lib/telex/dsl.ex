@@ -1,33 +1,57 @@
 defmodule Telex.Dsl do
+  alias Telex.Cnt
   alias Telex.Responses
   alias Telex.Responses.{Answer, AnswerCallback, EditInline, EditMarkup}
 
-  defmacro __using__([]) do
-    quote do
-      import Telex.Dsl
-      import Telex.Dsl.Command
-      import Telex.Dsl.Regex
-      import Telex.Dsl.Message
-      import Telex.Dsl.Update
-    end
+  def answer(cnt, text), do: answer(cnt, text, [])
+
+  def answer(cnt, text, ops) when is_binary(text) and is_list(ops) do
+    Answer |> Responses.new(%{text: text, ops: ops}) |> add_answer(cnt)
   end
 
-  @doc """
-  Test
-  """
-  defmacro dispatch(command) do
-    quote do
-      if is_nil(unquote(command).module_info[:attributes][:behaviour]) do
-        [behaviour] = unquote(command).module_info[:attributes][:behaviour]
+  def answer(cnt, m, text) when is_map(m) and is_binary(text), do: answer(cnt, m, text, [])
 
-        if not Enum.member?([Telex.Dsl.Base, Telex.Dsl.Message], behaviour) do
-          raise "The command #{inspect(unquote(command))} don't provide a valid behaviour"
-        end
-      end
-
-      @dispatchers unquote(command)
-    end
+  def answer(cnt, m, text, ops) do
+    Answer |> Responses.new(%{text: text, ops: ops}) |> Responses.set_msg(m) |> add_answer(cnt)
   end
+
+  def answer_callback(cnt, ops) do
+    AnswerCallback |> Responses.new(%{ops: ops}) |> add_answer(cnt)
+  end
+
+  def answer_callback(cnt, id, ops) do
+    AnswerCallback |> Responses.new(%{ops: ops}) |> Responses.set_msg(id) |> add_answer(cnt)
+  end
+
+  # /3
+  def edit(cnt, :inline, text) when is_binary(text), do: edit(cnt, :inline, text, [])
+
+  def edit(cnt, :markup, ops) when is_list(ops) do
+    EditMarkup |> Responses.new(%{ops: ops}) |> add_answer(cnt)
+  end
+
+  # /4
+  def edit(cnt, :inline, text, ops) when is_binary(text) do
+    EditInline |> Responses.new(%{text: text, ops: ops}) |> add_answer(cnt)
+  end
+
+  def edit(cnt, :markup, m, ops) do
+    EditMarkup |> Responses.new(%{ops: ops}) |> Responses.set_msg(m) |> add_answer(cnt)
+  end
+
+  # /5
+  def edit(cnt, :inline, m, text, ops) do
+    EditInline
+    |> Responses.new(%{text: text, ops: ops})
+    |> Responses.set_msg(m)
+    |> add_answer(cnt)
+  end
+
+  def edit(cnt, :markup, m, _, ops) do
+    edit(cnt, :markup, m, ops)
+  end
+
+  def edit(_cnt, _, _, _, _), do: raise("Wrong params")
 
   def create_inline_button(row) do
     row
@@ -86,71 +110,8 @@ defmodule Telex.Dsl do
 
   def extract_inline_id_params(%{inline_message_id: mid}), do: %{inline_message_id: mid}
 
-  def answer(text), do: answer(text, [])
-
-  def answer(text, ops) when is_binary(text) and is_list(ops) do
-    {:response, Responses.new(Answer, %{text: text, ops: ops})}
+  defp add_answer(resp, %Cnt{answers: answers} = cnt) do
+    answers = answers ++ [{:response, resp}]
+    %{cnt | answers: answers}
   end
-
-  def answer(m, text) when is_map(m) and is_binary(text), do: answer(m, text, [])
-
-  def answer(m, text, ops) do
-    response = Answer |> Responses.new(%{text: text, ops: ops}) |> Responses.set_msg(m)
-
-    {:response, response}
-  end
-
-  def answer!(m, text, ops \\ []) do
-    answer(m, text, ops) |> execute_response()
-  end
-
-  def answer_callback(ops) do
-    {:response, Responses.new(AnswerCallback, %{ops: ops})}
-  end
-
-  def answer_callback(id, ops) do
-    response = AnswerCallback |> Responses.new(%{ops: ops}) |> Responses.set_msg(id)
-    {:response, response}
-  end
-
-  def answer_callback!(id, ops) do
-    answer_callback(id, ops) |> execute_response
-  end
-
-  # /2
-  def edit(:inline, text) when is_binary(text), do: edit(:inline, text, [])
-
-  def edit(:markup, ops) when is_list(ops) do
-    {:response, Responses.new(EditMarkup, %{ops: ops})}
-  end
-
-  # /3
-  def edit(:inline, text, ops) when is_binary(text) do
-    {:response, Responses.new(EditInline, %{text: text, ops: ops})}
-  end
-
-  def edit(:markup, m, ops) do
-    response = EditMarkup |> Responses.new(%{ops: ops}) |> Responses.set_msg(m)
-    {:response, response}
-  end
-
-  # /4
-  def edit(:inline, m, text, ops) do
-    response = EditInline |> Responses.new(%{text: text, ops: ops}) |> Responses.set_msg(m)
-    {:response, response}
-  end
-
-  def edit(:markup, m, _, ops) do
-    edit(:markup, m, ops)
-  end
-
-  def edit(_, _, _, _), do: {:error, "Wrong params"}
-
-  def edit!(mode, msg, text, ops) do
-    edit(mode, msg, text, ops) |> execute_response()
-  end
-
-  defp execute_response({:response, response}), do: Responses.execute(response)
-
-  defp execute_response(other), do: other
 end

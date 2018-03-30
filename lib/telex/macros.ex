@@ -1,5 +1,5 @@
 defmodule Telex.Macros do
-  # require Logger
+  require Logger
 
   def transform_param({:{}, line, [{name, _line, nil}]}), do: {{name, line, nil}, [name, [:any]]}
 
@@ -193,6 +193,10 @@ defmodule Telex.Macros do
 
   def struct_types(initial), do: struct_types(initial, [])
 
+  def maybe_log(maybe, level \\ :debug, x)
+  def maybe_log(true, level, x), do: Logger.log(level, fn -> inspect(x) end)
+  def maybe_log(_, _, _), do: :ok
+
   defmacro model(name, params) do
     tps = struct_types(params)
 
@@ -227,7 +231,7 @@ defmodule Telex.Macros do
       analyzed
       |> Enum.map(fn {_n, types} -> types end)
       |> Enum.map(&type_to_macrot/1)
-      |> Enum.partition(&is_par_optional(&1))
+      |> Enum.split_with(&is_par_optional(&1))
 
     types_mand_spec =
       types_mand
@@ -239,7 +243,7 @@ defmodule Telex.Macros do
 
     {opt_par, mand_par} =
       analyzed
-      |> Enum.partition(&partition_optional_parameter/1)
+      |> Enum.split_with(&partition_optional_parameter/1)
 
     opt_par_types = opt_par |> Enum.map(fn {_n, t} -> {Enum.at(t, 0), Enum.at(t, 1)} end)
     opt_par = opt_par |> Enum.map(fn {_n, t} -> Enum.at(t, 0) end)
@@ -325,6 +329,8 @@ defmodule Telex.Macros do
               token
           end
 
+        debug = Keyword.get(ops, :debug, false)
+
         # Remove not valids
         ops = Keyword.take(ops, unquote(opt_par))
 
@@ -393,10 +399,31 @@ defmodule Telex.Macros do
 
           path = "/bot#{token}/#{unquote(name)}"
           # IO.puts("Path: #{inspect path}\nbody: #{inspect body}")
-          new()
-          |> put_path(path)
-          |> lambda_putbody.()
-          |> lambda_callverb.()
+
+          result =
+            new()
+            |> put_path(path)
+            |> lambda_putbody.()
+            |> lambda_callverb.()
+
+          case result do
+            {:ok, %Maxwell.Conn{status: status} = new_conn} when status in 200..299 ->
+              maybe_log(debug, new_conn)
+              parsed = new_conn |> get_resp_body(:result) |> unquote(result_transformer)
+              {:ok, parsed}
+
+            {:ok, new_conn} ->
+              error = Maxwell.Error.exception({__MODULE__, :response_status_not_match, new_conn})
+              {:error, error}
+
+            {:error, reason, new_conn} ->
+              error = Maxwell.Error.exception({__MODULE__, reason, new_conn})
+              {:error, error}
+
+            {:error, reason} ->
+              error = Maxwell.Error.exception({__MODULE__, reason, result})
+              {:error, error}
+          end
         end
       end
 
@@ -408,20 +435,9 @@ defmodule Telex.Macros do
       def unquote(fname_exception)(unquote_splicing(mand_par), ops \\ []) do
         # TODO use own errors
         case unquote(fname)(unquote_splicing(mand_par), ops) do
-          {:ok, %Maxwell.Conn{status: status} = new_conn} when status in 200..299 ->
-            new_conn
-
-          {:ok, new_conn} ->
-            raise Maxwell.Error, {__MODULE__, :response_status_not_match, new_conn}
-
-          {:error, reason, new_conn} ->
-            raise Maxwell.Error, {__MODULE__, reason, new_conn}
-
-          {:error, reason} ->
-            raise reason
+          {:ok, result} -> result
+          {:error, error} -> raise error
         end
-        |> get_resp_body(:result)
-        |> unquote(result_transformer)
       end
     end
   end

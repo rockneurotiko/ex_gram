@@ -6,22 +6,22 @@ defmodule Telex.Bot do
         _ -> raise "name parameter is mandatory"
       end
 
-    commands =
-      Keyword.get(ops, :commands, []) |> Enum.map(fn [command: _c, name: _n] = t -> t end)
+    username = Keyword.fetch(ops, :username)
 
-    # Check commands are [command: "", name: ""]
-    regexes =
-      Keyword.get(ops, :regex, [])
-      |> Enum.map(fn [regex: r, name: n] -> [regex: Regex.compile!(r), name: n] end)
+    commands = quote do: commands()
 
-    # Check regex are [regex: "", name: ""]
+    regexes = quote do: regexes()
 
-    middlewares = Keyword.get(ops, :middlewares, [])
+    middlewares = quote do: middlewares()
 
-    quote location: :keep do
+    # quote location: :keep do
+    quote do
       use Supervisor
+      use Telex.Middleware.Builder
 
-      @behaviour Telex.Dsl.Handler
+      import Telex.Dsl
+
+      @behaviour Telex.Handler
 
       defp name(), do: unquote(name)
 
@@ -30,7 +30,6 @@ defmodule Telex.Bot do
       end
 
       defp start_link(m, token, name) do
-        # Use name too!
         Supervisor.start_link(__MODULE__, {:ok, m, token, name}, name: name)
       end
 
@@ -41,7 +40,6 @@ defmodule Telex.Bot do
           case updates_method do
             :webhook ->
               raise "Not implemented yet"
-              Telex.Webhook.Worker
 
             :noup ->
               Telex.Noup
@@ -53,19 +51,22 @@ defmodule Telex.Bot do
               other
           end
 
+        bot_info = maybe_fetch_bot(unquote(username), token)
+
         dispatcher_name = String.to_atom(Atom.to_string(name) <> "_dispatcher")
 
+        dispatcher_opts = %Telex.Dispatcher{
+          name: name,
+          bot_info: bot_info,
+          dispatcher_name: dispatcher_name,
+          commands: unquote(commands),
+          regex: unquote(regexes),
+          middlewares: unquote(middlewares),
+          handler: &handle/2
+        }
+
         children = [
-          worker(Telex.Dispatcher, [
-            %{
-              name: name,
-              dispatcher_name: dispatcher_name,
-              commands: unquote(commands),
-              regex: unquote(regexes),
-              middlewares: unquote(middlewares),
-              handler: &handle/3
-            }
-          ]),
+          worker(Telex.Dispatcher, [dispatcher_opts]),
           worker(updates_worker, [{:bot, dispatcher_name, :token, token}])
         ]
 
@@ -74,6 +75,17 @@ defmodule Telex.Bot do
 
       def message(from, message) do
         GenServer.call(name(), {:message, from, message})
+      end
+
+      defp maybe_fetch_bot(username, _token) when is_binary(username),
+        do: %Telex.Model.User{username: username, is_bot: true}
+
+      defp maybe_fetch_bot(_username, token) do
+        with {:ok, bot} <- Telex.get_me(token: token) do
+          bot
+        else
+          _ -> nil
+        end
       end
     end
   end
