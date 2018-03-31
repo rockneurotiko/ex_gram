@@ -110,8 +110,44 @@ defmodule Telex.Dsl do
 
   def extract_inline_id_params(%{inline_message_id: mid}), do: %{inline_message_id: mid}
 
+  def send_answers(%Cnt{halted: true} = cnt), do: cnt
+
+  def send_answers(%Cnt{answers: answers, name: name, halted: false} = cnt) do
+    msg = extract_msg(cnt)
+    send_all_answers(answers, name, msg)
+    %{cnt | halted: true}
+  end
+
   defp add_answer(resp, %Cnt{answers: answers} = cnt) do
     answers = answers ++ [{:response, resp}]
     %{cnt | answers: answers}
+  end
+
+  defp extract_msg(%Cnt{update: %Telex.Model.Update{} = u}) do
+    u = Map.from_struct(u)
+    {_, msg} = Enum.find(u, fn {_, m} -> is_map(m) and not is_nil(m) end)
+    msg
+  end
+
+  defp extract_msg(_), do: nil
+
+  defp send_all_answers([], _, _), do: :ok
+
+  defp send_all_answers([{:response, response} | answers], name, msg) do
+    response |> put_name_if_not(name) |> Telex.Responses.set_msg(msg) |> Telex.Responses.execute()
+    send_all_answers(answers, name, msg)
+  end
+
+  defp send_all_answers([_ | answers], name, msg), do: send_all_answers(answers, name, msg)
+
+  defp put_name_if_not(%{ops: ops} = base, name) when is_list(ops) do
+    %{base | ops: put_name_if_not(ops, name)}
+  end
+
+  defp put_name_if_not(keyword, name) do
+    case {Keyword.fetch(keyword, :token), Keyword.fetch(keyword, :bot)} do
+      {:error, :error} -> Keyword.put(keyword, :bot, name)
+      _ -> keyword
+    end
   end
 end

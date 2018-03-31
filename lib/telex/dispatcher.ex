@@ -156,14 +156,6 @@ defmodule Telex.Dispatcher do
     end
   end
 
-  defp extract_msg(%Cnt{update: %Telex.Model.Update{} = u}) do
-    u = Map.from_struct(u)
-    {_, msg} = Enum.find(u, fn {_, m} -> is_map(m) and not is_nil(m) end)
-    msg
-  end
-
-  defp extract_msg(_), do: nil
-
   defp extract_info(%Cnt{update: %{message: %{text: t} = message}} = cnt) when is_bitstring(t) do
     case handle_text(t, cnt) do
       {:command, key, text} -> {:command, key, %{message | text: text}}
@@ -213,35 +205,10 @@ defmodule Telex.Dispatcher do
   defp call_handler(handler, info, cnt) do
     case handler.(info, cnt) do
       %Cnt{} = cnt ->
-        send_answers(cnt)
+        Telex.Dsl.send_answers(cnt)
 
       _ ->
         :noop
-    end
-  end
-
-  defp send_answers(%Cnt{answers: answers, name: name, halted: false} = cnt) do
-    msg = extract_msg(cnt)
-    send_all_answers(answers, name, msg)
-  end
-
-  defp send_all_answers([], _, _), do: :ok
-
-  defp send_all_answers([{:response, response} | answers], name, msg) do
-    response |> put_name_if_not(name) |> Telex.Responses.set_msg(msg) |> Telex.Responses.execute()
-    send_all_answers(answers, name, msg)
-  end
-
-  defp send_all_answers([_ | answers], name, msg), do: send_all_answers(answers, name, msg)
-
-  defp put_name_if_not(%{ops: ops} = base, name) when is_list(ops) do
-    %{base | ops: put_name_if_not(ops, name)}
-  end
-
-  defp put_name_if_not(keyword, name) do
-    case {Keyword.fetch(keyword, :token), Keyword.fetch(keyword, :bot)} do
-      {:error, :error} -> Keyword.put(keyword, :bot, name)
-      _ -> keyword
     end
   end
 end
