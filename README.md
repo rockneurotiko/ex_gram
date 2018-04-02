@@ -1,8 +1,8 @@
 # Telex
 
-[![Hex.pm](https://img.shields.io/hexpm/v/telex.svg)](http://hex.pm/packages/telex)
-[![Hex.pm](https://img.shields.io/hexpm/dt/telex.svg)](https://hex.pm/packages/telex)
-[![Hex.pm](https://img.shields.io/hexpm/dw/telex.svg)](https://hex.pm/packages/telex)
+<!-- [![Hex.pm](https://img.shields.io/hexpm/v/telex.svg)](http://hex.pm/packages/telex) -->
+<!-- [![Hex.pm](https://img.shields.io/hexpm/dt/telex.svg)](https://hex.pm/packages/telex) -->
+<!-- [![Hex.pm](https://img.shields.io/hexpm/dw/telex.svg)](https://hex.pm/packages/telex) -->
 [![Inline docs](http://inch-ci.org/github/rockneurotiko/telex.svg)](http://inch-ci.org/github/rockneurotiko/telex)
 
 Telex is a library to build Telegram Bots, you can use the low-level methods and models, or use the really opinionated framework included.
