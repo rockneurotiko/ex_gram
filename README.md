@@ -174,7 +174,7 @@ Note: Only one of `token` and `bot` must be used.
 
 ### How it's made?
 
-There are a python script called `extractor.py`, that scrapes the Telegram Bot API documentation and prints to the stdout the lines needed to create all the methods and models, this auto generated lines uses two macros defined on `lib/telex/macros.ex`: `method` and `model`.
+There is a python script called `extractor.py`, that scrapes the Telegram Bot API documentation and prints to the stdout the lines needed to create all the methods and models, this auto generated lines uses two macros defined on `lib/telex/macros.ex`: `method` and `model`.
 
 #### Custom types defined
 
