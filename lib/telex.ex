@@ -366,7 +366,11 @@ defmodule Telex do
   method(
     :post,
     "pinChatMessage",
-    [{chat_id, [:integer, :string]}, {message_id, [:integer]}, {disable_notification, [:boolean]}],
+    [
+      {chat_id, [:integer, :string]},
+      {message_id, [:integer]},
+      {disable_notification, [:boolean]}
+    ],
     true
   )
 
