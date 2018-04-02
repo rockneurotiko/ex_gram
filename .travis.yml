@@ -1,0 +1,16 @@
+language: elixir
+elixir:
+  - 1.6
+otp_release:
+  - 20.2
+cache:
+  directories:
+    - _build
+    - deps
+script:
+  - mix format --check-formatted || travis_terminate 1
+  - mix format --check-equivalent || travis_terminate 1
+  - mix test || travis_terminate 1
+after_script:
+  - MIX_ENV=docs mix deps.get
+  - MIX_ENV=docs mix inch.report

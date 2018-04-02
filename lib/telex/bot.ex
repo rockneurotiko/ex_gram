@@ -25,8 +25,8 @@ defmodule Telex.Bot do
 
       defp name(), do: unquote(name)
 
-      def start_link(t, token \\ nil) do
-        start_link(t, token, unquote(name))
+      def start_link(m, token \\ nil) do
+        start_link(m, token, unquote(name))
       end
 
       defp start_link(m, token, name) do

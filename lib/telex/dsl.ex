@@ -56,8 +56,8 @@ defmodule Telex.Dsl do
   def create_inline_button(row) do
     row
     |> Enum.map(fn ops ->
-         Map.merge(%Telex.Model.InlineKeyboardButton{}, Enum.into(ops, %{}))
-       end)
+      Map.merge(%Telex.Model.InlineKeyboardButton{}, Enum.into(ops, %{}))
+    end)
   end
 
   def create_inline(data \\ [[]]) do

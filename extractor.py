@@ -178,9 +178,14 @@ for h4 in h4s:
 
 
 debug("----------METHODS-----------\n")
+print("# AUTO GENERATED")
+print("# Methods")
 print("\n\n".join(methods))
 debug("{} methods".format(len(methods)))
 
 debug("----------MODELS-----------\n")
-print("\n\n".join(models))
+print("# Models")
+print("\ndefmodule Model do")
+print("\n\n  ".join(models))
+print("end")
 debug("{} models".format(len(models)))

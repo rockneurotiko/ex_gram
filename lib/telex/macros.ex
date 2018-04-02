@@ -132,17 +132,17 @@ defmodule Telex.Macros do
     m
     |> Enum.filter(fn {_key, value} -> value != nil end)
     |> Enum.map(fn {key, value} ->
-         cond do
-           is_list(value) ->
-             {key, Enum.map(value, &filter_map/1)}
+      cond do
+        is_list(value) ->
+          {key, Enum.map(value, &filter_map/1)}
 
-           is_map(value) ->
-             {key, filter_map(value)}
+        is_map(value) ->
+          {key, filter_map(value)}
 
-           true ->
-             {key, value}
-         end
-       end)
+        true ->
+          {key, value}
+      end
+    end)
     |> Enum.into(%{})
   end
 
@@ -301,20 +301,27 @@ defmodule Telex.Macros do
       |> Enum.map(fn {_n, types} -> types end)
       |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &(&1 == :file)) end)
       |> Enum.map(fn
-           [n, _t] -> {nid(n), Atom.to_string(n)}
-           [n, _t, :optional] -> n
-         end)
+        [n, _t] -> {nid(n), Atom.to_string(n)}
+        [n, _t, :optional] -> n
+      end)
+
+    have_multipart = Enum.count(multi_full) > 0
 
     quote do
       # Safe method
+      @doc """
+      TODO: Do documentation
+      """
       @spec unquote(fname)(unquote_splicing(types_mand_spec), ops :: unquote(types_opt_spec)) ::
-              {:ok, %Maxwell.Conn{}}
-              | {:error, String.t(), %Maxwell.Conn{}}
-              | {:error, String.t()}
+              {:ok, unquote(returned)}
+              | {:error, Maxwell.Error.t()}
       def unquote(fname)(unquote_splicing(mand_par), ops \\ []) do
+        check_params = Keyword.get(ops, :check_params)
+
         checks =
-          Enum.map(unquote(types_mand), &check_all_types_ignore_opt/1)
-          |> Enum.all?()
+          check_params and
+            Enum.map(unquote(types_mand), &check_all_types_ignore_opt/1)
+            |> Enum.all?()
 
         token =
           case {Keyword.get(ops, :token), Keyword.get(ops, :bot)} do
@@ -335,13 +342,14 @@ defmodule Telex.Macros do
         ops = Keyword.take(ops, unquote(opt_par))
 
         ops_checks =
-          ops
-          |> Enum.map(fn {key, value} ->
-               check_all_types({value, Keyword.get(unquote(opt_par_types), key)})
-             end)
-          |> Enum.all?()
+          check_params or
+            ops
+            |> Enum.map(fn {key, value} ->
+              check_all_types({value, Keyword.get(unquote(opt_par_types), key)})
+            end)
+            |> Enum.all?()
 
-        if !checks || !ops_checks do
+        if check_params and (!checks || !ops_checks) do
           {
             :error,
             "Some invariant of the method #{unquote(name)} was not succesful, check the documentation"
@@ -353,7 +361,7 @@ defmodule Telex.Macros do
             |> Enum.into(%{})
 
           body =
-            if Enum.count(unquote(multi_full)) > 0 do
+            if unquote(have_multipart) do
               # It may have a file to upload, let's check it!
 
               # Extract the value and part name (it can be from parameter or ops)
@@ -376,8 +384,8 @@ defmodule Telex.Macros do
                     |> Map.delete(String.to_atom(partname))
                     |> Map.to_list()
                     |> Enum.map(fn {name, value} ->
-                         {Atom.to_string(name), to_size_string(value)}
-                       end)
+                      {Atom.to_string(name), to_size_string(value)}
+                    end)
 
                   parts = [fpath | restparts]
 
@@ -428,6 +436,9 @@ defmodule Telex.Macros do
       end
 
       # Unsafe method
+      @doc """
+      TODO: Do documentation
+      """
       @spec unquote(fname_exception)(
               unquote_splicing(types_mand_spec),
               ops :: unquote(types_opt_spec)

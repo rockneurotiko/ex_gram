@@ -2,12 +2,14 @@ defmodule Telex.Mixfile do
   use Mix.Project
 
   def project do
-    [app: :telex,
-     version: "0.3.0-rc5",
-     elixir: "~> 1.4",
-     build_embedded: Mix.env == :prod,
-     start_permanent: Mix.env == :prod,
-     deps: deps()]
+    [
+      app: :telex,
+      version: "0.3.0-rc5",
+      elixir: "~> 1.4",
+      build_embedded: Mix.env() == :prod,
+      start_permanent: Mix.env() == :prod,
+      deps: deps()
+    ]
   end
 
   # Configuration for the OTP application
@@ -32,7 +34,8 @@ defmodule Telex.Mixfile do
       {:poison, "~> 2.1"},
       {:maxwell, "~> 2.2.1"},
       {:hackney, "~> 1.8.0"},
-      {:dialyxir, "~> 0.5.0", only: [:dev], runtime: false}
+      {:dialyxir, "~> 0.5.0", only: [:dev], runtime: false},
+      {:inch_ex, only: :docs}
     ]
   end
 end
