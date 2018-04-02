@@ -148,7 +148,7 @@ Telex.Model.InlineKeyboardMarkup.t()
 ) :: {:ok, Telex.Model.Message.t()} | {:error, Maxwell.Error.t()}
 ```
 
-All the methods have their unsafe brother with the name banged(!) (`get_me!` for the `get_me` method) that instead of returning `{:ok, model} | {:error, Maxwell.Error}` will return `model` and raise if there are some error.
+All the methods have their unsafe brother with the name banged(!) (`get_me!` for the `get_me` method) that instead of returning `{:ok, model} | {:error, Maxwell.Error}` will return `model` and raise if there is some error.
 
 For example, the method "getUpdates" from the documentation will be `get_updates`, and this one takes 4 optional parameters, we'll use on the example the parameters `offset` and `limit`:
 
@@ -192,7 +192,7 @@ Parameters:
 1. Name of the model
 2. Properties of the model, it's a list of tuples, where the first parameter is the name of the property, and the second one is the type.
 
-This macro are the simple one, just create a module with the first name passed and use the params to create the struct and typespecs.
+This macro is the simple one, just create a module with the first name passed and use the params to create the struct and typespecs.
 
 #### Method macro
 
@@ -215,7 +215,7 @@ The Telex framework use updates worker to "receive" the updates and send them to
 
 But you can implement your own worker to retrieve the updates as you want!
 
-The only specs are that `start_link` will receive `{:bot, <pid>, :token, <token>}`, the PID are where you should send the updates, and the token are that specific token so your worker will be able to use it to retrieve the updates.
+The only specs are that `start_link` will receive `{:bot, <pid>, :token, <token>}`, the PID is where you should send the updates, and the token is that specific token so your worker will be able to use it to retrieve the updates.
 
 Whenever you have and update `Telex.Model.Update`, send it to the bot's PID like: `{:update, <update>}` with `Genserver.call`.
 
