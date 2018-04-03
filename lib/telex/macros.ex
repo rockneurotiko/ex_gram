@@ -1,4 +1,6 @@
 defmodule Telex.Macros do
+  @adapter Application.get_env(:telex, :adapter) || Telex.Adapter.Http
+
   def transform_param({:{}, line, [{name, _line, nil}]}), do: {{name, line, nil}, [name, [:any]]}
 
   def transform_param({:{}, line, [{name, _line, nil}, types, :optional]}),
@@ -294,7 +296,7 @@ defmodule Telex.Macros do
               {:ok, unquote(returned)}
               | {:error, Telex.Error.t()}
       def unquote(fname)(unquote_splicing(mand_par), ops \\ []) do
-        adapter = Keyword.get(ops, :adapter, Telex.Adapter.Http)
+        adapter = Keyword.get(ops, :adapter, unquote(@adapter))
         check_params = Keyword.get(ops, :check_params, true)
 
         checks =
