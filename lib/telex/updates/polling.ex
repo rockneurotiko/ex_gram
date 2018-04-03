@@ -1,4 +1,4 @@
-defmodule Telex.Updates.Worker do
+defmodule Telex.Updates.Polling do
   use GenServer
   # require Logger
 

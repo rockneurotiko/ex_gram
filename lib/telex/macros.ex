@@ -1,6 +1,4 @@
 defmodule Telex.Macros do
-  require Logger
-
   def transform_param({:{}, line, [{name, _line, nil}]}), do: {{name, line, nil}, [name, [:any]]}
 
   def transform_param({:{}, line, [{name, _line, nil}, types, :optional]}),
@@ -132,17 +130,17 @@ defmodule Telex.Macros do
     m
     |> Enum.filter(fn {_key, value} -> value != nil end)
     |> Enum.map(fn {key, value} ->
-      cond do
-        is_list(value) ->
-          {key, Enum.map(value, &filter_map/1)}
+         cond do
+           is_list(value) ->
+             {key, Enum.map(value, &filter_map/1)}
 
-        is_map(value) ->
-          {key, filter_map(value)}
+           is_map(value) ->
+             {key, filter_map(value)}
 
-        true ->
-          {key, value}
-      end
-    end)
+           true ->
+             {key, value}
+         end
+       end)
     |> Enum.into(%{})
   end
 
@@ -158,16 +156,6 @@ defmodule Telex.Macros do
 
   def encode(x) when is_map(x) or is_list(x), do: Poison.encode!(x)
   def encode(x), do: x
-
-  def encode_body(body) do
-    if is_map(body) do
-      body
-      |> Enum.map(fn {key, value} -> {key, encode(value)} end)
-      |> Enum.into(%{})
-    else
-      body
-    end
-  end
 
   def struct_types([], acc), do: acc
 
@@ -192,10 +180,6 @@ defmodule Telex.Macros do
   end
 
   def struct_types(initial), do: struct_types(initial, [])
-
-  def maybe_log(maybe, level \\ :debug, x)
-  def maybe_log(true, level, x), do: Logger.log(level, fn -> inspect(x) end)
-  def maybe_log(_, _, _), do: :ok
 
   defmacro model(name, params) do
     tps = struct_types(params)
@@ -290,33 +274,28 @@ defmodule Telex.Macros do
           returned
       end
 
-    putbody =
-      case verb do
-        :post -> :put_req_body
-        _ -> :put_query_string
-      end
-
     multi_full =
       analyzed
       |> Enum.map(fn {_n, types} -> types end)
       |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &(&1 == :file)) end)
       |> Enum.map(fn
-        [n, _t] -> {nid(n), Atom.to_string(n)}
-        [n, _t, :optional] -> n
-      end)
+           [n, _t] -> {nid(n), Atom.to_string(n)}
+           [n, _t, :optional] -> n
+         end)
 
     have_multipart = Enum.count(multi_full) > 0
 
-    quote do
+    quote location: :keep do
       # Safe method
       @doc """
       TODO: Do documentation
       """
       @spec unquote(fname)(unquote_splicing(types_mand_spec), ops :: unquote(types_opt_spec)) ::
               {:ok, unquote(returned)}
-              | {:error, Maxwell.Error.t()}
+              | {:error, Telex.Error.t()}
       def unquote(fname)(unquote_splicing(mand_par), ops \\ []) do
-        check_params = Keyword.get(ops, :check_params)
+        adapter = Keyword.get(ops, :adapter, Telex.Adapter.Http)
+        check_params = Keyword.get(ops, :check_params, true)
 
         checks =
           check_params and
@@ -345,8 +324,8 @@ defmodule Telex.Macros do
           check_params or
             ops
             |> Enum.map(fn {key, value} ->
-              check_all_types({value, Keyword.get(unquote(opt_par_types), key)})
-            end)
+                 check_all_types({value, Keyword.get(unquote(opt_par_types), key)})
+               end)
             |> Enum.all?()
 
         if check_params and (!checks || !ops_checks) do
@@ -384,8 +363,8 @@ defmodule Telex.Macros do
                     |> Map.delete(String.to_atom(partname))
                     |> Map.to_list()
                     |> Enum.map(fn {name, value} ->
-                      {Atom.to_string(name), to_size_string(value)}
-                    end)
+                         {Atom.to_string(name), to_size_string(value)}
+                       end)
 
                   parts = [fpath | restparts]
 
@@ -399,37 +378,16 @@ defmodule Telex.Macros do
               body
             end
 
-          lambda_putbody = fn x ->
-            apply(Maxwell.Conn, unquote(putbody), [x, encode_body(body)])
-          end
-
-          lambda_callverb = fn x -> apply(Telex, unquote(verb), [x]) end
-
           path = "/bot#{token}/#{unquote(name)}"
           # IO.puts("Path: #{inspect path}\nbody: #{inspect body}")
 
-          result =
-            new()
-            |> put_path(path)
-            |> lambda_putbody.()
-            |> lambda_callverb.()
+          result = adapter.request(unquote(verb), path, body)
 
           case result do
-            {:ok, %Maxwell.Conn{status: status} = new_conn} when status in 200..299 ->
-              maybe_log(debug, new_conn)
-              parsed = new_conn |> get_resp_body(:result) |> unquote(result_transformer)
-              {:ok, parsed}
+            {:ok, body} ->
+              body |> unquote(result_transformer)
 
-            {:ok, new_conn} ->
-              error = Maxwell.Error.exception({__MODULE__, :response_status_not_match, new_conn})
-              {:error, error}
-
-            {:error, reason, new_conn} ->
-              error = Maxwell.Error.exception({__MODULE__, reason, new_conn})
-              {:error, error}
-
-            {:error, reason} ->
-              error = Maxwell.Error.exception({__MODULE__, reason, result})
+            {:error, error} ->
               {:error, error}
           end
         end

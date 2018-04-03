@@ -1,4 +1,4 @@
-defmodule Telex.Noup do
+defmodule Telex.Updates.Noup do
   use GenServer
   require Logger
 

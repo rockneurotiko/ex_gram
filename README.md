@@ -211,7 +211,7 @@ This methods do some stuff, like retrieving the token, check the parameters type
 
 ## Creating your own updates worker
 
-The Telex framework use updates worker to "receive" the updates and send them to the dispatcher, this is the first parameter that you provide to your bot, the ones currently are `:polling` that goes to the module `Telex.Updates.Worker` for polling updates and `:noup` that uses `Telex.NoUp` that do nothing (great for some offline testing). Sadly the webhook and test worker are on the way.
+The Telex framework use updates worker to "receive" the updates and send them to the dispatcher, this is the first parameter that you provide to your bot, the ones currently are `:polling` that goes to the module `Telex.Updates.Polling` for polling updates and `:noup` that uses `Telex.Updates.NoUp` that do nothing (great for some offline testing). Sadly the webhook and test worker are on the way.
 
 But you can implement your own worker to retrieve the updates as you want!
 
@@ -219,4 +219,4 @@ The only specs are that `start_link` will receive `{:bot, <pid>, :token, <token>
 
 Whenever you have and update `Telex.Model.Update`, send it to the bot's PID like: `{:update, <update>}` with `Genserver.call`.
 
-You can see the code of `Telex.Updates.Worker`.
+You can see the code of `Telex.Updates.Polling`.

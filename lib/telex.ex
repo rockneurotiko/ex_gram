@@ -15,6 +15,9 @@ defmodule Telex do
 
   def custom_decode(x), do: Poison.Parser.parse(x, keys: :atoms)
 
+  def new_conn(), do: new()
+  def conn_put_path(conn, path), do: put_path(conn, path)
+
   def start_link() do
     Supervisor.start_link(__MODULE__, :ok)
   end

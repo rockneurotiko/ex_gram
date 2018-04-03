@@ -42,10 +42,13 @@ defmodule Telex.Bot do
               raise "Not implemented yet"
 
             :noup ->
-              Telex.Noup
+              Telex.Updates.Noup
 
             :polling ->
-              Telex.Updates.Worker
+              Telex.Updates.Polling
+
+            :test ->
+              Telex.Updates.Test
 
             other ->
               other
