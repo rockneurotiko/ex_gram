@@ -4,6 +4,7 @@
 <!-- [![Hex.pm](https://img.shields.io/hexpm/dt/telex.svg)](https://hex.pm/packages/telex) -->
 <!-- [![Hex.pm](https://img.shields.io/hexpm/dw/telex.svg)](https://hex.pm/packages/telex) -->
 [![Inline docs](http://inch-ci.org/github/rockneurotiko/telex.svg)](http://inch-ci.org/github/rockneurotiko/telex)
+[![Build Status](https://travis-ci.org/rockneurotiko/telex.svg?branch=master)](https://travis-ci.org/rockneurotiko/telex)
 
 Telex is a library to build Telegram Bots, you can use the low-level methods and models, or use the really opinionated framework included.
 
