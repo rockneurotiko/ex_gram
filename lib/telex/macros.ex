@@ -130,17 +130,17 @@ defmodule Telex.Macros do
     m
     |> Enum.filter(fn {_key, value} -> value != nil end)
     |> Enum.map(fn {key, value} ->
-         cond do
-           is_list(value) ->
-             {key, Enum.map(value, &filter_map/1)}
+      cond do
+        is_list(value) ->
+          {key, Enum.map(value, &filter_map/1)}
 
-           is_map(value) ->
-             {key, filter_map(value)}
+        is_map(value) ->
+          {key, filter_map(value)}
 
-           true ->
-             {key, value}
-         end
-       end)
+        true ->
+          {key, value}
+      end
+    end)
     |> Enum.into(%{})
   end
 
@@ -279,9 +279,9 @@ defmodule Telex.Macros do
       |> Enum.map(fn {_n, types} -> types end)
       |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &(&1 == :file)) end)
       |> Enum.map(fn
-           [n, _t] -> {nid(n), Atom.to_string(n)}
-           [n, _t, :optional] -> n
-         end)
+        [n, _t] -> {nid(n), Atom.to_string(n)}
+        [n, _t, :optional] -> n
+      end)
 
     have_multipart = Enum.count(multi_full) > 0
 
@@ -324,8 +324,8 @@ defmodule Telex.Macros do
           check_params or
             ops
             |> Enum.map(fn {key, value} ->
-                 check_all_types({value, Keyword.get(unquote(opt_par_types), key)})
-               end)
+              check_all_types({value, Keyword.get(unquote(opt_par_types), key)})
+            end)
             |> Enum.all?()
 
         if check_params and (!checks || !ops_checks) do
@@ -363,8 +363,8 @@ defmodule Telex.Macros do
                     |> Map.delete(String.to_atom(partname))
                     |> Map.to_list()
                     |> Enum.map(fn {name, value} ->
-                         {Atom.to_string(name), to_size_string(value)}
-                       end)
+                      {Atom.to_string(name), to_size_string(value)}
+                    end)
 
                   parts = [fpath | restparts]
 

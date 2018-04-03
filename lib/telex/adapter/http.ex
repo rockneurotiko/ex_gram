@@ -69,17 +69,17 @@ defmodule Telex.Adapter.Http do
     m
     |> Enum.filter(fn {_key, value} -> not is_nil(value) end)
     |> Enum.map(fn {key, value} ->
-         cond do
-           is_list(value) ->
-             {key, Enum.map(value, &filter_map/1)}
+      cond do
+        is_list(value) ->
+          {key, Enum.map(value, &filter_map/1)}
 
-           is_map(value) ->
-             {key, filter_map(value)}
+        is_map(value) ->
+          {key, filter_map(value)}
 
-           true ->
-             {key, value}
-         end
-       end)
+        true ->
+          {key, value}
+      end
+    end)
     |> Enum.into(%{})
   end
 
