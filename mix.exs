@@ -29,7 +29,7 @@ defmodule ExGram.Mixfile do
 
   defp package do
     [
-      maintainers: ["Rock Neurotiko / Miguel Garcia"],
+      maintainers: ["Miguel Garcia / Rock Neurotiko"],
       licenses: ["Beerware"],
       links: %{"GitHub" => "https://github.com/rockneurotiko/ex_gram"}
     ]
