@@ -6,6 +6,7 @@ defmodule ExGram.Mixfile do
       app: :ex_gram,
       version: "0.5.0-rc2",
       package: package(),
+      description: description(),
       source_url: "https://github.com/rockneurotiko/ex_gram",
       elixir: "~> 1.4",
       elixirc_paths: elixirc_paths(Mix.env()),
@@ -25,6 +26,10 @@ defmodule ExGram.Mixfile do
   def application do
     # Don't need to write all applications thanks of new feature on elixir 1.4
     [extra_applications: [:logger]]
+  end
+
+  defp description do
+    "Telegram Bot API low level and framework"
   end
 
   defp package do
