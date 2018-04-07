@@ -74,28 +74,28 @@ def extract_table(table):
 
 def good_type(t):
     t = t.strip(".").strip(",").strip()
-    if t == "Telex.Model.Int":
+    if t == "ExGram.Model.Int":
         return "integer"
 
-    if t == "Telex.Model.String":
+    if t == "ExGram.Model.String":
         return "String.t()"
 
-    if t.lower() in ["telex.model.true"]:
+    if t.lower() in ["ex_gram.model.true"]:
         return "true"
 
     return t
 
 def extract_return_type(text):
     if "Array of Update objects is returned" in text:
-        return "[Telex.Model.Update]"
+        return "[ExGram.Model.Update]"
     if "File object is returned" in text:
-        return "Telex.Model.File"
+        return "ExGram.Model.File"
     if " is returned" in text:
-        return "Telex.Model." + text.split(" is returned")[0].split()[-1]
+        return "ExGram.Model." + text.split(" is returned")[0].split()[-1]
     if "returns an Array of GameHighScore" in text:
-        return "[Telex.Model.GameHighScore]"
+        return "[ExGram.Model.GameHighScore]"
     if "returns an Array of ChatMember" in text:
-        return "[Telex.Model.ChatMember]"
+        return "[ExGram.Model.ChatMember]"
 
     ts = ["Returns basic information about the bot in form of a ",
           "returns the edited ",
@@ -106,7 +106,7 @@ def extract_return_type(text):
           "returns "]
     for x in ts:
         if x in text:
-            return "Telex.Model." + text.split(x)[1].split()[0]
+            return "ExGram.Model." + text.split(x)[1].split()[0]
 
     return ":any"
     # x is returned

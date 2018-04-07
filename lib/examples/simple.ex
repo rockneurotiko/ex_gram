@@ -2,11 +2,11 @@ defmodule Examples.Simple do
   @bot :simple_bot
   def bot(), do: @bot
 
-  use Telex.Bot, name: @bot
+  use ExGram.Bot, name: @bot
 
   command("echo")
 
-  middleware(Telex.Middleware.IgnoreUsername)
+  middleware(ExGram.Middleware.IgnoreUsername)
 
   require Logger
 

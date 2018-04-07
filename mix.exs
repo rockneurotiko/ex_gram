@@ -1,10 +1,10 @@
-defmodule Telex.Mixfile do
+defmodule ExGram.Mixfile do
   use Mix.Project
 
   def project do
     [
-      app: :telex,
-      version: "0.3.0-rc5",
+      app: :ex_gram,
+      version: "0.5.0-rc2",
       elixir: "~> 1.4",
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,

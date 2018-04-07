@@ -1,22 +1,25 @@
-# Telex
+# ExGram
 
-<!-- [![Hex.pm](https://img.shields.io/hexpm/v/telex.svg)](http://hex.pm/packages/telex) -->
-<!-- [![Hex.pm](https://img.shields.io/hexpm/dt/telex.svg)](https://hex.pm/packages/telex) -->
-<!-- [![Hex.pm](https://img.shields.io/hexpm/dw/telex.svg)](https://hex.pm/packages/telex) -->
-[![Inline docs](http://inch-ci.org/github/rockneurotiko/telex.svg)](http://inch-ci.org/github/rockneurotiko/telex)
-[![Build Status](https://travis-ci.org/rockneurotiko/telex.svg?branch=master)](https://travis-ci.org/rockneurotiko/telex)
+<!-- [![Hex.pm](https://img.shields.io/hexpm/v/ex_gram.svg)](http://hex.pm/packages/ex_gram) -->
+<!-- [![Hex.pm](https://img.shields.io/hexpm/dt/ex_gram.svg)](https://hex.pm/packages/ex_gram) -->
+<!-- [![Hex.pm](https://img.shields.io/hexpm/dw/ex_gram.svg)](https://hex.pm/packages/ex_gram) -->
+[![Inline docs](http://inch-ci.org/github/rockneurotiko/ex_gram.svg)](http://inch-ci.org/github/rockneurotiko/ex_gram)
+[![Build Status](https://travis-ci.org/rockneurotiko/ex_gram.svg?branch=master)](https://travis-ci.org/rockneurotiko/ex_gram)
 
-Telex is a library to build Telegram Bots, you can use the low-level methods and models, or use the really opinionated framework included.
+ExGram is a library to build Telegram Bots, you can use the low-level methods and models, or use the really opinionated framework included.
 
 ## Installation
 
-Add `telex` as dependency in `mix.exs`
+Before all of this, thanks to @arpunk for letting me get the `ex_gram` name on hex.pm, I hadn't released this library to Hex until it was good enough (that took me almost more than a year), and he already had a library with that name on Hex (An LFE telegram bot library!), after talking with him he let me stay with the name. Now his library is `lgram` check it on [github](https://github.com/arpunk/lgram) and [hex](https://hex.pm/packages/lgram)
+
+
+Add `ex_gram` as dependency in `mix.exs`
 
 - Using Hex
 
 ``` elixir
 def deps do
-    [{:telex, "~> 0.5.0"}]
+    [{:ex_gram, "~> 0.5.0"}]
 end
 ```
 
@@ -24,15 +27,15 @@ end
 
 ``` elixir
 def deps do
-    [{:telex, github: "rockneurotiko/telex", tag: "0.5.0"}]
+    [{:ex_gram, github: "rockneurotiko/ex_gram", tag: "0.5.0"}]
 end
 ```
 
-Also, unless using Elixir `>= 1.4` add `:telex` to the `applications` list:
+Also, unless using Elixir `>= 1.4` add `:ex_gram` to the `applications` list:
 
 ```elixir
 def application do
-    [applications: [:telex, ...], ...]
+    [applications: [:ex_gram, ...], ...]
 end
 ```
 
@@ -41,23 +44,23 @@ end
 There are some optional configuration that you can add to your `config.exs`:
 
 ``` elixir
-config :telex, token: "TOKEN"
+config :ex_gram, token: "TOKEN"
 ```
 
 This configuration will be used by default, but you can specify on every call a token or a bot to use.
 
-If you use the framework, you will need to add `Telex` and your bot (let's say it's `MyBot`) to your application:
+If you use the framework, you will need to add `ExGram` and your bot (let's say it's `MyBot`) to your application:
 
 ``` elixir
 children = [
-  supervisor(Telex, []), # This will setup the Registry.Telex
+  supervisor(ExGram, []), # This will setup the Registry.ExGram
   worker(MyBot, [:polling, "TOKEN"])
 ]
 ```
 
 ## Framework Usage
 
-This section will show how to use the opinionated framework `telex` for telegram bots!
+This section will show how to use the opinionated framework `ex_gram` for telegram bots!
 
 ### Creating a bot!
 
@@ -69,18 +72,18 @@ WIP
 
 ## Library Usage
 
-Sometimes you just want to be able to send messages to some channel, or you don't like the way the framework works and want to be your own manager of the messages flows. For that cases, the low level API allows you to use the `telex` library as raw as possible.
+Sometimes you just want to be able to send messages to some channel, or you don't like the way the framework works and want to be your own manager of the messages flows. For that cases, the low level API allows you to use the `ex_gram` library as raw as possible.
 
-You can configure `telex` in `config.exs` as explained in the Configuration section (you don't need to add anything to the application if you don't want to use the framework) and just use the low level API, for example:
+You can configure `ex_gram` in `config.exs` as explained in the Configuration section (you don't need to add anything to the application if you don't want to use the framework) and just use the low level API, for example:
 
 ``` elixir
-Telex.send_message("@my_channel", "Sending messages!!!")
+ExGram.send_message("@my_channel", "Sending messages!!!")
 ```
 
-Alternatively, you can not configure telex at all (or use this to use different bots, having one configured or not), and use the extra parameter `token`:
+Alternatively, you can not configure ex_gram at all (or use this to use different bots, having one configured or not), and use the extra parameter `token`:
 
 ``` elixir
-Telex.send_message("@my_channel", "Sending messages!!!", token: "BOT_TOKEN")
+ExGram.send_message("@my_channel", "Sending messages!!!", token: "BOT_TOKEN")
 ```
 
 If you want to know how the low level API is designed and works, you can read the next section.
@@ -92,7 +95,7 @@ All the models and methods are equal one to one with the models and methods defi
 
 ### Models
 
-All the models are inside of the `Telex.Model` module. You can see all the models in `lib/telex.ex` file, for example `User`:
+All the models are inside of the `ExGram.Model` module. You can see all the models in `lib/ex_gram.ex` file, for example `User`:
 
 ``` elixir
 model(User, [
@@ -108,8 +111,8 @@ model(User, [
 Also, all the models have the type `t` defined, so you can use it on your typespecs or see their types inside of an IEx console:
 
 ``` elixir
->>> t Telex.Model.User
-@type t() :: %Telex.Model.User{
+>>> t ExGram.Model.User
+@type t() :: %ExGram.Model.User{
 first_name: String.t(),
 id: integer(),
 is_bot: boolean(),
@@ -121,14 +124,14 @@ username: String.t()
 
 ### Methods
 
-All the methods are inside of the `Telex` module, they are like the documentation ones but in snake_case instead of camelCase.
+All the methods are inside of the `ExGram` module, they are like the documentation ones but in snake_case instead of camelCase.
 
 If a method have mandatory arguments will be the arguments (in order that are defined on the documentation) to the method, all the optional values will go in the last argument as keyword list.
 
 Also, the parameters must be of the types defined on the documentation (if multiple types, it must be one of them), and the method will return the model assigned of the one in the documentation. If you want to see the parameters and types that gets and returns a method, you can use the `h` method in an `Iex` instance:
 
 ``` elixir
->>> h Telex.send_message
+>>> h ExGram.send_message
 
 def send_message(chat_id, text, ops \\ [])
 
@@ -141,12 +144,12 @@ disable_web_page_preview: boolean(),
 disable_notification: boolean(),
 reply_to_message_id: integer(),
 reply_markup:
-Telex.Model.InlineKeyboardMarkup.t()
-| Telex.Model.ReplyKeyboardMarkup.t()
-| Telex.Model.ReplyKeyboardRemove.t()
-| Telex.Model.ForceReply.t()
+ExGram.Model.InlineKeyboardMarkup.t()
+| ExGram.Model.ReplyKeyboardMarkup.t()
+| ExGram.Model.ReplyKeyboardRemove.t()
+| ExGram.Model.ForceReply.t()
 ]
-) :: {:ok, Telex.Model.Message.t()} | {:error, Maxwell.Error.t()}
+) :: {:ok, ExGram.Model.Message.t()} | {:error, Maxwell.Error.t()}
 ```
 
 All the methods have their unsafe brother with the name banged(!) (`get_me!` for the `get_me` method) that instead of returning `{:ok, model} | {:error, Maxwell.Error}` will return `model` and raise if there is some error.
@@ -154,13 +157,13 @@ All the methods have their unsafe brother with the name banged(!) (`get_me!` for
 For example, the method "getUpdates" from the documentation will be `get_updates`, and this one takes 4 optional parameters, we'll use on the example the parameters `offset` and `limit`:
 
 ``` elixir
-Telex.get_updates(offset: 123, limit: 100)
+ExGram.get_updates(offset: 123, limit: 100)
 ```
 
 Another example, the method "sendMessage" it's `send_message`, this one have two mandatory parameters, `chat_id` (either an integer or a string) and `text` (a string), and 5 optional parameters:
 
 ``` elixir
-Telex.send_message("@rockneurotiko", "Hey bro! Checkout the Telex library!", disable_notification: true)
+ExGram.send_message("@rockneurotiko", "Hey bro! Checkout the ExGram library!", disable_notification: true)
 ```
 
 ### Extra options
@@ -169,13 +172,13 @@ All the methods have three extra options:
 
 - `debug`: When true it will print the HTTP request response.
 - `token`: It will use this token for the request
-- `bot`: It will search on `Registry.Telex` the `bot` name to extract the token. This registry is setted up by `Telex` and all the bots made by the framework will register on it.
+- `bot`: It will search on `Registry.ExGram` the `bot` name to extract the token. This registry is setted up by `ExGram` and all the bots made by the framework will register on it.
 
 Note: Only one of `token` and `bot` must be used.
 
 ### How it's made?
 
-There is a python script called `extractor.py`, that scrapes the Telegram Bot API documentation and prints to the stdout the lines needed to create all the methods and models, this auto generated lines uses two macros defined on `lib/telex/macros.ex`: `method` and `model`.
+There is a python script called `extractor.py`, that scrapes the Telegram Bot API documentation and prints to the stdout the lines needed to create all the methods and models, this auto generated lines uses two macros defined on `lib/ex_gram/macros.ex`: `method` and `model`.
 
 #### Custom types defined
 
@@ -184,7 +187,7 @@ There is a python script called `extractor.py`, that scrapes the Telegram Bot AP
 - `:bool` or `:boolean` -> `boolean`
 - `:file` -> `{:file, String.t()}`
 - `{:array, t}` -> `[t]`
-- Any Telex.Model
+- Any ExGram.Model
 
 
 #### Model macro
@@ -212,12 +215,12 @@ This methods do some stuff, like retrieving the token, check the parameters type
 
 ## Creating your own updates worker
 
-The Telex framework use updates worker to "receive" the updates and send them to the dispatcher, this is the first parameter that you provide to your bot, the ones currently are `:polling` that goes to the module `Telex.Updates.Polling` for polling updates and `:noup` that uses `Telex.Updates.NoUp` that do nothing (great for some offline testing). Sadly the webhook and test worker are on the way.
+The ExGram framework use updates worker to "receive" the updates and send them to the dispatcher, this is the first parameter that you provide to your bot, the ones currently are `:polling` that goes to the module `ExGram.Updates.Polling` for polling updates and `:noup` that uses `ExGram.Updates.NoUp` that do nothing (great for some offline testing). Sadly the webhook and test worker are on the way.
 
 But you can implement your own worker to retrieve the updates as you want!
 
 The only specs are that `start_link` will receive `{:bot, <pid>, :token, <token>}`, the PID is where you should send the updates, and the token is that specific token so your worker will be able to use it to retrieve the updates.
 
-Whenever you have and update `Telex.Model.Update`, send it to the bot's PID like: `{:update, <update>}` with `Genserver.call`.
+Whenever you have and update `ExGram.Model.Update`, send it to the bot's PID like: `{:update, <update>}` with `Genserver.call`.
 
-You can see the code of `Telex.Updates.Polling`.
+You can see the code of `ExGram.Updates.Polling`.
