@@ -1,3 +1,3 @@
 use Mix.Config
 
-config :telex, token: "TOKEN", adapter: Telex.Adapter.Test, updates: Telex.Updates.Test
+config :ex_gram, token: "TOKEN", adapter: ExGram.Adapter.Test, updates: ExGram.Updates.Test

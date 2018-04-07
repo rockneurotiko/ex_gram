@@ -1,14 +1,21 @@
-defmodule Telex.Mixfile do
+defmodule ExGram.Mixfile do
   use Mix.Project
 
   def project do
     [
-      app: :telex,
-      version: "0.3.0-rc5",
+      app: :ex_gram,
+      version: "0.5.0-rc2",
+      package: package(),
+      source_url: "https://github.com/rockneurotiko/ex_gram",
       elixir: "~> 1.4",
+      elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      docs: [
+        main: "readme",
+        extras: ["README.md"]
+      ]
     ]
   end
 
@@ -20,15 +27,18 @@ defmodule Telex.Mixfile do
     [extra_applications: [:logger]]
   end
 
-  # Dependencies can be Hex packages:
-  #
-  #   {:mydep, "~> 0.3.0"}
-  #
-  # Or git/path repositories:
-  #
-  #   {:mydep, git: "https://github.com/elixir-lang/mydep.git", tag: "0.1.0"}
-  #
-  # Type "mix help deps" for more examples and options
+  defp package do
+    [
+      maintainers: ["Miguel Garcia / Rock Neurotiko"],
+      licenses: ["Beerware"],
+      links: %{"GitHub" => "https://github.com/rockneurotiko/ex_gram"}
+    ]
+  end
+
+  # Specifies which paths to compile per environment.
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_), do: ["lib"]
+
   defp deps do
     [
       {:poison, "~> 2.1"},

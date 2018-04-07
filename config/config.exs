@@ -4,7 +4,7 @@ use Mix.Config
 
 config :maxwell, default_adapter: Maxwell.Adapter.Hackney
 
-config :telex, token: "TOKEN"
+config :ex_gram, token: "TOKEN"
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
@@ -14,11 +14,11 @@ config :telex, token: "TOKEN"
 
 # You can configure for your application as:
 #
-#     config :telex, key: :value
+#     config :ex_gram, key: :value
 #
 # And access this configuration in your application as:
 #
-#     Application.get_env(:telex, :key)
+#     Application.get_env(:ex_gram, :key)
 #
 # Or configure a 3rd-party app:
 #
