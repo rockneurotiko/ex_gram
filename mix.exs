@@ -50,6 +50,7 @@ defmodule ExGram.Mixfile do
       {:maxwell, "~> 2.2.1"},
       {:hackney, "~> 1.8.0"},
       {:dialyxir, "~> 0.5.0", only: [:dev], runtime: false},
+      {:ex_doc, ">= 0.0.0", only: :dev},
       {:inch_ex, only: :docs}
     ]
   end
