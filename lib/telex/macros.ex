@@ -387,7 +387,7 @@ defmodule Telex.Macros do
 
           case result do
             {:ok, body} ->
-              body |> unquote(result_transformer)
+              {:ok, body |> unquote(result_transformer)}
 
             {:error, error} ->
               {:error, error}
