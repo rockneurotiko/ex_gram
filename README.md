@@ -10,9 +10,6 @@ ExGram is a library to build Telegram Bots, you can use the low-level methods an
 
 ## Installation
 
-Before all of this, thanks to @arpunk for letting me get the `ex_gram` name on hex.pm, I hadn't released this library to Hex until it was good enough (that took me almost more than a year), and he already had a library with that name on Hex (An LFE telegram bot library!), after talking with him he let me stay with the name. Now his library is `lgram` check it on [github](https://github.com/arpunk/lgram) and [hex](https://hex.pm/packages/lgram)
-
-
 Add `ex_gram` as dependency in `mix.exs`
 
 - Using Hex
