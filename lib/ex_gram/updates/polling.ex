@@ -31,7 +31,7 @@ defmodule ExGram.Updates.Polling do
       # GenServer.cast(self(), )
     rescue
       # If timeout don't wait?
-      Maxwell.Error ->
+      ExGram.Error ->
         Process.send_after(self(), {:fetch, :update_id, uid}, 1)
     end
 

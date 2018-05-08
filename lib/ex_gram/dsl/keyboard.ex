@@ -17,7 +17,10 @@ defmodule ExGram.Dsl.Keyboard do
   defmacro row(do: block) do
     quote do
       var!(keyboard_variable_row) = []
-      var!(keyboard_variable_1) = var!(keyboard_variable_1) ++ [unquote(block)]
+
+      unquote(block)
+
+      var!(keyboard_variable_1) = var!(keyboard_variable_1) ++ [var!(keyboard_variable_row)]
     end
   end
 
