@@ -46,12 +46,12 @@ defmodule ExGram.Mixfile do
 
   defp deps do
     [
-      {:poison, "~> 2.1"},
+      {:poison, "~> 3.1"},
       {:maxwell, "~> 2.2.1"},
       {:hackney, "~> 1.8.0"},
       {:dialyxir, "~> 0.5.0", only: [:dev], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev},
-      {:inch_ex, only: :docs}
+      {:inch_ex, ">= 0.0.0", only: :docs}
     ]
   end
 end
