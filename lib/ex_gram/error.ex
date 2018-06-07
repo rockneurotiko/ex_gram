@@ -1,4 +1,4 @@
 defmodule ExGram.Error do
-  @type t :: %__MODULE__{code: number, message: String.t() | nil}
-  defexception [:code, :message]
+  @type t :: %__MODULE__{code: number | atom, message: String.t() | any, metadata: any}
+  defexception [:code, :message, :metadata]
 end

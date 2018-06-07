@@ -11,9 +11,11 @@ defmodule ExGram.Cnt do
           message: any | nil,
           halted: boolean,
           middlewares: list(any),
+          middleware_halted: boolean,
           commands: list(any),
           regex: list(any),
           answers: list(any),
+          responses: list(any),
           extra: map
         }
 
@@ -23,9 +25,11 @@ defmodule ExGram.Cnt do
             message: nil,
             halted: false,
             middlewares: [],
+            middleware_halted: false,
             commands: [],
             regex: [],
             answers: [],
+            responses: [],
             extra: %{}
 
   def new(extra \\ %{}) do

@@ -23,7 +23,7 @@ defmodule ExGram.Bot do
 
       @behaviour ExGram.Handler
 
-      defp name(), do: unquote(name)
+      def name(), do: unquote(name)
 
       def start_link(m, token \\ nil) do
         start_link(m, token, unquote(name))
@@ -65,7 +65,8 @@ defmodule ExGram.Bot do
           commands: unquote(commands),
           regex: unquote(regexes),
           middlewares: unquote(middlewares),
-          handler: &handle/2
+          handler: &do_handle/2,
+          error_handler: &do_handle_error/1
         }
 
         children = [
@@ -79,6 +80,21 @@ defmodule ExGram.Bot do
       def message(from, message) do
         GenServer.call(name(), {:message, from, message})
       end
+
+      # Default implementations
+      def handle(msg, _cnt) do
+        error = %ExGram.Error{code: :not_handled, message: "Message not handled: #{inspect(msg)}"}
+        handle_error(error)
+      end
+
+      def handle_error(error) do
+        IO.inspect("Error received: #{inspect(error)}")
+      end
+
+      defoverridable ExGram.Handler
+
+      defp do_handle(msg, cnt), do: __MODULE__.handle(msg, cnt)
+      defp do_handle_error(error), do: __MODULE__.handle_error(error)
 
       defp maybe_fetch_bot(username, _token) when is_binary(username),
         do: %ExGram.Model.User{username: username, is_bot: true}

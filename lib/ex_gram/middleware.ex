@@ -12,7 +12,7 @@ defmodule ExGram.Middleware do
 
   defmacro __using__(_opts) do
     quote do
-      import ExGram.Middleware, only: [add_extra: 2, add_extra: 3]
+      import ExGram.Middleware, only: [add_extra: 2, add_extra: 3, halt: 1]
 
       @behaviour ExGram.Middleware
 
@@ -27,5 +27,9 @@ defmodule ExGram.Middleware do
 
   def add_extra(%ExGram.Cnt{extra: extra} = cnt, key, value) do
     %{cnt | extra: Map.put(extra, key, value)}
+  end
+
+  def halt(%ExGram.Cnt{} = cnt) do
+    %{cnt | middleware_halted: true}
   end
 end
