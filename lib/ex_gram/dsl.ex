@@ -3,7 +3,7 @@ defmodule ExGram.Dsl do
   alias ExGram.Responses
   alias ExGram.Responses.{Answer, AnswerCallback, EditInline, EditMarkup}
 
-  def answer(cnt, text), do: answer(cnt, text, [])
+  def answer(cnt, text, ops \\ [])
 
   def answer(cnt, text, ops) when is_binary(text) and is_list(ops) do
     Answer |> Responses.new(%{text: text, ops: ops}) |> add_answer(cnt)
@@ -15,12 +15,8 @@ defmodule ExGram.Dsl do
     Answer |> Responses.new(%{text: text, ops: ops}) |> Responses.set_msg(m) |> add_answer(cnt)
   end
 
-  def answer_callback(cnt, ops) do
-    AnswerCallback |> Responses.new(%{ops: ops}) |> add_answer(cnt)
-  end
-
-  def answer_callback(cnt, id, ops) do
-    AnswerCallback |> Responses.new(%{ops: ops}) |> Responses.set_msg(id) |> add_answer(cnt)
+  def answer_callback(cnt, msg, ops \\ []) do
+    AnswerCallback |> Responses.new(%{ops: ops}) |> Responses.set_msg(msg) |> add_answer(cnt)
   end
 
   # /3
