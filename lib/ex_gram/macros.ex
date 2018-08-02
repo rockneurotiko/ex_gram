@@ -39,6 +39,7 @@ defmodule ExGram.Macros do
   end
 
   def type_to_spec(t) when is_atom(t), do: {t, [], Elixir}
+  def type_to_spec(l) when is_list(l), do: types_list_to_spec(l)
 
   def types_list_to_spec([e1, e2 | rest]) do
     orT(type_to_spec(e1), types_list_to_spec([e2 | rest]))
@@ -75,12 +76,12 @@ defmodule ExGram.Macros do
 
   def check_type(:any, _x), do: true
 
-  def check_type(t1, %{__struct__: t2}) do
+  def check_type(t1, %{__struct__: t2} = struct) do
     t1 == t2 ||
       (
         t2s = Atom.to_string(t2)
 
-        t2 =
+        t2a =
           if String.starts_with?(t2s, "Elixir.ExGram.Model.") do
             name = String.split(t2s, ".") |> List.last()
             String.to_atom("Elixir.#{name}")
@@ -88,12 +89,29 @@ defmodule ExGram.Macros do
             t2
           end
 
-        t1 == t2
-      )
+        t1 == t2a
+      ) || check_subtypes(t1, struct)
   end
 
   # def check_type(t1, %{__struct__: t2}), do: t1 == t2
   def check_type(%{}, x), do: is_map(x)
+
+  def check_subtypes(t1, struct) do
+    subtypes = extract_subtypes(t1)
+    Enum.any?(subtypes, &check_type(&1, struct))
+  end
+
+  def extract_subtypes(mod) when is_atom(mod) do
+    try do
+      mod.subtypes()
+    rescue
+      _ -> []
+    catch
+      _ -> []
+    end
+  end
+
+  def extract_subtypes(_), do: []
 
   def check_all_types([x, types]), do: Enum.any?(types, &check_type(&1, x))
   def check_all_types([x, types, :optional]), do: x == nil or check_all_types({x, types})
