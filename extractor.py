@@ -108,6 +108,7 @@ def extract_return_type(text):
     ts = ["Returns basic information about the bot in form of a ",
           "returns the edited ",
           "Returns exported invite link as ",
+          "Returns the new invite link as",
           "Returns a ",
           "returns a ",
           "Returns ",

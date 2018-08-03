@@ -367,7 +367,7 @@ defmodule ExGram do
     true
   )
 
-  method(:post, "exportChatInviteLink", [{chat_id, [:integer, :string]}], ExGram.Model.the())
+  method(:post, "exportChatInviteLink", [{chat_id, [:integer, :string]}], String.t())
 
   method(:post, "setChatPhoto", [{chat_id, [:integer, :string]}, {photo, [:file]}], true)
 
