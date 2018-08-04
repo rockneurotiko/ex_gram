@@ -102,6 +102,16 @@ defmodule ExGram.Macros do
   end
 
   def extract_subtypes(mod) when is_atom(mod) do
+    mods = Atom.to_string(mod)
+
+    mod =
+      if String.starts_with?(mods, "Elixir.ExGram.Model.") do
+        mod
+      else
+        name = String.split(mods, ".") |> List.last()
+        String.to_atom("Elixir.ExGram.Model.#{name}")
+      end
+
     try do
       mod.subtypes()
     rescue
@@ -200,6 +210,15 @@ defmodule ExGram.Macros do
   end
 
   def struct_types(initial), do: struct_types(initial, [])
+
+  def clean_body(%{__struct__: _} = struct), do: clean_body(Map.from_struct(struct))
+
+  def clean_body(map) when is_map(map) do
+    for {k, v} <- map, not is_nil(v), into: %{}, do: {k, clean_body(v)}
+  end
+
+  def clean_body(list) when is_list(list), do: Enum.map(list, &clean_body/1)
+  def clean_body(value), do: value
 
   defmacro model(name, params) do
     tps = struct_types(params)
@@ -315,7 +334,8 @@ defmodule ExGram.Macros do
               | {:error, ExGram.Error.t()}
       def unquote(fname)(unquote_splicing(mand_par), ops \\ []) do
         adapter = Keyword.get(ops, :adapter, unquote(@adapter))
-        check_params = Keyword.get(ops, :check_params, true)
+        config_check_params = ExGram.Config.get(:ex_gram, :check_params, true)
+        check_params = Keyword.get(ops, :check_params, config_check_params)
 
         checks =
           check_params and
@@ -358,6 +378,7 @@ defmodule ExGram.Macros do
             unquote(mand_body)
             |> Keyword.merge(ops)
             |> Enum.into(%{})
+            |> clean_body()
 
           body =
             if unquote(have_multipart) do
