@@ -1,7 +1,7 @@
 defmodule ExGram.Dsl do
   alias ExGram.Cnt
   alias ExGram.Responses
-  alias ExGram.Responses.{Answer, AnswerCallback, EditInline, EditMarkup}
+  alias ExGram.Responses.{Answer, AnswerCallback, EditInline, EditMarkup, DeleteMessage}
 
   def answer(cnt, text, ops \\ [])
 
@@ -48,6 +48,10 @@ defmodule ExGram.Dsl do
   end
 
   def edit(_cnt, _, _, _, _), do: raise("Wrong params")
+
+  def delete(cnt, msg, ops \\ []) do
+    DeleteMessage |> Responses.new(%{ops: ops}) |> Responses.set_msg(msg) |> add_answer(cnt)
+  end
 
   def create_inline_button(row) do
     row
@@ -100,6 +104,13 @@ defmodule ExGram.Dsl do
   def extract_callback_id(%{id: cid, data: _data}), do: cid
   def extract_callback_id(cid) when is_binary(cid), do: cid
   def extract_callback_id(_), do: :error
+
+  def extract_message_id(%{message_id: id}), do: id
+  def extract_message_id(%{message: m}) when not is_nil(m), do: extract_message_id(m)
+  def extract_message_id(%{edited_message: m}) when not is_nil(m), do: extract_message_id(m)
+  def extract_message_id(%{channel_message: m}) when not is_nil(m), do: extract_message_id(m)
+  def extract_message_id(%{edited_channel_post: m}) when not is_nil(m), do: extract_message_id(m)
+  def extract_message_id(_), do: :error
 
   def extract_inline_id_params(%{message: %{message_id: mid}} = m),
     do: %{message_id: mid, chat_id: extract_id(m)}

@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from bs4 import BeautifulSoup
 import requests
 
@@ -6,7 +8,7 @@ DEBUG = True
 
 def debug(t):
     if DEBUG:
-        print("# " + t)
+        print("\n# " + t)
 
 def arg_to_s(arg):
     return "{%s, [%s]%s}" % (arg[0], ", ".join(arg[1]), ", :optional" if arg[2] else "")
@@ -42,9 +44,15 @@ def parse_types(text):
         elif t == "InputFile":
             name = ":file"
         elif t.startswith("Array"):
-            more = parse_types(t.split(" of ")[-1])
+            rest_t = " of ".join(t.split(" of ")[1:])
+            more = parse_types(rest_t)
             el = more[0] if len(more) > 0 else ":any"
             name = "{:array, %s}" % el
+        elif " and " in t:
+            splitted = t.split(" and ")
+            left = parse_types(splitted[0])[0]
+            right = parse_types(" and ".join(splitted[1:]))[0]
+            name = "[%s, %s]" % (left, right)
         elif t[0].isupper():
             name = t
             # debug("Class {} as any".format(t))
@@ -80,7 +88,7 @@ def good_type(t):
     if t == "ExGram.Model.String":
         return "String.t()"
 
-    if t.lower() in ["ex_gram.model.true"]:
+    if t.lower() in ["exgram.model.true"]:
         return "true"
 
     return t
@@ -100,6 +108,7 @@ def extract_return_type(text):
     ts = ["Returns basic information about the bot in form of a ",
           "returns the edited ",
           "Returns exported invite link as ",
+          "Returns the new invite link as",
           "Returns a ",
           "returns a ",
           "Returns ",
@@ -126,66 +135,102 @@ def extract_model(h4):
     tabled = extract_table(table)
     model_s = "model {}, [{}]"
 
-    ts = [struct_t(name, types, opt) for (name, types, opt) in tabled]
+    ts = [struct_t(type_name, types, opt) for (type_name, types, opt) in tabled]
     debug(str(ts))
     return  model_s.format(name, ", ".join(ts))
 
-html = requests.get("https://core.telegram.org/bots/api").content
 
-soup = BeautifulSoup(html, 'html.parser')
+def generic_to_text(name, sub_types):
+    types_s = ", ".join(sub_types)
+    types_t = " | ".join(["{}.t()".format(x) for x in sub_types])
+    return """defmodule {} do
+  @type t :: {}
 
-n = 0
+  def subtypes() do
+    [{}]
+  end
+    end""".format(name, types_t, types_s)
 
-# updates = soup.find(href="#getting-updates").parent.findAllNext("h4")
 
-h4s = soup.find(href="#getting-updates").parent.findAllNext("h4")
-
-
-# h4s = soup.find(href="#available-methods").parent.findAllNext("h4")
-
-skip = ["InlineQueryResult", "InputMessageContent"]
-not_parameters = ["getMe", "deleteWebhook", "getWebhookInfo"]
-
-models = []
-methods = []
-
-for h4 in h4s:
+def extract_generic(h4):
     name = h4.text
+    debug("Extracting generic: " + name)
+    l = h4.find_next("ul")
+    sub_types = [li.text for li in l.findChildren("li", recursive=False)]
 
-    if name in skip:
-        debug("Skipping {}".format(name))
-        continue
+    return generic_to_text(name, sub_types)
 
-    if name[0].isupper():
-        if len(name.split(" ")) == 1:
-            models.append(extract_model(h4))
-        continue
+def main():
+    html = requests.get("https://core.telegram.org/bots/api").content
 
-    debug(name)
-    n += 1
+    soup = BeautifulSoup(html, 'html.parser')
 
-    returned = good_type(extract_return_type(h4.find_next("p").text))
-    debug("RETURNS: " + returned)
+    n = 0
 
-    if name in not_parameters:
-        methods.append(build_method(name, [], returned))
-        continue
+    # updates = soup.find(href="#getting-updates").parent.findAllNext("h4")
 
-    table = h4.find_next("table")
-    tabled = extract_table(table)
-
-    methods.append(build_method(name, tabled, returned))
+    h4s = soup.find(href="#getting-updates").parent.findAllNext("h4")
 
 
-debug("----------METHODS-----------\n")
-print("# AUTO GENERATED")
-print("# Methods")
-print("\n\n".join(methods))
-debug("{} methods".format(len(methods)))
+    # h4s = soup.find(href="#available-methods").parent.findAllNext("h4")
 
-debug("----------MODELS-----------\n")
-print("# Models")
-print("\ndefmodule Model do")
-print("\n\n  ".join(models))
-print("end")
-debug("{} models".format(len(models)))
+    skip = []
+    generic_types = ["InlineQueryResult", "InputMessageContent", "PassportElementError"]
+    not_parameters = ["getMe", "deleteWebhook", "getWebhookInfo"]
+
+    models = []
+    methods = []
+    generics = []
+
+    for h4 in h4s:
+        name = h4.text
+
+        if name in skip:
+            debug("Skipping {}".format(name))
+            continue
+
+        if name in generic_types:
+            generics.append(extract_generic(h4))
+            continue
+        if name[0].isupper():
+            if len(name.split(" ")) == 1:
+                models.append(extract_model(h4))
+            continue
+
+        debug(name)
+        n += 1
+
+        returned = good_type(extract_return_type(h4.find_next("p").text))
+        debug("RETURNS: " + returned)
+
+        if name in not_parameters:
+            methods.append(build_method(name, [], returned))
+            continue
+
+        table = h4.find_next("table")
+        tabled = extract_table(table)
+
+        methods.append(build_method(name, tabled, returned))
+
+
+    debug("----------METHODS-----------\n")
+    print("# AUTO GENERATED")
+    print()
+    print("# Methods")
+    print()
+    print("\n\n".join(methods))
+    debug("{} methods\n".format(len(methods)))
+
+    debug("----------MODELS-----------\n")
+    print("# Models")
+    print()
+    print("\ndefmodule Model do")
+    print("\n\n  ".join(models))
+    debug("{} models\n".format(len(models)))
+    print("\n\n ".join(generics))
+    debug("{} generics\n".format(len(generics)))
+    print("end")
+
+
+if __name__ == "__main__":
+    main()
