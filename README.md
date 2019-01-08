@@ -28,14 +28,6 @@ def deps do
 end
 ```
 
-Also, unless using Elixir `>= 1.4` add `:ex_gram` to the `applications` list:
-
-```elixir
-def application do
-    [applications: [:ex_gram, ...], ...]
-end
-```
-
 ## Configuration
 
 There are some optional configuration that you can add to your `config.exs`:
@@ -50,8 +42,8 @@ If you use the framework, you will need to add `ExGram` and your bot (let's say 
 
 ``` elixir
 children = [
-  supervisor(ExGram, []), # This will setup the Registry.ExGram
-  worker(MyBot, [:polling, "TOKEN"])
+  ExGram # This will setup the Registry.ExGram,
+  {MyBot, [method: :polling, token: "TOKEN"]}
 ]
 ```
 
@@ -96,12 +88,12 @@ All the models are inside of the `ExGram.Model` module. You can see all the mode
 
 ``` elixir
 model(User, [
-{:id, :integer},
-{:is_bot, :boolean},
-{:first_name, :string},
-{:last_name, :string},
-{:username, :string},
-{:language_code, :string}
+  {:id, :integer},
+  {:is_bot, :boolean},
+  {:first_name, :string},
+  {:last_name, :string},
+  {:username, :string},
+  {:language_code, :string}
 ])
 ```
 
@@ -110,12 +102,12 @@ Also, all the models have the type `t` defined, so you can use it on your typesp
 ``` elixir
 >>> t ExGram.Model.User
 @type t() :: %ExGram.Model.User{
-first_name: String.t(),
-id: integer(),
-is_bot: boolean(),
-language_code: String.t(),
-last_name: String.t(),
-username: String.t()
+  first_name: String.t(),
+  id: integer(),
+  is_bot: boolean(),
+  language_code: String.t(),
+  last_name: String.t(),
+  username: String.t()
 }
 ```
 
@@ -133,23 +125,23 @@ Also, the parameters must be of the types defined on the documentation (if multi
 def send_message(chat_id, text, ops \\ [])
 
 @spec send_message(
-chat_id :: integer() | String.t(),
-text :: String.t(),
-ops :: [
-parse_mode: String.t(),
-disable_web_page_preview: boolean(),
-disable_notification: boolean(),
-reply_to_message_id: integer(),
-reply_markup:
-ExGram.Model.InlineKeyboardMarkup.t()
-| ExGram.Model.ReplyKeyboardMarkup.t()
-| ExGram.Model.ReplyKeyboardRemove.t()
-| ExGram.Model.ForceReply.t()
-]
-) :: {:ok, ExGram.Model.Message.t()} | {:error, Maxwell.Error.t()}
+  chat_id :: integer() | String.t(),
+  text :: String.t(),
+  ops :: [
+    parse_mode: String.t(),
+    disable_web_page_preview: boolean(),
+    disable_notification: boolean(),
+    reply_to_message_id: integer(),
+    reply_markup:
+      ExGram.Model.InlineKeyboardMarkup.t()
+      | ExGram.Model.ReplyKeyboardMarkup.t()
+      | ExGram.Model.ReplyKeyboardRemove.t()
+      | ExGram.Model.ForceReply.t()
+    ]
+) :: {:ok, ExGram.Model.Message.t()} | {:error, ExGram.Error.t()}
 ```
 
-All the methods have their unsafe brother with the name banged(!) (`get_me!` for the `get_me` method) that instead of returning `{:ok, model} | {:error, Maxwell.Error}` will return `model` and raise if there is some error.
+All the methods have their unsafe brother with the name banged(!) (`get_me!` for the `get_me` method) that instead of returning `{:ok, model} | {:error, ExGram.Error}` will return `model` and raise if there is some error.
 
 For example, the method "getUpdates" from the documentation will be `get_updates`, and this one takes 4 optional parameters, we'll use on the example the parameters `offset` and `limit`:
 
