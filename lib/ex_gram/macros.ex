@@ -420,7 +420,7 @@ defmodule ExGram.Macros do
             end
 
           path = "/bot#{token}/#{unquote(name)}"
-          # IO.puts("Path: #{inspect path}\nbody: #{inspect body}")
+          # IO.puts("Path: #{inspect(path)}\nbody: #{inspect(body)}")
 
           result = adapter.request(unquote(verb), path, body)
 

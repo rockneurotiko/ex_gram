@@ -25,12 +25,26 @@ defmodule ExGram.Bot do
 
       def name(), do: unquote(name)
 
+      def child_spec(opts) do
+        %{
+          id: Keyword.get(opts, :name, name()),
+          start: {__MODULE__, :start_link, [opts]},
+          type: :supervisor
+        }
+      end
+
+      def start_link(opts) when is_list(opts) do
+        name = opts[:name] || name()
+        params = {:ok, opts[:method], opts[:token], name}
+        Supervisor.start_link(__MODULE__, params, name: name)
+      end
+
       def start_link(m, token \\ nil) do
-        start_link(m, token, unquote(name))
+        start_link(method: m, token: token, name: unquote(name))
       end
 
       defp start_link(m, token, name) do
-        Supervisor.start_link(__MODULE__, {:ok, m, token, name}, name: name)
+        start_link(method: m, token: token, name: name)
       end
 
       def init({:ok, updates_method, token, name}) do

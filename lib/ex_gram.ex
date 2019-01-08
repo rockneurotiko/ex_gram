@@ -18,6 +18,13 @@ defmodule ExGram do
   def new_conn(), do: new()
   def conn_put_path(conn, path), do: put_path(conn, path)
 
+  def child_spec(opts) do
+    children = [{Registry, [keys: :unique, name: Registry.ExGram]}]
+    name = opts[:name] || __MODULE__
+    params = [strategy: :one_for_one, name: name]
+    Supervisor.Spec.supervisor(Supervisor, [children, params])
+  end
+
   def start_link() do
     Supervisor.start_link(__MODULE__, :ok)
   end
