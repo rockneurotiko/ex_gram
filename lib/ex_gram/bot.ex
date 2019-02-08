@@ -35,8 +35,9 @@ defmodule ExGram.Bot do
 
       def start_link(opts) when is_list(opts) do
         name = opts[:name] || name()
+        supervisor_name = String.to_atom(Atom.to_string(name) <> "_supervisor")
         params = {:ok, opts[:method], opts[:token], name}
-        Supervisor.start_link(__MODULE__, params, name: name)
+        Supervisor.start_link(__MODULE__, params, name: supervisor_name)
       end
 
       def start_link(m, token \\ nil) do
@@ -70,22 +71,20 @@ defmodule ExGram.Bot do
 
         bot_info = maybe_fetch_bot(unquote(username), token)
 
-        dispatcher_name = String.to_atom(Atom.to_string(name) <> "_dispatcher")
-
         dispatcher_opts = %ExGram.Dispatcher{
           name: name,
           bot_info: bot_info,
-          dispatcher_name: dispatcher_name,
+          dispatcher_name: name,
           commands: unquote(commands),
           regex: unquote(regexes),
           middlewares: unquote(middlewares),
-          handler: &do_handle/2,
-          error_handler: &do_handle_error/1
+          handler: handle_mf(),
+          error_handler: handle_error_mf()
         }
 
         children = [
           worker(ExGram.Dispatcher, [dispatcher_opts]),
-          worker(updates_worker, [{:bot, dispatcher_name, :token, token}])
+          worker(updates_worker, [{:bot, name, :token, token}])
         ]
 
         supervise(children, strategy: :one_for_one)
@@ -102,13 +101,17 @@ defmodule ExGram.Bot do
       end
 
       def handle_error(error) do
-        IO.inspect("Error received: #{inspect(error)}")
+        error
+        # IO.inspect("Error received: #{inspect(error)}")
       end
 
       defoverridable ExGram.Handler
 
-      defp do_handle(msg, cnt), do: __MODULE__.handle(msg, cnt)
-      defp do_handle_error(error), do: __MODULE__.handle_error(error)
+      defp handle_mf(), do: {__MODULE__, :handle}
+      defp handle_error_mf(), do: {__MODULE__, :handle_error}
+
+      # defp do_handle(msg, cnt), do: __MODULE__.handle(msg, cnt)
+      # defp do_handle_error(error), do: __MODULE__.handle_error(error)
 
       defp maybe_fetch_bot(username, _token) when is_binary(username),
         do: %ExGram.Model.User{username: username, is_bot: true}

@@ -1,7 +1,15 @@
 defmodule ExGram.Dsl do
   alias ExGram.Cnt
   alias ExGram.Responses
-  alias ExGram.Responses.{Answer, AnswerCallback, EditInline, EditMarkup, DeleteMessage}
+
+  alias ExGram.Responses.{
+    Answer,
+    AnswerCallback,
+    AnswerInlineQuery,
+    EditInline,
+    EditMarkup,
+    DeleteMessage
+  }
 
   def answer(cnt, text, ops \\ [])
 
@@ -17,6 +25,10 @@ defmodule ExGram.Dsl do
 
   def answer_callback(cnt, msg, ops \\ []) do
     AnswerCallback |> Responses.new(%{ops: ops}) |> Responses.set_msg(msg) |> add_answer(cnt)
+  end
+
+  def answer_inline_query(cnt, articles, ops \\ []) do
+    AnswerInlineQuery |> Responses.new(%{articles: articles, ops: ops}) |> add_answer(cnt)
   end
 
   # /3
@@ -104,6 +116,17 @@ defmodule ExGram.Dsl do
   def extract_callback_id(%{id: cid, data: _data}), do: cid
   def extract_callback_id(cid) when is_binary(cid), do: cid
   def extract_callback_id(_), do: :error
+
+  def extract_response_id(%{message_id: id}) when not is_nil(id), do: id
+  def extract_response_id(%{id: id}) when not is_nil(id), do: id
+  def extract_response_id(%{message: m}) when not is_nil(m), do: extract_response_id(m)
+  def extract_response_id(%{callback_query: m}) when not is_nil(m), do: extract_response_id(m)
+  def extract_response_id(%{inline_query: m}) when not is_nil(m), do: extract_response_id(m)
+  def extract_response_id(%{edited_message: m}) when not is_nil(m), do: extract_response_id(m)
+  def extract_response_id(%{channel_message: m}) when not is_nil(m), do: extract_response_id(m)
+
+  def extract_response_id(%{edited_channel_post: m}) when not is_nil(m),
+    do: extract_response_id(m)
 
   def extract_message_id(%{message_id: id}), do: id
   def extract_message_id(%{message: m}) when not is_nil(m), do: extract_message_id(m)
