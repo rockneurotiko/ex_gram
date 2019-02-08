@@ -33,8 +33,8 @@ defmodule ExGram.Dispatcher do
       commands: [],
       regex: [],
       middlewares: [],
-      handler: fn _, _ -> :ok end,
-      error_handler: fn _ -> :ok end
+      handler: nil,
+      error_handler: nil
     }
     |> Map.merge(extra)
   end
@@ -106,6 +106,12 @@ defmodule ExGram.Dispatcher do
     end
   end
 
+  # EditedMessage
+  # ChannelPost
+  # EditedChannelPost
+  # InlineQuery
+  # ChosenInlineResult
+
   def handle_cast(msg, %{handler: handler, error_handler: error_handler} = s) do
     cnt = create_cnt(s) |> Map.put(:message, {:cast, msg})
 
@@ -119,11 +125,19 @@ defmodule ExGram.Dispatcher do
     end
   end
 
-  # EditedMessage
-  # ChannelPost
-  # EditedChannelPost
-  # InlineQuery
-  # ChosenInlineResult
+  def handle_info(msg, %{handler: handler, error_handler: error_handler} = s) do
+    message = {:info, msg}
+    cnt = s |> create_cnt() |> Map.put(:message, message)
+
+    case apply_middlewares(cnt) do
+      %Cnt{halted: true} ->
+        {:noreply, s}
+
+      cnt ->
+        call_handler(handler, message, cnt, error_handler)
+        {:noreply, s}
+    end
+  end
 
   defp create_cnt(%__MODULE__{
          name: name,
@@ -192,10 +206,13 @@ defmodule ExGram.Dispatcher do
     {:callback_query, cbq}
   end
 
+  defp extract_info(%Cnt{update: %{inline_query: inline}}) when not is_nil(inline) do
+    {:inline_query, inline}
+  end
+
   # edited_message
   # channel_post
   # edited_channel_post
-  # inline_query
   # chosen_inline_result
   # shipping_query
   # pre_checkout_query
@@ -224,7 +241,7 @@ defmodule ExGram.Dispatcher do
     do: cnt |> Map.put(:middlewares, xs) |> apply_middlewares()
 
   defp call_handler(handler, info, cnt, error_handler) do
-    case handler.(info, cnt) do
+    case call_handler(handler, [info, cnt]) do
       %Cnt{} = cnt ->
         cnt
         |> ExGram.Dsl.send_answers()
@@ -241,11 +258,15 @@ defmodule ExGram.Dispatcher do
   defp handle_responses([], _error_handler, acc), do: acc
 
   defp handle_responses([{:error, error} | rest], error_handler, acc) do
-    error_handler.(error)
+    call_handler(error_handler, [error])
     handle_responses(rest, error_handler, acc)
   end
 
   defp handle_responses([value | rest], error_handler, acc) do
     handle_responses(rest, error_handler, acc ++ [value])
+  end
+
+  defp call_handler({module, method}, args) do
+    apply(module, method, args)
   end
 end

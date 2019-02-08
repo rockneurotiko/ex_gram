@@ -342,18 +342,7 @@ defmodule ExGram.Macros do
             Enum.map(unquote(types_mand), &check_all_types_ignore_opt/1)
             |> Enum.all?()
 
-        token =
-          case {Keyword.get(ops, :token), Keyword.get(ops, :bot)} do
-            {nil, nil} ->
-              ExGram.Config.get(:ex_gram, :token)
-
-            {token, nil} ->
-              token
-
-            {nil, bot} ->
-              [{_, token}] = Registry.lookup(Registry.ExGram, bot)
-              token
-          end
+        token = ExGram.Token.fetch(ops)
 
         debug = Keyword.get(ops, :debug, false)
 
