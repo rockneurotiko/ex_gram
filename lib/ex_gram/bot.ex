@@ -65,6 +65,9 @@ defmodule ExGram.Bot do
             :test ->
               ExGram.Updates.Test
 
+            nil ->
+              raise "No updates method received, try with :polling or your custom module"
+
             other ->
               other
           end
