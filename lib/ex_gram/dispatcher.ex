@@ -210,7 +210,11 @@ defmodule ExGram.Dispatcher do
     {:inline_query, inline}
   end
 
-  # edited_message
+  defp extract_info(%Cnt{update: %{edited_message: edited_message}})
+       when not is_nil(edited_message) do
+    {:edited_message, edited_message}
+  end
+
   # channel_post
   # edited_channel_post
   # chosen_inline_result
