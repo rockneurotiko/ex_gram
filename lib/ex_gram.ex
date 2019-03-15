@@ -13,12 +13,14 @@ defmodule ExGram do
 
   adapter(Maxwell.Adapter.Hackney)
 
-  def custom_decode(x), do: Poison.Parser.parse(x, keys: :atoms)
+  def custom_decode(x), do: ExGram.Encoder.decode(x, keys: :atoms)
 
   def new_conn(), do: new()
   def conn_put_path(conn, path), do: put_path(conn, path)
 
   def child_spec(opts) do
+    reload_engine()
+
     children = [{Registry, [keys: :unique, name: Registry.ExGram]}]
     name = opts[:name] || __MODULE__
     params = [strategy: :one_for_one, name: name]
@@ -32,11 +34,18 @@ defmodule ExGram do
   def init(:ok) do
     import Supervisor.Spec
 
+    reload_engine()
+
     children = [
       supervisor(Registry, [:unique, Registry.ExGram])
     ]
 
     supervise(children, strategy: :one_for_one)
+  end
+
+  defp reload_engine() do
+    engine = Application.get_env(:ex_gram, :json_engine)
+    ExGram.Encoder.EngineCompiler.compile(engine)
   end
 
   # ----------METHODS-----------

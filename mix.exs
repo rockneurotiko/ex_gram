@@ -46,9 +46,12 @@ defmodule ExGram.Mixfile do
 
   defp deps do
     [
-      {:poison, "~> 3.1"},
       {:maxwell, "~> 2.2.1"},
       {:hackney, "~> 1.12"},
+      # JSON encoders/decoders
+      {:jason, ">= 1.0.0", optional: true},
+      {:poison, ">= 1.0.0", optional: true},
+      # Development
       {:dialyxir, "~> 0.5.0", only: [:dev], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev},
       {:inch_ex, ">= 0.0.0", only: :docs}
