@@ -9,10 +9,15 @@ defmodule ExGram do
   middleware(Maxwell.Middleware.BaseUrl, ExGram.Config.get(:ex_gram, :base_url, @base_url))
   middleware(Maxwell.Middleware.Headers, %{"Content-Type" => "application/json"})
   middleware(Maxwell.Middleware.Opts, connect_timeout: 5000, recv_timeout: 30000)
-  middleware(Maxwell.Middleware.Json, decode_func: &ExGram.custom_decode/1)
+
+  middleware(Maxwell.Middleware.Json,
+    encode_func: &ExGram.custom_encode/1,
+    decode_func: &ExGram.custom_decode/1
+  )
 
   adapter(Maxwell.Adapter.Hackney)
 
+  def custom_encode(x), do: ExGram.Encoder.encode(x)
   def custom_decode(x), do: ExGram.Encoder.decode(x, keys: :atoms)
 
   def new_conn(), do: new()
