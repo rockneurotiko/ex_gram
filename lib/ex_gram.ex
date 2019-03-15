@@ -13,7 +13,7 @@ defmodule ExGram do
 
   adapter(Maxwell.Adapter.Hackney)
 
-  def custom_decode(x), do: Poison.Parser.parse(x, keys: :atoms)
+  def custom_decode(x), do: Jason.decode(x, keys: :atoms)
 
   def new_conn(), do: new()
   def conn_put_path(conn, path), do: put_path(conn, path)

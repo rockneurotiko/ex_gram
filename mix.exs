@@ -46,7 +46,7 @@ defmodule ExGram.Mixfile do
 
   defp deps do
     [
-      {:poison, "~> 3.1"},
+      {:jason, "~> 1.1"},
       {:maxwell, "~> 2.2.1"},
       {:hackney, "~> 1.12.1"},
       {:dialyxir, "~> 0.5.0", only: [:dev], runtime: false},

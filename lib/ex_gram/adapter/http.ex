@@ -55,10 +55,10 @@ defmodule ExGram.Adapter.Http do
     x
     |> Map.from_struct()
     |> filter_map
-    |> Poison.encode!()
+    |> Jason.encode!()
   end
 
-  defp encode(x) when is_map(x) or is_list(x), do: Poison.encode!(x)
+  defp encode(x) when is_map(x) or is_list(x), do: Jason.encode!(x)
   defp encode(x), do: x
 
   defp filter_map(%{__struct__: _} = m) do
