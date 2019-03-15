@@ -1,12 +1,30 @@
 defmodule ExGram.Adapter.Http do
   @behaviour ExGram.Adapter
 
+  use Maxwell.Builder, ~w(get post)a
+
+  @base_url "https://api.telegram.org"
+
+  middleware(Maxwell.Middleware.BaseUrl, ExGram.Config.get(:ex_gram, :base_url, @base_url))
+  middleware(Maxwell.Middleware.Headers, %{"Content-Type" => "application/json"})
+  middleware(Maxwell.Middleware.Opts, connect_timeout: 5000, recv_timeout: 30000)
+
+  middleware(Maxwell.Middleware.Json,
+    encode_func: &ExGram.Adapter.Http.custom_encode/1,
+    decode_func: &ExGram.Adapter.Http.custom_decode/1
+  )
+
+  adapter(Maxwell.Adapter.Hackney)
+
+  def custom_encode(x), do: ExGram.Encoder.encode(x)
+  def custom_decode(x), do: ExGram.Encoder.decode(x, keys: :atoms)
+
   @impl ExGram.Adapter
   def request(verb, path, body) do
     where = where_body(verb)
 
-    ExGram.new_conn()
-    |> ExGram.conn_put_path(path)
+    new()
+    |> put_path(path)
     |> add_body(where, body)
     |> do_request(verb)
     |> post_request()
@@ -31,7 +49,7 @@ defmodule ExGram.Adapter.Http do
   end
 
   defp do_request(conn, verb) do
-    apply(ExGram, verb, [conn])
+    apply(ExGram.Adapter.Http, verb, [conn])
   end
 
   defp add_body(conn, where, body) do
