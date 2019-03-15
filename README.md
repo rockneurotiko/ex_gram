@@ -16,21 +16,33 @@ Add `ex_gram` as dependency in `mix.exs`
 
 ``` elixir
 def deps do
-    [{:ex_gram, "~> 0.5.0"}]
-end
-```
-
-- Using github
-
-``` elixir
-def deps do
-    [{:ex_gram, github: "rockneurotiko/ex_gram", tag: "0.5.0"}]
+    [
+      {:ex_gram, "~> 0.5.0"},
+      # You need to specify one JSON engine, Jason or Poison
+      # By default it will try to use Jason
+      # See the Configuration section
+      {:jason, ">= 1.0.0"}, # Only one of this
+      {:poison, ">= 1.0.0"} # Two dependencies
+    ]
 end
 ```
 
 ## Configuration
 
 There are some optional configuration that you can add to your `config.exs`:
+
+### JSON Engine
+
+By default ExGram will use `Jason` engine, but you can change it to your prefered JSON engine, the module just have to expose encode/2, encode!/2, decode/2, decode!/2
+
+You can change the engine in the configuration:
+
+``` elixir
+config :ex_gram, json_encoder: Poison
+```
+
+### Token
+
 
 ``` elixir
 config :ex_gram, token: "TOKEN"

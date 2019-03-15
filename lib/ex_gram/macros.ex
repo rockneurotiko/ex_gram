@@ -181,10 +181,10 @@ defmodule ExGram.Macros do
     x
     |> Map.from_struct()
     |> filter_map
-    |> Poison.encode!()
+    |> ExGram.Encoder.encode!()
   end
 
-  def encode(x) when is_map(x) or is_list(x), do: Poison.encode!(x)
+  def encode(x) when is_map(x) or is_list(x), do: ExGram.Encoder.encode!(x)
   def encode(x), do: x
 
   def struct_types([], acc), do: acc
