@@ -4,14 +4,14 @@ defmodule Examples.Sup do
   def start, do: start(1, 1)
 
   def start(_, _) do
-    import Supervisor.Spec
+    token = ExGram.Config.get(:ex_gram, :token)
 
     children = [
-      supervisor(ExGram, []),
-      worker(Examples.Simple, [:polling, ExGram.Config.get(:ex_gram, :token)])
+      ExGram,
+      {Examples.Simple, [method: :polling, token: token]}
     ]
 
-    opts = [strategy: :one_for_one, name: Sup]
+    opts = [strategy: :one_for_one, name: Examples.Sup]
     Supervisor.start_link(children, opts)
   end
 end

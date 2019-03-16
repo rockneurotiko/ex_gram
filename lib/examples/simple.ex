@@ -1,6 +1,5 @@
 defmodule Examples.Simple do
   @bot :simple_bot
-  def bot(), do: @bot
 
   use ExGram.Bot, name: @bot
 
