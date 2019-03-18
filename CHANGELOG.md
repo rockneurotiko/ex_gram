@@ -1,5 +1,8 @@
 # Changelog
 
+## [TBR]
+- Remove Supervisor.Spec uses, clean start_link and child_spec code
+
 ## [0.6.0]
 
 - Handle when update_worker is nil and raise a better message

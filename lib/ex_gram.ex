@@ -3,29 +3,20 @@ defmodule ExGram do
 
   import ExGram.Macros
 
-  def child_spec(opts) do
-    reload_engine()
-
-    children = [{Registry, [keys: :unique, name: Registry.ExGram]}]
+  def start_link(opts \\ []) do
     name = opts[:name] || __MODULE__
-    params = [strategy: :one_for_one, name: name]
-    Supervisor.Spec.supervisor(Supervisor, [children, params])
-  end
 
-  def start_link() do
-    Supervisor.start_link(__MODULE__, :ok)
+    Supervisor.start_link(__MODULE__, :ok, name: name)
   end
 
   def init(:ok) do
-    import Supervisor.Spec
-
     reload_engine()
 
     children = [
-      supervisor(Registry, [:unique, Registry.ExGram])
+      {Registry, [keys: :unique, name: Registry.ExGram]}
     ]
 
-    supervise(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :one_for_one)
   end
 
   defp reload_engine() do
