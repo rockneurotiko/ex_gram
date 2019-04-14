@@ -306,6 +306,21 @@ defmodule ExGram do
     ExGram.Model.Message
   )
 
+  method(
+    :post,
+    "sendPoll",
+    [
+      {chat_id, [:integer, :string]},
+      {question, [:string]},
+      {options, [{:array, :string}]},
+      {disable_notification, [:boolean], :optional},
+      {reply_to_message_id, [:integer], :optional},
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
+       :optional}
+    ],
+    ExGram.Model.Message
+  )
+
   method(:post, "sendChatAction", [{chat_id, [:integer, :string]}, {action, [:string]}], true)
 
   method(
@@ -480,6 +495,17 @@ defmodule ExGram do
     ExGram.Model.Message
   )
 
+  method(
+    :post,
+    "stopPoll",
+    [
+      {chat_id, [:integer, :string]},
+      {message_id, [:integer]},
+      {reply_markup, [InlineKeyboardMarkup], :optional}
+    ],
+    ExGram.Model.results()
+  )
+
   method(:post, "deleteMessage", [{chat_id, [:integer, :string]}, {message_id, [:integer]}], true)
 
   method(
@@ -649,7 +675,7 @@ defmodule ExGram do
     [ExGram.Model.GameHighScore]
   )
 
-  # 62 methods
+  # 64 methods
 
   # ----------MODELS-----------
 
@@ -666,7 +692,8 @@ defmodule ExGram do
       {:chosen_inline_result, ChosenInlineResult},
       {:callback_query, CallbackQuery},
       {:shipping_query, ShippingQuery},
-      {:pre_checkout_query, PreCheckoutQuery}
+      {:pre_checkout_query, PreCheckoutQuery},
+      {:poll, Poll}
     ])
 
     model(WebhookInfo, [
@@ -713,6 +740,7 @@ defmodule ExGram do
       {:forward_from_chat, Chat},
       {:forward_from_message_id, :integer},
       {:forward_signature, :string},
+      {:forward_sender_name, :string},
       {:forward_date, :integer},
       {:reply_to_message, Message},
       {:edit_date, :integer},
@@ -734,6 +762,7 @@ defmodule ExGram do
       {:contact, Contact},
       {:location, Location},
       {:venue, Venue},
+      {:poll, Poll},
       {:new_chat_members, {:array, User}},
       {:left_chat_member, User},
       {:new_chat_title, :string},
@@ -838,6 +867,15 @@ defmodule ExGram do
       {:foursquare_type, :string}
     ])
 
+    model(PollOption, [{:text, :string}, {:voter_count, :integer}])
+
+    model(Poll, [
+      {:id, :string},
+      {:question, :string},
+      {:options, {:array, PollOption}},
+      {:is_closed, :boolean}
+    ])
+
     model(UserProfilePhotos, [{:total_count, :integer}, {:photos, {:array, {:array, PhotoSize}}}])
 
     model(File, [{:file_id, :string}, {:file_size, :integer}, {:file_path, :string}])
@@ -896,6 +934,7 @@ defmodule ExGram do
       {:can_restrict_members, :boolean},
       {:can_pin_messages, :boolean},
       {:can_promote_members, :boolean},
+      {:is_member, :boolean},
       {:can_send_messages, :boolean},
       {:can_send_media_messages, :boolean},
       {:can_send_other_messages, :boolean},
@@ -1364,7 +1403,9 @@ defmodule ExGram do
       {:files, {:array, PassportFile}},
       {:front_side, PassportFile},
       {:reverse_side, PassportFile},
-      {:selfie, PassportFile}
+      {:selfie, PassportFile},
+      {:translation, {:array, PassportFile}},
+      {:hash, :string}
     ])
 
     model(EncryptedCredentials, [{:data, :string}, {:hash, :string}, {:secret, :string}])
@@ -1412,6 +1453,27 @@ defmodule ExGram do
       {:message, :string}
     ])
 
+    model(PassportElementErrorTranslationFile, [
+      {:source, :string},
+      {:type, :string},
+      {:file_hash, :string},
+      {:message, :string}
+    ])
+
+    model(PassportElementErrorTranslationFiles, [
+      {:source, :string},
+      {:type, :string},
+      {:file_hashes, {:array, :string}},
+      {:message, :string}
+    ])
+
+    model(PassportElementErrorUnspecified, [
+      {:source, :string},
+      {:type, :string},
+      {:element_hash, :string},
+      {:message, :string}
+    ])
+
     model(Game, [
       {:title, :string},
       {:description, :string},
@@ -1433,7 +1495,7 @@ defmodule ExGram do
 
     model(GameHighScore, [{:position, :integer}, {:user, User}, {:score, :integer}])
 
-    # 85 models
+    # 90 models
 
     defmodule InlineQueryResult do
       @type t ::
@@ -1509,6 +1571,9 @@ defmodule ExGram do
               | PassportElementErrorSelfie.t()
               | PassportElementErrorFile.t()
               | PassportElementErrorFiles.t()
+              | PassportElementErrorTranslationFile.t()
+              | PassportElementErrorTranslationFiles.t()
+              | PassportElementErrorUnspecified.t()
 
       def subtypes() do
         [
@@ -1517,7 +1582,10 @@ defmodule ExGram do
           PassportElementErrorReverseSide,
           PassportElementErrorSelfie,
           PassportElementErrorFile,
-          PassportElementErrorFiles
+          PassportElementErrorFiles,
+          PassportElementErrorTranslationFile,
+          PassportElementErrorTranslationFiles,
+          PassportElementErrorUnspecified
         ]
       end
     end

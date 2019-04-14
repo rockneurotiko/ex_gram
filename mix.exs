@@ -4,7 +4,7 @@ defmodule ExGram.Mixfile do
   def project do
     [
       app: :ex_gram,
-      version: "0.6.0",
+      version: "0.6.1",
       package: package(),
       description: description(),
       source_url: "https://github.com/rockneurotiko/ex_gram",
