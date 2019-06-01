@@ -17,7 +17,7 @@ Add `ex_gram` as dependency in `mix.exs`
 ``` elixir
 def deps do
     [
-      {:ex_gram, "~> 0.6.0"},
+      {:ex_gram, "~> 0.6"},
       # You need to specify one JSON engine, Jason or Poison
       # By default it will try to use Jason
       # See the Configuration section
