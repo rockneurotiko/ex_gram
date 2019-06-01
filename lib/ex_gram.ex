@@ -777,7 +777,8 @@ defmodule ExGram do
       {:invoice, Invoice},
       {:successful_payment, SuccessfulPayment},
       {:connected_website, :string},
-      {:passport_data, PassportData}
+      {:passport_data, PassportData},
+      {:reply_markup, InlineKeyboardMarkup, :optional}
     ])
 
     model(MessageEntity, [
@@ -900,11 +901,19 @@ defmodule ExGram do
     model(InlineKeyboardButton, [
       {:text, :string},
       {:url, :string},
+      {:login_url, LoginUrl},
       {:callback_data, :string},
       {:switch_inline_query, :string},
       {:switch_inline_query_current_chat, :string},
       {:callback_game, CallbackGame},
       {:pay, :boolean}
+    ])
+
+    model(LoginUrl, [
+      {:url, :string},
+      {:forward_text, :string},
+      {:bot_username, :string},
+      {:request_write_access, :boolean}
     ])
 
     model(CallbackQuery, [
@@ -1495,7 +1504,7 @@ defmodule ExGram do
 
     model(GameHighScore, [{:position, :integer}, {:user, User}, {:score, :integer}])
 
-    # 90 models
+    # 91 models
 
     defmodule InlineQueryResult do
       @type t ::
