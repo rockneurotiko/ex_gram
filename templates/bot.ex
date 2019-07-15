@@ -1,5 +1,5 @@
 defmodule <%= app_module %>.Bot do
-  @bot <%= app %>
+  @bot <%= inspect(app) %>
 
   use ExGram.Bot,
     name: @bot
