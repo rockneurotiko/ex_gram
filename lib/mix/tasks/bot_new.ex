@@ -22,7 +22,7 @@ defmodule Mix.Tasks.Bot.New do
 
     children = [
       ExGram,
-      {Example.Bot, [method: :polling, token: token]}
+      {#{app_module}.Bot, [method: :polling, token: token]}
     ]
     """)
   end
