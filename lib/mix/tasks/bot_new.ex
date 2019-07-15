@@ -14,5 +14,16 @@ defmodule Mix.Tasks.Bot.New do
     template_path = Path.expand("../../../templates/bot.ex", __DIR__)
     contents = EEx.eval_file(template_path, app_module: app_module, app: app)
     create_file(target, contents)
+
+    IO.puts("""
+
+    You should also add ExGram and #{app_module}.Bot as children of the application Supervisor,
+    here is an example using polling:
+
+    children = [
+      ExGram,
+      {Example.Bot, [method: :polling, token: token]}
+    ]
+    """)
   end
 end
