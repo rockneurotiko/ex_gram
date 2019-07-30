@@ -347,11 +347,8 @@ defmodule ExGram do
     [
       {chat_id, [:integer, :string]},
       {user_id, [:integer]},
-      {until_date, [:integer], :optional},
-      {can_send_messages, [:boolean], :optional},
-      {can_send_media_messages, [:boolean], :optional},
-      {can_send_other_messages, [:boolean], :optional},
-      {can_add_web_page_previews, [:boolean], :optional}
+      {permissions, [ChatPermissions]},
+      {until_date, [:integer], :optional}
     ],
     true
   )
@@ -371,6 +368,13 @@ defmodule ExGram do
       {can_pin_messages, [:boolean], :optional},
       {can_promote_members, [:boolean], :optional}
     ],
+    true
+  )
+
+  method(
+    :post,
+    "setChatPermissions",
+    [{chat_id, [:integer, :string]}, {permissions, [ChatPermissions]}],
     true
   )
 
@@ -675,7 +679,7 @@ defmodule ExGram do
     [ExGram.Model.GameHighScore]
   )
 
-  # 64 methods
+  # 65 methods
 
   # ----------MODELS-----------
 
@@ -722,11 +726,11 @@ defmodule ExGram do
       {:username, :string},
       {:first_name, :string},
       {:last_name, :string},
-      {:all_members_are_administrators, :boolean},
       {:photo, ChatPhoto},
       {:description, :string},
       {:invite_link, :string},
       {:pinned_message, Message},
+      {:permissions, ChatPermissions},
       {:sticker_set_name, :string},
       {:can_set_sticker_set, :boolean}
     ])
@@ -778,7 +782,7 @@ defmodule ExGram do
       {:successful_payment, SuccessfulPayment},
       {:connected_website, :string},
       {:passport_data, PassportData},
-      {:reply_markup, InlineKeyboardMarkup, :optional}
+      {:reply_markup, InlineKeyboardMarkup}
     ])
 
     model(MessageEntity, [
@@ -935,19 +939,31 @@ defmodule ExGram do
       {:status, :string},
       {:until_date, :integer},
       {:can_be_edited, :boolean},
-      {:can_change_info, :boolean},
       {:can_post_messages, :boolean},
       {:can_edit_messages, :boolean},
       {:can_delete_messages, :boolean},
-      {:can_invite_users, :boolean},
       {:can_restrict_members, :boolean},
-      {:can_pin_messages, :boolean},
       {:can_promote_members, :boolean},
+      {:can_change_info, :boolean},
+      {:can_invite_users, :boolean},
+      {:can_pin_messages, :boolean},
       {:is_member, :boolean},
       {:can_send_messages, :boolean},
       {:can_send_media_messages, :boolean},
+      {:can_send_polls, :boolean},
       {:can_send_other_messages, :boolean},
       {:can_add_web_page_previews, :boolean}
+    ])
+
+    model(ChatPermissions, [
+      {:can_send_messages, :boolean},
+      {:can_send_media_messages, :boolean},
+      {:can_send_polls, :boolean},
+      {:can_send_other_messages, :boolean},
+      {:can_add_web_page_previews, :boolean},
+      {:can_change_info, :boolean},
+      {:can_invite_users, :boolean},
+      {:can_pin_messages, :boolean}
     ])
 
     model(ResponseParameters, [{:migrate_to_chat_id, :integer}, {:retry_after, :integer}])
@@ -1022,6 +1038,7 @@ defmodule ExGram do
       {:file_id, :string},
       {:width, :integer},
       {:height, :integer},
+      {:is_animated, :boolean},
       {:thumb, PhotoSize},
       {:emoji, :string},
       {:set_name, :string},
@@ -1032,6 +1049,7 @@ defmodule ExGram do
     model(StickerSet, [
       {:name, :string},
       {:title, :string},
+      {:is_animated, :boolean},
       {:contains_masks, :boolean},
       {:stickers, {:array, Sticker}}
     ])
@@ -1504,7 +1522,7 @@ defmodule ExGram do
 
     model(GameHighScore, [{:position, :integer}, {:user, User}, {:score, :integer}])
 
-    # 91 models
+    # 92 models
 
     defmodule InlineQueryResult do
       @type t ::
