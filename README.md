@@ -38,7 +38,7 @@ By default ExGram will use `Jason` engine, but you can change it to your prefere
 You can change the engine in the configuration:
 
 ``` elixir
-config :ex_gram, json_encoder: Poison
+config :ex_gram, json_engine: Poison
 ```
 
 ### Token
