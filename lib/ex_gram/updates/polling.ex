@@ -26,9 +26,9 @@ defmodule ExGram.Updates.Polling do
     updates = get_updates(token, uid)
     send_updates(updates, pid)
 
-    nid = extract_last_pid(uid, updates)
+    nid = next_pid(uid, updates)
 
-    {:noreply, {pid, token, nid + 1}, @polling_timeout}
+    {:noreply, {pid, token, nid}, @polling_timeout}
   end
 
   def handle_info(unknonwn_message, state) do
@@ -56,11 +56,11 @@ defmodule ExGram.Updates.Polling do
     Enum.map(updates, &GenServer.call(pid, {:update, &1}))
   end
 
-  defp extract_last_pid(actual, []), do: actual
+  defp next_pid(actual, []), do: actual
 
-  defp extract_last_pid(actual, [u | us]) do
-    au = u.update_id
-
-    extract_last_pid(max(au, actual), us)
+  defp next_pid(actual, updates) do
+    updates
+    |> Stream.map(&(&1.update_id + 1))
+    |> Enum.reduce(actual, &max(&1, &2))
   end
 end
