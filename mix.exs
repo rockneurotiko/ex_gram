@@ -1,10 +1,12 @@
 defmodule ExGram.Mixfile do
   use Mix.Project
 
+  @version "0.7.1"
+
   def project do
     [
       app: :ex_gram,
-      version: "0.7.0",
+      version: @version,
       package: package(),
       description: description(),
       source_url: "https://github.com/rockneurotiko/ex_gram",
