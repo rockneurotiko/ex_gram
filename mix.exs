@@ -38,7 +38,9 @@ defmodule ExGram.Mixfile do
     [
       maintainers: ["Miguel Garcia / Rock Neurotiko"],
       licenses: ["Beerware"],
-      links: %{"GitHub" => "https://github.com/rockneurotiko/ex_gram"}
+      links: %{"GitHub" => "https://github.com/rockneurotiko/ex_gram"},
+      files:
+        ~w(lib priv .formatter.exs mix.exs README* readme* LICENSE* license* CHANGELOG* changelog* src templates)
     ]
   end
 
