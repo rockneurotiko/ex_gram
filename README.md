@@ -65,7 +65,47 @@ This section will show how to use the opinionated framework `ex_gram` for telegr
 
 ### Creating a bot!
 
-WIP
+Creating a bot is pretty simple, you can use the `mix bot.new` task to setup your bot. For example:
+
+```shell
+$ mix new my_bot --sup
+$ cd my_bot
+```
+
+Put `ExGram` a JSON engine (`Jason` for example) as a dependency in your project like so:
+
+```
+# Run "mix help deps" to learn about dependencies.
+defp deps do
+  [
+    {:ex_gram, "~> 0.7"},
+    {:jason, "~> 1.0.0"}
+  ]
+end
+```
+
+Get the project deps and run the bot new task:
+
+```
+$ mix deps.get
+$ mix bot.new
+```
+
+You will get a message like this:
+
+```
+You should also add ExGram and MyBot.Bot as children of the application Supervisor,
+here is an example using polling:
+
+children = [
+  ExGram,
+  {MyBot.Bot, [method: :polling, token: token]}
+]
+```
+
+This is basically talling you to configure the project as shown in the [configuration](#configuration) section. Get your token and put `ExGram` and `MyBot.Bot` under the `Application`.
+
+Now you are ready to run the bot with `mix run --no-halt` and go to Telegram and send your bot the command `/start`.
 
 ### Sending files
 
