@@ -134,7 +134,12 @@ This are the type of tuples that `handle/2` can receive:
 
 ### Sending files
 
-WIP
+`ExGram` lets you send files by id (this means using files already uploaded to Telegram servers) or by givin a local path. Here is how:
+``` elixir
+ExGram.send_document(chat_id, document_id)                # By document ID
+
+ExGram.send_document(chat_id, {:file, "path/to/file"})    # By local path
+```
 
 ## Library Usage
 
