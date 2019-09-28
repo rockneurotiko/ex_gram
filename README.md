@@ -72,7 +72,7 @@ $ mix new my_bot --sup
 $ cd my_bot
 ```
 
-Put `ExGram` a JSON engine (`Jason` for example) as a dependency in your project like so:
+Put `ExGram` and a JSON engine (`Jason` for example) as dependencies in your project like so:
 
 ``` elixir
 # Run "mix help deps" to learn about dependencies.
@@ -118,19 +118,19 @@ end
 ```
 
 The `handle/2` function receives two arguments:
-  - The first argument is a tuple as the firts argument that changes depending on the update. In this case we are expecting a command called `start` in Telegram, this means a `/start` message. This type of commands can be sent next to a message, for example `/start Well hello`, the `Well hello` text will arrive to the third element of the tuple named `_msg` (because we are ignoring it right now).
+  - The first argument is a tuple that changes depending on the update. In this case we are expecting a command called `start` in Telegram, this means a `/start` message. This type of commands can be sent next to a message, for example `/start Well hello`, in this cases the `Well hello` text will arrive to the third element of the tuple named `_msg` (because we are ignoring it right now). In case no text is given an empty string will arrive in the third element.
 
   - The second argument is a map with information about the update that just arrived, things like the [message object](https://core.telegram.org/bots/api#message) and information that `ExGram` will use to answer the message
 
 This are the type of tuples that `handle/2` can receive:
-  - `{:command, key, text}` :: This tuple will match when a command is received
-  - `{:text, text}` :: This tuple will match when plain text is sent to the bot (check [privacy mode](https://core.telegram.org/bots#privacy-mode))
-  - `{:regex, key, text}` :: This tuple will match if a regex is defined
+  - `{:command, key, text}` → This tuple will match when a command is received
+  - `{:text, text}` → This tuple will match when plain text is sent to the bot (check [privacy mode](https://core.telegram.org/bots#privacy-mode))
+  - `{:regex, key, text}` → This tuple will match if a regex is defined
   - `{:message, message}`
-  - `{:callback_query, callback_query}` :: This tuple will match when a [Callback Query](https://core.telegram.org/bots/api#callbackquery) is received
-  - `{:inline_query, inline_query}` :: This tuple will match when an [Inline Query](https://core.telegram.org/bots/api#inlinequery) is received
-  - `{:edited_message, edited_message}` :: This tuple will match when a message is edited
-  - `{:update, update}` :: This tuple will match as a default handle
+  - `{:callback_query, callback_query}` → This tuple will match when a [Callback Query](https://core.telegram.org/bots/api#callbackquery) is received
+  - `{:inline_query, inline_query}` → This tuple will match when an [Inline Query](https://core.telegram.org/bots/api#inlinequery) is received
+  - `{:edited_message, edited_message}` → This tuple will match when a message is edited
+  - `{:update, update}` → This tuple will match as a default handle
 
 ### Sending files
 
