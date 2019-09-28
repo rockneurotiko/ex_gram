@@ -327,7 +327,9 @@ defmodule ExGram.Macros do
     quote location: :keep do
       # Safe method
       @doc """
-      TODO: Do documentation
+      Check the documentation of this method in https://core.telegram.org/bots/api##{
+        String.downcase(unquote(name))
+      }
       """
       @spec unquote(fname)(unquote_splicing(types_mand_spec), ops :: unquote(types_opt_spec)) ::
               {:ok, unquote(returned)}
