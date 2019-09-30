@@ -72,19 +72,7 @@ $ mix new my_bot --sup
 $ cd my_bot
 ```
 
-Put `ExGram` and a JSON engine (`Jason` for example) as dependencies in your project like so:
-
-``` elixir
-# Run "mix help deps" to learn about dependencies.
-defp deps do
-  [
-    {:ex_gram, "~> 0.7"},
-    {:jason, "~> 1.0.0"}
-  ]
-end
-```
-
-Get the project deps and run the bot new task:
+Put `ExGram` and a JSON engine (`Jason` for example) as dependencies in your project as shown in the [Installation](#installation) section. After that, get the project deps and run the bot new task:
 
 ``` shell
 $ mix deps.get
@@ -125,11 +113,12 @@ The `handle/2` function receives two arguments:
 This are the type of tuples that `handle/2` can receive:
   - `{:command, key, text}` → This tuple will match when a command is received
   - `{:text, text}` → This tuple will match when plain text is sent to the bot (check [privacy mode](https://core.telegram.org/bots#privacy-mode))
-  - `{:regex, key, text}` → This tuple will match if a regex is defined
-  - `{:message, message}`
+  - `{:regex, key, text}` → This tuple will match if a regex is defined at the beginning of the module
+  - `{:location, location}` → This tuple will match when a location message is received
   - `{:callback_query, callback_query}` → This tuple will match when a [Callback Query](https://core.telegram.org/bots/api#callbackquery) is received
   - `{:inline_query, inline_query}` → This tuple will match when an [Inline Query](https://core.telegram.org/bots/api#inlinequery) is received
   - `{:edited_message, edited_message}` → This tuple will match when a message is edited
+  - `{:message, message}` → This will match any message that does not fit with the ones described above
   - `{:update, update}` → This tuple will match as a default handle
 
 ### Sending files
