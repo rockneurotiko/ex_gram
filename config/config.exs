@@ -4,7 +4,9 @@ use Mix.Config
 
 config :maxwell, default_adapter: Maxwell.Adapter.Hackney
 
-config :ex_gram, token: "TOKEN", json_engine: Jason
+config :tesla, adapter: Tesla.Adapter.Gun
+
+config :ex_gram, token: "TOKEN", adapter: ExGram.Adapter.Tesla, json_engine: Jason
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
