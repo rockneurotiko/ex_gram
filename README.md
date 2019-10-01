@@ -102,11 +102,70 @@ This section will show how to use the opinionated framework `ex_gram` for telegr
 
 ### Creating a bot!
 
-WIP
+Creating a bot is pretty simple, you can use the `mix bot.new` task to setup your bot. For example:
+
+``` shell
+$ mix new my_bot --sup
+$ cd my_bot
+```
+
+Add and setup `ExGram` and it's adapters in your project as shown in the [Installation](#installation) section. After that, get the project deps and run the bot new task:
+
+``` shell
+$ mix deps.get
+$ mix bot.new
+```
+
+You will get a message like this:
+
+``` text
+You should also add ExGram and MyBot.Bot as children of the application Supervisor,
+here is an example using polling:
+
+children = [
+  ExGram,
+  {MyBot.Bot, [method: :polling, token: token]}
+]
+```
+
+This is basically telling you to configure the project as shown in the [Configuration](#configuration) section. Get your token and put `ExGram` and `MyBot.Bot` under the `Application`.
+
+Now you are ready to run the bot with `mix run --no-halt` and go to Telegram and send your bot the command `/start`.
+
+### How to handle messages
+
+If you followed the [Creating a bot!](#creating-a-bot) section you should see a `handle/2` function in your `MyBot.Bot` module that looks like this:
+
+``` elixir
+def handle({:command, "start", _msg}, context) do
+  answer(context, "Hi!")
+end
+```
+
+The `handle/2` function receives two arguments:
+  - The first argument is a tuple that changes depending on the update. In this case we are expecting a command called `start` in Telegram, this means a `/start` message. This type of commands can be sent next to a message, for example `/start Well hello`, in this cases the `Well hello` text will arrive to the third element of the tuple named `_msg` (because we are ignoring it right now). In case no text is given an empty string will arrive in the third element.
+
+  - The second argument is a map with information about the update that just arrived, things like the [message object](https://core.telegram.org/bots/api#message) and information that `ExGram` will use to answer the message
+
+This are the type of tuples that `handle/2` can receive:
+  - `{:command, key, text}` → This tuple will match when a command is received
+  - `{:text, text}` → This tuple will match when plain text is sent to the bot (check [privacy mode](https://core.telegram.org/bots#privacy-mode))
+  - `{:regex, key, text}` → This tuple will match if a regex is defined at the beginning of the module
+  - `{:location, location}` → This tuple will match when a location message is received
+  - `{:callback_query, callback_query}` → This tuple will match when a [Callback Query](https://core.telegram.org/bots/api#callbackquery) is received
+  - `{:inline_query, inline_query}` → This tuple will match when an [Inline Query](https://core.telegram.org/bots/api#inlinequery) is received
+  - `{:edited_message, edited_message}` → This tuple will match when a message is edited
+  - `{:message, message}` → This will match any message that does not fit with the ones described above
+  - `{:update, update}` → This tuple will match as a default handle
 
 ### Sending files
 
-WIP
+`ExGram` lets you send files by id (this means using files already uploaded to Telegram servers) or by givin a local path. Here is how:
+``` elixir
+ExGram.send_document(chat_id, document_id)                # By document ID
+
+ExGram.send_document(chat_id, {:file, "path/to/file"})    # By local path
+```
 
 ## Library Usage
 
