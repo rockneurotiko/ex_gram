@@ -12,24 +12,56 @@ ExGram is a library to build Telegram Bots, you can use the low-level methods an
 
 Add `ex_gram` as dependency in `mix.exs`
 
-- Using Hex
-
 ``` elixir
 def deps do
     [
       {:ex_gram, "~> 0.7"},
-      # You need to specify one JSON engine, Jason or Poison
-      # By default it will try to use Jason
-      # See the Configuration section
-      {:jason, ">= 1.0.0"}, # Only one of this
-      {:poison, ">= 1.0.0"} # Two dependencies
+      {:tesla, "~> 1.2"},
+      {:hackney, "~> 1.12"},
+      {:jason, ">= 1.0.0"}
     ]
 end
 ```
 
-## Configuration
+See the next sections to select a different HTTP adapter or JSON engine.
 
-There are some optional configuration that you can add to your `config.exs`:
+### HTTP Adapter
+
+You should add Tesla or Maxwell http adapter, by default it will try to use the Tesla adapter, this are the defaults:
+
+On deps:
+``` elixir
+{:tesla, "~> 1.2"},
+{:hackney, "~> 1.12"}
+```
+
+- If you want to use Gun:
+
+On deps:
+``` elixir
+{:tesla, "~> 1.2"},
+{:gun, "~> 1.3"}
+```
+
+On config:
+``` elixir
+config :tesla, adapter: Tesla.Adapter.Gun
+```
+
+- If you prefer maxwell instead of tesla:
+
+On deps:
+``` elixir
+{:maxwell, "~> 2.2.1"},
+{:hackney, "~> 1.12"},
+```
+
+On config:
+
+``` elixir
+config :ex_gram, adapter: ExGram.Adapter.Maxwell
+config :maxwell, default_adapter: Maxwell.Adapter.Hackney
+```
 
 ### JSON Engine
 
@@ -40,6 +72,11 @@ You can change the engine in the configuration:
 ``` elixir
 config :ex_gram, json_engine: Poison
 ```
+
+## Configuration
+
+There are some optional configuration that you can add to your `config.exs`:
+
 
 ### Token
 
@@ -72,7 +109,7 @@ $ mix new my_bot --sup
 $ cd my_bot
 ```
 
-Put `ExGram` and a JSON engine (`Jason` for example) as dependencies in your project as shown in the [Installation](#installation) section. After that, get the project deps and run the bot new task:
+Add and setup `ExGram` and it's adapters in your project as shown in the [Installation](#installation) section. After that, get the project deps and run the bot new task:
 
 ``` shell
 $ mix deps.get

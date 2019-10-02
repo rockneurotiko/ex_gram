@@ -49,15 +49,20 @@ defmodule ExGram.Mixfile do
 
   defp deps do
     [
-      {:maxwell, "~> 2.2.1"},
-      {:hackney, "~> 1.12"},
+      # Tesla adapter
+      {:tesla, "~> 1.2", optional: true},
+      {:gun, "~> 1.3", optional: true},
+      # Maxwell or Tesla
+      {:hackney, "~> 1.12", optional: true},
+      # Maxwell adapter
+      {:maxwell, "~> 2.2.1", optional: true},
       # JSON encoders/decoders
       {:jason, ">= 1.0.0", optional: true},
       {:poison, ">= 1.0.0", optional: true},
       # Development
       {:dialyxir, "~> 0.5.0", only: [:dev], runtime: false},
       {:ex_doc, ">= 0.0.0", only: :dev},
-      {:inch_ex, ">= 0.0.0", only: :docs}
+      {:inch_ex, "~> 0.5.0", only: :docs}
     ]
   end
 end

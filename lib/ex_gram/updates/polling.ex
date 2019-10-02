@@ -37,7 +37,7 @@ defmodule ExGram.Updates.Polling do
     {:noreply, state, @polling_timeout}
   end
 
-  @default_opts [limit: 100, timeout: 30000]
+  @default_opts [limit: 100, timeout: 50]
   defp get_updates(token, uid, opts \\ []) do
     opts =
       @default_opts

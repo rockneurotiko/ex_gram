@@ -1,5 +1,5 @@
 defmodule ExGram.Macros do
-  @adapter Application.get_env(:ex_gram, :adapter) || ExGram.Adapter.Http
+  @adapter ExGram.Config.get(:ex_gram, :adapter, ExGram.Adapter.Tesla)
 
   def transform_param({:{}, line, [{name, _line, nil}]}), do: {{name, line, nil}, [name, [:any]]}
 
@@ -384,10 +384,7 @@ defmodule ExGram.Macros do
 
               case vn do
                 {:file, path} ->
-                  # It's a file, let's build the multipart data for maxwell post
-                  disposition = {"form-data", [{"name", partname}, {"filename", path}]}
-                  # File part
-                  fpath = {:file, path, disposition, []}
+                  file_part = {:file, partname, path}
 
                   # Encode all the other parts in the proper way
                   restparts =
@@ -398,7 +395,7 @@ defmodule ExGram.Macros do
                       {Atom.to_string(name), to_size_string(value)}
                     end)
 
-                  parts = [fpath | restparts]
+                  parts = [file_part | restparts]
 
                   {:multipart, parts}
 
