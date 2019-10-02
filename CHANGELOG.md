@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.8.0]
+- Add Tesla adapter for HTTP and setting it as default
+- Add ability to select Tesla adapter (tested with hackney and gun)
+- Added documentation
+- Added template for creating a bot
+
 ## [0.7.1]
 - Fix an error when not receiving updates the local update_id keeps increasing and makes an infinite loop of retrieving updates
 
