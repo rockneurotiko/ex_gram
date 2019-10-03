@@ -24,8 +24,6 @@ defmodule ExGram do
     ExGram.Encoder.EngineCompiler.compile(engine)
   end
 
-  # ----------METHODS-----------
-
   # AUTO GENERATED
 
   # Methods
@@ -378,7 +376,7 @@ defmodule ExGram do
     true
   )
 
-  method(:post, "exportChatInviteLink", [{chat_id, [:integer, :string]}], String.t())
+  method(:post, "exportChatInviteLink", [{chat_id, [:integer, :string]}], :string)
 
   method(:post, "setChatPhoto", [{chat_id, [:integer, :string]}, {photo, [:file]}], true)
 
@@ -414,7 +412,7 @@ defmodule ExGram do
     ExGram.Model.ChatMember
   ])
 
-  method(:get, "getChatMembersCount", [{chat_id, [:integer, :string]}], integer)
+  method(:get, "getChatMembersCount", [{chat_id, [:integer, :string]}], :integer)
 
   method(
     :get,
@@ -507,7 +505,7 @@ defmodule ExGram do
       {message_id, [:integer]},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
-    ExGram.Model.results()
+    ExGram.Model.Poll
   )
 
   method(:post, "deleteMessage", [{chat_id, [:integer, :string]}, {message_id, [:integer]}], true)
@@ -526,13 +524,13 @@ defmodule ExGram do
     ExGram.Model.Message
   )
 
-  method(:get, "getStickerSet", [{name, [:string]}], ExGram.Model.object())
+  method(:get, "getStickerSet", [{name, [:string]}], ExGram.Model.StickerSet)
 
   method(
     :post,
     "uploadStickerFile",
     [{user_id, [:integer]}, {png_sticker, [:file]}],
-    ExGram.Model.the()
+    ExGram.Model.File
   )
 
   method(
@@ -678,10 +676,6 @@ defmodule ExGram do
     ],
     [ExGram.Model.GameHighScore]
   )
-
-  # 65 methods
-
-  # ----------MODELS-----------
 
   # Models
 
@@ -1522,8 +1516,6 @@ defmodule ExGram do
 
     model(GameHighScore, [{:position, :integer}, {:user, User}, {:score, :integer}])
 
-    # 92 models
-
     defmodule InlineQueryResult do
       @type t ::
               InlineQueryResultCachedAudio.t()
@@ -1546,6 +1538,8 @@ defmodule ExGram do
               | InlineQueryResultVenue.t()
               | InlineQueryResultVideo.t()
               | InlineQueryResultVoice.t()
+
+      def decode_as(), do: %{}
 
       def subtypes() do
         [
@@ -1580,6 +1574,8 @@ defmodule ExGram do
               | InputVenueMessageContent.t()
               | InputContactMessageContent.t()
 
+      def decode_as(), do: %{}
+
       def subtypes() do
         [
           InputTextMessageContent,
@@ -1602,6 +1598,8 @@ defmodule ExGram do
               | PassportElementErrorTranslationFiles.t()
               | PassportElementErrorUnspecified.t()
 
+      def decode_as(), do: %{}
+
       def subtypes() do
         [
           PassportElementErrorDataField,
@@ -1616,7 +1614,5 @@ defmodule ExGram do
         ]
       end
     end
-
-    # 3 generics
   end
 end

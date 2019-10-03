@@ -3,7 +3,7 @@
 from bs4 import BeautifulSoup
 import requests
 
-DEBUG = True
+DEBUG = False
 
 
 def debug(t):
@@ -82,24 +82,27 @@ def extract_table(table):
 
 def good_type(t):
     t = t.strip(".").strip(",").strip()
-    if t == "ExGram.Model.Int":
-        return "integer"
+    tl = t.lower()
+    if tl == "exgram.model.int":
+        return ":integer"
 
-    if t == "ExGram.Model.String":
-        return "String.t()"
+    if tl == "exgram.model.string":
+        return ":string"
 
-    if t.lower() in ["exgram.model.true"]:
-        return "true"
+    if tl == "exgram.model.true":
+        return ":true"
 
     return t
 
 def extract_return_type(text):
     if "Array of Update objects is returned" in text:
-        return "[ExGram.Model.Update]"
-    if "File object is returned" in text:
-        return "ExGram.Model.File"
-    if " is returned" in text:
-        return "ExGram.Model." + text.split(" is returned")[0].split()[-1]
+      return "[ExGram.Model.Update]"
+
+    tf = [" object is returned", " with the final results is returned", " is returned"]
+    for x in tf:
+      if x in text:
+        return "ExGram.Model." + text.split(x)[0].split()[-1]
+
     if "returns an Array of GameHighScore" in text:
         return "[ExGram.Model.GameHighScore]"
     if "returns an Array of ChatMember" in text:
@@ -109,10 +112,12 @@ def extract_return_type(text):
           "returns the edited ",
           "Returns exported invite link as ",
           "Returns the new invite link as",
+          "Returns the uploaded ",
           "Returns a ",
           "returns a ",
           "Returns ",
-          "returns "]
+          "returns ",
+          "On success, the stopped "]
     for x in ts:
         if x in text:
             return "ExGram.Model." + text.split(x)[1].split()[0]
@@ -143,13 +148,15 @@ def extract_model(h4):
 def generic_to_text(name, sub_types):
     types_s = ", ".join(sub_types)
     types_t = " | ".join(["{}.t()".format(x) for x in sub_types])
-    return """defmodule {} do
-  @type t :: {}
+    return """  defmodule {} do
+    @type t :: {}
 
-  def subtypes() do
-    [{}]
-  end
-    end""".format(name, types_t, types_s)
+    def decode_as(), do: %{{}}
+
+    def subtypes() do
+      [{}]
+    end
+  end""".format(name, types_t, types_s)
 
 
 def extract_generic(h4):
