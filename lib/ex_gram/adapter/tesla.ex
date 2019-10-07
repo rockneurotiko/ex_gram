@@ -27,14 +27,7 @@ if Code.ensure_loaded?(Tesla) do
     end
 
     defp new() do
-      custom_middlewares =
-        if Application.get_env(:ex_gram, :retry, false) do
-          retry_middleware()
-        else
-          []
-        end
-
-      Tesla.client([], http_adapter())
+      custom_middlewares() |> Tesla.client(http_adapter())
     end
 
     defp do_request(:get, path, body) do
@@ -118,7 +111,7 @@ if Code.ensure_loaded?(Tesla) do
     defp opts(), do: [adapter: adapter_opts()]
     defp adapter_opts(), do: [connect_timeout: 5_000, timeout: 60_000, recv_timeout: 60_000]
 
-    defp retry_middleware() do
+    defp get_middleware(:retry_on_error) do
       {Tesla.Middleware.Retry,
        delay: 500,
        max_retries: 10,
@@ -128,6 +121,11 @@ if Code.ensure_loaded?(Tesla) do
          {:ok, _} -> false
          {:error, _} -> true
        end}
+    end
+
+    defp custom_middlewares() do
+      Application.get_env(:ex_gram, :tesla_middlewares, [])
+      |> Enum.map(&get_middleware/1)
     end
   end
 end
