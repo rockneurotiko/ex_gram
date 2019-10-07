@@ -123,9 +123,14 @@ if Code.ensure_loaded?(Tesla) do
        end}
     end
 
+    defp get_middleware(_) do
+      :no_middleware
+    end
+
     defp custom_middlewares() do
       Application.get_env(:ex_gram, :tesla_middlewares, [])
       |> Enum.map(&get_middleware/1)
+      |> Enum.filter(fn m -> m != :no_middleware end)
     end
   end
 end
