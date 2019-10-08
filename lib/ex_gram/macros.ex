@@ -79,33 +79,6 @@ defmodule ExGram.Macros do
     mand_vnames = mand_names |> Enum.map(&nid/1)
     mand_body = Enum.zip(mand_names, mand_vnames)
 
-    # result_transformer =
-    #   case returned do
-    #     [{:__aliases__, _l, _t} = t] -> &ExGram.Macros.Helpers.process_result_list(&1, t)
-    #     {:__aliases__, _l, _t} = t -> &ExGram.Macros.Helpers.process_result(&1, t)
-    #     _ -> & &1
-    #   end
-
-    # result_transformer =
-    #   case returned do
-    #     [{:__aliases__, _l, _t} = t] ->
-    #       quote do
-    #         (fn l -> Enum.map(l, &(struct(unquote(t)) |> Map.merge(&1))) end).()
-    #       end
-
-    #     {:__aliases__, _l, _t} = t ->
-    #       quote do
-    #         (fn x ->
-    #            struct(unquote(t)) |> Map.merge(x)
-    #          end).()
-    #       end
-
-    #     _ ->
-    #       quote do
-    #         (fn x -> x end).()
-    #       end
-    #   end
-
     # Change ExGram.Model.Type for ExGram.Model.Type.t
     returned_type =
       case returned do
