@@ -96,6 +96,28 @@ children = [
 ]
 ```
 
+### Configure Tesla middlewares
+
+If you are using the `Tesla` adapter, you can add [Tesla
+middlewares](https://github.com/teamon/tesla#middleware) to `ExGram`
+via config file. Add to your config:
+```elixir
+config :ex_gram, ExGram.Adapter.Tesla,
+  middlewares: [
+    {Tesla.Middleware.Retry,
+     delay: 500,
+     max_retries: 10,
+     max_delay: 4_000,
+     should_retry: fn
+       {:ok, %{status: status}} when status in [400, 500] -> true
+       {:ok, _} -> false
+       {:error, _} -> true
+     end}
+  ]
+```
+
+The `middlewares` list will be loaded in the `ExGram.Adapter.Tesla` module.
+
 ## Framework Usage
 
 This section will show how to use the opinionated framework `ex_gram` for telegram bots!

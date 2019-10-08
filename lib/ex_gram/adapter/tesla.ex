@@ -111,26 +111,7 @@ if Code.ensure_loaded?(Tesla) do
     defp opts(), do: [adapter: adapter_opts()]
     defp adapter_opts(), do: [connect_timeout: 5_000, timeout: 60_000, recv_timeout: 60_000]
 
-    defp get_middleware(:retry_on_error) do
-      {Tesla.Middleware.Retry,
-       delay: 500,
-       max_retries: 10,
-       max_delay: 4_000,
-       should_retry: fn
-         {:ok, %{status: status}} when status in [400, 500] -> true
-         {:ok, _} -> false
-         {:error, _} -> true
-       end}
-    end
-
-    defp get_middleware(_) do
-      :no_middleware
-    end
-
-    defp custom_middlewares() do
-      Application.get_env(:ex_gram, :tesla_middlewares, [])
-      |> Enum.map(&get_middleware/1)
-      |> Enum.filter(fn m -> m != :no_middleware end)
-    end
+    defp custom_middlewares(),
+      do: Application.get_env(:ex_gram, __MODULE__, [])[:middlewares] || []
   end
 end
