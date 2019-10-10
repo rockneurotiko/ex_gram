@@ -27,7 +27,7 @@ if Code.ensure_loaded?(Tesla) do
     end
 
     defp new() do
-      Tesla.client([], http_adapter())
+      custom_middlewares() |> Tesla.client(http_adapter())
     end
 
     defp do_request(:get, path, body) do
@@ -110,5 +110,8 @@ if Code.ensure_loaded?(Tesla) do
 
     defp opts(), do: [adapter: adapter_opts()]
     defp adapter_opts(), do: [connect_timeout: 5_000, timeout: 60_000, recv_timeout: 60_000]
+
+    defp custom_middlewares(),
+      do: Application.get_env(:ex_gram, __MODULE__, [])[:middlewares] || []
   end
 end
