@@ -138,7 +138,7 @@ And in the config file:
 
 config :ex_gram, ExGram.Adapter.Tesla,
   middlewares: [
-    {TeslaMiddleware, :retry, []}
+    {TeslaMiddlewares, :retry, []}
   ]
 ```
 
