@@ -40,7 +40,9 @@ defmodule ExGram.Middleware.Builder do
 
   @doc false
   defmacro __before_compile__(env) do
-    middlewares = Module.get_attribute(env.module, :middlewares) |> Enum.reverse() |> Macro.escape()
+    middlewares =
+      Module.get_attribute(env.module, :middlewares) |> Enum.reverse() |> Macro.escape()
+
     commands = Module.get_attribute(env.module, :commands) |> Enum.reverse() |> Macro.escape()
     regexes = Module.get_attribute(env.module, :regexes) |> Enum.reverse() |> Macro.escape()
 
