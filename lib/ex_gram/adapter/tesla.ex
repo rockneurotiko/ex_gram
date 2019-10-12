@@ -120,22 +120,24 @@ if Code.ensure_loaded?(Tesla) do
       end
     end
 
-    defp format_middleware({_, _} = mf), do: mf
+    defp format_middleware({_, _} = mf), do: {:ok, mf}
     defp format_middleware(_), do: :error
 
     defp custom_middlewares() do
-      (Application.get_env(:ex_gram, __MODULE__, [])[:middlewares] || [])
+      middlewares = Application.get_env(:ex_gram, __MODULE__, [])[:middlewares] || []
+
+      middlewares
       |> Enum.reduce([], fn elem, acc ->
         case format_middleware(elem) do
           {:ok, middleware} ->
-            IO.inspect(middleware)
             [middleware | acc]
 
           :error ->
-            Logger.debug("Discarded, element is not a middleware: #{inspect(elem)}")
+            Logger.warn("Discarded, element is not a middleware: #{inspect(elem)}")
             acc
         end
       end)
+      |> Enum.reverse()
     end
   end
 end
