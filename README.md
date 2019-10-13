@@ -104,6 +104,21 @@ via config file. Add to your config:
 ```elixir
 config :ex_gram, ExGram.Adapter.Tesla,
   middlewares: [
+    {Tesla.Middleware.BaseUrl, "https://example.com/foo"}
+  ]
+```
+
+The `middlewares` list will be loaded in the `ExGram.Adapter.Tesla` module.
+
+In case you want to use a middleware that requires a function or any
+invalid element for a configuration file, you can define a function in
+any module that returns the Tesla configuration. Then put the `{m, f,
+a}` in the configuration file, for example:
+```elixir
+# lib/tesla_middlewares.ex
+
+defmodule TeslaMiddlewares do
+  def retry() do
     {Tesla.Middleware.Retry,
      delay: 500,
      max_retries: 10,
@@ -113,10 +128,22 @@ config :ex_gram, ExGram.Adapter.Tesla,
        {:ok, _} -> false
        {:error, _} -> true
      end}
+  end
+end
+```
+
+And in the config file:
+```elixir
+# config/config.exs
+
+config :ex_gram, ExGram.Adapter.Tesla,
+  middlewares: [
+    {TeslaMiddlewares, :retry, []}
   ]
 ```
 
-The `middlewares` list will be loaded in the `ExGram.Adapter.Tesla` module.
+Take into account that the defined function has to return a two-tuple
+as the Tesla config requires.
 
 ## Framework Usage
 

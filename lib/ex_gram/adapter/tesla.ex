@@ -6,6 +6,8 @@ if Code.ensure_loaded?(Tesla) do
 
     @base_url "https://api.telegram.org"
 
+    require Logger
+
     plug(Tesla.Middleware.BaseUrl, ExGram.Config.get(:ex_gram, :base_url, @base_url))
     plug(Tesla.Middleware.Headers, [{"Content-Type", "application/json"}])
     plug(Tesla.Middleware.Logger, log_level: :info)
@@ -111,7 +113,31 @@ if Code.ensure_loaded?(Tesla) do
     defp opts(), do: [adapter: adapter_opts()]
     defp adapter_opts(), do: [connect_timeout: 5_000, timeout: 60_000, recv_timeout: 60_000]
 
-    defp custom_middlewares(),
-      do: Application.get_env(:ex_gram, __MODULE__, [])[:middlewares] || []
+    defp format_middleware({m, f, a}) do
+      case apply(m, f, a) do
+        {_, _} = middleware -> {:ok, middleware}
+        _ -> :error
+      end
+    end
+
+    defp format_middleware({_, _} = mf), do: {:ok, mf}
+    defp format_middleware(_), do: :error
+
+    defp custom_middlewares() do
+      middlewares = Application.get_env(:ex_gram, __MODULE__, [])[:middlewares] || []
+
+      middlewares
+      |> Enum.reduce([], fn elem, acc ->
+        case format_middleware(elem) do
+          {:ok, middleware} ->
+            [middleware | acc]
+
+          :error ->
+            Logger.warn("Discarded, element is not a middleware: #{inspect(elem)}")
+            acc
+        end
+      end)
+      |> Enum.reverse()
+    end
   end
 end
