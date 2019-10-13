@@ -1,5 +1,9 @@
 if Code.ensure_loaded?(Tesla) do
   defmodule ExGram.Adapter.Tesla do
+    @moduledoc """
+    HTTP Adapter that uses Tesla
+    """
+
     @behaviour ExGram.Adapter
 
     use Tesla, only: ~w(get post)a

@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.8.1]
+- Add the ability to configure custom tesla middlewares
+- Fix regex macros, couldn't compile
+
 ## [0.8.0]
 - Add Tesla adapter for HTTP and setting it as default
 - Add ability to select Tesla adapter (tested with hackney and gun)
