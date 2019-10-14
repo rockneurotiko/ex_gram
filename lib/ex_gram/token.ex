@@ -3,6 +3,8 @@ defmodule ExGram.Token do
   Helpers when dealing with bot's tokens
   """
 
+  require Logger
+
   @registry Registry.ExGram
 
   @doc """
@@ -33,9 +35,38 @@ defmodule ExGram.Token do
         token
 
       {nil, bot} ->
-        registry = Keyword.get(ops, :registry, @registry)
-        [{_, token} | _] = Registry.lookup(registry, bot)
-        token
+        fetch_registry_token(bot, ops)
     end
+  end
+
+  defp fetch_registry_token(bot, ops) do
+    registry = Keyword.get(ops, :registry, @registry)
+
+    case Registry.lookup(registry, bot) do
+      [{_, token} | _] when is_binary(token) ->
+        token
+
+      [{_, other} | _] ->
+        Logger.warn(error_msg(:no_token, bot))
+        nil
+
+      _ ->
+        Logger.warn(error_msg(:no_bot, bot))
+        nil
+    end
+  end
+
+  defp error_msg(:no_token, bot) do
+    ~s(The bot \"#{inspect(bot)}\" does not have a token specified. Did you started the bot with the token?
+      children = [
+        # ...
+        ExGram,
+        {MyBot, [method: :polling, token: token]}
+      ]
+    )
+  end
+
+  defp error_msg(:no_bot, bot) do
+    ~s(The bot \"#{inspect(bot)}\" is not registered. Make sure that this bot exists and is started.)
   end
 end
