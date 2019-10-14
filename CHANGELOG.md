@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Warn when fetching token by bot's name and there are no token
+
 ## [0.8.1]
 - Add the ability to configure custom tesla middlewares
 - Fix regex macros, couldn't compile
