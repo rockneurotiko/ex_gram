@@ -373,6 +373,13 @@ defmodule ExGram do
 
   method(
     :post,
+    "setChatAdministratorCustomTitle",
+    [{chat_id, [:integer, :string]}, {user_id, [:integer]}, {custom_title, [:string]}],
+    true
+  )
+
+  method(
+    :post,
     "setChatPermissions",
     [{chat_id, [:integer, :string]}, {permissions, [ChatPermissions]}],
     true
@@ -679,7 +686,7 @@ defmodule ExGram do
     [ExGram.Model.GameHighScore]
   )
 
-  # 65 methods
+  # 66 methods
 
   # ----------MODELS-----------
 
@@ -731,6 +738,7 @@ defmodule ExGram do
       {:invite_link, :string},
       {:pinned_message, Message},
       {:permissions, ChatPermissions},
+      {:slow_mode_delay, :integer},
       {:sticker_set_name, :string},
       {:can_set_sticker_set, :boolean}
     ])
@@ -795,6 +803,7 @@ defmodule ExGram do
 
     model(PhotoSize, [
       {:file_id, :string},
+      {:file_unique_id, :string},
       {:width, :integer},
       {:height, :integer},
       {:file_size, :integer}
@@ -802,6 +811,7 @@ defmodule ExGram do
 
     model(Audio, [
       {:file_id, :string},
+      {:file_unique_id, :string},
       {:duration, :integer},
       {:performer, :string},
       {:title, :string},
@@ -812,6 +822,7 @@ defmodule ExGram do
 
     model(Document, [
       {:file_id, :string},
+      {:file_unique_id, :string},
       {:thumb, PhotoSize},
       {:file_name, :string},
       {:mime_type, :string},
@@ -820,6 +831,7 @@ defmodule ExGram do
 
     model(Video, [
       {:file_id, :string},
+      {:file_unique_id, :string},
       {:width, :integer},
       {:height, :integer},
       {:duration, :integer},
@@ -830,6 +842,7 @@ defmodule ExGram do
 
     model(Animation, [
       {:file_id, :string},
+      {:file_unique_id, :string},
       {:width, :integer},
       {:height, :integer},
       {:duration, :integer},
@@ -841,6 +854,7 @@ defmodule ExGram do
 
     model(Voice, [
       {:file_id, :string},
+      {:file_unique_id, :string},
       {:duration, :integer},
       {:mime_type, :string},
       {:file_size, :integer}
@@ -848,6 +862,7 @@ defmodule ExGram do
 
     model(VideoNote, [
       {:file_id, :string},
+      {:file_unique_id, :string},
       {:length, :integer},
       {:duration, :integer},
       {:thumb, PhotoSize},
@@ -883,7 +898,12 @@ defmodule ExGram do
 
     model(UserProfilePhotos, [{:total_count, :integer}, {:photos, {:array, {:array, PhotoSize}}}])
 
-    model(File, [{:file_id, :string}, {:file_size, :integer}, {:file_path, :string}])
+    model(File, [
+      {:file_id, :string},
+      {:file_unique_id, :string},
+      {:file_size, :integer},
+      {:file_path, :string}
+    ])
 
     model(ReplyKeyboardMarkup, [
       {:keyboard, {:array, {:array, KeyboardButton}}},
@@ -932,11 +952,17 @@ defmodule ExGram do
 
     model(ForceReply, [{:force_reply, :boolean}, {:selective, :boolean}])
 
-    model(ChatPhoto, [{:small_file_id, :string}, {:big_file_id, :string}])
+    model(ChatPhoto, [
+      {:small_file_id, :string},
+      {:small_file_unique_id, :string},
+      {:big_file_id, :string},
+      {:big_file_unique_id, :string}
+    ])
 
     model(ChatMember, [
       {:user, User},
       {:status, :string},
+      {:custom_title, :string},
       {:until_date, :integer},
       {:can_be_edited, :boolean},
       {:can_post_messages, :boolean},
@@ -1036,6 +1062,7 @@ defmodule ExGram do
 
     model(Sticker, [
       {:file_id, :string},
+      {:file_unique_id, :string},
       {:width, :integer},
       {:height, :integer},
       {:is_animated, :boolean},
@@ -1420,7 +1447,12 @@ defmodule ExGram do
       {:credentials, EncryptedCredentials}
     ])
 
-    model(PassportFile, [{:file_id, :string}, {:file_size, :integer}, {:file_date, :integer}])
+    model(PassportFile, [
+      {:file_id, :string},
+      {:file_unique_id, :string},
+      {:file_size, :integer},
+      {:file_date, :integer}
+    ])
 
     model(EncryptedPassportElement, [
       {:type, :string},
