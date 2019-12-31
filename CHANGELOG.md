@@ -2,6 +2,7 @@
 
 ## Unreleased
 - Warn when fetching token by bot's name and there are no token
+- Update Telegram API to 4.5
 
 ## [0.8.1]
 - Add the ability to configure custom tesla middlewares
