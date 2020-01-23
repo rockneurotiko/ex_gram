@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## [0.10.0]
+- Update Telegram API to 4.6
+
 ## [0.9.0]
 - Warn when fetching token by bot's name and there are no token
 - Update Telegram API to 4.5
