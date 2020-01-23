@@ -313,6 +313,11 @@ defmodule ExGram do
       {chat_id, [:integer, :string]},
       {question, [:string]},
       {options, [{:array, :string}]},
+      {is_anonymous, [:boolean], :optional},
+      {type, [:string], :optional},
+      {allows_multiple_answers, [:boolean], :optional},
+      {correct_option_id, [:integer], :optional},
+      {is_closed, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -704,7 +709,8 @@ defmodule ExGram do
       {:callback_query, CallbackQuery},
       {:shipping_query, ShippingQuery},
       {:pre_checkout_query, PreCheckoutQuery},
-      {:poll, Poll}
+      {:poll, Poll},
+      {:poll_answer, PollAnswer}
     ])
 
     model(WebhookInfo, [
@@ -723,7 +729,10 @@ defmodule ExGram do
       {:first_name, :string},
       {:last_name, :string},
       {:username, :string},
-      {:language_code, :string}
+      {:language_code, :string},
+      {:can_join_groups, :boolean},
+      {:can_read_all_group_messages, :boolean},
+      {:supports_inline_queries, :boolean}
     ])
 
     model(Chat, [
@@ -798,7 +807,8 @@ defmodule ExGram do
       {:offset, :integer},
       {:length, :integer},
       {:url, :string},
-      {:user, User}
+      {:user, User},
+      {:language, :string}
     ])
 
     model(PhotoSize, [
@@ -889,11 +899,18 @@ defmodule ExGram do
 
     model(PollOption, [{:text, :string}, {:voter_count, :integer}])
 
+    model(PollAnswer, [{:poll_id, :string}, {:user, User}, {:option_ids, {:array, :integer}}])
+
     model(Poll, [
       {:id, :string},
       {:question, :string},
       {:options, {:array, PollOption}},
-      {:is_closed, :boolean}
+      {:total_voter_count, :integer},
+      {:is_closed, :boolean},
+      {:is_anonymous, :boolean},
+      {:type, :string},
+      {:allows_multiple_answers, :boolean},
+      {:correct_option_id, :integer}
     ])
 
     model(UserProfilePhotos, [{:total_count, :integer}, {:photos, {:array, {:array, PhotoSize}}}])
@@ -915,8 +932,11 @@ defmodule ExGram do
     model(KeyboardButton, [
       {:text, :string},
       {:request_contact, :boolean},
-      {:request_location, :boolean}
+      {:request_location, :boolean},
+      {:request_poll, KeyboardButtonPollType}
     ])
+
+    model(KeyboardButtonPollType, [{:type, :string}])
 
     model(ReplyKeyboardRemove, [{:remove_keyboard, :boolean}, {:selective, :boolean}])
 
@@ -1554,7 +1574,7 @@ defmodule ExGram do
 
     model(GameHighScore, [{:position, :integer}, {:user, User}, {:score, :integer}])
 
-    # 92 models
+    # 94 models
 
     defmodule InlineQueryResult do
       @type t ::
