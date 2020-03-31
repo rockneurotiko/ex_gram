@@ -1,151 +1,99 @@
 #!/usr/bin/env python3
 
-from bs4 import BeautifulSoup
 import requests
 
 DEBUG = True
+# URL = "https://raw.githubusercontent.com/rockneurotiko/telegram_api_json/master/exports/tg_api.json"
+URL = "https://raw.githack.com/rockneurotiko/telegram_api_json/master/exports/tg_api_pretty.json"
 
 
 def debug(t):
     if DEBUG:
         print("\n# " + t)
 
-def arg_to_s(arg):
-    return "{%s, [%s]%s}" % (arg[0], ", ".join(arg[1]), ", :optional" if arg[2] else "")
 
-def build_method(name, args, returned):
-    typ = ":get" if name.startswith("get") else ":post"
-
-    if args is None:
-        args = []
-
-    args = [arg_to_s(x) for x in args]
-
-    return """method {}, "{}", [{}], {}""".format(typ, name, ", ".join(args), returned)
+def maybe_atom(name, is_return):
+    return ":{}".format(name) if not is_return else name
 
 
-def parse_types(text):
-    res = []
-    for t in text.split(" or "):
-        t = t.strip()
-        name = ""
-        if t == "Integer":
-            name = ":integer"
-        elif t == "String":
-            name = ":string"
-        elif t == "Boolean":
-            name = ":boolean"
-        elif t == "Float":
-            name = ":float"
-        elif t == "True":
-            name = ":boolean"
-        elif t == "Float number":
-            name = ":float"
-        elif t == "InputFile":
-            name = ":file"
-        elif t.startswith("Array"):
-            rest_t = " of ".join(t.split(" of ")[1:])
-            more = parse_types(rest_t)
-            el = more[0] if len(more) > 0 else ":any"
-            name = "{:array, %s}" % el
-        elif " and " in t:
-            splitted = t.split(" and ")
-            left = parse_types(splitted[0])[0]
-            right = parse_types(" and ".join(splitted[1:]))[0]
-            name = "[%s, %s]" % (left, right)
-        elif t[0].isupper():
-            name = t
-            # debug("Class {} as any".format(t))
-            # return [":any"]
-
-        if name != "":
-            res.append(name)
-        else:
-            debug("ERROR PARSING TYPE: {}".format(t))
-
-    return res
-
-
-def extract_table(table):
-    res = []
-    x = (len(table.findAll('tr')))
-
-    for row in table.findAll("tr")[1:x]:
-        col = row.findAll('td')
-        name = col[0].getText()
-        types = parse_types(col[1].getText())
-        opt = col[2].getText() == "Optional"
-        res.append((name, types, opt))
-
-    return res
-
-
-def good_type(t):
-    t = t.strip(".").strip(",").strip()
-    if t == "ExGram.Model.Int":
-        return "integer"
-
-    if t == "ExGram.Model.String":
-        return "String.t()"
-
-    if t.lower() in ["exgram.model.true"]:
+def parse_type_name(name, is_return):
+    if name == "int":
+        return maybe_atom("integer", is_return)
+    if name == "str":
+        return "String" if is_return else ":string"
+    if name == "bool":
+        return maybe_atom("boolean", is_return)
+    if name == "float":
+        return maybe_atom("float", is_return)
+    if name == "file":
+        return maybe_atom("file", is_return)
+    if name == "True" or name == "true":
         return "true"
+    if name == "String":
+        return "String"
+    if name[0].isupper():
+        return "ExGram.Model.{}".format(name) if is_return else name
 
-    return t
-
-def extract_return_type(text):
-    if "Array of Update objects is returned" in text:
-        return "[ExGram.Model.Update]"
-    if "File object is returned" in text:
-        return "ExGram.Model.File"
-    if " is returned" in text:
-        return "ExGram.Model." + text.split(" is returned")[0].split()[-1]
-    if "returns an Array of GameHighScore" in text:
-        return "[ExGram.Model.GameHighScore]"
-    if "returns an Array of ChatMember" in text:
-        return "[ExGram.Model.ChatMember]"
-
-    if "Returns Array of BotCommand" in text:
-        return "[ExGram.Model.BotCommand]"
-
-    ts = ["Returns basic information about the bot in form of a ",
-          "returns the edited ",
-          "Returns exported invite link as ",
-          "Returns the new invite link as",
-          "Returns a ",
-          "returns a ",
-          "Returns ",
-          "returns "]
-    for x in ts:
-        if x in text:
-            return "ExGram.Model." + text.split(x)[1].split()[0]
+    if name[0] == "array":
+        ts = [parse_type_name(x, is_return) for x in name[1]]
+        t = ts[0] if len(ts) == 1 else "[{}]".format(", ".join(ts))
+        return "{{:array, {}}}".format(t)
 
     return ":any"
-    # x is returned
 
 
-def struct_t(name, types, opt):
-    t = ":any" if len(types) == 0 else types[0]
-    # t = t + ".t" if t[0].isupper() and t != "String" else t
-    extra = "" if not opt else ", :optional"
-    return "{:%s, %s%s}" % (name, t, extra)
+def generate_type(typ, is_return):
+    if len(typ) == 0:
+        return [":any"]
+
+    if len(typ) == 1:
+        return [parse_type_name(typ[0], is_return)]
+
+    if typ[0] == "array":
+        array_type = parse_type_name(typ[1][0], is_return)
+        return ["[{}]".format(array_type)]
+
+    return [parse_type_name(x, is_return) for x in typ]
 
 
-def extract_model(h4):
-    name = h4.text
+def generate_param(param, model):
+    param_s = "{{{}, {}{}}}"
+
+    name = ":{}".format(param['name']) if model else param['name']
     debug("Extracting type: " + name)
-    table = h4.find_next("table")
-    tabled = extract_table(table)
+    ts = generate_type(param['type'], False)
+    t = ts[0] if model else "[{}]".format(', '.join(ts))
+    debug(str(t))
+    extra = "" if not param['optional'] else ", :optional"
+
+    return param_s.format(name, t, extra)
+
+
+def generate_model(model):
     model_s = "model {}, [{}]"
+    name = model['name']
+    debug("Generating model: " + name)
+    params = [generate_param(param, True) for param in model['params']]
 
-    ts = [struct_t(type_name, types, opt) for (type_name, types, opt) in tabled]
-    debug(str(ts))
-    return  model_s.format(name, ", ".join(ts))
+    return model_s.format(name, ", ".join(params))
 
 
-def generic_to_text(name, sub_types):
-    types_s = ", ".join(sub_types)
-    types_t = " | ".join(["{}.t()".format(x) for x in sub_types])
+def generate_method(method):
+    method_s = """method {}, "{}", [{}], {}"""
+    name = method['name']
+    debug("Generating method: " + name)
+    typ = ":get" if method['type'] == 'get' else ':post'
+
+    args = [generate_param(param, False) for param in method['params']]
+    returned = generate_type(method['return'], True)[0]
+
+    return method_s.format(typ, name, ", ".join(args), returned)
+
+
+def generate_generic(model):
+    name = model['name']
+    types_s = ", ".join(model['subtypes'])
+    types_t = " | ".join(["{}.t()".format(x) for x in model['subtypes']])
     return """defmodule {} do
   @type t :: {}
 
@@ -155,66 +103,12 @@ def generic_to_text(name, sub_types):
     end""".format(name, types_t, types_s)
 
 
-def extract_generic(h4):
-    name = h4.text
-    debug("Extracting generic: " + name)
-    l = h4.find_next("ul")
-    sub_types = [li.text for li in l.findChildren("li", recursive=False)]
-
-    return generic_to_text(name, sub_types)
-
 def main():
-    html = requests.get("https://core.telegram.org/bots/api").content
+    definition = requests.get(URL).json()
 
-    soup = BeautifulSoup(html, 'html.parser')
-
-    n = 0
-
-    # updates = soup.find(href="#getting-updates").parent.findAllNext("h4")
-
-    h4s = soup.find(href="#getting-updates").parent.findAllNext("h4")
-
-
-    # h4s = soup.find(href="#available-methods").parent.findAllNext("h4")
-
-    skip = []
-    generic_types = ["InlineQueryResult", "InputMessageContent", "PassportElementError"]
-    not_parameters = ["getMe", "deleteWebhook", "getWebhookInfo", "getMyCommands"]
-
-    models = []
-    methods = []
-    generics = []
-
-    for h4 in h4s:
-        name = h4.text
-
-        if name in skip:
-            debug("Skipping {}".format(name))
-            continue
-
-        if name in generic_types:
-            generics.append(extract_generic(h4))
-            continue
-        if name[0].isupper():
-            if len(name.split(" ")) == 1:
-                models.append(extract_model(h4))
-            continue
-
-        debug(name)
-        n += 1
-
-        returned = good_type(extract_return_type(h4.find_next("p").text))
-        debug("RETURNS: " + returned)
-
-        if name in not_parameters:
-            methods.append(build_method(name, [], returned))
-            continue
-
-        table = h4.find_next("table")
-        tabled = extract_table(table)
-
-        methods.append(build_method(name, tabled, returned))
-
+    models = [generate_model(model) for model in definition['models']]
+    methods = [generate_method(method) for method in definition['methods']]
+    generics = [generate_generic(generic) for generic in definition['generics']]
 
     debug("----------METHODS-----------\n")
     print("# AUTO GENERATED")

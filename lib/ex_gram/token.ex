@@ -46,7 +46,7 @@ defmodule ExGram.Token do
       [{_, token} | _] when is_binary(token) ->
         token
 
-      [{_, other} | _] ->
+      [{_, _other} | _] ->
         Logger.warn(error_msg(:no_token, bot))
         nil
 
