@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## [0.11.0]
+- Update Telegram API to 4.7
+
 ## [0.10.0]
 - Update Telegram API to 4.6
 
