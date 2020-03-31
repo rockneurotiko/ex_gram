@@ -105,6 +105,9 @@ def extract_return_type(text):
     if "returns an Array of ChatMember" in text:
         return "[ExGram.Model.ChatMember]"
 
+    if "Returns Array of BotCommand" in text:
+        return "[ExGram.Model.BotCommand]"
+
     ts = ["Returns basic information about the bot in form of a ",
           "returns the edited ",
           "Returns exported invite link as ",
@@ -176,7 +179,7 @@ def main():
 
     skip = []
     generic_types = ["InlineQueryResult", "InputMessageContent", "PassportElementError"]
-    not_parameters = ["getMe", "deleteWebhook", "getWebhookInfo"]
+    not_parameters = ["getMe", "deleteWebhook", "getWebhookInfo", "getMyCommands"]
 
     models = []
     methods = []

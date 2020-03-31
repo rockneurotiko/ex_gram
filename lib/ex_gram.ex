@@ -326,6 +326,19 @@ defmodule ExGram do
     ExGram.Model.Message
   )
 
+  method(
+    :post,
+    "sendDice",
+    [
+      {chat_id, [:integer, :string]},
+      {disable_notification, [:boolean], :optional},
+      {reply_to_message_id, [:integer], :optional},
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
+       :optional}
+    ],
+    ExGram.Model.Message
+  )
+
   method(:post, "sendChatAction", [{chat_id, [:integer, :string]}, {action, [:string]}], true)
 
   method(
@@ -457,6 +470,10 @@ defmodule ExGram do
     true
   )
 
+  method(:post, "setMyCommands", [{commands, [{:array, BotCommand}]}], true)
+
+  method(:get, "getMyCommands", [], [ExGram.Model.BotCommand])
+
   method(
     :post,
     "editMessageText",
@@ -554,7 +571,8 @@ defmodule ExGram do
       {user_id, [:integer]},
       {name, [:string]},
       {title, [:string]},
-      {png_sticker, [:file, :string]},
+      {png_sticker, [:file, :string], :optional},
+      {tgs_sticker, [:file], :optional},
       {emojis, [:string]},
       {contains_masks, [:boolean], :optional},
       {mask_position, [MaskPosition], :optional}
@@ -569,6 +587,7 @@ defmodule ExGram do
       {user_id, [:integer]},
       {name, [:string]},
       {png_sticker, [:file, :string]},
+      {tgs_sticker, [:file], :optional},
       {emojis, [:string]},
       {mask_position, [MaskPosition], :optional}
     ],
@@ -578,6 +597,13 @@ defmodule ExGram do
   method(:post, "setStickerPositionInSet", [{sticker, [:string]}, {position, [:integer]}], true)
 
   method(:post, "deleteStickerFromSet", [{sticker, [:string]}], true)
+
+  method(
+    :post,
+    "setStickerSetThumb",
+    [{name, [:string]}, {user_id, [:integer]}, {thumb, [:file, :string], :optional}],
+    true
+  )
 
   method(
     :post,
@@ -691,7 +717,7 @@ defmodule ExGram do
     [ExGram.Model.GameHighScore]
   )
 
-  # 66 methods
+  # 70 methods
 
   # ----------MODELS-----------
 
@@ -784,6 +810,7 @@ defmodule ExGram do
       {:location, Location},
       {:venue, Venue},
       {:poll, Poll},
+      {:dice, Dice},
       {:new_chat_members, {:array, User}},
       {:left_chat_member, User},
       {:new_chat_title, :string},
@@ -913,6 +940,8 @@ defmodule ExGram do
       {:correct_option_id, :integer}
     ])
 
+    model(Dice, [{:value, :integer}])
+
     model(UserProfilePhotos, [{:total_count, :integer}, {:photos, {:array, {:array, PhotoSize}}}])
 
     model(File, [
@@ -1012,6 +1041,8 @@ defmodule ExGram do
       {:can_pin_messages, :boolean}
     ])
 
+    model(BotCommand, [{:command, :string}, {:description, :string}])
+
     model(ResponseParameters, [{:migrate_to_chat_id, :integer}, {:retry_after, :integer}])
 
     model(InputMedia, [
@@ -1098,7 +1129,8 @@ defmodule ExGram do
       {:title, :string},
       {:is_animated, :boolean},
       {:contains_masks, :boolean},
-      {:stickers, {:array, Sticker}}
+      {:stickers, {:array, Sticker}},
+      {:thumb, PhotoSize}
     ])
 
     model(MaskPosition, [
@@ -1574,7 +1606,7 @@ defmodule ExGram do
 
     model(GameHighScore, [{:position, :integer}, {:user, User}, {:score, :integer}])
 
-    # 94 models
+    # 96 models
 
     defmodule InlineQueryResult do
       @type t ::
