@@ -324,7 +324,7 @@ Note: Only one of `token` and `bot` must be used.
 
 ### How it's made?
 
-There is a python script called `extractor.py`, it uses the (`telegram_api_json`)[https://github.com/rockneurotiko/telegram_api_json] project that scrapes the Telegram Bot API documentation and provides a JSON with all the information, check the project description if you want to create your own projects that uses an standarized file to auto-generate the API.
+There is a python script called `extractor.py`, it uses the (telegram_api_json)[https://github.com/rockneurotiko/telegram_api_json] project that scrapes the Telegram Bot API documentation and provides a JSON with all the information, check the project description if you want to create your own projects that uses an standarized file to auto-generate the API.
 
 This scripts uses the JSON description and prints to the stdout the lines needed to create all the methods and models, this auto generated lines uses two macros defined on `lib/ex_gram/macros.ex`: `method` and `model`.
 
