@@ -194,12 +194,12 @@ end
 The `handle/2` function receives two arguments:
   - The first argument is a tuple that changes depending on the update. In this case we are expecting a command called `start` in Telegram, this means a `/start` message. This type of commands can be sent next to a message, for example `/start Well hello`, in this cases the `Well hello` text will arrive to the third element of the tuple named `_msg` (because we are ignoring it right now). In case no text is given an empty string will arrive in the third element.
 
-  - The second argument is a map with information about the update that just arrived, things like the [message object](https://core.telegram.org/bots/api#message) and information that `ExGram` will use to answer the message
+  - The second argument is a map called Context (`%ExGram.Cnt{}`) with information about the update that just arrived, with information like the [message object](https://core.telegram.org/bots/api#message) and internal data that `ExGram` will use to answer the message. You can also save your own information from your own middlewares in the `:extra` key using the `add_extra` method.
 
-This are the type of tuples that `handle/2` can receive:
-  - `{:command, key, text}` → This tuple will match when a command is received
-  - `{:text, text}` → This tuple will match when plain text is sent to the bot (check [privacy mode](https://core.telegram.org/bots#privacy-mode))
-  - `{:regex, key, text}` → This tuple will match if a regex is defined at the beginning of the module
+This are the type of tuples that `handle/2` can receive as first parameter:
+  - `{:command, key, message}` → This tuple will match when a command is received
+  - `{:text, text, message}` → This tuple will match when plain text is sent to the bot (check [privacy mode](https://core.telegram.org/bots#privacy-mode))
+  - `{:regex, key, message}` → This tuple will match if a regex is defined at the beginning of the module
   - `{:location, location}` → This tuple will match when a location message is received
   - `{:callback_query, callback_query}` → This tuple will match when a [Callback Query](https://core.telegram.org/bots/api#callbackquery) is received
   - `{:inline_query, inline_query}` → This tuple will match when an [Inline Query](https://core.telegram.org/bots/api#inlinequery) is received
