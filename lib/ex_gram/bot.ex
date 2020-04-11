@@ -25,14 +25,6 @@ defmodule ExGram.Bot do
 
       def name(), do: unquote(name)
 
-      def child_spec(opts) do
-        %{
-          id: Keyword.get(opts, :name, name()),
-          start: {__MODULE__, :start_link, [opts]},
-          type: :supervisor
-        }
-      end
-
       def start_link(opts) when is_list(opts) do
         name = opts[:name] || name()
         supervisor_name = String.to_atom(Atom.to_string(name) <> "_supervisor")
@@ -86,11 +78,11 @@ defmodule ExGram.Bot do
         }
 
         children = [
-          worker(ExGram.Dispatcher, [dispatcher_opts]),
-          worker(updates_worker, [{:bot, name, :token, token}])
+          {ExGram.Dispatcher, dispatcher_opts},
+          {updates_worker, {:bot, name, :token, token}}
         ]
 
-        supervise(children, strategy: :one_for_one)
+        Supervisor.init(children, strategy: :one_for_one)
       end
 
       def message(from, message) do
