@@ -1,8 +1,8 @@
 language: elixir
 elixir:
-  - 1.7
+  - 1.9
 otp_release:
-  - 21.0
+  - 22.0
 cache:
   directories:
     - _build
