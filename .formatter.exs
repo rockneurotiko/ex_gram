@@ -6,6 +6,7 @@
   ],
   locals_without_parens: [
     command: 1,
+    command: 2,
     middleware: 1,
     answer: 2,
     answer: 3,
