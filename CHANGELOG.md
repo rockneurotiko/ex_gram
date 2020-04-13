@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## [0.13.0]
+- Use Supervisor.init instead of supervisor/1
+- Add "description" option to `command` macro
+- Add `setup_commands` option to `use ExGram.Bot` to send the commands at startup
+
+## [0.12.0]
+- Use new generator using a generic JSON
+
 ## [0.11.0]
 - Update Telegram API to 4.7
 
