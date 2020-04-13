@@ -7,6 +7,7 @@ defmodule ExGram.Bot do
       end
 
     username = Keyword.fetch(ops, :username)
+    setup_commands = Keyword.get(ops, :setup_commands, false)
 
     commands = quote do: commands()
 
@@ -64,6 +65,8 @@ defmodule ExGram.Bot do
               other
           end
 
+        maybe_setup_commands(unquote(setup_commands), unquote(commands), token)
+
         bot_info = maybe_fetch_bot(unquote(username), token)
 
         dispatcher_opts = %ExGram.Dispatcher{
@@ -118,6 +121,24 @@ defmodule ExGram.Bot do
           _ -> nil
         end
       end
+
+      defp maybe_setup_commands(true, commands, token) do
+        send_commands =
+          commands
+          |> Stream.filter(fn command ->
+            not is_nil(command[:description])
+          end)
+          |> Enum.map(fn command ->
+            %ExGram.Model.BotCommand{
+              command: command[:command],
+              description: command[:description]
+            }
+          end)
+
+        ExGram.set_my_commands(send_commands, token: token)
+      end
+
+      defp maybe_setup_commands(_, _commands, _token), do: :nop
     end
   end
 end
