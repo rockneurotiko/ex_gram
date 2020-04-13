@@ -21,8 +21,8 @@ defmodule ExGram.Macros do
 
   def orT(x, y), do: {:|, [], [x, y]}
 
-  def nameAssignT(n, t) when is_atom(n), do: {:::, [], [type_to_spec(n), t]}
-  def nameAssignT(n, t), do: {:::, [], [n, t]}
+  def nameAssignT(n, t) when is_atom(n), do: {:"::", [], [type_to_spec(n), t]}
+  def nameAssignT(n, t), do: {:"::", [], [n, t]}
 
   def type_to_spec(:string),
     do: {{:., [], [{:__aliases__, [alias: false], [:String]}, :t]}, [], []}
