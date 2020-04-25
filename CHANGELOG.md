@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## [0.14.0]
+- Update Telegram API to 4.8
+
 ## [0.13.0]
 - Use Supervisor.init instead of supervisor/1
 - Add "description" option to `command` macro
