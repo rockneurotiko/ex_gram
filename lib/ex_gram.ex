@@ -317,6 +317,10 @@ defmodule ExGram do
       {type, [:string], :optional},
       {allows_multiple_answers, [:boolean], :optional},
       {correct_option_id, [:integer], :optional},
+      {explanation, [:string], :optional},
+      {explanation_parse_mode, [:string], :optional},
+      {open_period, [:integer], :optional},
+      {close_date, [:integer], :optional},
       {is_closed, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
@@ -331,6 +335,7 @@ defmodule ExGram do
     "sendDice",
     [
       {chat_id, [:integer, :string]},
+      {emoji, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -789,7 +794,7 @@ defmodule ExGram do
       {:forward_signature, :string, :optional},
       {:forward_sender_name, :string, :optional},
       {:forward_date, :integer, :optional},
-      {:reply_to_message, Message},
+      {:reply_to_message, Message, :optional},
       {:edit_date, :integer, :optional},
       {:media_group_id, :string, :optional},
       {:author_signature, :string, :optional},
@@ -798,7 +803,7 @@ defmodule ExGram do
       {:caption_entities, {:array, MessageEntity}, :optional},
       {:audio, Audio, :optional},
       {:document, Document, :optional},
-      {:animation, Animation},
+      {:animation, Animation, :optional},
       {:game, Game, :optional},
       {:photo, {:array, PhotoSize}, :optional},
       {:sticker, Sticker, :optional},
@@ -821,7 +826,7 @@ defmodule ExGram do
       {:channel_chat_created, :boolean, :optional},
       {:migrate_to_chat_id, :integer, :optional},
       {:migrate_from_chat_id, :integer, :optional},
-      {:pinned_message, Message},
+      {:pinned_message, Message, :optional},
       {:invoice, Invoice, :optional},
       {:successful_payment, SuccessfulPayment, :optional},
       {:connected_website, :string, :optional},
@@ -937,10 +942,14 @@ defmodule ExGram do
       {:is_anonymous, :boolean},
       {:type, :string},
       {:allows_multiple_answers, :boolean},
-      {:correct_option_id, :integer, :optional}
+      {:correct_option_id, :integer, :optional},
+      {:explanation, :string, :optional},
+      {:explanation_entities, {:array, MessageEntity}, :optional},
+      {:open_period, :integer, :optional},
+      {:close_date, :integer, :optional}
     ])
 
-    model(Dice, [{:value, :integer}])
+    model(Dice, [{:emoji, :string}, {:value, :integer}])
 
     model(UserProfilePhotos, [{:total_count, :integer}, {:photos, {:array, {:array, PhotoSize}}}])
 
@@ -953,21 +962,21 @@ defmodule ExGram do
 
     model(ReplyKeyboardMarkup, [
       {:keyboard, {:array, {:array, KeyboardButton}}},
-      {:resize_keyboard, :boolean},
-      {:one_time_keyboard, :boolean},
-      {:selective, :boolean}
+      {:resize_keyboard, :boolean, :optional},
+      {:one_time_keyboard, :boolean, :optional},
+      {:selective, :boolean, :optional}
     ])
 
     model(KeyboardButton, [
       {:text, :string},
-      {:request_contact, :boolean},
-      {:request_location, :boolean},
+      {:request_contact, :boolean, :optional},
+      {:request_location, :boolean, :optional},
       {:request_poll, KeyboardButtonPollType, :optional}
     ])
 
-    model(KeyboardButtonPollType, [{:type, :string}])
+    model(KeyboardButtonPollType, [{:type, :string, :optional}])
 
-    model(ReplyKeyboardRemove, [{:remove_keyboard, :boolean}, {:selective, :boolean}])
+    model(ReplyKeyboardRemove, [{:remove_keyboard, :boolean}, {:selective, :boolean, :optional}])
 
     model(InlineKeyboardMarkup, [{:inline_keyboard, {:array, {:array, InlineKeyboardButton}}}])
 
@@ -976,7 +985,7 @@ defmodule ExGram do
       {:url, :string, :optional},
       {:login_url, LoginUrl, :optional},
       {:callback_data, :string, :optional},
-      {:switch_inline_query, :string},
+      {:switch_inline_query, :string, :optional},
       {:switch_inline_query_current_chat, :string, :optional},
       {:callback_game, CallbackGame, :optional},
       {:pay, :boolean, :optional}
@@ -985,7 +994,7 @@ defmodule ExGram do
     model(LoginUrl, [
       {:url, :string},
       {:forward_text, :string, :optional},
-      {:bot_username, :string},
+      {:bot_username, :string, :optional},
       {:request_write_access, :boolean, :optional}
     ])
 
@@ -999,7 +1008,7 @@ defmodule ExGram do
       {:game_short_name, :string, :optional}
     ])
 
-    model(ForceReply, [{:force_reply, :boolean}, {:selective, :boolean}])
+    model(ForceReply, [{:force_reply, :boolean}, {:selective, :boolean, :optional}])
 
     model(ChatPhoto, [
       {:small_file_id, :string},
@@ -1052,14 +1061,14 @@ defmodule ExGram do
       {:type, :string},
       {:media, :string},
       {:caption, :string, :optional},
-      {:parse_mode, :string}
+      {:parse_mode, :string, :optional}
     ])
 
     model(InputMediaPhoto, [
       {:type, :string},
       {:media, :string},
       {:caption, :string, :optional},
-      {:parse_mode, :string}
+      {:parse_mode, :string, :optional}
     ])
 
     model(InputMediaVideo, [
@@ -1067,11 +1076,11 @@ defmodule ExGram do
       {:media, :string},
       {:thumb, :file, :optional},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:width, :integer, :optional},
       {:height, :integer, :optional},
       {:duration, :integer, :optional},
-      {:supports_streaming, :boolean}
+      {:supports_streaming, :boolean, :optional}
     ])
 
     model(InputMediaAnimation, [
@@ -1079,7 +1088,7 @@ defmodule ExGram do
       {:media, :string},
       {:thumb, :file, :optional},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:width, :integer, :optional},
       {:height, :integer, :optional},
       {:duration, :integer, :optional}
@@ -1090,7 +1099,7 @@ defmodule ExGram do
       {:media, :string},
       {:thumb, :file, :optional},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:duration, :integer, :optional},
       {:performer, :string, :optional},
       {:title, :string, :optional}
@@ -1101,7 +1110,7 @@ defmodule ExGram do
       {:media, :string},
       {:thumb, :file, :optional},
       {:caption, :string, :optional},
-      {:parse_mode, :string}
+      {:parse_mode, :string, :optional}
     ])
 
     model(InputFile, [
@@ -1158,7 +1167,7 @@ defmodule ExGram do
       {:input_message_content, InputMessageContent},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:url, :string, :optional},
-      {:hide_url, :boolean},
+      {:hide_url, :boolean, :optional},
       {:description, :string, :optional},
       {:thumb_url, :string, :optional},
       {:thumb_width, :integer, :optional},
@@ -1175,7 +1184,7 @@ defmodule ExGram do
       {:title, :string, :optional},
       {:description, :string, :optional},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1190,7 +1199,7 @@ defmodule ExGram do
       {:thumb_url, :string},
       {:title, :string, :optional},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1205,7 +1214,7 @@ defmodule ExGram do
       {:thumb_url, :string},
       {:title, :string, :optional},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1218,7 +1227,7 @@ defmodule ExGram do
       {:thumb_url, :string},
       {:title, :string},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:video_width, :integer, :optional},
       {:video_height, :integer, :optional},
       {:video_duration, :integer, :optional},
@@ -1233,7 +1242,7 @@ defmodule ExGram do
       {:audio_url, :string},
       {:title, :string},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:performer, :string, :optional},
       {:audio_duration, :integer, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
@@ -1246,7 +1255,7 @@ defmodule ExGram do
       {:voice_url, :string},
       {:title, :string},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:voice_duration, :integer, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
@@ -1257,7 +1266,7 @@ defmodule ExGram do
       {:id, :string},
       {:title, :string},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:document_url, :string},
       {:mime_type, :string},
       {:description, :string, :optional},
@@ -1326,7 +1335,7 @@ defmodule ExGram do
       {:title, :string, :optional},
       {:description, :string, :optional},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1337,7 +1346,7 @@ defmodule ExGram do
       {:gif_file_id, :string},
       {:title, :string, :optional},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1348,7 +1357,7 @@ defmodule ExGram do
       {:mpeg4_file_id, :string},
       {:title, :string, :optional},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1368,7 +1377,7 @@ defmodule ExGram do
       {:document_file_id, :string},
       {:description, :string, :optional},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1380,7 +1389,7 @@ defmodule ExGram do
       {:title, :string},
       {:description, :string, :optional},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1391,7 +1400,7 @@ defmodule ExGram do
       {:voice_file_id, :string},
       {:title, :string},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1401,14 +1410,14 @@ defmodule ExGram do
       {:id, :string},
       {:audio_file_id, :string},
       {:caption, :string, :optional},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
 
     model(InputTextMessageContent, [
       {:message_text, :string},
-      {:parse_mode, :string},
+      {:parse_mode, :string, :optional},
       {:disable_web_page_preview, :boolean, :optional}
     ])
 
@@ -1593,7 +1602,7 @@ defmodule ExGram do
       {:description, :string},
       {:photo, {:array, PhotoSize}},
       {:text, :string, :optional},
-      {:text_entities, {:array, MessageEntity}},
+      {:text_entities, {:array, MessageEntity}, :optional},
       {:animation, Animation, :optional}
     ])
 
