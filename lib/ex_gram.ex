@@ -591,7 +591,7 @@ defmodule ExGram do
     [
       {user_id, [:integer]},
       {name, [:string]},
-      {png_sticker, [:file, :string]},
+      {png_sticker, [:file, :string], :optional},
       {tgs_sticker, [:file], :optional},
       {emojis, [:string]},
       {mask_position, [MaskPosition], :optional}
@@ -795,27 +795,28 @@ defmodule ExGram do
       {:forward_sender_name, :string, :optional},
       {:forward_date, :integer, :optional},
       {:reply_to_message, Message, :optional},
+      {:via_bot, User, :optional},
       {:edit_date, :integer, :optional},
       {:media_group_id, :string, :optional},
       {:author_signature, :string, :optional},
       {:text, :string, :optional},
       {:entities, {:array, MessageEntity}, :optional},
-      {:caption_entities, {:array, MessageEntity}, :optional},
+      {:animation, Animation, :optional},
       {:audio, Audio, :optional},
       {:document, Document, :optional},
-      {:animation, Animation, :optional},
-      {:game, Game, :optional},
       {:photo, {:array, PhotoSize}, :optional},
       {:sticker, Sticker, :optional},
       {:video, Video, :optional},
-      {:voice, Voice, :optional},
       {:video_note, VideoNote, :optional},
+      {:voice, Voice, :optional},
       {:caption, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:contact, Contact, :optional},
-      {:location, Location, :optional},
-      {:venue, Venue, :optional},
-      {:poll, Poll, :optional},
       {:dice, Dice, :optional},
+      {:game, Game, :optional},
+      {:poll, Poll, :optional},
+      {:venue, Venue, :optional},
+      {:location, Location, :optional},
       {:new_chat_members, {:array, User}, :optional},
       {:left_chat_member, User, :optional},
       {:new_chat_title, :string, :optional},
@@ -851,6 +852,18 @@ defmodule ExGram do
       {:file_size, :integer, :optional}
     ])
 
+    model(Animation, [
+      {:file_id, :string},
+      {:file_unique_id, :string},
+      {:width, :integer},
+      {:height, :integer},
+      {:duration, :integer},
+      {:thumb, PhotoSize, :optional},
+      {:file_name, :string, :optional},
+      {:mime_type, :string, :optional},
+      {:file_size, :integer, :optional}
+    ])
+
     model(Audio, [
       {:file_id, :string},
       {:file_unique_id, :string},
@@ -882,15 +895,12 @@ defmodule ExGram do
       {:file_size, :integer, :optional}
     ])
 
-    model(Animation, [
+    model(VideoNote, [
       {:file_id, :string},
       {:file_unique_id, :string},
-      {:width, :integer},
-      {:height, :integer},
+      {:length, :integer},
       {:duration, :integer},
       {:thumb, PhotoSize, :optional},
-      {:file_name, :string, :optional},
-      {:mime_type, :string, :optional},
       {:file_size, :integer, :optional}
     ])
 
@@ -902,15 +912,6 @@ defmodule ExGram do
       {:file_size, :integer, :optional}
     ])
 
-    model(VideoNote, [
-      {:file_id, :string},
-      {:file_unique_id, :string},
-      {:length, :integer},
-      {:duration, :integer},
-      {:thumb, PhotoSize, :optional},
-      {:file_size, :integer, :optional}
-    ])
-
     model(Contact, [
       {:phone_number, :string},
       {:first_name, :string},
@@ -919,15 +920,7 @@ defmodule ExGram do
       {:vcard, :string, :optional}
     ])
 
-    model(Location, [{:longitude, :float}, {:latitude, :float}])
-
-    model(Venue, [
-      {:location, Location},
-      {:title, :string},
-      {:address, :string},
-      {:foursquare_id, :string, :optional},
-      {:foursquare_type, :string, :optional}
-    ])
+    model(Dice, [{:emoji, :string}, {:value, :integer}])
 
     model(PollOption, [{:text, :string}, {:voter_count, :integer}])
 
@@ -949,7 +942,15 @@ defmodule ExGram do
       {:close_date, :integer, :optional}
     ])
 
-    model(Dice, [{:emoji, :string}, {:value, :integer}])
+    model(Location, [{:longitude, :float}, {:latitude, :float}])
+
+    model(Venue, [
+      {:location, Location},
+      {:title, :string},
+      {:address, :string},
+      {:foursquare_id, :string, :optional},
+      {:foursquare_type, :string, :optional}
+    ])
 
     model(UserProfilePhotos, [{:total_count, :integer}, {:photos, {:array, {:array, PhotoSize}}}])
 
@@ -1197,6 +1198,7 @@ defmodule ExGram do
       {:gif_height, :integer, :optional},
       {:gif_duration, :integer, :optional},
       {:thumb_url, :string},
+      {:thumb_mime_type, :string, :optional},
       {:title, :string, :optional},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
@@ -1212,6 +1214,7 @@ defmodule ExGram do
       {:mpeg4_height, :integer, :optional},
       {:mpeg4_duration, :integer, :optional},
       {:thumb_url, :string},
+      {:thumb_mime_type, :string, :optional},
       {:title, :string, :optional},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
