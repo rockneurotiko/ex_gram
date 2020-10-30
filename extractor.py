@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import requests
+import pyperclip
 
 DEBUG = True
 # URL = "https://raw.githubusercontent.com/rockneurotiko/telegram_api_json/master/exports/tg_api.json"
@@ -110,24 +111,37 @@ def main():
     methods = [generate_method(method) for method in definition['methods']]
     generics = [generate_generic(generic) for generic in definition['generics']]
 
-    debug("----------METHODS-----------\n")
-    print("# AUTO GENERATED")
-    print()
-    print("# Methods")
-    print()
-    print("\n\n".join(methods))
-    debug("{} methods\n".format(len(methods)))
+    methods_str = "\n\n".join(methods)
+    models_str = "\n\n  ".join(models)
+    generics_str = "\n\n ".join(generics)
 
-    debug("----------MODELS-----------\n")
-    print("# Models")
-    print()
-    print("\ndefmodule Model do")
-    print("\n\n  ".join(models))
-    debug("{} models\n".format(len(models)))
-    print("\n\n ".join(generics))
-    debug("{} generics\n".format(len(generics)))
-    print("end")
+    text = """
+# ----------METHODS-----------
 
+# AUTO GENERATED
+
+# Methods
+
+{}
+
+# {} methods
+
+# ----------MODELS-----------
+
+# Models
+
+defmodule Model do
+  {}
+
+  # {} models
+
+  {}
+
+  # {} generics
+end""".format(methods_str, len(methods), models_str, len(models), generics_str, len(generics))
+
+    print(text)
+    pyperclip.copy(text)
 
 if __name__ == "__main__":
     main()
