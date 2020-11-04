@@ -48,8 +48,10 @@ defmodule ExGram do
     [
       {url, [:string]},
       {certificate, [:file], :optional},
+      {ip_address, [:string], :optional},
       {max_connections, [:integer], :optional},
-      {allowed_updates, [{:array, :string}], :optional}
+      {allowed_updates, [{:array, :string}], :optional},
+      {drop_pending_updates, [:boolean], :optional}
     ],
     true
   )
@@ -62,14 +64,52 @@ defmodule ExGram do
 
   method(
     :post,
+    "logOut",
+    [
+      {chat_id, [:integer, :string]},
+      {text, [:string]},
+      {parse_mode, [:string], :optional},
+      {entities, [{:array, MessageEntity}], :optional},
+      {disable_web_page_preview, [:boolean], :optional},
+      {disable_notification, [:boolean], :optional},
+      {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
+       :optional}
+    ],
+    true
+  )
+
+  method(
+    :post,
+    "close",
+    [
+      {chat_id, [:integer, :string]},
+      {text, [:string]},
+      {parse_mode, [:string], :optional},
+      {entities, [{:array, MessageEntity}], :optional},
+      {disable_web_page_preview, [:boolean], :optional},
+      {disable_notification, [:boolean], :optional},
+      {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
+       :optional}
+    ],
+    true
+  )
+
+  method(
+    :post,
     "sendMessage",
     [
       {chat_id, [:integer, :string]},
       {text, [:string]},
       {parse_mode, [:string], :optional},
+      {entities, [{:array, MessageEntity}], :optional},
       {disable_web_page_preview, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -90,14 +130,35 @@ defmodule ExGram do
 
   method(
     :post,
+    "copyMessage",
+    [
+      {chat_id, [:integer, :string]},
+      {from_chat_id, [:integer, :string]},
+      {message_id, [:integer]},
+      {caption, [:string], :optional},
+      {parse_mode, [:string], :optional},
+      {caption_entities, [{:array, MessageEntity}], :optional},
+      {disable_notification, [:boolean], :optional},
+      {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
+       :optional}
+    ],
+    ExGram.Model.MessageId
+  )
+
+  method(
+    :post,
     "sendPhoto",
     [
       {chat_id, [:integer, :string]},
       {photo, [:file, :string]},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
+      {caption_entities, [{:array, MessageEntity}], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -112,12 +173,14 @@ defmodule ExGram do
       {audio, [:file, :string]},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
+      {caption_entities, [{:array, MessageEntity}], :optional},
       {duration, [:integer], :optional},
       {performer, [:string], :optional},
       {title, [:string], :optional},
       {thumb, [:file, :string], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -133,8 +196,11 @@ defmodule ExGram do
       {thumb, [:file, :string], :optional},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
+      {caption_entities, [{:array, MessageEntity}], :optional},
+      {disable_content_type_detection, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -153,9 +219,11 @@ defmodule ExGram do
       {thumb, [:file, :string], :optional},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
+      {caption_entities, [{:array, MessageEntity}], :optional},
       {supports_streaming, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -174,8 +242,10 @@ defmodule ExGram do
       {thumb, [:file, :string], :optional},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
+      {caption_entities, [{:array, MessageEntity}], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -190,9 +260,11 @@ defmodule ExGram do
       {voice, [:file, :string]},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
+      {caption_entities, [{:array, MessageEntity}], :optional},
       {duration, [:integer], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -210,6 +282,7 @@ defmodule ExGram do
       {thumb, [:file, :string], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -221,9 +294,11 @@ defmodule ExGram do
     "sendMediaGroup",
     [
       {chat_id, [:integer, :string]},
-      {media, [{:array, [InputMediaPhoto, InputMediaVideo]}]},
+      {media,
+       [{:array, [InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo]}]},
       {disable_notification, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional}
+      {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional}
     ],
     [ExGram.Model.Message]
   )
@@ -235,9 +310,13 @@ defmodule ExGram do
       {chat_id, [:integer, :string]},
       {latitude, [:float]},
       {longitude, [:float]},
+      {horizontal_accuracy, [:float], :optional},
       {live_period, [:integer], :optional},
+      {heading, [:integer], :optional},
+      {proximity_alert_radius, [:integer], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -253,6 +332,9 @@ defmodule ExGram do
       {inline_message_id, [:string], :optional},
       {latitude, [:float]},
       {longitude, [:float]},
+      {horizontal_accuracy, [:float], :optional},
+      {heading, [:integer], :optional},
+      {proximity_alert_radius, [:integer], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
     ExGram.Model.Message
@@ -281,8 +363,11 @@ defmodule ExGram do
       {address, [:string]},
       {foursquare_id, [:string], :optional},
       {foursquare_type, [:string], :optional},
+      {google_place_id, [:string], :optional},
+      {google_place_type, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -300,6 +385,7 @@ defmodule ExGram do
       {vcard, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -319,11 +405,13 @@ defmodule ExGram do
       {correct_option_id, [:integer], :optional},
       {explanation, [:string], :optional},
       {explanation_parse_mode, [:string], :optional},
+      {explanation_entities, [{:array, MessageEntity}], :optional},
       {open_period, [:integer], :optional},
       {close_date, [:integer], :optional},
       {is_closed, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -338,6 +426,7 @@ defmodule ExGram do
       {emoji, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -362,7 +451,16 @@ defmodule ExGram do
     true
   )
 
-  method(:post, "unbanChatMember", [{chat_id, [:integer, :string]}, {user_id, [:integer]}], true)
+  method(
+    :post,
+    "unbanChatMember",
+    [
+      {chat_id, [:integer, :string]},
+      {user_id, [:integer]},
+      {only_if_banned, [:boolean], :optional}
+    ],
+    true
+  )
 
   method(
     :post,
@@ -382,6 +480,7 @@ defmodule ExGram do
     [
       {chat_id, [:integer, :string]},
       {user_id, [:integer]},
+      {is_anonymous, [:boolean], :optional},
       {can_change_info, [:boolean], :optional},
       {can_post_messages, [:boolean], :optional},
       {can_edit_messages, [:boolean], :optional},
@@ -434,7 +533,14 @@ defmodule ExGram do
     true
   )
 
-  method(:post, "unpinChatMessage", [{chat_id, [:integer, :string]}], true)
+  method(
+    :post,
+    "unpinChatMessage",
+    [{chat_id, [:integer, :string]}, {message_id, [:integer], :optional}],
+    true
+  )
+
+  method(:post, "unpinAllChatMessages", [{chat_id, [:integer, :string]}], true)
 
   method(:post, "leaveChat", [{chat_id, [:integer, :string]}], true)
 
@@ -488,6 +594,7 @@ defmodule ExGram do
       {inline_message_id, [:string], :optional},
       {text, [:string]},
       {parse_mode, [:string], :optional},
+      {entities, [{:array, MessageEntity}], :optional},
       {disable_web_page_preview, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
@@ -503,6 +610,7 @@ defmodule ExGram do
       {inline_message_id, [:string], :optional},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
+      {caption_entities, [{:array, MessageEntity}], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
     ExGram.Model.Message
@@ -554,6 +662,7 @@ defmodule ExGram do
       {sticker, [:file, :string]},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -651,6 +760,7 @@ defmodule ExGram do
       {is_flexible, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
     ExGram.Model.Message
@@ -690,6 +800,7 @@ defmodule ExGram do
       {game_short_name, [:string]},
       {disable_notification, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
+      {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
     ExGram.Model.Message
@@ -722,7 +833,7 @@ defmodule ExGram do
     [ExGram.Model.GameHighScore]
   )
 
-  # 70 methods
+  # 74 methods
 
   # ----------MODELS-----------
 
@@ -748,6 +859,7 @@ defmodule ExGram do
       {:url, :string},
       {:has_custom_certificate, :boolean},
       {:pending_update_count, :integer},
+      {:ip_address, :string, :optional},
       {:last_error_date, :integer, :optional},
       {:last_error_message, :string, :optional},
       {:max_connections, :integer, :optional},
@@ -774,18 +886,22 @@ defmodule ExGram do
       {:first_name, :string, :optional},
       {:last_name, :string, :optional},
       {:photo, ChatPhoto, :optional},
+      {:bio, :string, :optional},
       {:description, :string, :optional},
       {:invite_link, :string, :optional},
       {:pinned_message, Message, :optional},
       {:permissions, ChatPermissions, :optional},
       {:slow_mode_delay, :integer, :optional},
       {:sticker_set_name, :string, :optional},
-      {:can_set_sticker_set, :boolean, :optional}
+      {:can_set_sticker_set, :boolean, :optional},
+      {:linked_chat_id, :integer, :optional},
+      {:location, ChatLocation, :optional}
     ])
 
     model(Message, [
       {:message_id, :integer},
       {:from, User, :optional},
+      {:sender_chat, Chat, :optional},
       {:date, :integer},
       {:chat, Chat},
       {:forward_from, User, :optional},
@@ -832,8 +948,11 @@ defmodule ExGram do
       {:successful_payment, SuccessfulPayment, :optional},
       {:connected_website, :string, :optional},
       {:passport_data, PassportData, :optional},
+      {:proximity_alert_triggered, ProximityAlertTriggered, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional}
     ])
+
+    model(MessageId, [{:message_id, :integer}])
 
     model(MessageEntity, [
       {:type, :string},
@@ -870,6 +989,7 @@ defmodule ExGram do
       {:duration, :integer},
       {:performer, :string, :optional},
       {:title, :string, :optional},
+      {:file_name, :string, :optional},
       {:mime_type, :string, :optional},
       {:file_size, :integer, :optional},
       {:thumb, PhotoSize, :optional}
@@ -891,6 +1011,7 @@ defmodule ExGram do
       {:height, :integer},
       {:duration, :integer},
       {:thumb, PhotoSize, :optional},
+      {:file_name, :string, :optional},
       {:mime_type, :string, :optional},
       {:file_size, :integer, :optional}
     ])
@@ -942,15 +1063,26 @@ defmodule ExGram do
       {:close_date, :integer, :optional}
     ])
 
-    model(Location, [{:longitude, :float}, {:latitude, :float}])
+    model(Location, [
+      {:longitude, :float},
+      {:latitude, :float},
+      {:horizontal_accuracy, :float, :optional},
+      {:live_period, :integer, :optional},
+      {:heading, :integer, :optional},
+      {:proximity_alert_radius, :integer, :optional}
+    ])
 
     model(Venue, [
       {:location, Location},
       {:title, :string},
       {:address, :string},
       {:foursquare_id, :string, :optional},
-      {:foursquare_type, :string, :optional}
+      {:foursquare_type, :string, :optional},
+      {:google_place_id, :string, :optional},
+      {:google_place_type, :string, :optional}
     ])
+
+    model(ProximityAlertTriggered, [{:traveler, User}, {:watcher, User}, {:distance, :integer}])
 
     model(UserProfilePhotos, [{:total_count, :integer}, {:photos, {:array, {:array, PhotoSize}}}])
 
@@ -1022,7 +1154,7 @@ defmodule ExGram do
       {:user, User},
       {:status, :string},
       {:custom_title, :string, :optional},
-      {:until_date, :integer, :optional},
+      {:is_anonymous, :boolean, :optional},
       {:can_be_edited, :boolean, :optional},
       {:can_post_messages, :boolean, :optional},
       {:can_edit_messages, :boolean, :optional},
@@ -1037,7 +1169,8 @@ defmodule ExGram do
       {:can_send_media_messages, :boolean, :optional},
       {:can_send_polls, :boolean, :optional},
       {:can_send_other_messages, :boolean, :optional},
-      {:can_add_web_page_previews, :boolean, :optional}
+      {:can_add_web_page_previews, :boolean, :optional},
+      {:until_date, :integer, :optional}
     ])
 
     model(ChatPermissions, [
@@ -1051,6 +1184,8 @@ defmodule ExGram do
       {:can_pin_messages, :boolean, :optional}
     ])
 
+    model(ChatLocation, [{:location, Location}, {:address, :string}])
+
     model(BotCommand, [{:command, :string}, {:description, :string}])
 
     model(ResponseParameters, [
@@ -1062,14 +1197,16 @@ defmodule ExGram do
       {:type, :string},
       {:media, :string},
       {:caption, :string, :optional},
-      {:parse_mode, :string, :optional}
+      {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional}
     ])
 
     model(InputMediaPhoto, [
       {:type, :string},
       {:media, :string},
       {:caption, :string, :optional},
-      {:parse_mode, :string, :optional}
+      {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional}
     ])
 
     model(InputMediaVideo, [
@@ -1078,6 +1215,7 @@ defmodule ExGram do
       {:thumb, :file, :optional},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:width, :integer, :optional},
       {:height, :integer, :optional},
       {:duration, :integer, :optional},
@@ -1090,6 +1228,7 @@ defmodule ExGram do
       {:thumb, :file, :optional},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:width, :integer, :optional},
       {:height, :integer, :optional},
       {:duration, :integer, :optional}
@@ -1101,6 +1240,7 @@ defmodule ExGram do
       {:thumb, :file, :optional},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:duration, :integer, :optional},
       {:performer, :string, :optional},
       {:title, :string, :optional}
@@ -1111,16 +1251,20 @@ defmodule ExGram do
       {:media, :string},
       {:thumb, :file, :optional},
       {:caption, :string, :optional},
-      {:parse_mode, :string, :optional}
+      {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
+      {:disable_content_type_detection, :boolean, :optional}
     ])
 
     model(InputFile, [
       {:chat_id, :integer},
       {:text, :string},
       {:parse_mode, :string, :optional},
+      {:entities, {:array, MessageEntity}, :optional},
       {:disable_web_page_preview, :boolean, :optional},
       {:disable_notification, :boolean, :optional},
       {:reply_to_message_id, :integer, :optional},
+      {:allow_sending_without_reply, :boolean, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional}
     ])
 
@@ -1186,6 +1330,7 @@ defmodule ExGram do
       {:description, :string, :optional},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1202,6 +1347,7 @@ defmodule ExGram do
       {:title, :string, :optional},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1218,6 +1364,7 @@ defmodule ExGram do
       {:title, :string, :optional},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1231,6 +1378,7 @@ defmodule ExGram do
       {:title, :string},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:video_width, :integer, :optional},
       {:video_height, :integer, :optional},
       {:video_duration, :integer, :optional},
@@ -1246,6 +1394,7 @@ defmodule ExGram do
       {:title, :string},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:performer, :string, :optional},
       {:audio_duration, :integer, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
@@ -1259,6 +1408,7 @@ defmodule ExGram do
       {:title, :string},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:voice_duration, :integer, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
@@ -1270,6 +1420,7 @@ defmodule ExGram do
       {:title, :string},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:document_url, :string},
       {:mime_type, :string},
       {:description, :string, :optional},
@@ -1286,7 +1437,10 @@ defmodule ExGram do
       {:latitude, :float},
       {:longitude, :float},
       {:title, :string},
+      {:horizontal_accuracy, :float, :optional},
       {:live_period, :integer, :optional},
+      {:heading, :integer, :optional},
+      {:proximity_alert_radius, :integer, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional},
       {:thumb_url, :string, :optional},
@@ -1303,6 +1457,8 @@ defmodule ExGram do
       {:address, :string},
       {:foursquare_id, :string, :optional},
       {:foursquare_type, :string, :optional},
+      {:google_place_id, :string, :optional},
+      {:google_place_type, :string, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional},
       {:thumb_url, :string, :optional},
@@ -1339,6 +1495,7 @@ defmodule ExGram do
       {:description, :string, :optional},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1350,6 +1507,7 @@ defmodule ExGram do
       {:title, :string, :optional},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1361,6 +1519,7 @@ defmodule ExGram do
       {:title, :string, :optional},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1381,6 +1540,7 @@ defmodule ExGram do
       {:description, :string, :optional},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1393,6 +1553,7 @@ defmodule ExGram do
       {:description, :string, :optional},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1404,6 +1565,7 @@ defmodule ExGram do
       {:title, :string},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1414,6 +1576,7 @@ defmodule ExGram do
       {:audio_file_id, :string},
       {:caption, :string, :optional},
       {:parse_mode, :string, :optional},
+      {:caption_entities, {:array, MessageEntity}, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional},
       {:input_message_content, InputMessageContent, :optional}
     ])
@@ -1421,13 +1584,17 @@ defmodule ExGram do
     model(InputTextMessageContent, [
       {:message_text, :string},
       {:parse_mode, :string, :optional},
+      {:entities, {:array, MessageEntity}, :optional},
       {:disable_web_page_preview, :boolean, :optional}
     ])
 
     model(InputLocationMessageContent, [
       {:latitude, :float},
       {:longitude, :float},
-      {:live_period, :integer, :optional}
+      {:horizontal_accuracy, :float, :optional},
+      {:live_period, :integer, :optional},
+      {:heading, :integer, :optional},
+      {:proximity_alert_radius, :integer, :optional}
     ])
 
     model(InputVenueMessageContent, [
@@ -1436,7 +1603,9 @@ defmodule ExGram do
       {:title, :string},
       {:address, :string},
       {:foursquare_id, :string, :optional},
-      {:foursquare_type, :string, :optional}
+      {:foursquare_type, :string, :optional},
+      {:google_place_id, :string, :optional},
+      {:google_place_type, :string, :optional}
     ])
 
     model(InputContactMessageContent, [
@@ -1621,7 +1790,7 @@ defmodule ExGram do
 
     model(GameHighScore, [{:position, :integer}, {:user, User}, {:score, :integer}])
 
-    # 96 models
+    # 99 models
 
     defmodule InlineQueryResult do
       @type t ::
