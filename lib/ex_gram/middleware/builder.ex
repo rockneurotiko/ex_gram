@@ -20,23 +20,36 @@ defmodule ExGram.Middleware.Builder do
 
   defmacro command(command, opts \\ []) do
     name = Keyword.get(opts, :name, String.to_atom(command))
+    description = Keyword.get(opts, :description)
 
     quote do
-      @commands [command: unquote(command), name: unquote(name)]
+      @commands [
+        command: unquote(command),
+        name: unquote(name),
+        description: unquote(description)
+      ]
     end
   end
 
   defmacro regex(regex, name, _opts \\ []) do
     quote do
-      @regexes [regex: Regex.compile!(unquote(regex)), name: unquote(name)]
+      @regexes [
+        regex: ExGram.Middleware.Builder.compile_regex(unquote(regex)),
+        name: unquote(name)
+      ]
     end
   end
 
+  def compile_regex(%{__struct__: Regex} = regex), do: regex
+  def compile_regex(binary) when is_binary(binary), do: Regex.compile!(binary)
+
   @doc false
   defmacro __before_compile__(env) do
-    middlewares = Module.get_attribute(env.module, :middlewares) |> Enum.reverse()
-    commands = Module.get_attribute(env.module, :commands) |> Enum.reverse()
-    regexes = Module.get_attribute(env.module, :regexes) |> Enum.reverse()
+    middlewares =
+      Module.get_attribute(env.module, :middlewares) |> Enum.reverse() |> Macro.escape()
+
+    commands = Module.get_attribute(env.module, :commands) |> Enum.reverse() |> Macro.escape()
+    regexes = Module.get_attribute(env.module, :regexes) |> Enum.reverse() |> Macro.escape()
 
     quote do
       defp middlewares(), do: unquote(middlewares)

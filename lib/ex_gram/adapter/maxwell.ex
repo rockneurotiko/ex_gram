@@ -1,5 +1,9 @@
 if Code.ensure_loaded?(Maxwell) do
   defmodule ExGram.Adapter.Maxwell do
+    @moduledoc """
+    HTTP Adapter that uses Maxwell
+    """
+
     @behaviour ExGram.Adapter
 
     use Maxwell.Builder, ~w(get post)a

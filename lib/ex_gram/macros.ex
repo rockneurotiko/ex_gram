@@ -3,8 +3,8 @@ defmodule ExGram.Macros do
 
   import __MODULE__.Helpers
 
-  def nameAssignT(n, t) when is_atom(n), do: {:::, [], [type_to_spec(n), t]}
-  def nameAssignT(n, t), do: {:::, [], [n, t]}
+  def nameAssignT(n, t) when is_atom(n), do: {:"::", [], [type_to_spec(n), t]}
+  def nameAssignT(n, t), do: {:"::", [], [n, t]}
 
   def nid(x), do: {x, [], nil}
 

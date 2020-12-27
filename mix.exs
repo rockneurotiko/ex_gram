@@ -1,7 +1,7 @@
 defmodule ExGram.Mixfile do
   use Mix.Project
 
-  @version "0.8.0"
+  @version "0.15.0"
 
   def project do
     [
@@ -10,7 +10,7 @@ defmodule ExGram.Mixfile do
       package: package(),
       description: description(),
       source_url: "https://github.com/rockneurotiko/ex_gram",
-      elixir: "~> 1.5",
+      elixir: "~> 1.6",
       elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,

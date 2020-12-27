@@ -15,7 +15,7 @@ Add `ex_gram` as dependency in `mix.exs`
 ``` elixir
 def deps do
     [
-      {:ex_gram, "~> 0.7"},
+      {:ex_gram, "~> 0.15"},
       {:tesla, "~> 1.2"},
       {:hackney, "~> 1.12"},
       {:jason, ">= 1.0.0"}
@@ -96,6 +96,55 @@ children = [
 ]
 ```
 
+### Configure Tesla middlewares
+
+If you are using the `Tesla` adapter, you can add [Tesla
+middlewares](https://github.com/teamon/tesla#middleware) to `ExGram`
+via config file. Add to your config:
+```elixir
+config :ex_gram, ExGram.Adapter.Tesla,
+  middlewares: [
+    {Tesla.Middleware.BaseUrl, "https://example.com/foo"}
+  ]
+```
+
+The `middlewares` list will be loaded in the `ExGram.Adapter.Tesla` module.
+
+In case you want to use a middleware that requires a function or any
+invalid element for a configuration file, you can define a function in
+any module that returns the Tesla configuration. Then put the `{m, f,
+a}` in the configuration file, for example:
+```elixir
+# lib/tesla_middlewares.ex
+
+defmodule TeslaMiddlewares do
+  def retry() do
+    {Tesla.Middleware.Retry,
+     delay: 500,
+     max_retries: 10,
+     max_delay: 4_000,
+     should_retry: fn
+       {:ok, %{status: status}} when status in [400, 500] -> true
+       {:ok, _} -> false
+       {:error, _} -> true
+     end}
+  end
+end
+```
+
+And in the config file:
+```elixir
+# config/config.exs
+
+config :ex_gram, ExGram.Adapter.Tesla,
+  middlewares: [
+    {TeslaMiddlewares, :retry, []}
+  ]
+```
+
+Take into account that the defined function has to return a two-tuple
+as the Tesla config requires.
+
 ## Framework Usage
 
 This section will show how to use the opinionated framework `ex_gram` for telegram bots!
@@ -145,12 +194,12 @@ end
 The `handle/2` function receives two arguments:
   - The first argument is a tuple that changes depending on the update. In this case we are expecting a command called `start` in Telegram, this means a `/start` message. This type of commands can be sent next to a message, for example `/start Well hello`, in this cases the `Well hello` text will arrive to the third element of the tuple named `_msg` (because we are ignoring it right now). In case no text is given an empty string will arrive in the third element.
 
-  - The second argument is a map with information about the update that just arrived, things like the [message object](https://core.telegram.org/bots/api#message) and information that `ExGram` will use to answer the message
+  - The second argument is a map called Context (`%ExGram.Cnt{}`) with information about the update that just arrived, with information like the [message object](https://core.telegram.org/bots/api#message) and internal data that `ExGram` will use to answer the message. You can also save your own information from your own middlewares in the `:extra` key using the `add_extra` method.
 
-This are the type of tuples that `handle/2` can receive:
-  - `{:command, key, text}` → This tuple will match when a command is received
-  - `{:text, text}` → This tuple will match when plain text is sent to the bot (check [privacy mode](https://core.telegram.org/bots#privacy-mode))
-  - `{:regex, key, text}` → This tuple will match if a regex is defined at the beginning of the module
+This are the type of tuples that `handle/2` can receive as first parameter:
+  - `{:command, key, message}` → This tuple will match when a command is received
+  - `{:text, text, message}` → This tuple will match when plain text is sent to the bot (check [privacy mode](https://core.telegram.org/bots#privacy-mode))
+  - `{:regex, key, message}` → This tuple will match if a regex is defined at the beginning of the module
   - `{:location, location}` → This tuple will match when a location message is received
   - `{:callback_query, callback_query}` → This tuple will match when a [Callback Query](https://core.telegram.org/bots/api#callbackquery) is received
   - `{:inline_query, inline_query}` → This tuple will match when an [Inline Query](https://core.telegram.org/bots/api#inlinequery) is received
@@ -275,7 +324,9 @@ Note: Only one of `token` and `bot` must be used.
 
 ### How it's made?
 
-There is a python script called `extractor.py`, that scrapes the Telegram Bot API documentation and prints to the stdout the lines needed to create all the methods and models, this auto generated lines uses two macros defined on `lib/ex_gram/macros.ex`: `method` and `model`.
+There is a python script called `extractor.py`, it uses the [`telegram_api_json`](https://github.com/rockneurotiko/telegram_api_json) project that scrapes the Telegram Bot API documentation and provides a JSON with all the information, check the project description if you want to create your own projects that uses an standarized file to auto-generate the API.
+
+This scripts uses the JSON description and prints to the stdout the lines needed to create all the methods and models, this auto generated lines uses two macros defined on `lib/ex_gram/macros.ex`: `method` and `model`.
 
 #### Custom types defined
 
