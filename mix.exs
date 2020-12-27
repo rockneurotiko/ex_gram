@@ -1,7 +1,7 @@
 defmodule ExGram.Mixfile do
   use Mix.Project
 
-  @version "0.15.0"
+  @version "0.16.0"
 
   def project do
     [
@@ -55,7 +55,7 @@ defmodule ExGram.Mixfile do
       # Maxwell or Tesla
       {:hackney, "~> 1.12", optional: true},
       # Maxwell adapter
-      {:maxwell, "~> 2.2.1", optional: true},
+      {:maxwell, "~> 2.3.1", optional: true},
       # JSON encoders/decoders
       {:jason, ">= 1.0.0", optional: true},
       {:poison, ">= 1.0.0", optional: true},

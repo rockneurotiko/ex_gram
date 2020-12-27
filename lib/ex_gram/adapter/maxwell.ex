@@ -80,6 +80,11 @@ if Code.ensure_loaded?(Maxwell) do
       {:file, path, disposition, []}
     end
 
+    defp encode_multipart_part({:file_content, name, content, filename}) do
+      disposition = {"form-data", [{"name", name}, {"filename", filename}]}
+      {:file_content, content, filename, disposition, []}
+    end
+
     defp encode_multipart_part({name, value}) do
       {name, value}
     end

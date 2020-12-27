@@ -209,12 +209,16 @@ This are the type of tuples that `handle/2` can receive as first parameter:
 
 ### Sending files
 
-`ExGram` lets you send files by id (this means using files already uploaded to Telegram servers) or by givin a local path. Here is how:
+`ExGram` lets you send files by id (this means using files already uploaded to Telegram servers), providing a local path, or with the content directly. Some examples of this methods for sending files:
 ``` elixir
-ExGram.send_document(chat_id, document_id)                # By document ID
+ExGram.send_document(chat_id, document_id)                                     # By document ID
 
-ExGram.send_document(chat_id, {:file, "path/to/file"})    # By local path
+ExGram.send_document(chat_id, {:file, "path/to/file"})                         # By local path
+
+ExGram.send_document(chat_id, {:file_content, "FILE CONTENT", "filename.txt"}) # By content
 ```
+
+This three ways of sending files works when the API has a file field, for example `send_photo`, `send_audio`, `send_video`, ... 
 
 ## Library Usage
 

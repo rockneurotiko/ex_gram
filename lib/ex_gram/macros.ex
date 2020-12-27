@@ -19,6 +19,7 @@ defmodule ExGram.Macros do
   def extract_name({name, _line, nil}), do: name
   def extract_name({:\\, _line, [{name, _line2, nil}, nil]}), do: name
 
+  def orT({:|, _, [x, y]}, z), do: orT(x, orT(y, z))
   def orT(x, y), do: {:|, [], [x, y]}
 
   def nameAssignT(n, t) when is_atom(n), do: {:"::", [], [type_to_spec(n), t]}
@@ -27,7 +28,24 @@ defmodule ExGram.Macros do
   def type_to_spec(:string),
     do: {{:., [], [{:__aliases__, [alias: false], [:String]}, :t]}, [], []}
 
-  def type_to_spec(:file), do: {:file, type_to_spec(:string)}
+  def type_to_spec(:enum),
+    do: {{:., [], [{:__aliases__, [alias: false], [:Enum]}, :t]}, [], []}
+
+  def type_to_spec(:file) do
+    orT(
+      {:file, type_to_spec(:string)},
+      type_to_spec(:file_content)
+    )
+  end
+
+  def type_to_spec(:file_content) do
+    {:{}, [], [:file_content, type_to_spec(:file_data), type_to_spec(:string)]}
+  end
+
+  def type_to_spec(:file_data) do
+    orT(type_to_spec(:iodata), type_to_spec(:enum))
+  end
+
   def type_to_spec({:array, t}), do: {:list, [], [type_to_spec(t)]}
   def type_to_spec(:int), do: type_to_spec(:integer)
   def type_to_spec(:bool), do: type_to_spec(:boolean)
@@ -41,12 +59,12 @@ defmodule ExGram.Macros do
   def type_to_spec(t) when is_atom(t), do: {t, [], Elixir}
   def type_to_spec(l) when is_list(l), do: types_list_to_spec(l)
 
-  def types_list_to_spec([e1, e2 | rest]) do
-    orT(type_to_spec(e1), types_list_to_spec([e2 | rest]))
-  end
-
   def types_list_to_spec([e1]) do
     type_to_spec(e1)
+  end
+
+  def types_list_to_spec([e1 | rest]) do
+    orT(type_to_spec(e1), types_list_to_spec(rest))
   end
 
   def types_list_to_spec([]) do
@@ -61,6 +79,7 @@ defmodule ExGram.Macros do
   def check_type(:float, x), do: is_float(x)
   # TODO?
   def check_type(:file, {:file, _p}), do: true
+  def check_type(:file, {:file_content, _part_data, _file_name}), do: true
   def check_type(:file, _o), do: false
 
   def check_type({:array, t}, x) do
@@ -316,7 +335,7 @@ defmodule ExGram.Macros do
     multi_full =
       analyzed
       |> Enum.map(fn {_n, types} -> types end)
-      |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &(&1 == :file)) end)
+      |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &(&1 == :file or &1 == :file_content)) end)
       |> Enum.map(fn
         [n, _t] -> {nid(n), Atom.to_string(n)}
         [n, _t, :optional] -> n
@@ -324,7 +343,8 @@ defmodule ExGram.Macros do
 
     have_multipart = Enum.count(multi_full) > 0
 
-    quote location: :keep do
+    # quote location: :keep do
+    quote do
       # Safe method
       @doc """
       Check the documentation of this method in https://core.telegram.org/bots/api##{
@@ -371,6 +391,20 @@ defmodule ExGram.Macros do
             |> Enum.into(%{})
             |> clean_body()
 
+          create_multipart = fn file_part, filepart_name ->
+            restparts =
+              body
+              |> Map.delete(String.to_atom(filepart_name))
+              |> Map.to_list()
+              |> Enum.map(fn {name, value} ->
+                {Atom.to_string(name), to_size_string(value)}
+              end)
+
+            parts = [file_part | restparts]
+
+            {:multipart, parts}
+          end
+
           body =
             if unquote(have_multipart) do
               # It may have a file to upload, let's check it!
@@ -383,21 +417,15 @@ defmodule ExGram.Macros do
                 end
 
               case vn do
+                {:file_content, content, filename} ->
+                  file_part = {:file_content, partname, content, filename}
+
+                  create_multipart.(file_part, partname)
+
                 {:file, path} ->
                   file_part = {:file, partname, path}
 
-                  # Encode all the other parts in the proper way
-                  restparts =
-                    body
-                    |> Map.delete(String.to_atom(partname))
-                    |> Map.to_list()
-                    |> Enum.map(fn {name, value} ->
-                      {Atom.to_string(name), to_size_string(value)}
-                    end)
-
-                  parts = [file_part | restparts]
-
-                  {:multipart, parts}
+                  create_multipart.(file_part, partname)
 
                 _x ->
                   body
