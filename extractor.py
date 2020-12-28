@@ -4,8 +4,8 @@ import requests
 import pyperclip
 
 DEBUG = True
-# URL = "https://raw.githubusercontent.com/rockneurotiko/telegram_api_json/master/exports/tg_api.json"
-URL = "https://raw.githack.com/rockneurotiko/telegram_api_json/master/exports/tg_api_pretty.json"
+URL = "https://raw.githubusercontent.com/rockneurotiko/telegram_api_json/master/exports/tg_api.json"
+# URL = "https://raw.githack.com/rockneurotiko/telegram_api_json/master/exports/tg_api_pretty.json"
 
 
 def debug(t):
@@ -19,15 +19,15 @@ def maybe_atom(name, is_return):
 
 def parse_type_name(name, is_return):
     if name == "int":
-        return maybe_atom("integer", is_return)
+        return ":integer" # maybe_atom("integer", is_return)
     if name == "str":
-        return "String" if is_return else ":string"
+        return ":string" # return "String" if is_return else ":string"
     if name == "bool":
-        return maybe_atom("boolean", is_return)
+        return ":boolean" # maybe_atom("boolean", is_return)
     if name == "float":
-        return maybe_atom("float", is_return)
+        return ":float"  # maybe_atom("float", is_return)
     if name == "file":
-        return maybe_atom("file", is_return)
+        return ":file"  # maybe_atom("file", is_return)
     if name == "True" or name == "true":
         return "true"
     if name == "String":
@@ -98,10 +98,12 @@ def generate_generic(model):
     return """defmodule {} do
   @type t :: {}
 
-  def subtypes() do
+  def decode_as, do: %{}  
+    
+  def subtypes do
     [{}]
   end
-  end""".format(name, types_t, types_s)
+  end""".format(name, types_t, "{}", types_s)
 
 
 def main():

@@ -24,6 +24,8 @@ defmodule ExGram do
     ExGram.Encoder.EngineCompiler.compile(engine)
   end
 
+  # ----------METHODS-----------
+
   # AUTO GENERATED
 
   # Methods
@@ -505,7 +507,7 @@ defmodule ExGram do
     true
   )
 
-  method(:post, "exportChatInviteLink", [{chat_id, [:integer, :string]}], String)
+  method(:post, "exportChatInviteLink", [{chat_id, [:integer, :string]}], :string)
 
   method(:post, "setChatPhoto", [{chat_id, [:integer, :string]}, {photo, [:file]}], true)
 
@@ -1813,9 +1815,9 @@ defmodule ExGram do
               | InlineQueryResultVideo.t()
               | InlineQueryResultVoice.t()
 
-      def decode_as(), do: %{}
+      def decode_as, do: %{}
 
-      def subtypes() do
+      def subtypes do
         [
           InlineQueryResultCachedAudio,
           InlineQueryResultCachedDocument,
@@ -1848,9 +1850,9 @@ defmodule ExGram do
               | InputVenueMessageContent.t()
               | InputContactMessageContent.t()
 
-      def decode_as(), do: %{}
+      def decode_as, do: %{}
 
-      def subtypes() do
+      def subtypes do
         [
           InputTextMessageContent,
           InputLocationMessageContent,
@@ -1872,9 +1874,9 @@ defmodule ExGram do
               | PassportElementErrorTranslationFiles.t()
               | PassportElementErrorUnspecified.t()
 
-      def decode_as(), do: %{}
+      def decode_as, do: %{}
 
-      def subtypes() do
+      def subtypes do
         [
           PassportElementErrorDataField,
           PassportElementErrorFrontSide,
@@ -1888,5 +1890,7 @@ defmodule ExGram do
         ]
       end
     end
+
+    # 3 generics
   end
 end

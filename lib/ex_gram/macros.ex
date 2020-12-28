@@ -73,22 +73,7 @@ defmodule ExGram.Macros do
     mand_vnames = mand_names |> Enum.map(&nid/1)
     mand_body = Enum.zip(mand_names, mand_vnames)
 
-    # Change ExGram.Model.Type for ExGram.Model.Type.t
-    returned_type =
-      case returned do
-        [{:__aliases__, _l, _t} = t] ->
-          quote do
-            [unquote(t).t]
-          end
-
-        {:__aliases__, _l, _t} = t ->
-          quote do
-            unquote(t).t
-          end
-
-        _ ->
-          type_to_spec(returned)
-      end
+    returned_type_spec = type_to_spec(returned)
 
     multi_full =
       analyzed
@@ -107,7 +92,7 @@ defmodule ExGram.Macros do
       }
       """
       @spec unquote(fname)(unquote_splicing(types_mand_spec), options :: unquote(types_opt_spec)) ::
-              {:ok, unquote(returned_type)}
+              {:ok, unquote(returned_type_spec)}
               | {:error, ExGram.Error.t()}
       def unquote(fname)(unquote_splicing(mand_par), options \\ []) do
         name = unquote(name)
@@ -139,7 +124,7 @@ defmodule ExGram.Macros do
       @spec unquote(fname_exception)(
               unquote_splicing(types_mand_spec),
               ops :: unquote(types_opt_spec)
-            ) :: unquote(returned_type)
+            ) :: unquote(returned_type_spec)
       def unquote(fname_exception)(unquote_splicing(mand_par), ops \\ []) do
         # TODO use own errors
         case unquote(fname)(unquote_splicing(mand_par), ops) do
