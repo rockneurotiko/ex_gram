@@ -1,21 +1,5 @@
 defmodule ExGram.Macros do
-  @adapter ExGram.Config.get(:ex_gram, :adapter, ExGram.Adapter.Tesla)
-
   import __MODULE__.Helpers
-
-  def nameAssignT(n, t) when is_atom(n), do: {:"::", [], [type_to_spec(n), t]}
-  def nameAssignT(n, t), do: {:"::", [], [n, t]}
-
-  def nid(x), do: {x, [], nil}
-
-  def type_to_macrot([n, t]), do: [nid(n), t]
-  def type_to_macrot([n, t, o]), do: [nid(n), t, o]
-
-  def partition_optional_parameter({_, [_n, _t, :optional]}), do: true
-  def partition_optional_parameter(_), do: false
-
-  def is_par_optional([_n, _t, :optional]), do: true
-  def is_par_optional(_), do: false
 
   defmacro model(name, params) do
     tps = struct_types(params)
@@ -37,6 +21,15 @@ defmodule ExGram.Macros do
       end
     end
   end
+
+  @common_opts [
+                 adapter: :atom,
+                 bot: :atom,
+                 token: :string,
+                 debug: :boolean,
+                 check_params: :boolean
+               ]
+               |> Enum.map(fn {k, v} -> {k, type_to_spec(v)} end)
 
   defmacro method(verb, name, params, returned) do
     fname =
@@ -66,6 +59,7 @@ defmodule ExGram.Macros do
     types_opt_spec =
       types_opt
       |> Enum.map(fn [{n, [], nil}, ts, :optional] -> {n, types_list_to_spec(ts)} end)
+      |> Kernel.++(@common_opts)
 
     {opt_par, mand_par} =
       analyzed
@@ -105,8 +99,6 @@ defmodule ExGram.Macros do
         [n, _t, :optional] -> n
       end)
 
-    have_multipart = Enum.count(multi_full) > 0
-
     quote location: :keep do
       # Safe method
       @doc """
@@ -114,97 +106,30 @@ defmodule ExGram.Macros do
         String.downcase(unquote(name))
       }
       """
-      @spec unquote(fname)(unquote_splicing(types_mand_spec), ops :: unquote(types_opt_spec)) ::
+      @spec unquote(fname)(unquote_splicing(types_mand_spec), options :: unquote(types_opt_spec)) ::
               {:ok, unquote(returned_type)}
               | {:error, ExGram.Error.t()}
-      def unquote(fname)(unquote_splicing(mand_par), ops \\ []) do
-        adapter = Keyword.get(ops, :adapter, unquote(@adapter))
-        config_check_params = ExGram.Config.get(:ex_gram, :check_params, true)
-        token = ExGram.Token.fetch(ops)
-        debug = Keyword.get(ops, :debug, false)
+      def unquote(fname)(unquote_splicing(mand_par), options \\ []) do
+        name = unquote(name)
+        verb = unquote(verb)
+        mand_body = unquote(mand_body)
+        multi_full = unquote(multi_full)
+        returned = unquote(returned)
+        method_ops = Keyword.take(options, unquote(opt_par))
+        mandatory_types = unquote(types_mand)
+        optional_types = unquote(opt_par_types)
 
-        # Remove not valids
-        ops = Keyword.take(ops, unquote(opt_par))
-
-        check_params? = Keyword.get(ops, :check_params, config_check_params)
-
-        if !check_params(check_params?, unquote(types_mand), ops, unquote(opt_par_types)) do
-          {
-            :error,
-            "Some invariant of the method #{unquote(name)} was not succesful, check the documentation"
-          }
-        else
-          verb = unquote(verb)
-          name = unquote(name)
-          mand_body = unquote(mand_body)
-          have_multipart = unquote(have_multipart)
-          multi_full = unquote(multi_full)
-          returned_type = unquote(returned)
-          # result_transformer = unquote(result_transformer)
-
-          body =
-            mand_body
-            |> Keyword.merge(ops)
-            |> Enum.into(%{})
-            |> ExGram.Macros.Helpers.clean_body()
-
-          create_multipart = fn file_part, filepart_name ->
-            restparts =
-              body
-              |> Map.delete(String.to_atom(filepart_name))
-              |> Map.to_list()
-              |> Enum.map(fn {name, value} ->
-                {Atom.to_string(name), to_size_string(value)}
-              end)
-
-            parts = [file_part | restparts]
-
-            {:multipart, parts}
-          end
-
-          body =
-            if have_multipart do
-              # It may have a file to upload, let's check it!
-
-              # Extract the value and part name (it can be from parameter or ops)
-              {vn, partname} =
-                case Enum.at(multi_full, 0) do
-                  {v, p} -> {v, p}
-                  keyw -> {ops[keyw], Atom.to_string(keyw)}
-                end
-
-              case vn do
-                {:file_content, content, filename} ->
-                  file_part = {:file_content, partname, content, filename}
-
-                  create_multipart.(file_part, partname)
-
-                {:file, path} ->
-                  file_part = {:file, partname, path}
-
-                  create_multipart.(file_part, partname)
-
-                _x ->
-                  body
-              end
-            else
-              # No possible file in this method, keep moving
-              body
-            end
-
-          path = "/bot#{token}/#{name}"
-          # IO.puts("Path: #{inspect(path)}\nbody: #{inspect(body)}")
-
-          result = adapter.request(verb, path, body)
-
-          case result do
-            {:ok, body} ->
-              {:ok, body |> ExGram.Macros.Helpers.process_result(returned_type)}
-
-            {:error, error} ->
-              {:error, error}
-          end
-        end
+        ExGram.Macros.Executer.execute_method(
+          name,
+          verb,
+          mand_body,
+          multi_full,
+          returned,
+          options,
+          method_ops,
+          mandatory_types,
+          optional_types
+        )
       end
 
       # Unsafe method

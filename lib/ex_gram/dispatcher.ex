@@ -27,7 +27,7 @@ defmodule ExGram.Dispatcher do
 
   def new(extra \\ %{}) do
     %__MODULE__{
-      name: "",
+      name: __MODULE__,
       bot_info: nil,
       dispatcher_name: __MODULE__,
       commands: [],
