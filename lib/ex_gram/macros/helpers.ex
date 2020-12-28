@@ -48,10 +48,28 @@ defmodule ExGram.Macros.Helpers do
   def type_to_spec(:string),
     do: {{:., [], [{:__aliases__, [alias: false], [:String]}, :t]}, [], []}
 
-  def type_to_spec(:file), do: {:file, type_to_spec(:string)}
+  def type_to_spec(:enum),
+    do: {{:., [], [{:__aliases__, [alias: false], [:Enum]}, :t]}, [], []}
+
+  def type_to_spec(:file) do
+    orT(
+      {:file, type_to_spec(:string)},
+      type_to_spec(:file_content)
+    )
+  end
+
+  def type_to_spec(:file_content) do
+    {:{}, [], [:file_content, type_to_spec(:file_data), type_to_spec(:string)]}
+  end
+
+  def type_to_spec(:file_data) do
+    orT(type_to_spec(:iodata), type_to_spec(:enum))
+  end
+
   def type_to_spec({:array, t}), do: {:list, [], [type_to_spec(t)]}
-  def type_to_spec(:int), do: type_to_spec(:integer)
-  def type_to_spec(:bool), do: type_to_spec(:boolean)
+  def type_to_spec(:integer), do: {:integer, [], []}
+  def type_to_spec(:boolean), do: {:boolean, [], []}
+  def type_to_spec(true), do: true
 
   def type_to_spec({:__aliases__, _a, _t} = f) do
     quote do
@@ -62,12 +80,12 @@ defmodule ExGram.Macros.Helpers do
   def type_to_spec(t) when is_atom(t), do: {t, [], Elixir}
   def type_to_spec(l) when is_list(l), do: types_list_to_spec(l)
 
-  def types_list_to_spec([e1, e2 | rest]) do
-    orT(type_to_spec(e1), types_list_to_spec([e2 | rest]))
-  end
-
   def types_list_to_spec([e1]) do
     type_to_spec(e1)
+  end
+
+  def types_list_to_spec([e1 | rest]) do
+    orT(type_to_spec(e1), types_list_to_spec(rest))
   end
 
   def types_list_to_spec([]) do
@@ -149,6 +167,7 @@ defmodule ExGram.Macros.Helpers do
   def clean_body(m) when is_list(m), do: Enum.map(m, &clean_body/1)
   def clean_body(m), do: m
 
+  defp orT({:|, _, [x, y]}, z), do: orT(x, orT(y, z))
   defp orT(x, y), do: {:|, [], [x, y]}
 
   defp check_mandatory_params(params) do
@@ -179,6 +198,7 @@ defmodule ExGram.Macros.Helpers do
   defp check_type(:float, x), do: is_float(x)
   # TODO?
   defp check_type(:file, {:file, _p}), do: true
+  defp check_type(:file, {:file_content, _c, _fn}), do: true
   defp check_type(:file, _o), do: false
 
   defp check_type({:array, _}, []), do: true

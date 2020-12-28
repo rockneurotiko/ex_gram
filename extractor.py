@@ -98,9 +98,9 @@ def generate_generic(model):
     return """defmodule {} do
   @type t :: {}
 
-    def subtypes() do
-      [{}]
-    end
+  def subtypes() do
+    [{}]
+  end
   end""".format(name, types_t, types_s)
 
 

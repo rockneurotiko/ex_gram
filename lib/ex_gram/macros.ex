@@ -93,13 +93,13 @@ defmodule ExGram.Macros do
           end
 
         _ ->
-          returned
+          type_to_spec(returned)
       end
 
     multi_full =
       analyzed
       |> Enum.map(fn {_n, types} -> types end)
-      |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &(&1 == :file)) end)
+      |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &(&1 == :file or &1 == :file_content)) end)
       |> Enum.map(fn
         [n, _t] -> {nid(n), Atom.to_string(n)}
         [n, _t, :optional] -> n
@@ -148,6 +148,20 @@ defmodule ExGram.Macros do
             |> Enum.into(%{})
             |> ExGram.Macros.Helpers.clean_body()
 
+          create_multipart = fn file_part, filepart_name ->
+            restparts =
+              body
+              |> Map.delete(String.to_atom(filepart_name))
+              |> Map.to_list()
+              |> Enum.map(fn {name, value} ->
+                {Atom.to_string(name), to_size_string(value)}
+              end)
+
+            parts = [file_part | restparts]
+
+            {:multipart, parts}
+          end
+
           body =
             if have_multipart do
               # It may have a file to upload, let's check it!
@@ -160,21 +174,15 @@ defmodule ExGram.Macros do
                 end
 
               case vn do
+                {:file_content, content, filename} ->
+                  file_part = {:file_content, partname, content, filename}
+
+                  create_multipart.(file_part, partname)
+
                 {:file, path} ->
                   file_part = {:file, partname, path}
 
-                  # Encode all the other parts in the proper way
-                  restparts =
-                    body
-                    |> Map.delete(String.to_atom(partname))
-                    |> Map.to_list()
-                    |> Enum.map(fn {name, value} ->
-                      {Atom.to_string(name), to_size_string(value)}
-                    end)
-
-                  parts = [file_part | restparts]
-
-                  {:multipart, parts}
+                  create_multipart.(file_part, partname)
 
                 _x ->
                   body
