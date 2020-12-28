@@ -1,29 +1,84 @@
 defmodule ExGram.Macros.Helpers do
-  def nameAssignT(n, t) when is_atom(n), do: {:"::", [], [type_to_spec(n), t]}
-  def nameAssignT(n, t), do: {:"::", [], [n, t]}
+  def mandatory_type_specs(analyzed) do
+    analyzed
+    |> Enum.map(&elem(&1, 1))
+    |> Enum.filter(&(not is_par_optional(&1)))
+    |> Enum.map(fn [n, ts] -> nameAssignT(n, types_list_to_spec(ts)) end)
+  end
+
+  def mandatory_value_type(analyzed) do
+    analyzed
+    |> Enum.map(&elem(&1, 1))
+    |> Enum.filter(&(not is_par_optional(&1)))
+    |> Enum.map(fn [name, types] -> [nid(name), types] end)
+  end
+
+  def optional_type_specs(analyzed) do
+    analyzed
+    |> Enum.map(&elem(&1, 1))
+    |> Enum.filter(&is_par_optional/1)
+    |> Enum.map(fn [n, ts, :optional] -> {n, types_list_to_spec(ts)} end)
+    |> Kernel.++(common_opts())
+  end
+
+  def mandatory_parameters(analyzed) do
+    mandatory =
+      analyzed
+      |> Enum.filter(fn {_name, desc} -> not is_par_optional(desc) end)
+
+    names = Enum.map(mandatory, fn {name, _desc} -> name end)
+
+    mand_atoms = Enum.map(names, &extract_param_name/1)
+    mand_values = Enum.map(mand_atoms, &nid/1)
+
+    body = Enum.zip(mand_atoms, mand_values)
+
+    {names, body}
+  end
+
+  def optional_parameters(analyzed) do
+    optionals =
+      analyzed
+      |> Enum.map(&elem(&1, 1))
+      |> Enum.filter(&is_par_optional/1)
+
+    optional_types = Enum.map(optionals, fn [name, types, :optional] -> {name, types} end)
+    optional_names = Enum.map(optionals, fn [name, _, _] -> name end)
+
+    {optional_names, optional_types}
+  end
+
+  def file_parameters(analyzed) do
+    analyzed
+    |> Enum.map(fn {_n, types} -> types end)
+    |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &(&1 == :file or &1 == :file_content)) end)
+    |> Enum.map(fn
+      [n, _t] -> {nid(n), Atom.to_string(n)}
+      [n, _t, :optional] -> n
+    end)
+  end
+
+  @common_opts [
+    adapter: :atom,
+    bot: :atom,
+    token: :string,
+    debug: :boolean,
+    check_params: :boolean
+  ]
+  defp common_opts do
+    @common_opts |> Enum.map(fn {k, v} -> {k, type_to_spec(v)} end)
+  end
+
+  defp nameAssignT(n, t) when is_atom(n), do: {:"::", [], [type_to_spec(n), t]}
+  defp nameAssignT(n, t), do: {:"::", [], [n, t]}
 
   def nid(x), do: {x, [], nil}
-
-  def type_to_macrot([n, t]), do: [nid(n), t]
-  def type_to_macrot([n, t, o]), do: [nid(n), t, o]
 
   def partition_optional_parameter({_, [_n, _t, :optional]}), do: true
   def partition_optional_parameter(_), do: false
 
-  def is_par_optional([_n, _t, :optional]), do: true
-  def is_par_optional(_), do: false
-
-  def process_result(list, [t]), do: Enum.map(list, &process_result(&1, t))
-
-  def process_result(elem, :integer), do: elem
-  def process_result(elem, :string), do: elem
-  def process_result(elem, true), do: elem
-
-  def process_result(elem, t) when is_atom(t) do
-    struct(t, elem)
-  end
-
-  def process_result(elem, _t), do: elem
+  defp is_par_optional([_n, _t, :optional]), do: true
+  defp is_par_optional(_), do: false
 
   def transform_param({:{}, line, [{name, _line, nil}]}), do: {{name, line, nil}, [name, [:any]]}
 
@@ -69,7 +124,13 @@ defmodule ExGram.Macros.Helpers do
   def type_to_spec(:boolean), do: {:boolean, [], []}
   def type_to_spec(true), do: true
 
-  def type_to_spec({:__aliases__, _a, _t} = f) do
+  def type_to_spec({:__aliases__, _a, [:ExGram, :Model | _]} = f) do
+    quote do
+      unquote(f).t
+    end
+  end
+
+  def type_to_spec({:__aliases__, _a, _} = f) do
     quote do
       ExGram.Model.unquote(f).t
     end

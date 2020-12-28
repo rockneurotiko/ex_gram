@@ -22,15 +22,6 @@ defmodule ExGram.Macros do
     end
   end
 
-  @common_opts [
-                 adapter: :atom,
-                 bot: :atom,
-                 token: :string,
-                 debug: :boolean,
-                 check_params: :boolean
-               ]
-               |> Enum.map(fn {k, v} -> {k, type_to_spec(v)} end)
-
   defmacro method(verb, name, params, returned) do
     fname =
       Macro.underscore(name)
@@ -46,43 +37,18 @@ defmodule ExGram.Macros do
 
     analyzed = params |> Enum.map(&transform_param/1)
 
-    {types_opt, types_mand} =
-      analyzed
-      |> Enum.map(fn {_n, types} -> types end)
-      |> Enum.map(&type_to_macrot/1)
-      |> Enum.split_with(&is_par_optional(&1))
+    types_mand_value = mandatory_value_type(analyzed)
+    types_mand_spec = mandatory_type_specs(analyzed)
 
-    types_mand_spec =
-      types_mand
-      |> Enum.map(fn [{n, [], nil}, ts] -> nameAssignT(n, types_list_to_spec(ts)) end)
+    types_opt_spec = optional_type_specs(analyzed)
 
-    types_opt_spec =
-      types_opt
-      |> Enum.map(fn [{n, [], nil}, ts, :optional] -> {n, types_list_to_spec(ts)} end)
-      |> Kernel.++(@common_opts)
+    {mandatory_parameters, mandatory_body} = mandatory_parameters(analyzed)
 
-    {opt_par, mand_par} =
-      analyzed
-      |> Enum.split_with(&partition_optional_parameter/1)
-
-    opt_par_types = opt_par |> Enum.map(fn {_n, t} -> {Enum.at(t, 0), Enum.at(t, 1)} end)
-    opt_par = opt_par |> Enum.map(fn {_n, t} -> Enum.at(t, 0) end)
-    mand_par = mand_par |> Enum.map(fn {n, _t} -> n end)
-
-    mand_names = mand_par |> Enum.map(&extract_param_name/1)
-    mand_vnames = mand_names |> Enum.map(&nid/1)
-    mand_body = Enum.zip(mand_names, mand_vnames)
+    {opt_par, opt_par_types} = optional_parameters(analyzed)
 
     returned_type_spec = type_to_spec(returned)
 
-    multi_full =
-      analyzed
-      |> Enum.map(fn {_n, types} -> types end)
-      |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &(&1 == :file or &1 == :file_content)) end)
-      |> Enum.map(fn
-        [n, _t] -> {nid(n), Atom.to_string(n)}
-        [n, _t, :optional] -> n
-      end)
+    file_parameters = file_parameters(analyzed)
 
     quote location: :keep do
       # Safe method
@@ -94,21 +60,21 @@ defmodule ExGram.Macros do
       @spec unquote(fname)(unquote_splicing(types_mand_spec), options :: unquote(types_opt_spec)) ::
               {:ok, unquote(returned_type_spec)}
               | {:error, ExGram.Error.t()}
-      def unquote(fname)(unquote_splicing(mand_par), options \\ []) do
+      def unquote(fname)(unquote_splicing(mandatory_parameters), options \\ []) do
         name = unquote(name)
         verb = unquote(verb)
-        mand_body = unquote(mand_body)
-        multi_full = unquote(multi_full)
+        mandatory_body = unquote(mandatory_body)
+        file_parameters = unquote(file_parameters)
         returned = unquote(returned)
         method_ops = Keyword.take(options, unquote(opt_par))
-        mandatory_types = unquote(types_mand)
+        mandatory_types = unquote(types_mand_value)
         optional_types = unquote(opt_par_types)
 
         ExGram.Macros.Executer.execute_method(
           name,
           verb,
-          mand_body,
-          multi_full,
+          mandatory_body,
+          file_parameters,
           returned,
           options,
           method_ops,
@@ -125,9 +91,9 @@ defmodule ExGram.Macros do
               unquote_splicing(types_mand_spec),
               ops :: unquote(types_opt_spec)
             ) :: unquote(returned_type_spec)
-      def unquote(fname_exception)(unquote_splicing(mand_par), ops \\ []) do
+      def unquote(fname_exception)(unquote_splicing(mandatory_parameters), ops \\ []) do
         # TODO use own errors
-        case unquote(fname)(unquote_splicing(mand_par), ops) do
+        case unquote(fname)(unquote_splicing(mandatory_parameters), ops) do
           {:ok, result} -> result
           {:error, error} -> raise error
         end

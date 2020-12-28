@@ -1,12 +1,39 @@
 defmodule ExGram.Macros.Checker do
   @type valid_type :: :integer | :string | :boolean | :float | :file | {:array, valid_type} | atom
-  @type param_type :: maybe_improper_list(any, valid_type)
+  @type param_type :: maybe_improper_list(any, [valid_type])
   @type params_types :: [param_type]
 
-  @spec check_types(params_types) :: boolean
-  def check_types(params), do: params |> Enum.map(&check_all_types/1) |> Enum.all?()
+  @type error_type_element :: {any, [valid_type]}
 
-  defp check_all_types([x, types]), do: Enum.any?(types, &check_type(&1, x))
+  @spec check_types(params_types) :: :ok | {:error, [{error_type_element, integer}]}
+  def check_types(params) do
+    errors =
+      params
+      |> Enum.map(&check_any_type/1)
+      |> Enum.with_index()
+      |> Enum.filter(fn
+        {:ok, _} ->
+          false
+
+        _ ->
+          true
+      end)
+
+    case errors do
+      [] ->
+        :ok
+
+      _ ->
+        {:error, errors}
+    end
+  end
+
+  defp check_any_type([value, types]) do
+    case Enum.any?(types, &check_type(&1, value)) do
+      true -> :ok
+      _ -> {value, types}
+    end
+  end
 
   defp check_type(:integer, x), do: is_integer(x)
   defp check_type(:string, x), do: is_bitstring(x)
