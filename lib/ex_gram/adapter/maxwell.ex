@@ -6,6 +6,8 @@ if Code.ensure_loaded?(Maxwell) do
 
     @behaviour ExGram.Adapter
 
+    @dialyzer {:nowarn_function, get!: 1, get!: 2, post!: 1, post!: 2, call_middleware: 1}
+
     use Maxwell.Builder, ~w(get post)a
 
     @base_url "https://api.telegram.org"

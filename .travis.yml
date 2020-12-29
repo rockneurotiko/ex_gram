@@ -1,8 +1,8 @@
 language: elixir
 elixir:
-  - 1.9
+  - 1.11
 otp_release:
-  - 22.0
+  - 22.3
 cache:
   directories:
     - _build
@@ -10,6 +10,7 @@ cache:
 script:
   - mix format --check-formatted || travis_terminate 1
   - mix format --check-equivalent || travis_terminate 1
+  - mix dialyzer || travis_treminate 1
   - mix test || travis_terminate 1
 after_script:
   - MIX_ENV=docs mix deps.get

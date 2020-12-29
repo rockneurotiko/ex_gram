@@ -115,7 +115,7 @@ if Code.ensure_loaded?(Tesla) do
     defp http_adapter(), do: Application.get_env(:tesla, :adapter) || Tesla.Adapter.Hackney
 
     defp opts(), do: [adapter: adapter_opts()]
-    defp adapter_opts(), do: [connect_timeout: 5_000, timeout: 60_000, recv_timeout: 60_000]
+    defp adapter_opts(), do: [connect_timeout: 20_000, timeout: 60_000, recv_timeout: 60_000]
 
     defp format_middleware({m, f, a}) do
       case apply(m, f, a) do
