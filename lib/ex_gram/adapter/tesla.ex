@@ -73,6 +73,10 @@ if Code.ensure_loaded?(Tesla) do
       Tesla.Multipart.add_file(mp, path, name: name)
     end
 
+    defp add_multipart_part({:file_content, name, content, filename}, mp) do
+      Tesla.Multipart.add_file_content(mp, content, filename, name: name)
+    end
+
     defp add_multipart_part({name, value}, mp) do
       Tesla.Multipart.add_field(mp, name, value)
     end
