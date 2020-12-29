@@ -15,7 +15,7 @@ Add `ex_gram` as dependency in `mix.exs`
 ``` elixir
 def deps do
     [
-      {:ex_gram, "~> 0.20"},
+      {:ex_gram, "~> 0.21"},
       {:tesla, "~> 1.2"},
       {:hackney, "~> 1.12"},
       {:jason, ">= 1.0.0"}
@@ -52,7 +52,7 @@ config :tesla, adapter: Tesla.Adapter.Gun
 
 On deps:
 ``` elixir
-{:maxwell, "~> 2.2.1"},
+{:maxwell, "~> 2.3.1"},
 {:hackney, "~> 1.12"},
 ```
 
