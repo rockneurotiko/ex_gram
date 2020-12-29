@@ -4,7 +4,6 @@ defmodule ExGram.Updates.Noup do
 
   def start_link({:bot, pid, :token, token}) do
     Logger.debug("Start NO Updates worker")
-    # TODO: Use name
     GenServer.start_link(__MODULE__, {:ok, pid, token})
   end
 

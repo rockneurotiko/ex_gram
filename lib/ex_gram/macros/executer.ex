@@ -1,6 +1,7 @@
 defmodule ExGram.Macros.Executer do
   require Logger
 
+  # credo:disable-for-next-line
   def execute_method(
         name,
         verb,

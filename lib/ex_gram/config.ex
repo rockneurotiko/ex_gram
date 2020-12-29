@@ -28,16 +28,10 @@ defmodule ExGram.Config do
   def get(app, key, default \\ nil) when is_atom(app) and is_atom(key) do
     case Application.get_env(app, key) do
       {:system, env_var} ->
-        case System.get_env(env_var) do
-          nil -> default
-          val -> val
-        end
+        get_env(env_var, default)
 
       {:system, env_var, preconfigured_default} ->
-        case System.get_env(env_var) do
-          nil -> preconfigured_default
-          val -> val
-        end
+        get_env(env_var, preconfigured_default)
 
       nil ->
         default
@@ -66,6 +60,13 @@ defmodule ExGram.Config do
           {i, _} -> i
           :error -> default
         end
+    end
+  end
+
+  defp get_env(env_var, default) do
+    case System.get_env(env_var) do
+      nil -> default
+      val -> val
     end
   end
 end

@@ -81,9 +81,10 @@ defmodule ExGram.Dsl do
   end
 
   def extract_id(u) do
-    with {:ok, %{id: gid}} <- extract_group(u) do
-      gid
-    else
+    case extract_group(u) do
+      {:ok, %{id: gid}} ->
+        gid
+
       _ ->
         case extract_user(u) do
           {:ok, %{id: uid}} -> uid

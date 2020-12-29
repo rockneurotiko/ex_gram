@@ -73,9 +73,8 @@ defmodule ExGram.Bot.Supervisor do
     do: %ExGram.Model.User{username: username, is_bot: true}
 
   defp maybe_fetch_bot(_username, token) do
-    with {:ok, bot} <- ExGram.get_me(token: token) do
-      bot
-    else
+    case ExGram.get_me(token: token) do
+      {:ok, bot} -> bot
       _ -> nil
     end
   end

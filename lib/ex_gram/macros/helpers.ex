@@ -3,7 +3,7 @@ defmodule ExGram.Macros.Helpers do
     analyzed
     |> Enum.map(&elem(&1, 1))
     |> Enum.filter(&(not is_par_optional(&1)))
-    |> Enum.map(fn [n, ts] -> nameAssignT(n, types_list_to_spec(ts)) end)
+    |> Enum.map(fn [n, ts] -> parameter_type_spec(n, types_list_to_spec(ts)) end)
   end
 
   def mandatory_value_type(analyzed) do
@@ -69,8 +69,8 @@ defmodule ExGram.Macros.Helpers do
     @common_opts |> Enum.map(fn {k, v} -> {k, type_to_spec(v)} end)
   end
 
-  defp nameAssignT(n, t) when is_atom(n), do: {:"::", [], [type_to_spec(n), t]}
-  defp nameAssignT(n, t), do: {:"::", [], [n, t]}
+  defp parameter_type_spec(n, t) when is_atom(n), do: {:"::", [], [type_to_spec(n), t]}
+  defp parameter_type_spec(n, t), do: {:"::", [], [n, t]}
 
   def nid(x), do: {x, [], nil}
 
@@ -207,6 +207,7 @@ defmodule ExGram.Macros.Helpers do
 
   def struct_types(initial), do: struct_types(initial, [])
 
+  # credo:disable-for-next-line
   defp orT({:|, _, [x, y]}, z), do: orT(x, orT(y, z))
   defp orT(x, y), do: {:|, [], [x, y]}
 end

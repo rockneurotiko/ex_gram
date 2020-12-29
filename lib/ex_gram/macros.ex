@@ -85,14 +85,17 @@ defmodule ExGram.Macros do
 
       # Unsafe method
       @doc """
-      TODO: Do documentation
+      Unsafe version of #{unquote(fname)}. It will return the response or raise in case of error.
+
+      Check the documentation of this method in https://core.telegram.org/bots/api##{
+        String.downcase(unquote(name))
+      }
       """
       @spec unquote(fname_exception)(
               unquote_splicing(types_mand_spec),
               ops :: unquote(types_opt_spec)
             ) :: unquote(returned_type_spec)
       def unquote(fname_exception)(unquote_splicing(mandatory_parameters), ops \\ []) do
-        # TODO use own errors
         case unquote(fname)(unquote_splicing(mandatory_parameters), ops) do
           {:ok, result} -> result
           {:error, error} -> raise error
