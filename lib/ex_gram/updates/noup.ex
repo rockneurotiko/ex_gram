@@ -1,10 +1,13 @@
 defmodule ExGram.Updates.Noup do
+  @moduledoc """
+  Updates implementation that just start a process but don't do anything
+  """
+
   use GenServer
   require Logger
 
   def start_link({:bot, pid, :token, token}) do
     Logger.debug("Start NO Updates worker")
-    # TODO: Use name
     GenServer.start_link(__MODULE__, {:ok, pid, token})
   end
 

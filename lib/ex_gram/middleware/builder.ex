@@ -1,4 +1,8 @@
 defmodule ExGram.Middleware.Builder do
+  @moduledoc """
+  Macros for building bot settings like middlewares, commands and regex
+  """
+
   defmacro __using__(_opts) do
     quote do
       import ExGram.Middleware.Builder,

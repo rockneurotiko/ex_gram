@@ -1,4 +1,8 @@
 defmodule ExGram.Adapter do
+  @moduledoc """
+  Behaviour for HTTP adapters
+  """
+
   @type verb :: :post | :get
   @type path :: String.t()
   @type body :: map() | list()

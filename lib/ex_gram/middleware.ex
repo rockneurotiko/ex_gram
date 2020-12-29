@@ -1,6 +1,6 @@
 defmodule ExGram.Middleware do
   @moduledoc """
-  Allow creating middlewares
+  Helper to make it easier to create middlewares
   """
 
   @type opts :: binary | tuple | atom | integer | float | [opts] | %{opts => opts}

@@ -1,4 +1,10 @@
 defmodule ExGram do
+  @moduledoc """
+  ExGram main supervisor that starts the bot's registry.
+
+  All the API calls are in this module. The API method's and models are auto generated and uses macros to build them.
+  """
+
   use Supervisor
 
   import ExGram.Macros
@@ -840,6 +846,10 @@ defmodule ExGram do
   # Models
 
   defmodule Model do
+    @moduledoc """
+    Telegram API Model structures  
+    """
+
     model(Update, [
       {:update_id, :integer},
       {:message, Message, :optional},
@@ -1793,6 +1803,9 @@ defmodule ExGram do
     # 99 models
 
     defmodule InlineQueryResult do
+      @moduledoc """
+      InlineQueryResult model. Valid subtypes: InlineQueryResultCachedAudio, InlineQueryResultCachedDocument, InlineQueryResultCachedGif, InlineQueryResultCachedMpeg4Gif, InlineQueryResultCachedPhoto, InlineQueryResultCachedSticker, InlineQueryResultCachedVideo, InlineQueryResultCachedVoice, InlineQueryResultArticle, InlineQueryResultAudio, InlineQueryResultContact, InlineQueryResultGame, InlineQueryResultDocument, InlineQueryResultGif, InlineQueryResultLocation, InlineQueryResultMpeg4Gif, InlineQueryResultPhoto, InlineQueryResultVenue, InlineQueryResultVideo, InlineQueryResultVoice  
+      """
       @type t ::
               InlineQueryResultCachedAudio.t()
               | InlineQueryResultCachedDocument.t()
@@ -1844,6 +1857,9 @@ defmodule ExGram do
     end
 
     defmodule InputMessageContent do
+      @moduledoc """
+      InputMessageContent model. Valid subtypes: InputTextMessageContent, InputLocationMessageContent, InputVenueMessageContent, InputContactMessageContent  
+      """
       @type t ::
               InputTextMessageContent.t()
               | InputLocationMessageContent.t()
@@ -1863,6 +1879,9 @@ defmodule ExGram do
     end
 
     defmodule PassportElementError do
+      @moduledoc """
+      PassportElementError model. Valid subtypes: PassportElementErrorDataField, PassportElementErrorFrontSide, PassportElementErrorReverseSide, PassportElementErrorSelfie, PassportElementErrorFile, PassportElementErrorFiles, PassportElementErrorTranslationFile, PassportElementErrorTranslationFiles, PassportElementErrorUnspecified  
+      """
       @type t ::
               PassportElementErrorDataField.t()
               | PassportElementErrorFrontSide.t()

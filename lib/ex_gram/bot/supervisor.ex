@@ -1,4 +1,8 @@
 defmodule ExGram.Bot.Supervisor do
+  @moduledoc """
+  Bot supervisor that starts the dispatcher and updates processes and tie them together
+  """
+
   def child_spec(opts, module) do
     %{
       id: opts[:id] || module,
@@ -73,9 +77,8 @@ defmodule ExGram.Bot.Supervisor do
     do: %ExGram.Model.User{username: username, is_bot: true}
 
   defp maybe_fetch_bot(_username, token) do
-    with {:ok, bot} <- ExGram.get_me(token: token) do
-      bot
-    else
+    case ExGram.get_me(token: token) do
+      {:ok, bot} -> bot
       _ -> nil
     end
   end

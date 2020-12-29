@@ -1,4 +1,8 @@
 defmodule ExGram.Updates.Polling do
+  @moduledoc """
+  Updates implementation that uses polling method
+  """
+
   use GenServer
   require Logger
 
@@ -6,7 +10,6 @@ defmodule ExGram.Updates.Polling do
 
   def start_link({:bot, pid, :token, token}) do
     # Logger.debug "START WORKER"
-    # TODO: Use name
     GenServer.start_link(__MODULE__, {:ok, pid, token})
   end
 

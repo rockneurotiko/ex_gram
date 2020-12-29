@@ -1,4 +1,8 @@
 defmodule ExGram.Responses.EditInline do
+  @moduledoc """
+  Edit inline message response. It will detect the message and use it accordingly to edit the normal or inline message.
+  """
+
   defstruct [:text, :message_id, :chat_id, :inline_message_id, :ops]
 end
 

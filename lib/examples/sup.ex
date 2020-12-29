@@ -1,4 +1,6 @@
 defmodule Examples.Sup do
+  @moduledoc false
+
   use Application
 
   def start, do: start(1, 1)

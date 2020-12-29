@@ -2,6 +2,7 @@ defmodule ExGramTest do
   use ExUnit.Case, async: false
   doctest ExGram
 
+  alias ExGram.Model.User
   import Test.Support.StringGenerator
 
   test "the truth" do
@@ -19,10 +20,11 @@ defmodule ExGramTest do
 
     test "test random", %{name: name} do
       ExGram.Adapter.Test.backdoor_request("/getMe", %{username: "rock"}, name)
-      ExGram.Adapter.Test.request(:get, "/getMe", "", name) |> IO.inspect()
+      assert {:ok, %{username: "rock"}} == ExGram.Adapter.Test.request(:get, "/getMe", "", name)
 
       ExGram.Adapter.Test.backdoor_request("/getMe", %{username: "rock"})
-      ExGram.get_me() |> IO.inspect()
+      user = %User{username: "rock"}
+      assert {:ok, user} == ExGram.get_me()
     end
   end
 end

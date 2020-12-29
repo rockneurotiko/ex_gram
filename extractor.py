@@ -96,6 +96,9 @@ def generate_generic(model):
     types_s = ", ".join(model['subtypes'])
     types_t = " | ".join(["{}.t()".format(x) for x in model['subtypes']])
     return """defmodule {} do
+  @moduledoc \"\"\"
+  {} model. Valid subtypes: {}  
+  \"\"\"
   @type t :: {}
 
   def decode_as, do: %{}  
@@ -103,7 +106,7 @@ def generate_generic(model):
   def subtypes do
     [{}]
   end
-  end""".format(name, types_t, "{}", types_s)
+  end""".format(name, name, types_s, types_t, "{}", types_s)
 
 
 def main():
@@ -133,6 +136,10 @@ def main():
 # Models
 
 defmodule Model do
+  @moduledoc \"\"\"
+  Telegram API Model structures  
+  \"\"\"
+    
   {}
 
   # {} models

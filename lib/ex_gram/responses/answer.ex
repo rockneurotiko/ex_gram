@@ -1,4 +1,8 @@
 defmodule ExGram.Responses.Answer do
+  @moduledoc """
+  Simple text answer, it uses `send_message`
+  """
+
   defstruct [:id, :text, :ops]
 end
 

@@ -91,7 +91,7 @@ If you use the framework, you will need to add `ExGram` and your bot (let's say 
 
 ``` elixir
 children = [
-  ExGram # This will setup the Registry.ExGram,
+  ExGram, # This will setup the Registry.ExGram
   {MyBot, [method: :polling, token: "TOKEN"]}
 ]
 ```

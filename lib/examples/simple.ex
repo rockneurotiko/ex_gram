@@ -1,9 +1,11 @@
 defmodule Examples.Simple do
+  @moduledoc false
+
   @bot :simple_bot
 
-  use ExGram.Bot, name: @bot
+  use ExGram.Bot, name: @bot, setup_commands: true
 
-  command("echo")
+  command("echo", description: "Echo the message back to the user")
 
   middleware(ExGram.Middleware.IgnoreUsername)
 

@@ -1,6 +1,11 @@
 defmodule ExGram.Macros.Executer do
+  @moduledoc """
+  Executer for the method macro, it takes care of checking the parameters, fetching the token, building the path and body, and calling the adapter.
+  """
+
   require Logger
 
+  # credo:disable-for-next-line
   def execute_method(
         name,
         verb,
