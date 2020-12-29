@@ -1,4 +1,8 @@
 defmodule ExGram.Adapter.Test do
+  @moduledoc """
+  HTTP Adapter for testing, it allows you to setup request responses and errors
+  """
+
   @behaviour ExGram.Adapter
 
   @name __MODULE__

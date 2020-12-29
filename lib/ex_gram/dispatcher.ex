@@ -1,4 +1,8 @@
 defmodule ExGram.Dispatcher do
+  @moduledoc """
+  Named process that receive the updates, apply the middlewares for the bot and call the bot's handler
+  """
+
   use GenServer
 
   alias ExGram.Cnt

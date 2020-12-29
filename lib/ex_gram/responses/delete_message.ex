@@ -1,4 +1,8 @@
 defmodule ExGram.Responses.DeleteMessage do
+  @moduledoc """
+  Delete message response
+  """
+
   defstruct [:chat_id, :message_id, :ops]
 end
 

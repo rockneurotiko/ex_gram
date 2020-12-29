@@ -1,4 +1,8 @@
 defmodule ExGram.Responses.AnswerInlineQuery do
+  @moduledoc """
+  Answer inline query response
+  """
+
   defstruct [:id, :articles, :ops]
 end
 

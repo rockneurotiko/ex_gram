@@ -1,4 +1,8 @@
 defmodule ExGram.Responses.EditMarkup do
+  @moduledoc """
+  Edit markup response. It will detect the message and use it accordingly to edit the normal or inline message markup.
+  """
+
   defstruct [:message_id, :chat_id, :inline_message_id, :ops]
 end
 

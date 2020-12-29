@@ -1,4 +1,10 @@
 defmodule ExGram.Middleware.IgnoreUsername do
+  @moduledoc """
+  Middleware that ignore the username in the command parameter.
+
+  `/command@bot_username` will be transformed to `/command` before handling the message
+  """
+
   use ExGram.Middleware
 
   alias ExGram.Cnt

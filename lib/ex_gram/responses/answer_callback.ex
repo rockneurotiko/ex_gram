@@ -1,4 +1,8 @@
 defmodule ExGram.Responses.AnswerCallback do
+  @moduledoc """
+  Answer callback query response
+  """
+
   defstruct [:id, :ops]
 end
 

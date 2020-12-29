@@ -1,4 +1,23 @@
 defmodule ExGram.Macros.Helpers do
+  @moduledoc """
+  Helpers for the ExGram.Macros module
+  """
+
+  def analyze_param({:{}, line, [{name, _line, nil}]}), do: {{name, line, nil}, [name, [:any]]}
+
+  def analyze_param({:{}, line, [{name, _line, nil}, types, :optional]}),
+    do: {{:\\, line, [{name, line, nil}, nil]}, [name, types, :optional]}
+
+  def analyze_param({name, _line, nil} = full), do: {full, [name, [:any]]}
+
+  def analyze_param({{name, line, nil}, :optional}),
+    do: {{:\\, line, [{name, line, nil}, nil]}, [name, [:any], :optional]}
+
+  def analyze_param({{name, line, nil}, types}), do: {{name, line, nil}, [name, types]}
+
+  def analyze_param({{name, line, nil}, types, :optional}),
+    do: {{:\\, line, [{name, line, nil}, nil]}, [name, types, :optional]}
+
   def mandatory_type_specs(analyzed) do
     analyzed
     |> Enum.map(&elem(&1, 1))
@@ -58,46 +77,6 @@ defmodule ExGram.Macros.Helpers do
     end)
   end
 
-  @common_opts [
-    adapter: :atom,
-    bot: :atom,
-    token: :string,
-    debug: :boolean,
-    check_params: :boolean
-  ]
-  defp common_opts do
-    @common_opts |> Enum.map(fn {k, v} -> {k, type_to_spec(v)} end)
-  end
-
-  defp parameter_type_spec(n, t) when is_atom(n), do: {:"::", [], [type_to_spec(n), t]}
-  defp parameter_type_spec(n, t), do: {:"::", [], [n, t]}
-
-  def nid(x), do: {x, [], nil}
-
-  def partition_optional_parameter({_, [_n, _t, :optional]}), do: true
-  def partition_optional_parameter(_), do: false
-
-  defp is_par_optional([_n, _t, :optional]), do: true
-  defp is_par_optional(_), do: false
-
-  def transform_param({:{}, line, [{name, _line, nil}]}), do: {{name, line, nil}, [name, [:any]]}
-
-  def transform_param({:{}, line, [{name, _line, nil}, types, :optional]}),
-    do: {{:\\, line, [{name, line, nil}, nil]}, [name, types, :optional]}
-
-  def transform_param({name, _line, nil} = full), do: {full, [name, [:any]]}
-
-  def transform_param({{name, line, nil}, :optional}),
-    do: {{:\\, line, [{name, line, nil}, nil]}, [name, [:any], :optional]}
-
-  def transform_param({{name, line, nil}, types}), do: {{name, line, nil}, [name, types]}
-
-  def transform_param({{name, line, nil}, types, :optional}),
-    do: {{:\\, line, [{name, line, nil}, nil]}, [name, types, :optional]}
-
-  def extract_param_name({name, _line, nil}), do: name
-  def extract_param_name({:\\, _line, [{name, _line2, nil}, nil]}), do: name
-
   def type_to_spec(:string),
     do: {{:., [], [{:__aliases__, [alias: false], [:String]}, :t]}, [], []}
 
@@ -139,32 +118,56 @@ defmodule ExGram.Macros.Helpers do
   def type_to_spec(t) when is_atom(t), do: {t, [], Elixir}
   def type_to_spec(l) when is_list(l), do: types_list_to_spec(l)
 
-  def types_list_to_spec([e1]) do
+  defp types_list_to_spec([e1]) do
     type_to_spec(e1)
   end
 
-  def types_list_to_spec([e1 | rest]) do
+  defp types_list_to_spec([e1 | rest]) do
     orT(type_to_spec(e1), types_list_to_spec(rest))
   end
 
-  def types_list_to_spec([]) do
+  defp types_list_to_spec([]) do
     type_to_spec(:any)
   end
 
-  def params_to_decode(params) do
+  @common_opts [
+    adapter: :atom,
+    bot: :atom,
+    token: :string,
+    debug: :boolean,
+    check_params: :boolean
+  ]
+  defp common_opts do
+    @common_opts |> Enum.map(fn {k, v} -> {k, type_to_spec(v)} end)
+  end
+
+  defp parameter_type_spec(n, t) when is_atom(n), do: {:"::", [], [type_to_spec(n), t]}
+  defp parameter_type_spec(n, t), do: {:"::", [], [n, t]}
+
+  defp nid(x), do: {x, [], nil}
+
+  defp is_par_optional([_n, _t, :optional]), do: true
+  defp is_par_optional(_), do: false
+
+  defp extract_param_name({name, _line, nil}), do: name
+  defp extract_param_name({:\\, _line, [{name, _line2, nil}, nil]}), do: name
+
+  # MODEL helpers
+
+  def params_to_decode_as(params) do
     params
     |> Stream.map(fn
       {k, v} -> {k, v}
       {:{}, _, [k, v, :optional]} -> {k, v}
     end)
     |> Stream.map(fn {k, v} ->
-      {k, param_to_decode(v)}
+      {k, param_to_decode_as(v)}
     end)
     |> Enum.filter(fn {_k, v} -> not is_nil(v) end)
   end
 
-  def param_to_decode({:array, type}) do
-    case param_to_decode(type) do
+  defp param_to_decode_as({:array, type}) do
+    case param_to_decode_as(type) do
       nil ->
         nil
 
@@ -175,37 +178,37 @@ defmodule ExGram.Macros.Helpers do
     end
   end
 
-  def param_to_decode({:__aliases__, _, _} = st) do
+  defp param_to_decode_as({:__aliases__, _, _} = st) do
     quote do
       ExGram.Model.unquote(st)
     end
   end
 
-  def param_to_decode(_other), do: nil
+  defp param_to_decode_as(_other), do: nil
 
-  def struct_types([], acc), do: acc
+  def struct_type_specs([], acc), do: acc
 
-  def struct_types([{id, t} | xs], acc) do
+  def struct_type_specs([{id, t} | xs], acc) do
     act = acc ++ [{id, type_to_spec(t)}]
 
     xs
-    |> struct_types(act)
+    |> struct_type_specs(act)
   end
 
-  def struct_types([{:{}, _line, [id, t, :optional]} | xs], acc) do
+  def struct_type_specs([{:{}, _line, [id, t, :optional]} | xs], acc) do
     act = acc ++ [{id, {:|, [], [type_to_spec(t), nil]}}]
 
     xs
-    |> struct_types(act)
+    |> struct_type_specs(act)
   end
 
-  def struct_types(_x, acc) do
+  def struct_type_specs(_x, acc) do
     # Logger.error "WTF struct?"
     # Logger.error inspect(x)
-    struct_types(acc)
+    struct_type_specs(acc)
   end
 
-  def struct_types(initial), do: struct_types(initial, [])
+  def struct_type_specs(initial), do: struct_type_specs(initial, [])
 
   # credo:disable-for-next-line
   defp orT({:|, _, [x, y]}, z), do: orT(x, orT(y, z))

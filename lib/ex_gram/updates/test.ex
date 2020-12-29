@@ -1,4 +1,8 @@
 defmodule ExGram.Updates.Test do
+  @moduledoc """
+  Updates implementation for testing purposes
+  """
+
   use GenServer
 
   defstruct [:pid, :token]

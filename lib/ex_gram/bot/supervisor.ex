@@ -1,4 +1,8 @@
 defmodule ExGram.Bot.Supervisor do
+  @moduledoc """
+  Bot supervisor that starts the dispatcher and updates processes and tie them together
+  """
+
   def child_spec(opts, module) do
     %{
       id: opts[:id] || module,

@@ -26,6 +26,9 @@ defmodule ExGram.Encoder do
 
       quote bind_quoted: [engine: engine], location: :keep do
         defmodule Elixir.ExGram.Encoder.Engine do
+          @moduledoc """
+          Compiled encoder engine
+          """
           def engine() do
             unquote(engine)
           end

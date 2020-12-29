@@ -1,4 +1,8 @@
 defmodule Mix.Tasks.Bot.New do
+  @moduledoc """
+  Mix task to create a basic bot module
+  """
+
   use Mix.Task
 
   import Mix.Generator

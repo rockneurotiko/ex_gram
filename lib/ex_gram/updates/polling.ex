@@ -1,4 +1,8 @@
 defmodule ExGram.Updates.Polling do
+  @moduledoc """
+  Updates implementation that uses polling method
+  """
+
   use GenServer
   require Logger
 

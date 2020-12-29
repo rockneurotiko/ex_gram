@@ -1,4 +1,8 @@
 defmodule ExGram.Dsl do
+  @moduledoc """
+  Mini DSL to build answers based on the context easily.
+  """
+
   alias ExGram.Cnt
   alias ExGram.Responses
 

@@ -1,4 +1,8 @@
 defprotocol ExGram.Responses do
+  @moduledoc """
+  Responses protocol to create easier context flows
+  """
+
   # @fallback_to_any true
   def new(response, params)
   def execute(response)

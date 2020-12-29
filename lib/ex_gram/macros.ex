@@ -1,14 +1,18 @@
 defmodule ExGram.Macros do
+  @moduledoc """
+  `model/2` and `method/4` macros to build the API
+  """
+
   import __MODULE__.Helpers
 
   defmacro model(name, params) do
-    tps = struct_types(params)
+    tps = struct_type_specs(params)
 
     initials =
       tps
       |> Enum.map(fn {id, _t} -> {id, nil} end)
 
-    dca = params_to_decode(params)
+    dca = params_to_decode_as(params)
 
     quote do
       defmodule unquote(name) do
@@ -35,7 +39,7 @@ defmodule ExGram.Macros do
       "#{Macro.underscore(name)}!"
       |> String.to_atom()
 
-    analyzed = params |> Enum.map(&transform_param/1)
+    analyzed = params |> Enum.map(&analyze_param/1)
 
     types_mand_value = mandatory_value_type(analyzed)
     types_mand_spec = mandatory_type_specs(analyzed)

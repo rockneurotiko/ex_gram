@@ -1,4 +1,41 @@
 defmodule ExGram.Bot do
+  @moduledoc """
+  Bot creation helper.
+
+  Usage:
+
+  - Create one or more bots
+
+  ``` elixir
+  defmodule MyBot do
+    use ExGram.Bot, name: :my_bot, setup_commands: true
+
+    command("echo", description: "Echo the message back to the user")
+
+    middleware(ExGram.Middleware.IgnoreUsername)
+
+    # Command received as `:echo` instead of `"echo"` because it was configured as a command before
+    def handle({:command, :echo, %{text: t}}, cnt) do
+      cnt |> answer(t)
+    end
+
+    def handle(msg, _cnt) do
+      IO.puts("Unknown message " <> inspect(msg))
+    end
+  end
+  ```
+
+  - Add ExGram and your bots to your application childrens
+
+  ``` elixir
+  children = [
+    # ...
+    ExGram,
+    {MyBot, [method: :polling, token: "bot_token]}
+  ]
+  ```
+  """
+
   defmacro __using__(ops) do
     name =
       case Keyword.fetch(ops, :name) do

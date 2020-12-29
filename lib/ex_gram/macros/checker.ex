@@ -1,4 +1,8 @@
 defmodule ExGram.Macros.Checker do
+  @moduledoc """
+  Type checker for the method executer.
+  """
+
   @type valid_type :: :integer | :string | :boolean | :float | :file | {:array, valid_type} | atom
   @type param_type :: maybe_improper_list(any, [valid_type])
   @type params_types :: [param_type]

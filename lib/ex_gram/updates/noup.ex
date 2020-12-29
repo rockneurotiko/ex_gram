@@ -1,4 +1,8 @@
 defmodule ExGram.Updates.Noup do
+  @moduledoc """
+  Updates implementation that just start a process but don't do anything
+  """
+
   use GenServer
   require Logger
 

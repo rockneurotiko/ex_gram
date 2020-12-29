@@ -1,4 +1,24 @@
 defmodule ExGram.Dsl.Keyboard do
+  @moduledoc """
+  Keyboard DSL to create inline keyboards easily
+
+  Example:
+
+  ``` elixir
+  keyb = keyboard :inline do
+    row do
+      button "A", callback_data: "a"
+      button "B", callback_data: "b"
+    end
+
+    row do
+      button "C", callback_data: "c"
+      button "D", callback_data: "d"
+    end
+  end
+  ```
+  """
+
   defmacro keyboard(which_keyboard, do: block) do
     build_keyboard_f =
       case which_keyboard do
