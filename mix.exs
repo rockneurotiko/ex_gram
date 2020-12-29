@@ -65,7 +65,7 @@ defmodule ExGram.Mixfile do
       {:poison, ">= 1.0.0", optional: true},
       # Development
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
-      {:ex_doc, ">= 0.0.0", only: :dev},
+      {:ex_doc, "~> 0.23", only: :dev},
       {:inch_ex, "~> 0.5.0", only: :docs}
     ]
   end
