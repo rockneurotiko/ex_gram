@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Add credo and fix all the issues
 
 ## [0.21.0]
 - Add `{:file_content, "CONTENT", "filename.ext"}` format on `file` fields to send content directly instead of using a file path
