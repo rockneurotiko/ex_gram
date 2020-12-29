@@ -25,7 +25,7 @@ defmodule ExGram.Token do
 
   ExGram.Token.fetch(bot: :my_bot, registry: OtherRegistry) # Will look in OtherRegistry for :My_bot token
   """
-  @spec fetch(keyword) :: String.t()
+  @spec fetch(keyword) :: String.t() | nil
   def fetch(ops \\ []) when is_list(ops) do
     case {Keyword.get(ops, :token), Keyword.get(ops, :bot)} do
       {nil, nil} ->

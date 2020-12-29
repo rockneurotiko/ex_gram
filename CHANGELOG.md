@@ -2,8 +2,11 @@
 
 ## Unreleased
 
-## [0.16.0]
+## [0.21.0]
 - Add `{:file_content, "CONTENT", "filename.ext"}` format on `file` fields to send content directly instead of using a file path
+
+## [0.20.0]
+- Big refactor fixing bugs on the process
 
 ## [0.15.0]
 - Update Telegram API to 5.0

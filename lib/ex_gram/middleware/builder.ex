@@ -52,9 +52,9 @@ defmodule ExGram.Middleware.Builder do
     regexes = Module.get_attribute(env.module, :regexes) |> Enum.reverse() |> Macro.escape()
 
     quote do
-      defp middlewares(), do: unquote(middlewares)
-      defp commands(), do: unquote(commands)
-      defp regexes(), do: unquote(regexes)
+      def middlewares(), do: unquote(middlewares)
+      def commands(), do: unquote(commands)
+      def regexes(), do: unquote(regexes)
 
       # Do it like plug and decompile all the core with the middlewares here?
     end
