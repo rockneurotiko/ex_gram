@@ -50,8 +50,7 @@ defmodule ExGram.Macros do
 
     file_parameters = file_parameters(analyzed)
 
-    # quote location: :keep do
-    quote do
+    quote location: :keep do
       # Safe method
       @doc """
       Check the documentation of this method in https://core.telegram.org/bots/api##{
