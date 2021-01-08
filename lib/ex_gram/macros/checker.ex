@@ -38,7 +38,7 @@ defmodule ExGram.Macros.Checker do
       _ -> {value, types}
     end
   end
-  
+
   defp check_type(types, x) when is_list(types), do: Enum.any?(types, &check_type(&1, x))
 
   defp check_type(:integer, x), do: is_integer(x)
