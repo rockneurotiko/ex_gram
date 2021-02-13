@@ -73,6 +73,31 @@ You can change the engine in the configuration:
 config :ex_gram, json_engine: Poison
 ```
 
+### Log Adapter
+
+You can use an alternative logger to `Logger` to format the logs as you want, `ExGram` offers the default logging using `Logger` and teh `JsonLogger` a one line JSON format.
+
+You can change the adapter in the configuration:
+
+```elixir
+config :ex_gram, log_adapter: Logger
+```
+
+If you want to use this logger in your but just import the `ExGram.LogAdapter` and you can start calling `Logger`, here is an example:
+
+Using this config:
+
+```elixir
+config :ex_gram, log_adapter: ExGram.LogAdapter.JsonLogger
+```
+
+```elixir
+use ExGram.LogAdapter
+
+Logger.debug("debug test")
+> {"log_level":"debug","message":"debug test","time":"2021-02-13 22:21:49.503110Z"}
+```
+
 ## Configuration
 
 There are some optional configuration that you can add to your `config.exs`:
@@ -218,7 +243,7 @@ ExGram.send_document(chat_id, {:file, "path/to/file"})                         #
 ExGram.send_document(chat_id, {:file_content, "FILE CONTENT", "filename.txt"}) # By content
 ```
 
-This three ways of sending files works when the API has a file field, for example `send_photo`, `send_audio`, `send_video`, ... 
+This three ways of sending files works when the API has a file field, for example `send_photo`, `send_audio`, `send_video`, ...
 
 ## Library Usage
 
