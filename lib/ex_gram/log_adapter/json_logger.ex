@@ -12,6 +12,7 @@ defmodule ExGram.LogAdapter.JsonLogger do
   @behaviour ExGram.LogAdapter
 
   for log_level <- [:debug, :warn, :error] do
+    @impl ExGram.LogAdapter
     def unquote(log_level)(message),
       do:
         %{
@@ -19,7 +20,7 @@ defmodule ExGram.LogAdapter.JsonLogger do
           log_level: unquote(log_level),
           message: message
         }
-        |> Jason.encode!()
+        |> ExGram.Encoder.encode!()
         |> IO.puts()
   end
 end
