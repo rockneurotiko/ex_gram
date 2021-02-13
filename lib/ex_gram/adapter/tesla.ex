@@ -10,7 +10,7 @@ if Code.ensure_loaded?(Tesla) do
 
     @base_url "https://api.telegram.org"
 
-    require Logger
+    use ExGram.LogAdapter
 
     plug(Tesla.Middleware.BaseUrl, ExGram.Config.get(:ex_gram, :base_url, @base_url))
     plug(Tesla.Middleware.Headers, [{"Content-Type", "application/json"}])

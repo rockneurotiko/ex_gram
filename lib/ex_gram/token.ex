@@ -3,7 +3,7 @@ defmodule ExGram.Token do
   Helpers when dealing with bot's tokens
   """
 
-  require Logger
+  use ExGram.LogAdapter
 
   @registry Registry.ExGram
 

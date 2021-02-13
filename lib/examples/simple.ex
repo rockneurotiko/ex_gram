@@ -4,12 +4,11 @@ defmodule Examples.Simple do
   @bot :simple_bot
 
   use ExGram.Bot, name: @bot, setup_commands: true
+  use ExGram.LogAdapter
 
   command("echo", description: "Echo the message back to the user")
 
   middleware(ExGram.Middleware.IgnoreUsername)
-
-  require Logger
 
   def handle({:command, :echo, %{text: t}}, cnt) do
     cnt |> answer(t)

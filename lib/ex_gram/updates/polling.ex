@@ -4,7 +4,7 @@ defmodule ExGram.Updates.Polling do
   """
 
   use GenServer
-  require Logger
+  use ExGram.LogAdapter
 
   @polling_timeout 100
 
