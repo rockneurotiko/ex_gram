@@ -6,7 +6,11 @@ config :maxwell, default_adapter: Maxwell.Adapter.Hackney
 
 config :tesla, adapter: Tesla.Adapter.Gun
 
-config :ex_gram, token: "TOKEN", adapter: ExGram.Adapter.Tesla, json_engine: Jason
+config :ex_gram,
+  token: "TOKEN",
+  adapter: ExGram.Adapter.Tesla,
+  json_engine: Jason,
+  log_adapter: Logger
 
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
