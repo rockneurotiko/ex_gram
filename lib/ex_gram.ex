@@ -453,7 +453,12 @@ defmodule ExGram do
   method(
     :post,
     "kickChatMember",
-    [{chat_id, [:integer, :string]}, {user_id, [:integer]}, {until_date, [:integer], :optional}],
+    [
+      {chat_id, [:integer, :string]},
+      {user_id, [:integer]},
+      {until_date, [:integer], :optional},
+      {revoke_messages, [:boolean], :optional}
+    ],
     true
   )
 
@@ -487,14 +492,16 @@ defmodule ExGram do
       {chat_id, [:integer, :string]},
       {user_id, [:integer]},
       {is_anonymous, [:boolean], :optional},
-      {can_change_info, [:boolean], :optional},
+      {can_manage_chat, [:boolean], :optional},
       {can_post_messages, [:boolean], :optional},
       {can_edit_messages, [:boolean], :optional},
       {can_delete_messages, [:boolean], :optional},
-      {can_invite_users, [:boolean], :optional},
+      {can_manage_voice_chats, [:boolean], :optional},
       {can_restrict_members, [:boolean], :optional},
-      {can_pin_messages, [:boolean], :optional},
-      {can_promote_members, [:boolean], :optional}
+      {can_promote_members, [:boolean], :optional},
+      {can_change_info, [:boolean], :optional},
+      {can_invite_users, [:boolean], :optional},
+      {can_pin_messages, [:boolean], :optional}
     ],
     true
   )
@@ -514,6 +521,36 @@ defmodule ExGram do
   )
 
   method(:post, "exportChatInviteLink", [{chat_id, [:integer, :string]}], :string)
+
+  method(
+    :post,
+    "createChatInviteLink",
+    [
+      {chat_id, [:integer, :string]},
+      {expire_date, [:integer], :optional},
+      {member_limit, [:integer], :optional}
+    ],
+    ExGram.Model.ChatInviteLink
+  )
+
+  method(
+    :post,
+    "editChatInviteLink",
+    [
+      {chat_id, [:integer, :string]},
+      {invite_link, [:string]},
+      {expire_date, [:integer], :optional},
+      {member_limit, [:integer], :optional}
+    ],
+    ExGram.Model.ChatInviteLink
+  )
+
+  method(
+    :post,
+    "revokeChatInviteLink",
+    [{chat_id, [:integer, :string]}, {invite_link, [:string]}],
+    ExGram.Model.ChatInviteLink
+  )
 
   method(:post, "setChatPhoto", [{chat_id, [:integer, :string]}, {photo, [:file]}], true)
 
@@ -839,7 +876,7 @@ defmodule ExGram do
     [ExGram.Model.GameHighScore]
   )
 
-  # 74 methods
+  # 77 methods
 
   # ----------MODELS-----------
 
@@ -862,7 +899,9 @@ defmodule ExGram do
       {:shipping_query, ShippingQuery, :optional},
       {:pre_checkout_query, PreCheckoutQuery, :optional},
       {:poll, Poll, :optional},
-      {:poll_answer, PollAnswer, :optional}
+      {:poll_answer, PollAnswer, :optional},
+      {:my_chat_member, ChatMemberUpdated, :optional},
+      {:chat_member, ChatMemberUpdated, :optional}
     ])
 
     model(WebhookInfo, [
@@ -902,6 +941,7 @@ defmodule ExGram do
       {:pinned_message, Message, :optional},
       {:permissions, ChatPermissions, :optional},
       {:slow_mode_delay, :integer, :optional},
+      {:message_auto_delete_time, :integer, :optional},
       {:sticker_set_name, :string, :optional},
       {:can_set_sticker_set, :boolean, :optional},
       {:linked_chat_id, :integer, :optional},
@@ -951,6 +991,7 @@ defmodule ExGram do
       {:group_chat_created, :boolean, :optional},
       {:supergroup_chat_created, :boolean, :optional},
       {:channel_chat_created, :boolean, :optional},
+      {:message_auto_delete_timer_changed, MessageAutoDeleteTimerChanged, :optional},
       {:migrate_to_chat_id, :integer, :optional},
       {:migrate_from_chat_id, :integer, :optional},
       {:pinned_message, Message, :optional},
@@ -959,6 +1000,9 @@ defmodule ExGram do
       {:connected_website, :string, :optional},
       {:passport_data, PassportData, :optional},
       {:proximity_alert_triggered, ProximityAlertTriggered, :optional},
+      {:voice_chat_started, VoiceChatStarted, :optional},
+      {:voice_chat_ended, VoiceChatEnded, :optional},
+      {:voice_chat_participants_invited, VoiceChatParticipantsInvited, :optional},
       {:reply_markup, InlineKeyboardMarkup, :optional}
     ])
 
@@ -1094,6 +1138,14 @@ defmodule ExGram do
 
     model(ProximityAlertTriggered, [{:traveler, User}, {:watcher, User}, {:distance, :integer}])
 
+    model(MessageAutoDeleteTimerChanged, [{:message_auto_delete_time, :integer}])
+
+    model(VoiceChatStarted, [{:duration, :integer}])
+
+    model(VoiceChatEnded, [{:duration, :integer}])
+
+    model(VoiceChatParticipantsInvited, [{:users, {:array, User}, :optional}])
+
     model(UserProfilePhotos, [{:total_count, :integer}, {:photos, {:array, {:array, PhotoSize}}}])
 
     model(File, [
@@ -1160,15 +1212,26 @@ defmodule ExGram do
       {:big_file_unique_id, :string}
     ])
 
+    model(ChatInviteLink, [
+      {:invite_link, :string},
+      {:creator, User},
+      {:is_primary, :boolean},
+      {:is_revoked, :boolean},
+      {:expire_date, :integer, :optional},
+      {:member_limit, :integer, :optional}
+    ])
+
     model(ChatMember, [
       {:user, User},
       {:status, :string},
       {:custom_title, :string, :optional},
       {:is_anonymous, :boolean, :optional},
       {:can_be_edited, :boolean, :optional},
+      {:can_manage_chat, :boolean, :optional},
       {:can_post_messages, :boolean, :optional},
       {:can_edit_messages, :boolean, :optional},
       {:can_delete_messages, :boolean, :optional},
+      {:can_manage_voice_chats, :boolean, :optional},
       {:can_restrict_members, :boolean, :optional},
       {:can_promote_members, :boolean, :optional},
       {:can_change_info, :boolean, :optional},
@@ -1181,6 +1244,15 @@ defmodule ExGram do
       {:can_send_other_messages, :boolean, :optional},
       {:can_add_web_page_previews, :boolean, :optional},
       {:until_date, :integer, :optional}
+    ])
+
+    model(ChatMemberUpdated, [
+      {:chat, Chat},
+      {:from, User},
+      {:date, :integer},
+      {:old_chat_member, ChatMember},
+      {:new_chat_member, ChatMember},
+      {:invite_link, ChatInviteLink, :optional}
     ])
 
     model(ChatPermissions, [
@@ -1800,7 +1872,7 @@ defmodule ExGram do
 
     model(GameHighScore, [{:position, :integer}, {:user, User}, {:score, :integer}])
 
-    # 99 models
+    # 105 models
 
     defmodule InlineQueryResult do
       @moduledoc """
