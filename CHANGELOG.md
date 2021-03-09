@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+
+## [0.22.0]
+- Update Telegram API to 5.1
 - Add credo and fix all the issues
 
 ## [0.21.0]
