@@ -781,14 +781,16 @@ defmodule ExGram do
     :post,
     "sendInvoice",
     [
-      {chat_id, [:integer]},
+      {chat_id, [:integer, :string]},
       {title, [:string]},
       {description, [:string]},
       {payload, [:string]},
       {provider_token, [:string]},
-      {start_parameter, [:string]},
       {currency, [:string]},
       {prices, [{:array, LabeledPrice}]},
+      {max_tip_amount, [:integer], :optional},
+      {suggested_tip_amounts, [{:array, :integer}], :optional},
+      {start_parameter, [:string], :optional},
       {provider_data, [:string], :optional},
       {photo_url, [:string], :optional},
       {photo_size, [:integer], :optional},
@@ -884,7 +886,7 @@ defmodule ExGram do
 
   defmodule Model do
     @moduledoc """
-    Telegram API Model structures  
+    Telegram API Model structures
     """
 
     model(Update, [
@@ -1000,6 +1002,7 @@ defmodule ExGram do
       {:connected_website, :string, :optional},
       {:passport_data, PassportData, :optional},
       {:proximity_alert_triggered, ProximityAlertTriggered, :optional},
+      {:voice_chat_scheduled, VoiceChatScheduled, :optional},
       {:voice_chat_started, VoiceChatStarted, :optional},
       {:voice_chat_ended, VoiceChatEnded, :optional},
       {:voice_chat_participants_invited, VoiceChatParticipantsInvited, :optional},
@@ -1139,6 +1142,8 @@ defmodule ExGram do
     model(ProximityAlertTriggered, [{:traveler, User}, {:watcher, User}, {:distance, :integer}])
 
     model(MessageAutoDeleteTimerChanged, [{:message_auto_delete_time, :integer}])
+
+    model(VoiceChatScheduled, [{:start_date, :integer}])
 
     model(VoiceChatStarted, [{:duration, :integer}])
 
@@ -1382,9 +1387,10 @@ defmodule ExGram do
     model(InlineQuery, [
       {:id, :string},
       {:from, User},
-      {:location, Location, :optional},
       {:query, :string},
-      {:offset, :string}
+      {:offset, :string},
+      {:chat_type, :string, :optional},
+      {:location, Location, :optional}
     ])
 
     model(InlineQueryResultArticle, [
@@ -1697,6 +1703,29 @@ defmodule ExGram do
       {:vcard, :string, :optional}
     ])
 
+    model(InputInvoiceMessageContent, [
+      {:title, :string},
+      {:description, :string},
+      {:payload, :string},
+      {:provider_token, :string},
+      {:currency, :string},
+      {:prices, {:array, LabeledPrice}},
+      {:max_tip_amount, :integer, :optional},
+      {:suggested_tip_amounts, {:array, :integer}, :optional},
+      {:provider_data, :string, :optional},
+      {:photo_url, :string, :optional},
+      {:photo_size, :integer, :optional},
+      {:photo_width, :integer, :optional},
+      {:photo_height, :integer, :optional},
+      {:need_name, :boolean, :optional},
+      {:need_phone_number, :boolean, :optional},
+      {:need_email, :boolean, :optional},
+      {:need_shipping_address, :boolean, :optional},
+      {:send_phone_number_to_provider, :boolean, :optional},
+      {:send_email_to_provider, :boolean, :optional},
+      {:is_flexible, :boolean, :optional}
+    ])
+
     model(ChosenInlineResult, [
       {:result_id, :string},
       {:from, User},
@@ -1872,11 +1901,11 @@ defmodule ExGram do
 
     model(GameHighScore, [{:position, :integer}, {:user, User}, {:score, :integer}])
 
-    # 105 models
+    # 107 models
 
     defmodule InlineQueryResult do
       @moduledoc """
-      InlineQueryResult model. Valid subtypes: InlineQueryResultCachedAudio, InlineQueryResultCachedDocument, InlineQueryResultCachedGif, InlineQueryResultCachedMpeg4Gif, InlineQueryResultCachedPhoto, InlineQueryResultCachedSticker, InlineQueryResultCachedVideo, InlineQueryResultCachedVoice, InlineQueryResultArticle, InlineQueryResultAudio, InlineQueryResultContact, InlineQueryResultGame, InlineQueryResultDocument, InlineQueryResultGif, InlineQueryResultLocation, InlineQueryResultMpeg4Gif, InlineQueryResultPhoto, InlineQueryResultVenue, InlineQueryResultVideo, InlineQueryResultVoice  
+      InlineQueryResult model. Valid subtypes: InlineQueryResultCachedAudio, InlineQueryResultCachedDocument, InlineQueryResultCachedGif, InlineQueryResultCachedMpeg4Gif, InlineQueryResultCachedPhoto, InlineQueryResultCachedSticker, InlineQueryResultCachedVideo, InlineQueryResultCachedVoice, InlineQueryResultArticle, InlineQueryResultAudio, InlineQueryResultContact, InlineQueryResultGame, InlineQueryResultDocument, InlineQueryResultGif, InlineQueryResultLocation, InlineQueryResultMpeg4Gif, InlineQueryResultPhoto, InlineQueryResultVenue, InlineQueryResultVideo, InlineQueryResultVoice
       """
       @type t ::
               InlineQueryResultCachedAudio.t()
@@ -1930,13 +1959,14 @@ defmodule ExGram do
 
     defmodule InputMessageContent do
       @moduledoc """
-      InputMessageContent model. Valid subtypes: InputTextMessageContent, InputLocationMessageContent, InputVenueMessageContent, InputContactMessageContent  
+      InputMessageContent model. Valid subtypes: InputTextMessageContent, InputLocationMessageContent, InputVenueMessageContent, InputContactMessageContent, InputInvoiceMessageContent
       """
       @type t ::
               InputTextMessageContent.t()
               | InputLocationMessageContent.t()
               | InputVenueMessageContent.t()
               | InputContactMessageContent.t()
+              | InputInvoiceMessageContent.t()
 
       def decode_as, do: %{}
 
@@ -1945,14 +1975,15 @@ defmodule ExGram do
           InputTextMessageContent,
           InputLocationMessageContent,
           InputVenueMessageContent,
-          InputContactMessageContent
+          InputContactMessageContent,
+          InputInvoiceMessageContent
         ]
       end
     end
 
     defmodule PassportElementError do
       @moduledoc """
-      PassportElementError model. Valid subtypes: PassportElementErrorDataField, PassportElementErrorFrontSide, PassportElementErrorReverseSide, PassportElementErrorSelfie, PassportElementErrorFile, PassportElementErrorFiles, PassportElementErrorTranslationFile, PassportElementErrorTranslationFiles, PassportElementErrorUnspecified  
+      PassportElementError model. Valid subtypes: PassportElementErrorDataField, PassportElementErrorFrontSide, PassportElementErrorReverseSide, PassportElementErrorSelfie, PassportElementErrorFile, PassportElementErrorFiles, PassportElementErrorTranslationFile, PassportElementErrorTranslationFiles, PassportElementErrorUnspecified
       """
       @type t ::
               PassportElementErrorDataField.t()
