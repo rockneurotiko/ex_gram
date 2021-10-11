@@ -2,8 +2,10 @@
 
 import requests
 import pyperclip
+import json
 
 DEBUG = True
+WEB = True
 URL = "https://raw.githubusercontent.com/rockneurotiko/telegram_api_json/master/exports/tg_api.json"
 # URL = "https://raw.githack.com/rockneurotiko/telegram_api_json/master/exports/tg_api_pretty.json"
 
@@ -97,20 +99,36 @@ def generate_generic(model):
     types_t = " | ".join(["{}.t()".format(x) for x in model['subtypes']])
     return """defmodule {} do
   @moduledoc \"\"\"
-  {} model. Valid subtypes: {}  
+  {} model. Valid subtypes: {}
   \"\"\"
   @type t :: {}
 
-  def decode_as, do: %{}  
-    
+  def decode_as, do: %{}
+
   def subtypes do
     [{}]
   end
   end""".format(name, name, types_s, types_t, "{}", types_s)
 
 
+def definition_from_web():
+    return requests.get(URL).json()
+
+
+def definition_from_file():
+    with open("tg_api.json") as f:
+        return json.load(f)
+
+
+def get_definition():
+    if WEB:
+        return definition_from_web()
+
+    return definition_from_file()
+
+
 def main():
-    definition = requests.get(URL).json()
+    definition = get_definition()
 
     models = [generate_model(model) for model in definition['models']]
     methods = [generate_method(method) for method in definition['methods']]
@@ -137,9 +155,9 @@ def main():
 
 defmodule Model do
   @moduledoc \"\"\"
-  Telegram API Model structures  
+  Telegram API Model structures
   \"\"\"
-    
+
   {}
 
   # {} models

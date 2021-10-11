@@ -452,7 +452,7 @@ defmodule ExGram do
 
   method(
     :post,
-    "kickChatMember",
+    "banChatMember",
     [
       {chat_id, [:integer, :string]},
       {user_id, [:integer]},
@@ -593,7 +593,7 @@ defmodule ExGram do
     ExGram.Model.ChatMember
   ])
 
-  method(:get, "getChatMembersCount", [{chat_id, [:integer, :string]}], :integer)
+  method(:get, "getChatMemberCount", [{chat_id, [:integer, :string]}], :integer)
 
   method(
     :get,
@@ -624,7 +624,23 @@ defmodule ExGram do
     true
   )
 
-  method(:post, "setMyCommands", [{commands, [{:array, BotCommand}]}], true)
+  method(
+    :post,
+    "setMyCommands",
+    [
+      {commands, [{:array, BotCommand}]},
+      {scope, [BotCommandScope], :optional},
+      {language_code, [:string], :optional}
+    ],
+    true
+  )
+
+  method(
+    :post,
+    "deleteMyCommands",
+    [{scope, [BotCommandScope], :optional}, {language_code, [:string], :optional}],
+    true
+  )
 
   method(:get, "getMyCommands", [], [ExGram.Model.BotCommand])
 
@@ -878,7 +894,7 @@ defmodule ExGram do
     [ExGram.Model.GameHighScore]
   )
 
-  # 77 methods
+  # 78 methods
 
   # ----------MODELS-----------
 
@@ -1164,6 +1180,7 @@ defmodule ExGram do
       {:keyboard, {:array, {:array, KeyboardButton}}},
       {:resize_keyboard, :boolean, :optional},
       {:one_time_keyboard, :boolean, :optional},
+      {:input_field_placeholder, :string, :optional},
       {:selective, :boolean, :optional}
     ])
 
@@ -1208,7 +1225,11 @@ defmodule ExGram do
       {:game_short_name, :string, :optional}
     ])
 
-    model(ForceReply, [{:force_reply, :boolean}, {:selective, :boolean, :optional}])
+    model(ForceReply, [
+      {:force_reply, :boolean},
+      {:input_field_placeholder, :string, :optional},
+      {:selective, :boolean, :optional}
+    ])
 
     model(ChatPhoto, [
       {:small_file_id, :string},
@@ -1226,30 +1247,51 @@ defmodule ExGram do
       {:member_limit, :integer, :optional}
     ])
 
-    model(ChatMember, [
-      {:user, User},
+    model(ChatMemberOwner, [
       {:status, :string},
-      {:custom_title, :string, :optional},
-      {:is_anonymous, :boolean, :optional},
-      {:can_be_edited, :boolean, :optional},
-      {:can_manage_chat, :boolean, :optional},
+      {:user, User},
+      {:is_anonymous, :boolean},
+      {:custom_title, :string, :optional}
+    ])
+
+    model(ChatMemberAdministrator, [
+      {:status, :string},
+      {:user, User},
+      {:can_be_edited, :boolean},
+      {:is_anonymous, :boolean},
+      {:can_manage_chat, :boolean},
+      {:can_delete_messages, :boolean},
+      {:can_manage_voice_chats, :boolean},
+      {:can_restrict_members, :boolean},
+      {:can_promote_members, :boolean},
+      {:can_change_info, :boolean},
+      {:can_invite_users, :boolean},
       {:can_post_messages, :boolean, :optional},
       {:can_edit_messages, :boolean, :optional},
-      {:can_delete_messages, :boolean, :optional},
-      {:can_manage_voice_chats, :boolean, :optional},
-      {:can_restrict_members, :boolean, :optional},
-      {:can_promote_members, :boolean, :optional},
-      {:can_change_info, :boolean, :optional},
-      {:can_invite_users, :boolean, :optional},
       {:can_pin_messages, :boolean, :optional},
-      {:is_member, :boolean, :optional},
-      {:can_send_messages, :boolean, :optional},
-      {:can_send_media_messages, :boolean, :optional},
-      {:can_send_polls, :boolean, :optional},
-      {:can_send_other_messages, :boolean, :optional},
-      {:can_add_web_page_previews, :boolean, :optional},
-      {:until_date, :integer, :optional}
+      {:custom_title, :string, :optional}
     ])
+
+    model(ChatMemberMember, [{:status, :string}, {:user, User}])
+
+    model(ChatMemberRestricted, [
+      {:status, :string},
+      {:user, User},
+      {:is_member, :boolean},
+      {:can_change_info, :boolean},
+      {:can_invite_users, :boolean},
+      {:can_pin_messages, :boolean},
+      {:can_send_messages, :boolean},
+      {:can_send_media_messages, :boolean},
+      {:can_send_polls, :boolean},
+      {:can_send_other_messages, :boolean},
+      {:can_add_web_page_previews, :boolean},
+      {:until_date, :integer}
+    ])
+
+    model(ChatMemberLeft, [{:status, :string}, {:user, User}])
+
+    model(ChatMemberBanned, [{:status, :string}, {:user, User}, {:until_date, :integer}])
 
     model(ChatMemberUpdated, [
       {:chat, Chat},
@@ -1274,6 +1316,24 @@ defmodule ExGram do
     model(ChatLocation, [{:location, Location}, {:address, :string}])
 
     model(BotCommand, [{:command, :string}, {:description, :string}])
+
+    model(BotCommandScopeDefault, [{:type, :string}])
+
+    model(BotCommandScopeAllPrivateChats, [{:type, :string}])
+
+    model(BotCommandScopeAllGroupChats, [{:type, :string}])
+
+    model(BotCommandScopeAllChatAdministrators, [{:type, :string}])
+
+    model(BotCommandScopeChat, [{:type, :string}, {:chat_id, :integer}])
+
+    model(BotCommandScopeChatAdministrators, [{:type, :string}, {:chat_id, :integer}])
+
+    model(BotCommandScopeChatMember, [
+      {:type, :string},
+      {:chat_id, :integer},
+      {:user_id, :integer}
+    ])
 
     model(ResponseParameters, [
       {:migrate_to_chat_id, :integer, :optional},
@@ -1901,7 +1961,61 @@ defmodule ExGram do
 
     model(GameHighScore, [{:position, :integer}, {:user, User}, {:score, :integer}])
 
-    # 107 models
+    # 119 models
+
+    defmodule ChatMember do
+      @moduledoc """
+      ChatMember model. Valid subtypes: ChatMemberOwner, ChatMemberAdministrator, ChatMemberMember, ChatMemberRestricted, ChatMemberLeft, ChatMemberBanned
+      """
+      @type t ::
+              ChatMemberOwner.t()
+              | ChatMemberAdministrator.t()
+              | ChatMemberMember.t()
+              | ChatMemberRestricted.t()
+              | ChatMemberLeft.t()
+              | ChatMemberBanned.t()
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [
+          ChatMemberOwner,
+          ChatMemberAdministrator,
+          ChatMemberMember,
+          ChatMemberRestricted,
+          ChatMemberLeft,
+          ChatMemberBanned
+        ]
+      end
+    end
+
+    defmodule BotCommandScope do
+      @moduledoc """
+      BotCommandScope model. Valid subtypes: BotCommandScopeDefault, BotCommandScopeAllPrivateChats, BotCommandScopeAllGroupChats, BotCommandScopeAllChatAdministrators, BotCommandScopeChat, BotCommandScopeChatAdministrators, BotCommandScopeChatMember
+      """
+      @type t ::
+              BotCommandScopeDefault.t()
+              | BotCommandScopeAllPrivateChats.t()
+              | BotCommandScopeAllGroupChats.t()
+              | BotCommandScopeAllChatAdministrators.t()
+              | BotCommandScopeChat.t()
+              | BotCommandScopeChatAdministrators.t()
+              | BotCommandScopeChatMember.t()
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [
+          BotCommandScopeDefault,
+          BotCommandScopeAllPrivateChats,
+          BotCommandScopeAllGroupChats,
+          BotCommandScopeAllChatAdministrators,
+          BotCommandScopeChat,
+          BotCommandScopeChatAdministrators,
+          BotCommandScopeChatMember
+        ]
+      end
+    end
 
     defmodule InlineQueryResult do
       @moduledoc """
@@ -2013,6 +2127,6 @@ defmodule ExGram do
       end
     end
 
-    # 3 generics
+    # 5 generics
   end
 end

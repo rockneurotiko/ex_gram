@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## [0.24.0]
+- Update Telegram API to 5.3
+- Breaking changes from the API:
+
+Renamed method kickChatMember to banChatMember
+
+Renamed method getChatMembersCount to getChatMemberCount
+
+ChatMember now has specific subtypes (ChatMemberOwner, ChatMemberAdministrator, ChatMemberMember, ChatMemberRestricted, ChatMemberLeft, ChatMemberBanned)
+
+BotCommandScope now has specific subtypes (BotCommandScopeDefault, BotCommandScopeAllPrivateChats, BotCommandScopeAllGroupChats, BotCommandScopeAllChatAdministrators, BotCommandScopeChat, BotCommandScopeChatAdministrators, BotCommandScopeChatMember)
+
 ## [0.23.0]
 - Update Telegram API to 5.2
 
