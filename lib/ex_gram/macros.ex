@@ -5,7 +5,7 @@ defmodule ExGram.Macros do
 
   import __MODULE__.Helpers
 
-  defmacro model(name, params) do
+  defmacro model(name, params, description) do
     tps = struct_type_specs(params)
 
     initials =
@@ -16,6 +16,11 @@ defmodule ExGram.Macros do
 
     quote do
       defmodule unquote(name) do
+        @moduledoc """
+        #{unquote(description)}
+
+        Check the documentation of this model in https://core.telegram.org/bots/api##{unquote(name) |> inspect() |> String.split(".") |> Enum.at(-1) |> String.downcase()}
+        """
         defstruct unquote(initials)
         @type t :: %unquote(name){unquote_splicing(tps)}
 
@@ -26,7 +31,7 @@ defmodule ExGram.Macros do
     end
   end
 
-  defmacro method(verb, name, params, returned) do
+  defmacro method(verb, name, params, returned, description) do
     fname =
       Macro.underscore(name)
       |> String.to_atom()
@@ -57,9 +62,9 @@ defmodule ExGram.Macros do
     quote location: :keep do
       # Safe method
       @doc """
-      Check the documentation of this method in https://core.telegram.org/bots/api##{
-        String.downcase(unquote(name))
-      }
+      #{unquote(description)}
+
+      Check the documentation of this method in https://core.telegram.org/bots/api##{String.downcase(unquote(name))}
       """
       @spec unquote(fname)(unquote_splicing(types_mand_spec), options :: unquote(types_opt_spec)) ::
               {:ok, unquote(returned_type_spec)}
@@ -91,9 +96,9 @@ defmodule ExGram.Macros do
       @doc """
       Unsafe version of #{unquote(fname)}. It will return the response or raise in case of error.
 
-      Check the documentation of this method in https://core.telegram.org/bots/api##{
-        String.downcase(unquote(name))
-      }
+      #{unquote(description)}
+
+      Check the documentation of this method in https://core.telegram.org/bots/api##{String.downcase(unquote(name))}
       """
       @spec unquote(fname_exception)(
               unquote_splicing(types_mand_spec),
