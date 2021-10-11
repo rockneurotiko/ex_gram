@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 
+import json
+import os
+
 import requests
 import pyperclip
-import json
+
 
 DEBUG = True
+REPLACE = True
 WEB = True
 URL = "https://raw.githubusercontent.com/rockneurotiko/telegram_api_json/master/exports/tg_api.json"
 # URL = "https://raw.githack.com/rockneurotiko/telegram_api_json/master/exports/tg_api_pretty.json"
@@ -127,6 +131,24 @@ def get_definition():
     return definition_from_file()
 
 
+def maybe_replace(text):
+    if not REPLACE:
+        return
+
+    new_text = ""
+    with open("lib/ex_gram.ex", "r") as f:
+        current = f.read()
+        start = current[:current.find("# START AUTO GENERATED")].strip()
+        end_ind = current.find("# END AUTO GENERATED") + 20
+        end = current[end_ind:]
+        new_text = start + text + end
+
+    if new_text:
+        with open("lib/ex_gram.ex", "w") as f:
+            f.write(new_text)
+
+    os.system("mix format lib/ex_gram.ex")
+
 def main():
     definition = get_definition()
 
@@ -139,9 +161,9 @@ def main():
     generics_str = "\n\n ".join(generics)
 
     text = """
-# ----------METHODS-----------
+# START AUTO GENERATED
 
-# AUTO GENERATED
+# ----------METHODS-----------
 
 # Methods
 
@@ -165,10 +187,14 @@ defmodule Model do
   {}
 
   # {} generics
-end""".format(methods_str, len(methods), models_str, len(models), generics_str, len(generics))
+end
+
+# END AUTO GENERATED
+""".format(methods_str, len(methods), models_str, len(models), generics_str, len(generics))
 
     print(text)
     pyperclip.copy(text)
+    maybe_replace(text)
 
 if __name__ == "__main__":
     main()
