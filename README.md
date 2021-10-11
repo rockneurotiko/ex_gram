@@ -15,7 +15,7 @@ Add `ex_gram` as dependency in `mix.exs`
 ``` elixir
 def deps do
     [
-      {:ex_gram, "~> 0.22"},
+      {:ex_gram, "~> 0.24"},
       {:tesla, "~> 1.2"},
       {:hackney, "~> 1.12"},
       {:jason, ">= 1.0.0"}
@@ -218,7 +218,7 @@ ExGram.send_document(chat_id, {:file, "path/to/file"})                         #
 ExGram.send_document(chat_id, {:file_content, "FILE CONTENT", "filename.txt"}) # By content
 ```
 
-This three ways of sending files works when the API has a file field, for example `send_photo`, `send_audio`, `send_video`, ... 
+This three ways of sending files works when the API has a file field, for example `send_photo`, `send_audio`, `send_video`, ...
 
 ## Library Usage
 
