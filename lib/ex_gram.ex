@@ -30,9 +30,9 @@ defmodule ExGram do
     ExGram.Encoder.EngineCompiler.compile(engine)
   end
 
-  # ----------METHODS-----------
+  # START AUTO GENERATED
 
-  # AUTO GENERATED
+  # ----------METHODS-----------
 
   # Methods
 
@@ -2129,4 +2129,6 @@ defmodule ExGram do
 
     # 5 generics
   end
+
+  # END AUTO GENERATED
 end
