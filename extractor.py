@@ -76,25 +76,31 @@ def generate_param(param, model):
     return param_s.format(name, t, extra)
 
 
+def clean_description(description):
+    return description.replace("\n", " ")
+
+
 def generate_model(model):
-    model_s = "model {}, [{}]"
+    model_s = "model({}, [{}], \"{}\")"
     name = model['name']
+    description = model['description']
     debug("Generating model: " + name)
     params = [generate_param(param, True) for param in model['params']]
 
-    return model_s.format(name, ", ".join(params))
+    return model_s.format(name, ", ".join(params), clean_description(description))
 
 
 def generate_method(method):
-    method_s = """method {}, "{}", [{}], {}"""
+    method_s = """method({}, "{}", [{}], {}, "{}")"""
     name = method['name']
+    description = method['description']
     debug("Generating method: " + name)
     typ = ":get" if method['type'] == 'get' else ':post'
 
     args = [generate_param(param, False) for param in method['params']]
     returned = generate_type(method['return'], True)[0]
 
-    return method_s.format(typ, name, ", ".join(args), returned)
+    return method_s.format(typ, name, ", ".join(args), returned, clean_description(description))
 
 
 def generate_generic(model):
