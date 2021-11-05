@@ -19,4 +19,9 @@ defmodule <%= app_module %>.Bot do
   def handle({:command, :help, _msg}, context) do
     answer(context, "Here is your help:")
   end
+
+  def handle({:command,"new",_msg},context)do
+    answer(context,"New command with string (not atom)!")
+  end
+
 end
