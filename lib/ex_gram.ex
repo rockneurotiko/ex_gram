@@ -85,7 +85,7 @@ defmodule ExGram do
     "getMe",
     [],
     ExGram.Model.User,
-    "A simple method for testing your bot's auth token. Requires no parameters. Returns basic information about the bot in form of a User object."
+    "A simple method for testing your bot's authentication token. Requires no parameters. Returns basic information about the bot in form of a User object."
   )
 
   method(
@@ -513,7 +513,7 @@ defmodule ExGram do
       {revoke_messages, [:boolean], :optional}
     ],
     true,
-    "Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless unbanned first. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success."
+    "Use this method to ban a user in a group, a supergroup or a channel. In the case of supergroups and channels, the user will not be able to return to the chat on their own using invite links, etc., unless unbanned first. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success."
   )
 
   method(
@@ -538,7 +538,7 @@ defmodule ExGram do
       {until_date, [:integer], :optional}
     ],
     true,
-    "Use this method to restrict a user in a supergroup. The bot must be an administrator in the supergroup for this to work and must have the appropriate admin rights. Pass True for all permissions to lift restrictions from a user. Returns True on success."
+    "Use this method to restrict a user in a supergroup. The bot must be an administrator in the supergroup for this to work and must have the appropriate administrator rights. Pass True for all permissions to lift restrictions from a user. Returns True on success."
   )
 
   method(
@@ -560,7 +560,7 @@ defmodule ExGram do
       {can_pin_messages, [:boolean], :optional}
     ],
     true,
-    "Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Pass False for all boolean parameters to demote a user. Returns True on success."
+    "Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Pass False for all boolean parameters to demote a user. Returns True on success."
   )
 
   method(
@@ -576,7 +576,7 @@ defmodule ExGram do
     "setChatPermissions",
     [{chat_id, [:integer, :string]}, {permissions, [ChatPermissions]}],
     true,
-    "Use this method to set default chat permissions for all members. The bot must be an administrator in the group or a supergroup for this to work and must have the can_restrict_members admin rights. Returns True on success."
+    "Use this method to set default chat permissions for all members. The bot must be an administrator in the group or a supergroup for this to work and must have the can_restrict_members administrator rights. Returns True on success."
   )
 
   method(
@@ -584,7 +584,7 @@ defmodule ExGram do
     "exportChatInviteLink",
     [{chat_id, [:integer, :string]}],
     :string,
-    "Use this method to generate a new primary invite link for a chat; any previously generated primary link is revoked. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns the new invite link as String on success."
+    "Use this method to generate a new primary invite link for a chat; any previously generated primary link is revoked. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the new invite link as String on success."
   )
 
   method(
@@ -592,11 +592,13 @@ defmodule ExGram do
     "createChatInviteLink",
     [
       {chat_id, [:integer, :string]},
+      {name, [:string], :optional},
       {expire_date, [:integer], :optional},
-      {member_limit, [:integer], :optional}
+      {member_limit, [:integer], :optional},
+      {creates_join_request, [:boolean], :optional}
     ],
     ExGram.Model.ChatInviteLink,
-    "Use this method to create an additional invite link for a chat. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. The link can be revoked using the method revokeChatInviteLink. Returns the new invite link as ChatInviteLink object."
+    "Use this method to create an additional invite link for a chat. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. The link can be revoked using the method revokeChatInviteLink. Returns the new invite link as ChatInviteLink object."
   )
 
   method(
@@ -605,11 +607,13 @@ defmodule ExGram do
     [
       {chat_id, [:integer, :string]},
       {invite_link, [:string]},
+      {name, [:string], :optional},
       {expire_date, [:integer], :optional},
-      {member_limit, [:integer], :optional}
+      {member_limit, [:integer], :optional},
+      {creates_join_request, [:boolean], :optional}
     ],
     ExGram.Model.ChatInviteLink,
-    "Use this method to edit a non-primary invite link created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns the edited invite link as a ChatInviteLink object."
+    "Use this method to edit a non-primary invite link created by the bot. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the edited invite link as a ChatInviteLink object."
   )
 
   method(
@@ -617,7 +621,23 @@ defmodule ExGram do
     "revokeChatInviteLink",
     [{chat_id, [:integer, :string]}, {invite_link, [:string]}],
     ExGram.Model.ChatInviteLink,
-    "Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns the revoked invite link as ChatInviteLink object."
+    "Use this method to revoke an invite link created by the bot. If the primary link is revoked, a new link is automatically generated. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns the revoked invite link as ChatInviteLink object."
+  )
+
+  method(
+    :post,
+    "approveChatJoinRequest",
+    [{chat_id, [:integer, :string]}, {user_id, [:integer]}],
+    true,
+    "Use this method to approve a chat join request. The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right. Returns True on success."
+  )
+
+  method(
+    :post,
+    "declineChatJoinRequest",
+    [{chat_id, [:integer, :string]}, {user_id, [:integer]}],
+    true,
+    "Use this method to decline a chat join request. The bot must be an administrator in the chat for this to work and must have the can_invite_users administrator right. Returns True on success."
   )
 
   method(
@@ -625,7 +645,7 @@ defmodule ExGram do
     "setChatPhoto",
     [{chat_id, [:integer, :string]}, {photo, [:file]}],
     true,
-    "Use this method to set a new profile photo for the chat. Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success."
+    "Use this method to set a new profile photo for the chat. Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success."
   )
 
   method(
@@ -633,7 +653,7 @@ defmodule ExGram do
     "deleteChatPhoto",
     [{chat_id, [:integer, :string]}],
     true,
-    "Use this method to delete a chat photo. Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success."
+    "Use this method to delete a chat photo. Photos can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success."
   )
 
   method(
@@ -641,7 +661,7 @@ defmodule ExGram do
     "setChatTitle",
     [{chat_id, [:integer, :string]}, {title, [:string]}],
     true,
-    "Use this method to change the title of a chat. Titles can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success."
+    "Use this method to change the title of a chat. Titles can't be changed for private chats. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success."
   )
 
   method(
@@ -649,7 +669,7 @@ defmodule ExGram do
     "setChatDescription",
     [{chat_id, [:integer, :string]}, {description, [:string], :optional}],
     true,
-    "Use this method to change the description of a group, a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Returns True on success."
+    "Use this method to change the description of a group, a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Returns True on success."
   )
 
   method(
@@ -661,7 +681,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional}
     ],
     true,
-    "Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' admin right in a supergroup or 'can_edit_messages' admin right in a channel. Returns True on success."
+    "Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True on success."
   )
 
   method(
@@ -669,7 +689,7 @@ defmodule ExGram do
     "unpinChatMessage",
     [{chat_id, [:integer, :string]}, {message_id, [:integer], :optional}],
     true,
-    "Use this method to remove a message from the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' admin right in a supergroup or 'can_edit_messages' admin right in a channel. Returns True on success."
+    "Use this method to remove a message from the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True on success."
   )
 
   method(
@@ -677,7 +697,7 @@ defmodule ExGram do
     "unpinAllChatMessages",
     [{chat_id, [:integer, :string]}],
     true,
-    "Use this method to clear the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' admin right in a supergroup or 'can_edit_messages' admin right in a channel. Returns True on success."
+    "Use this method to clear the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True on success."
   )
 
   method(
@@ -725,7 +745,7 @@ defmodule ExGram do
     "setChatStickerSet",
     [{chat_id, [:integer, :string]}, {sticker_set_name, [:string]}],
     true,
-    "Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Use the field can_set_sticker_set optionally returned in getChat requests to check if the bot can use this method. Returns True on success."
+    "Use this method to set a new group sticker set for a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field can_set_sticker_set optionally returned in getChat requests to check if the bot can use this method. Returns True on success."
   )
 
   method(
@@ -733,7 +753,7 @@ defmodule ExGram do
     "deleteChatStickerSet",
     [{chat_id, [:integer, :string]}],
     true,
-    "Use this method to delete a group sticker set from a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate admin rights. Use the field can_set_sticker_set optionally returned in getChat requests to check if the bot can use this method. Returns True on success."
+    "Use this method to delete a group sticker set from a supergroup. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Use the field can_set_sticker_set optionally returned in getChat requests to check if the bot can use this method. Returns True on success."
   )
 
   method(
@@ -1070,7 +1090,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. On success, returns an Array of GameHighScore objects."
   )
 
-  # 78 methods
+  # 80 methods
 
   # ----------MODELS-----------
 
@@ -1097,7 +1117,8 @@ defmodule ExGram do
         {:poll, Poll, :optional},
         {:poll_answer, PollAnswer, :optional},
         {:my_chat_member, ChatMemberUpdated, :optional},
-        {:chat_member, ChatMemberUpdated, :optional}
+        {:chat_member, ChatMemberUpdated, :optional},
+        {:chat_join_request, ChatJoinRequest, :optional}
       ],
       "This object represents an incoming update. At most one of the optional parameters can be present in any given update."
     )
@@ -1575,10 +1596,13 @@ defmodule ExGram do
       [
         {:invite_link, :string},
         {:creator, User},
+        {:creates_join_request, :boolean},
         {:is_primary, :boolean},
         {:is_revoked, :boolean},
+        {:name, :string, :optional},
         {:expire_date, :integer, :optional},
-        {:member_limit, :integer, :optional}
+        {:member_limit, :integer, :optional},
+        {:pending_join_request_count, :integer, :optional}
       ],
       "Represents an invite link for a chat."
     )
@@ -1664,6 +1688,18 @@ defmodule ExGram do
         {:invite_link, ChatInviteLink, :optional}
       ],
       "This object represents changes in the status of a chat member."
+    )
+
+    model(
+      ChatJoinRequest,
+      [
+        {:chat, Chat},
+        {:from, User},
+        {:date, :integer},
+        {:bio, :string, :optional},
+        {:invite_link, ChatInviteLink, :optional}
+      ],
+      "Represents a join request sent to a chat."
     )
 
     model(
@@ -2568,7 +2604,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 119 models
+    # 120 models
 
     defmodule ChatMember do
       @moduledoc """
