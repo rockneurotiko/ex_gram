@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## [0.25.0]
+- Update Telegram API to 5.4
+
 ## [0.24.1]
 - Add original API descriptions to methods and models
 
