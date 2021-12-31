@@ -98,6 +98,7 @@ defmodule ExGram do
       {entities, [{:array, MessageEntity}], :optional},
       {disable_web_page_preview, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -117,6 +118,7 @@ defmodule ExGram do
       {entities, [{:array, MessageEntity}], :optional},
       {disable_web_page_preview, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -136,6 +138,7 @@ defmodule ExGram do
       {entities, [{:array, MessageEntity}], :optional},
       {disable_web_page_preview, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -152,6 +155,7 @@ defmodule ExGram do
       {chat_id, [:integer, :string]},
       {from_chat_id, [:integer, :string]},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {message_id, [:integer]}
     ],
     ExGram.Model.Message,
@@ -169,6 +173,7 @@ defmodule ExGram do
       {parse_mode, [:string], :optional},
       {caption_entities, [{:array, MessageEntity}], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -188,6 +193,7 @@ defmodule ExGram do
       {parse_mode, [:string], :optional},
       {caption_entities, [{:array, MessageEntity}], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -211,6 +217,7 @@ defmodule ExGram do
       {title, [:string], :optional},
       {thumb, [:file, :string], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -232,6 +239,7 @@ defmodule ExGram do
       {caption_entities, [{:array, MessageEntity}], :optional},
       {disable_content_type_detection, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -256,6 +264,7 @@ defmodule ExGram do
       {caption_entities, [{:array, MessageEntity}], :optional},
       {supports_streaming, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -279,6 +288,7 @@ defmodule ExGram do
       {parse_mode, [:string], :optional},
       {caption_entities, [{:array, MessageEntity}], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -299,6 +309,7 @@ defmodule ExGram do
       {caption_entities, [{:array, MessageEntity}], :optional},
       {duration, [:integer], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -318,6 +329,7 @@ defmodule ExGram do
       {length, [:integer], :optional},
       {thumb, [:file, :string], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -335,6 +347,7 @@ defmodule ExGram do
       {media,
        [{:array, [InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo]}]},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional}
     ],
@@ -354,6 +367,7 @@ defmodule ExGram do
       {heading, [:integer], :optional},
       {proximity_alert_radius, [:integer], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -408,6 +422,7 @@ defmodule ExGram do
       {google_place_id, [:string], :optional},
       {google_place_type, [:string], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -427,6 +442,7 @@ defmodule ExGram do
       {last_name, [:string], :optional},
       {vcard, [:string], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -454,6 +470,7 @@ defmodule ExGram do
       {close_date, [:integer], :optional},
       {is_closed, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -470,6 +487,7 @@ defmodule ExGram do
       {chat_id, [:integer, :string]},
       {emoji, [:string], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -569,6 +587,22 @@ defmodule ExGram do
     [{chat_id, [:integer, :string]}, {user_id, [:integer]}, {custom_title, [:string]}],
     true,
     "Use this method to set a custom title for an administrator in a supergroup promoted by the bot. Returns True on success."
+  )
+
+  method(
+    :post,
+    "banChatSenderChat",
+    [{chat_id, [:integer, :string]}, {sender_chat_id, [:integer]}],
+    true,
+    "Use this method to ban a channel chat in a supergroup or a channel. Until the chat is unbanned, the owner of the banned chat won't be able to send messages on behalf of any of their channels. The bot must be an administrator in the supergroup or channel for this to work and must have the appropriate administrator rights. Returns True on success."
+  )
+
+  method(
+    :post,
+    "unbanChatSenderChat",
+    [{chat_id, [:integer, :string]}, {sender_chat_id, [:integer]}],
+    true,
+    "Use this method to unban a previously banned channel chat in a supergroup or channel. The bot must be an administrator for this to work and must have the appropriate administrator rights. Returns True on success."
   )
 
   method(
@@ -885,6 +919,7 @@ defmodule ExGram do
       {chat_id, [:integer, :string]},
       {sticker, [:file, :string]},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
@@ -1009,6 +1044,7 @@ defmodule ExGram do
       {send_email_to_provider, [:boolean], :optional},
       {is_flexible, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
@@ -1053,6 +1089,7 @@ defmodule ExGram do
       {chat_id, [:integer]},
       {game_short_name, [:string]},
       {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
@@ -1090,7 +1127,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. On success, returns an Array of GameHighScore objects."
   )
 
-  # 80 methods
+  # 82 methods
 
   # ----------MODELS-----------
 
@@ -1165,12 +1202,14 @@ defmodule ExGram do
         {:last_name, :string, :optional},
         {:photo, ChatPhoto, :optional},
         {:bio, :string, :optional},
+        {:has_private_forwards, :boolean, :optional},
         {:description, :string, :optional},
         {:invite_link, :string, :optional},
         {:pinned_message, Message, :optional},
         {:permissions, ChatPermissions, :optional},
         {:slow_mode_delay, :integer, :optional},
         {:message_auto_delete_time, :integer, :optional},
+        {:has_protected_content, :boolean, :optional},
         {:sticker_set_name, :string, :optional},
         {:can_set_sticker_set, :boolean, :optional},
         {:linked_chat_id, :integer, :optional},
@@ -1193,9 +1232,11 @@ defmodule ExGram do
         {:forward_signature, :string, :optional},
         {:forward_sender_name, :string, :optional},
         {:forward_date, :integer, :optional},
+        {:is_automatic_forward, :boolean, :optional},
         {:reply_to_message, Message, :optional},
         {:via_bot, User, :optional},
         {:edit_date, :integer, :optional},
+        {:has_protected_content, :boolean, :optional},
         {:media_group_id, :string, :optional},
         {:author_signature, :string, :optional},
         {:text, :string, :optional},
@@ -1873,6 +1914,7 @@ defmodule ExGram do
         {:entities, {:array, MessageEntity}, :optional},
         {:disable_web_page_preview, :boolean, :optional},
         {:disable_notification, :boolean, :optional},
+        {:protect_content, :boolean, :optional},
         {:reply_to_message_id, :integer, :optional},
         {:allow_sending_without_reply, :boolean, :optional},
         {:reply_markup, InlineKeyboardMarkup, :optional}
