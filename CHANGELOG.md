@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## [0.26.0]
+- Update Telegram API to 5.6
+
 ## [0.25.0]
 - Update Telegram API to 5.4
 
