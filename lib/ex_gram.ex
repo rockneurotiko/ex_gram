@@ -570,7 +570,7 @@ defmodule ExGram do
       {can_post_messages, [:boolean], :optional},
       {can_edit_messages, [:boolean], :optional},
       {can_delete_messages, [:boolean], :optional},
-      {can_manage_voice_chats, [:boolean], :optional},
+      {can_manage_video_chats, [:boolean], :optional},
       {can_restrict_members, [:boolean], :optional},
       {can_promote_members, [:boolean], :optional},
       {can_change_info, [:boolean], :optional},
@@ -834,6 +834,38 @@ defmodule ExGram do
 
   method(
     :post,
+    "setChatMenuButton",
+    [{chat_id, [:integer], :optional}, {menu_button, [MenuButton], :optional}],
+    true,
+    "Use this method to change the bot's menu button in a private chat, or the default menu button. Returns True on success."
+  )
+
+  method(
+    :get,
+    "getChatMenuButton",
+    [{chat_id, [:integer], :optional}],
+    ExGram.Model.MenuButton,
+    "Use this method to get the current value of the bot's menu button in a private chat, or the default menu button. Returns MenuButton on success."
+  )
+
+  method(
+    :post,
+    "setMyDefaultAdministratorRights",
+    [{rights, [ChatAdministratorRights], :optional}, {for_channels, [:boolean], :optional}],
+    true,
+    "Use this method to change the default administrator rights requested by the bot when it's added as an administrator to groups or channels. These rights will be suggested to users, but they are are free to modify the list before adding the bot. Returns True on success."
+  )
+
+  method(
+    :get,
+    "getMyDefaultAdministratorRights",
+    [{for_channels, [:boolean], :optional}],
+    ExGram.Model.ChatAdministratorRights,
+    "Use this method to get the current default administrator rights of the bot. Returns ChatAdministratorRights on success."
+  )
+
+  method(
+    :post,
     "editMessageText",
     [
       {chat_id, [:integer, :string], :optional},
@@ -926,7 +958,7 @@ defmodule ExGram do
        :optional}
     ],
     ExGram.Model.Message,
-    "Use this method to send static .WEBP or animated .TGS stickers. On success, the sent Message is returned."
+    "Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent Message is returned."
   )
 
   method(
@@ -954,12 +986,13 @@ defmodule ExGram do
       {title, [:string]},
       {png_sticker, [:file, :string], :optional},
       {tgs_sticker, [:file], :optional},
+      {webm_sticker, [:file], :optional},
       {emojis, [:string]},
       {contains_masks, [:boolean], :optional},
       {mask_position, [MaskPosition], :optional}
     ],
     true,
-    "Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. You must use exactly one of the fields png_sticker or tgs_sticker. Returns True on success."
+    "Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. You must use exactly one of the fields png_sticker, tgs_sticker, or webm_sticker. Returns True on success."
   )
 
   method(
@@ -970,11 +1003,12 @@ defmodule ExGram do
       {name, [:string]},
       {png_sticker, [:file, :string], :optional},
       {tgs_sticker, [:file], :optional},
+      {webm_sticker, [:file], :optional},
       {emojis, [:string]},
       {mask_position, [MaskPosition], :optional}
     ],
     true,
-    "Use this method to add a new sticker to a set created by the bot. You must use exactly one of the fields png_sticker or tgs_sticker. Animated stickers can be added to animated sticker sets and only to them. Animated sticker sets can have up to 50 stickers. Static sticker sets can have up to 120 stickers. Returns True on success."
+    "Use this method to add a new sticker to a set created by the bot. You must use exactly one of the fields png_sticker, tgs_sticker, or webm_sticker. Animated stickers can be added to animated sticker sets and only to them. Animated sticker sets can have up to 50 stickers. Static sticker sets can have up to 120 stickers. Returns True on success."
   )
 
   method(
@@ -998,7 +1032,7 @@ defmodule ExGram do
     "setStickerSetThumb",
     [{name, [:string]}, {user_id, [:integer]}, {thumb, [:file, :string], :optional}],
     true,
-    "Use this method to set the thumbnail of a sticker set. Animated thumbnails can be set for animated sticker sets only. Returns True on success."
+    "Use this method to set the thumbnail of a sticker set. Animated thumbnails can be set for animated sticker sets only. Video thumbnails can be set only for video sticker sets only. Returns True on success."
   )
 
   method(
@@ -1015,6 +1049,14 @@ defmodule ExGram do
     ],
     true,
     "Use this method to send answers to an inline query. On success, True is returned. No more than 50 results per query are allowed."
+  )
+
+  method(
+    :post,
+    "answerWebAppQuery",
+    [{web_app_query_id, [:string]}, {result, [InlineQueryResult]}],
+    ExGram.Model.SentWebAppMessage,
+    "Use this method to set the result of an interaction with a Web App and send a corresponding message on behalf of the user to the chat from which the query originated. On success, a SentWebAppMessage object is returned."
   )
 
   method(
@@ -1127,7 +1169,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. On success, returns an Array of GameHighScore objects."
   )
 
-  # 82 methods
+  # 87 methods
 
   # ----------MODELS-----------
 
@@ -1169,6 +1211,7 @@ defmodule ExGram do
         {:ip_address, :string, :optional},
         {:last_error_date, :integer, :optional},
         {:last_error_message, :string, :optional},
+        {:last_synchronization_error_date, :integer, :optional},
         {:max_connections, :integer, :optional},
         {:allowed_updates, {:array, :string}, :optional}
       ],
@@ -1274,10 +1317,11 @@ defmodule ExGram do
         {:connected_website, :string, :optional},
         {:passport_data, PassportData, :optional},
         {:proximity_alert_triggered, ProximityAlertTriggered, :optional},
-        {:voice_chat_scheduled, VoiceChatScheduled, :optional},
-        {:voice_chat_started, VoiceChatStarted, :optional},
-        {:voice_chat_ended, VoiceChatEnded, :optional},
-        {:voice_chat_participants_invited, VoiceChatParticipantsInvited, :optional},
+        {:video_chat_scheduled, VideoChatScheduled, :optional},
+        {:video_chat_started, VideoChatStarted, :optional},
+        {:video_chat_ended, VideoChatEnded, :optional},
+        {:video_chat_participants_invited, VideoChatParticipantsInvited, :optional},
+        {:web_app_data, WebAppData, :optional},
         {:reply_markup, InlineKeyboardMarkup, :optional}
       ],
       "This object represents a message."
@@ -1478,6 +1522,12 @@ defmodule ExGram do
     )
 
     model(
+      WebAppData,
+      [{:data, :string}, {:button_text, :string}],
+      "Contains data sent from a Web App to the bot."
+    )
+
+    model(
       ProximityAlertTriggered,
       [{:traveler, User}, {:watcher, User}, {:distance, :integer}],
       "This object represents the content of a service message, sent whenever a user in the chat triggers a proximity alert set by another user."
@@ -1490,27 +1540,27 @@ defmodule ExGram do
     )
 
     model(
-      VoiceChatScheduled,
+      VideoChatScheduled,
       [{:start_date, :integer}],
-      "This object represents a service message about a voice chat scheduled in the chat."
+      "This object represents a service message about a video chat scheduled in the chat."
     )
 
     model(
-      VoiceChatStarted,
+      VideoChatStarted,
       [{:duration, :integer}],
-      "This object represents a service message about a voice chat started in the chat. Currently holds no information."
+      "This object represents a service message about a video chat started in the chat. Currently holds no information."
     )
 
     model(
-      VoiceChatEnded,
+      VideoChatEnded,
       [{:duration, :integer}],
-      "This object represents a service message about a voice chat ended in the chat."
+      "This object represents a service message about a video chat ended in the chat."
     )
 
     model(
-      VoiceChatParticipantsInvited,
-      [{:users, {:array, User}, :optional}],
-      "This object represents a service message about new members invited to a voice chat."
+      VideoChatParticipantsInvited,
+      [{:users, {:array, User}}],
+      "This object represents a service message about new members invited to a video chat."
     )
 
     model(
@@ -1530,6 +1580,8 @@ defmodule ExGram do
       "This object represents a file ready to be downloaded. The file can be downloaded via the link https://api.telegram.org/file/bot<token>/<file_path>. It is guaranteed that the link will be valid for at least 1 hour. When the link expires, a new one can be requested by calling getFile."
     )
 
+    model(WebAppInfo, [{:url, :string}], "Contains information about a Web App.")
+
     model(
       ReplyKeyboardMarkup,
       [
@@ -1548,9 +1600,10 @@ defmodule ExGram do
         {:text, :string},
         {:request_contact, :boolean, :optional},
         {:request_location, :boolean, :optional},
-        {:request_poll, KeyboardButtonPollType, :optional}
+        {:request_poll, KeyboardButtonPollType, :optional},
+        {:web_app, WebAppInfo, :optional}
       ],
-      "This object represents one button of the reply keyboard. For simple text buttons String can be used instead of this object to specify text of the button. Optional fields request_contact, request_location, and request_poll are mutually exclusive."
+      "This object represents one button of the reply keyboard. For simple text buttons String can be used instead of this object to specify text of the button. Optional fields web_app, request_contact, request_location, and request_poll are mutually exclusive."
     )
 
     model(
@@ -1576,8 +1629,9 @@ defmodule ExGram do
       [
         {:text, :string},
         {:url, :string, :optional},
-        {:login_url, LoginUrl, :optional},
         {:callback_data, :string, :optional},
+        {:web_app, WebAppInfo, :optional},
+        {:login_url, LoginUrl, :optional},
         {:switch_inline_query, :string, :optional},
         {:switch_inline_query_current_chat, :string, :optional},
         {:callback_game, CallbackGame, :optional},
@@ -1649,6 +1703,24 @@ defmodule ExGram do
     )
 
     model(
+      ChatAdministratorRights,
+      [
+        {:is_anonymous, :boolean},
+        {:can_manage_chat, :boolean},
+        {:can_delete_messages, :boolean},
+        {:can_manage_video_chats, :boolean},
+        {:can_restrict_members, :boolean},
+        {:can_promote_members, :boolean},
+        {:can_change_info, :boolean},
+        {:can_invite_users, :boolean},
+        {:can_post_messages, :boolean, :optional},
+        {:can_edit_messages, :boolean, :optional},
+        {:can_pin_messages, :boolean, :optional}
+      ],
+      "Represents the rights of an administrator in a chat."
+    )
+
+    model(
       ChatMemberOwner,
       [
         {:status, :string},
@@ -1668,7 +1740,7 @@ defmodule ExGram do
         {:is_anonymous, :boolean},
         {:can_manage_chat, :boolean},
         {:can_delete_messages, :boolean},
-        {:can_manage_voice_chats, :boolean},
+        {:can_manage_video_chats, :boolean},
         {:can_restrict_members, :boolean},
         {:can_promote_members, :boolean},
         {:can_change_info, :boolean},
@@ -1813,6 +1885,30 @@ defmodule ExGram do
     )
 
     model(
+      MenuButton,
+      [{:type, :string}],
+      "This object describes the bot's menu button in a private chat. It should be one of"
+    )
+
+    model(
+      MenuButtonCommands,
+      [{:type, :string}],
+      "Represents a menu button, which opens the bot's list of commands."
+    )
+
+    model(
+      MenuButtonWebApp,
+      [{:type, :string}, {:text, :string}, {:web_app, WebAppInfo}],
+      "Represents a menu button, which launches a Web App."
+    )
+
+    model(
+      MenuButtonDefault,
+      [{:type, :string}],
+      "Describes that no specific value for the menu button was set."
+    )
+
+    model(
       ResponseParameters,
       [{:migrate_to_chat_id, :integer, :optional}, {:retry_after, :integer, :optional}],
       "Contains information about why a request was unsuccessful."
@@ -1930,6 +2026,7 @@ defmodule ExGram do
         {:width, :integer},
         {:height, :integer},
         {:is_animated, :boolean},
+        {:is_video, :boolean},
         {:thumb, PhotoSize, :optional},
         {:emoji, :string, :optional},
         {:set_name, :string, :optional},
@@ -1945,6 +2042,7 @@ defmodule ExGram do
         {:name, :string},
         {:title, :string},
         {:is_animated, :boolean},
+        {:is_video, :boolean},
         {:contains_masks, :boolean},
         {:stickers, {:array, Sticker}},
         {:thumb, PhotoSize, :optional}
@@ -2417,6 +2515,12 @@ defmodule ExGram do
     )
 
     model(
+      SentWebAppMessage,
+      [{:inline_message_id, :string, :optional}],
+      "Contains information about an inline message sent by a Web App on behalf of a user."
+    )
+
+    model(
       LabeledPrice,
       [{:label, :string}, {:amount, :integer}],
       "This object represents a portion of the price for goods or services."
@@ -2646,7 +2750,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 120 models
+    # 128 models
 
     defmodule ChatMember do
       @moduledoc """
