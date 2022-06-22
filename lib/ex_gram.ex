@@ -58,10 +58,11 @@ defmodule ExGram do
       {ip_address, [:string], :optional},
       {max_connections, [:integer], :optional},
       {allowed_updates, [{:array, :string}], :optional},
-      {drop_pending_updates, [:boolean], :optional}
+      {drop_pending_updates, [:boolean], :optional},
+      {secret_token, [:string], :optional}
     ],
     true,
-    "Use this method to specify a url and receive incoming updates via an outgoing webhook. Whenever there is an update for the bot, we will send an HTTPS POST request to the specified url, containing a JSON-serialized Update. In case of an unsuccessful request, we will give up after a reasonable amount of attempts. Returns True on success."
+    "Use this method to specify a URL and receive incoming updates via an outgoing webhook. Whenever there is an update for the bot, we will send an HTTPS POST request to the specified URL, containing a JSON-serialized Update. In case of an unsuccessful request, we will give up after a reasonable amount of attempts. Returns True on success."
   )
 
   method(
@@ -271,7 +272,7 @@ defmodule ExGram do
        :optional}
     ],
     ExGram.Model.Message,
-    "Use this method to send video files, Telegram clients support mp4 videos (other formats may be sent as Document). On success, the sent Message is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future."
+    "Use this method to send video files, Telegram clients support MPEG4 videos (other formats may be sent as Document). On success, the sent Message is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future."
   )
 
   method(
@@ -336,7 +337,7 @@ defmodule ExGram do
        :optional}
     ],
     ExGram.Model.Message,
-    "As of v.4.0, Telegram clients support rounded square mp4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent Message is returned."
+    "As of v.4.0, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent Message is returned."
   )
 
   method(
@@ -518,7 +519,7 @@ defmodule ExGram do
     "getFile",
     [{file_id, [:string]}],
     ExGram.Model.File,
-    "Use this method to get basic info about a file and prepare it for downloading. For the moment, bots can download files of up to 20MB in size. On success, a File object is returned. The file can then be downloaded via the link https://api.telegram.org/file/bot<token>/<file_path>, where <file_path> is taken from the response. It is guaranteed that the link will be valid for at least 1 hour. When the link expires, a new one can be requested by calling getFile again."
+    "Use this method to get basic information about a file and prepare it for downloading. For the moment, bots can download files of up to 20MB in size. On success, a File object is returned. The file can then be downloaded via the link https://api.telegram.org/file/bot<token>/<file_path>, where <file_path> is taken from the response. It is guaranteed that the link will be valid for at least 1 hour. When the link expires, a new one can be requested by calling getFile again."
   )
 
   method(
@@ -1097,6 +1098,35 @@ defmodule ExGram do
 
   method(
     :post,
+    "createInvoiceLink",
+    [
+      {title, [:string]},
+      {description, [:string]},
+      {payload, [:string]},
+      {provider_token, [:string]},
+      {currency, [:string]},
+      {prices, [{:array, LabeledPrice}]},
+      {max_tip_amount, [:integer], :optional},
+      {suggested_tip_amounts, [{:array, :integer}], :optional},
+      {provider_data, [:string], :optional},
+      {photo_url, [:string], :optional},
+      {photo_size, [:integer], :optional},
+      {photo_width, [:integer], :optional},
+      {photo_height, [:integer], :optional},
+      {need_name, [:boolean], :optional},
+      {need_phone_number, [:boolean], :optional},
+      {need_email, [:boolean], :optional},
+      {need_shipping_address, [:boolean], :optional},
+      {send_phone_number_to_provider, [:boolean], :optional},
+      {send_email_to_provider, [:boolean], :optional},
+      {is_flexible, [:boolean], :optional}
+    ],
+    :string,
+    "Use this method to create a link for an invoice. Returns the created invoice link as String on success."
+  )
+
+  method(
+    :post,
     "answerShippingQuery",
     [
       {shipping_query_id, [:string]},
@@ -1169,7 +1199,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. On success, returns an Array of GameHighScore objects."
   )
 
-  # 87 methods
+  # 88 methods
 
   # ----------MODELS-----------
 
@@ -1215,7 +1245,7 @@ defmodule ExGram do
         {:max_connections, :integer, :optional},
         {:allowed_updates, {:array, :string}, :optional}
       ],
-      "Contains information about the current status of a webhook."
+      "Describes the current status of a webhook."
     )
 
     model(
@@ -1227,6 +1257,8 @@ defmodule ExGram do
         {:last_name, :string, :optional},
         {:username, :string, :optional},
         {:language_code, :string, :optional},
+        {:is_premium, :boolean, :optional},
+        {:added_to_attachment_menu, :boolean, :optional},
         {:can_join_groups, :boolean, :optional},
         {:can_read_all_group_messages, :boolean, :optional},
         {:supports_inline_queries, :boolean, :optional}
@@ -1246,6 +1278,8 @@ defmodule ExGram do
         {:photo, ChatPhoto, :optional},
         {:bio, :string, :optional},
         {:has_private_forwards, :boolean, :optional},
+        {:join_to_send_messages, :boolean, :optional},
+        {:join_by_request, :boolean, :optional},
         {:description, :string, :optional},
         {:invite_link, :string, :optional},
         {:pinned_message, Message, :optional},
@@ -1524,7 +1558,7 @@ defmodule ExGram do
     model(
       WebAppData,
       [{:data, :string}, {:button_text, :string}],
-      "Contains data sent from a Web App to the bot."
+      "Describes data sent from a Web App to the bot."
     )
 
     model(
@@ -1580,7 +1614,7 @@ defmodule ExGram do
       "This object represents a file ready to be downloaded. The file can be downloaded via the link https://api.telegram.org/file/bot<token>/<file_path>. It is guaranteed that the link will be valid for at least 1 hour. When the link expires, a new one can be requested by calling getFile."
     )
 
-    model(WebAppInfo, [{:url, :string}], "Contains information about a Web App.")
+    model(WebAppInfo, [{:url, :string}], "Describes a Web App.")
 
     model(
       ReplyKeyboardMarkup,
@@ -1911,7 +1945,7 @@ defmodule ExGram do
     model(
       ResponseParameters,
       [{:migrate_to_chat_id, :integer, :optional}, {:retry_after, :integer, :optional}],
-      "Contains information about why a request was unsuccessful."
+      "Describes why a request was unsuccessful."
     )
 
     model(
@@ -2030,6 +2064,7 @@ defmodule ExGram do
         {:thumb, PhotoSize, :optional},
         {:emoji, :string, :optional},
         {:set_name, :string, :optional},
+        {:premium_animation, File, :optional},
         {:mask_position, MaskPosition, :optional},
         {:file_size, :integer, :optional}
       ],
@@ -2517,7 +2552,7 @@ defmodule ExGram do
     model(
       SentWebAppMessage,
       [{:inline_message_id, :string, :optional}],
-      "Contains information about an inline message sent by a Web App on behalf of a user."
+      "Describes an inline message sent by a Web App on behalf of a user."
     )
 
     model(
@@ -2610,7 +2645,7 @@ defmodule ExGram do
     model(
       PassportData,
       [{:data, {:array, EncryptedPassportElement}}, {:credentials, EncryptedCredentials}],
-      "Contains information about Telegram Passport data shared with the bot by the user."
+      "Describes Telegram Passport data shared with the bot by the user."
     )
 
     model(
@@ -2638,13 +2673,13 @@ defmodule ExGram do
         {:translation, {:array, PassportFile}, :optional},
         {:hash, :string}
       ],
-      "Contains information about documents or other Telegram Passport elements shared with the bot by the user."
+      "Describes documents or other Telegram Passport elements shared with the bot by the user."
     )
 
     model(
       EncryptedCredentials,
       [{:data, :string}, {:hash, :string}, {:secret, :string}],
-      "Contains data required for decrypting and authenticating EncryptedPassportElement. See the Telegram Passport Documentation for a complete description of the data decryption and authentication processes."
+      "Describes data required for decrypting and authenticating EncryptedPassportElement. See the Telegram Passport Documentation for a complete description of the data decryption and authentication processes."
     )
 
     model(
