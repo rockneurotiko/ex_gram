@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## [0.28.0]
+- [Major] Update Telegram API to 6.2: https://core.telegram.org/bots/api#august-12-2022
+
 ## [0.27.0]
 - [Major] Update Telegram API to 6.0: https://core.telegram.org/bots/api#april-16-2022
 
