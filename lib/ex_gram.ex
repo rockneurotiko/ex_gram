@@ -46,7 +46,7 @@ defmodule ExGram do
       {allowed_updates, [{:array, :string}], :optional}
     ],
     [ExGram.Model.Update],
-    "Use this method to receive incoming updates using long polling (wiki). An Array of Update objects is returned."
+    "Use this method to receive incoming updates using long polling (wiki). Returns an Array of Update objects."
   )
 
   method(
@@ -181,7 +181,7 @@ defmodule ExGram do
        :optional}
     ],
     ExGram.Model.MessageId,
-    "Use this method to copy messages of any kind. Service messages and invoice messages can't be copied. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success."
+    "Use this method to copy messages of any kind. Service messages and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success."
   )
 
   method(
@@ -756,7 +756,7 @@ defmodule ExGram do
     "getChatAdministrators",
     [{chat_id, [:integer, :string]}],
     [ExGram.Model.ChatMember],
-    "Use this method to get a list of administrators in a chat. On success, returns an Array of ChatMember objects that contains information about all chat administrators except other bots. If the chat is a group or a supergroup and no administrators were appointed, only the creator will be returned."
+    "Use this method to get a list of administrators in a chat, which aren't bots. Returns an Array of ChatMember objects."
   )
 
   method(
@@ -814,7 +814,7 @@ defmodule ExGram do
       {language_code, [:string], :optional}
     ],
     true,
-    "Use this method to change the list of the bot's commands. See https://core.telegram.org/bots#commands for more details about bot commands. Returns True on success."
+    "Use this method to change the list of the bot's commands. See this manual for more details about bot commands. Returns True on success."
   )
 
   method(
@@ -830,7 +830,7 @@ defmodule ExGram do
     "getMyCommands",
     [],
     [ExGram.Model.BotCommand],
-    "Use this method to get the current list of the bot's commands for the given scope and user language. Returns Array of BotCommand on success. If commands aren't set, an empty list is returned."
+    "Use this method to get the current list of the bot's commands for the given scope and user language. Returns an Array of BotCommand objects. If commands aren't set, an empty list is returned."
   )
 
   method(
@@ -971,6 +971,14 @@ defmodule ExGram do
   )
 
   method(
+    :get,
+    "getCustomEmojiStickers",
+    [{custom_emoji_ids, [{:array, :string}]}],
+    [ExGram.Model.Sticker],
+    "Use this method to get information about custom emoji stickers by their identifiers. Returns an Array of Sticker objects."
+  )
+
+  method(
     :post,
     "uploadStickerFile",
     [{user_id, [:integer]}, {png_sticker, [:file]}],
@@ -988,8 +996,8 @@ defmodule ExGram do
       {png_sticker, [:file, :string], :optional},
       {tgs_sticker, [:file], :optional},
       {webm_sticker, [:file], :optional},
+      {sticker_type, [:string], :optional},
       {emojis, [:string]},
-      {contains_masks, [:boolean], :optional},
       {mask_position, [MaskPosition], :optional}
     ],
     true,
@@ -1196,10 +1204,10 @@ defmodule ExGram do
       {inline_message_id, [:string], :optional}
     ],
     [ExGram.Model.GameHighScore],
-    "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. On success, returns an Array of GameHighScore objects."
+    "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 88 methods
+  # 89 methods
 
   # ----------MODELS-----------
 
@@ -1278,6 +1286,7 @@ defmodule ExGram do
         {:photo, ChatPhoto, :optional},
         {:bio, :string, :optional},
         {:has_private_forwards, :boolean, :optional},
+        {:has_restricted_voice_and_video_messages, :boolean, :optional},
         {:join_to_send_messages, :boolean, :optional},
         {:join_by_request, :boolean, :optional},
         {:description, :string, :optional},
@@ -1375,7 +1384,8 @@ defmodule ExGram do
         {:length, :integer},
         {:url, :string, :optional},
         {:user, User, :optional},
-        {:language, :string, :optional}
+        {:language, :string, :optional},
+        {:custom_emoji_id, :string, :optional}
       ],
       "This object represents one special entity in a text message. For example, hashtags, usernames, URLs, etc."
     )
@@ -2057,6 +2067,7 @@ defmodule ExGram do
       [
         {:file_id, :string},
         {:file_unique_id, :string},
+        {:type, :string},
         {:width, :integer},
         {:height, :integer},
         {:is_animated, :boolean},
@@ -2066,6 +2077,7 @@ defmodule ExGram do
         {:set_name, :string, :optional},
         {:premium_animation, File, :optional},
         {:mask_position, MaskPosition, :optional},
+        {:custom_emoji_id, :string, :optional},
         {:file_size, :integer, :optional}
       ],
       "This object represents a sticker."
@@ -2076,9 +2088,9 @@ defmodule ExGram do
       [
         {:name, :string},
         {:title, :string},
+        {:sticker_type, :string},
         {:is_animated, :boolean},
         {:is_video, :boolean},
-        {:contains_masks, :boolean},
         {:stickers, {:array, Sticker}},
         {:thumb, PhotoSize, :optional}
       ],
