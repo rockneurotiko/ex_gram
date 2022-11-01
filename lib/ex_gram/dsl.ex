@@ -12,7 +12,8 @@ defmodule ExGram.Dsl do
     AnswerInlineQuery,
     EditInline,
     EditMarkup,
-    DeleteMessage
+    DeleteMessage,
+    SendDocument
   }
 
   def answer(cnt, text, ops \\ [])
@@ -67,6 +68,26 @@ defmodule ExGram.Dsl do
 
   def delete(cnt, msg, ops \\ []) do
     DeleteMessage |> Responses.new(%{ops: ops}) |> Responses.set_msg(msg) |> add_answer(cnt)
+  end
+
+  defguardp is_file(file) when is_binary(file) or (is_tuple(file) and elem(file, 0) == :file)
+
+  def answer_document(cnt, document, ops \\ [])
+
+  def answer_document(cnt, document, ops) when is_file(document) and is_list(ops) do
+    SendDocument
+    |> Responses.new(%{document: document, ops: ops})
+    |> add_answer(cnt)
+  end
+
+  def answer_document(cnt, msg, document) when is_map(msg) and is_file(document),
+    do: answer_document(cnt, msg, document, [])
+
+  def answer_document(cnt, msg, document, ops) when is_map(msg) and is_file(document) do
+    SendDocument
+    |> Responses.new(%{document: document, ops: ops})
+    |> Responses.set_msg(msg)
+    |> add_answer(cnt)
   end
 
   def create_inline_button(row) do
