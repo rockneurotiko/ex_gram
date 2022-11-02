@@ -120,6 +120,7 @@ defmodule ExGram.Dsl do
 
   def extract_user(%{from: u}) when not is_nil(u), do: {:ok, u}
   def extract_user(%{message: m}) when not is_nil(m), do: extract_user(m)
+  def extract_user(%{my_chat_member: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{callback_query: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{channel_post: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{chosen_inline_result: m}) when not is_nil(m), do: extract_user(m)
