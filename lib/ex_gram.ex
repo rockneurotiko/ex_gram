@@ -1929,12 +1929,6 @@ defmodule ExGram do
     )
 
     model(
-      MenuButton,
-      [{:type, :string}],
-      "This object describes the bot's menu button in a private chat. It should be one of"
-    )
-
-    model(
       MenuButtonCommands,
       [{:type, :string}],
       "Represents a menu button, which opens the bot's list of commands."
@@ -2797,7 +2791,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 128 models
+    # 127 models
 
     defmodule ChatMember do
       @moduledoc """
@@ -2850,6 +2844,19 @@ defmodule ExGram do
           BotCommandScopeChatAdministrators,
           BotCommandScopeChatMember
         ]
+      end
+    end
+
+    defmodule MenuButton do
+      @moduledoc """
+      MenuButton model. Valid subtypes: MenuButtonCommands, MenuButtonWebApp, MenuButtonDefault
+      """
+      @type t :: MenuButtonCommands.t() | MenuButtonWebApp.t() | MenuButtonDefault.t()
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [MenuButtonCommands, MenuButtonWebApp, MenuButtonDefault]
       end
     end
 
@@ -2963,7 +2970,7 @@ defmodule ExGram do
       end
     end
 
-    # 5 generics
+    # 6 generics
   end
 
   # END AUTO GENERATED
