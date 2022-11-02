@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## [0.29.0]
+- Add SendDocument response and answer_document DSL
+
 ## [0.28.0]
 - [Major] Update Telegram API to 6.2: https://core.telegram.org/bots/api#august-12-2022
 
