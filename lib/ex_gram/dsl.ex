@@ -121,16 +121,24 @@ defmodule ExGram.Dsl do
   def extract_user(%{from: u}) when not is_nil(u), do: {:ok, u}
   def extract_user(%{message: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{my_chat_member: m}) when not is_nil(m), do: extract_user(m)
+  def extract_user(%{chat_member: m}) when not is_nil(m), do: extract_user(m)
+  def extract_user(%{chat_join_request: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{callback_query: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{channel_post: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{chosen_inline_result: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{edited_channel_post: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{edited_message: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{inline_query: m}) when not is_nil(m), do: extract_user(m)
+  def extract_user(%{shipping_query: m}) when not is_nil(m), do: extract_user(m)
+  def extract_user(%{pre_checkout_query: m}) when not is_nil(m), do: extract_user(m)
+  def extract_user(%{poll_answer: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(_), do: :error
 
   def extract_group(%{chat: c}) when not is_nil(c), do: {:ok, c}
   def extract_group(%{message: m}) when not is_nil(m), do: extract_group(m)
+  def extract_group(%{my_chat_member: m}) when not is_nil(m), do: extract_group(m)
+  def extract_group(%{chat_member: m}) when not is_nil(m), do: extract_group(m)
+  def extract_group(%{chat_join_request: m}) when not is_nil(m), do: extract_group(m)
   def extract_group(%{callback_query: m}) when not is_nil(m), do: extract_group(m)
   def extract_group(%{channel_post: m}) when not is_nil(m), do: extract_group(m)
   def extract_group(%{chosen_inline_result: m}) when not is_nil(m), do: extract_group(m)
