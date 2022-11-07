@@ -94,6 +94,7 @@ defmodule ExGram do
     "logOut",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {text, [:string]},
       {parse_mode, [:string], :optional},
       {entities, [{:array, MessageEntity}], :optional},
@@ -114,6 +115,7 @@ defmodule ExGram do
     "close",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {text, [:string]},
       {parse_mode, [:string], :optional},
       {entities, [{:array, MessageEntity}], :optional},
@@ -134,6 +136,7 @@ defmodule ExGram do
     "sendMessage",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {text, [:string]},
       {parse_mode, [:string], :optional},
       {entities, [{:array, MessageEntity}], :optional},
@@ -154,6 +157,7 @@ defmodule ExGram do
     "forwardMessage",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {from_chat_id, [:integer, :string]},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
@@ -168,6 +172,7 @@ defmodule ExGram do
     "copyMessage",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {from_chat_id, [:integer, :string]},
       {message_id, [:integer]},
       {caption, [:string], :optional},
@@ -189,6 +194,7 @@ defmodule ExGram do
     "sendPhoto",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {photo, [:file, :string]},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
@@ -209,6 +215,7 @@ defmodule ExGram do
     "sendAudio",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {audio, [:file, :string]},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
@@ -233,6 +240,7 @@ defmodule ExGram do
     "sendDocument",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {document, [:file, :string]},
       {thumb, [:file, :string], :optional},
       {caption, [:string], :optional},
@@ -255,6 +263,7 @@ defmodule ExGram do
     "sendVideo",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {video, [:file, :string]},
       {duration, [:integer], :optional},
       {width, [:integer], :optional},
@@ -280,6 +289,7 @@ defmodule ExGram do
     "sendAnimation",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {animation, [:file, :string]},
       {duration, [:integer], :optional},
       {width, [:integer], :optional},
@@ -304,6 +314,7 @@ defmodule ExGram do
     "sendVoice",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {voice, [:file, :string]},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
@@ -325,6 +336,7 @@ defmodule ExGram do
     "sendVideoNote",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {video_note, [:file, :string]},
       {duration, [:integer], :optional},
       {length, [:integer], :optional},
@@ -345,6 +357,7 @@ defmodule ExGram do
     "sendMediaGroup",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {media,
        [{:array, [InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo]}]},
       {disable_notification, [:boolean], :optional},
@@ -361,6 +374,7 @@ defmodule ExGram do
     "sendLocation",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {latitude, [:float]},
       {longitude, [:float]},
       {horizontal_accuracy, [:float], :optional},
@@ -414,6 +428,7 @@ defmodule ExGram do
     "sendVenue",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {latitude, [:float]},
       {longitude, [:float]},
       {title, [:string]},
@@ -438,6 +453,7 @@ defmodule ExGram do
     "sendContact",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {phone_number, [:string]},
       {first_name, [:string]},
       {last_name, [:string], :optional},
@@ -458,6 +474,7 @@ defmodule ExGram do
     "sendPoll",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {question, [:string]},
       {options, [{:array, :string}]},
       {is_anonymous, [:boolean], :optional},
@@ -486,6 +503,7 @@ defmodule ExGram do
     "sendDice",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {emoji, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
@@ -576,7 +594,8 @@ defmodule ExGram do
       {can_promote_members, [:boolean], :optional},
       {can_change_info, [:boolean], :optional},
       {can_invite_users, [:boolean], :optional},
-      {can_pin_messages, [:boolean], :optional}
+      {can_pin_messages, [:boolean], :optional},
+      {can_manage_topics, [:boolean], :optional}
     ],
     true,
     "Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Pass False for all boolean parameters to demote a user. Returns True on success."
@@ -792,6 +811,77 @@ defmodule ExGram do
   )
 
   method(
+    :get,
+    "getForumTopicIconStickers",
+    [
+      {chat_id, [:integer, :string]},
+      {name, [:string]},
+      {icon_color, [:integer], :optional},
+      {icon_custom_emoji_id, [:string], :optional}
+    ],
+    [ExGram.Model.Sticker],
+    "Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user. Requires no parameters. Returns an Array of Sticker objects."
+  )
+
+  method(
+    :post,
+    "createForumTopic",
+    [
+      {chat_id, [:integer, :string]},
+      {name, [:string]},
+      {icon_color, [:integer], :optional},
+      {icon_custom_emoji_id, [:string], :optional}
+    ],
+    ExGram.Model.ForumTopic,
+    "Use this method to create a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns information about the created topic as a ForumTopic object."
+  )
+
+  method(
+    :post,
+    "editForumTopic",
+    [
+      {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer]},
+      {name, [:string]},
+      {icon_custom_emoji_id, [:string]}
+    ],
+    true,
+    "Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success."
+  )
+
+  method(
+    :post,
+    "closeForumTopic",
+    [{chat_id, [:integer, :string]}, {message_thread_id, [:integer]}],
+    true,
+    "Use this method to close an open topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success."
+  )
+
+  method(
+    :post,
+    "reopenForumTopic",
+    [{chat_id, [:integer, :string]}, {message_thread_id, [:integer]}],
+    true,
+    "Use this method to reopen a closed topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success."
+  )
+
+  method(
+    :post,
+    "deleteForumTopic",
+    [{chat_id, [:integer, :string]}, {message_thread_id, [:integer]}],
+    true,
+    "Use this method to delete a forum topic along with all its messages in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_delete_messages administrator rights. Returns True on success."
+  )
+
+  method(
+    :post,
+    "unpinAllForumTopicMessages",
+    [{chat_id, [:integer, :string]}, {message_thread_id, [:integer]}],
+    true,
+    "Use this method to clear the list of pinned messages in a forum topic. The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success."
+  )
+
+  method(
     :post,
     "answerCallbackQuery",
     [
@@ -942,7 +1032,7 @@ defmodule ExGram do
     "deleteMessage",
     [{chat_id, [:integer, :string]}, {message_id, [:integer]}],
     true,
-    "Use this method to delete a message, including service messages, with the following limitations: - A message can only be deleted if it was sent less than 48 hours ago. - A dice message in a private chat can only be deleted if it was sent more than 24 hours ago. - Bots can delete outgoing messages in private chats, groups, and supergroups. - Bots can delete incoming messages in private chats. - Bots granted can_post_messages permissions can delete outgoing messages in channels. - If the bot is an administrator of a group, it can delete any message there. - If the bot has can_delete_messages permission in a supergroup or a channel, it can delete any message there. Returns True on success."
+    "Use this method to delete a message, including service messages, with the following limitations: - A message can only be deleted if it was sent less than 48 hours ago. - Service messages about a supergroup, channel, or forum topic creation can't be deleted. - A dice message in a private chat can only be deleted if it was sent more than 24 hours ago. - Bots can delete outgoing messages in private chats, groups, and supergroups. - Bots can delete incoming messages in private chats. - Bots granted can_post_messages permissions can delete outgoing messages in channels. - If the bot is an administrator of a group, it can delete any message there. - If the bot has can_delete_messages permission in a supergroup or a channel, it can delete any message there. Returns True on success."
   )
 
   method(
@@ -950,6 +1040,7 @@ defmodule ExGram do
     "sendSticker",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {sticker, [:file, :string]},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
@@ -1073,6 +1164,7 @@ defmodule ExGram do
     "sendInvoice",
     [
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
       {title, [:string]},
       {description, [:string]},
       {payload, [:string]},
@@ -1167,6 +1259,7 @@ defmodule ExGram do
     "sendGame",
     [
       {chat_id, [:integer]},
+      {message_thread_id, [:integer], :optional},
       {game_short_name, [:string]},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
@@ -1207,7 +1300,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 89 methods
+  # 96 methods
 
   # ----------MODELS-----------
 
@@ -1283,7 +1376,10 @@ defmodule ExGram do
         {:username, :string, :optional},
         {:first_name, :string, :optional},
         {:last_name, :string, :optional},
+        {:is_forum, :boolean, :optional},
         {:photo, ChatPhoto, :optional},
+        {:active_usernames, {:array, :string}, :optional},
+        {:emoji_status_custom_emoji_id, :string, :optional},
         {:bio, :string, :optional},
         {:has_private_forwards, :boolean, :optional},
         {:has_restricted_voice_and_video_messages, :boolean, :optional},
@@ -1308,6 +1404,7 @@ defmodule ExGram do
       Message,
       [
         {:message_id, :integer},
+        {:message_thread_id, :integer, :optional},
         {:from, User, :optional},
         {:sender_chat, Chat, :optional},
         {:date, :integer},
@@ -1318,6 +1415,7 @@ defmodule ExGram do
         {:forward_signature, :string, :optional},
         {:forward_sender_name, :string, :optional},
         {:forward_date, :integer, :optional},
+        {:is_topic_message, :boolean, :optional},
         {:is_automatic_forward, :boolean, :optional},
         {:reply_to_message, Message, :optional},
         {:via_bot, User, :optional},
@@ -1360,6 +1458,9 @@ defmodule ExGram do
         {:connected_website, :string, :optional},
         {:passport_data, PassportData, :optional},
         {:proximity_alert_triggered, ProximityAlertTriggered, :optional},
+        {:forum_topic_created, ForumTopicCreated, :optional},
+        {:forum_topic_closed, ForumTopicClosed, :optional},
+        {:forum_topic_reopened, ForumTopicReopened, :optional},
         {:video_chat_scheduled, VideoChatScheduled, :optional},
         {:video_chat_started, VideoChatStarted, :optional},
         {:video_chat_ended, VideoChatEnded, :optional},
@@ -1584,6 +1685,24 @@ defmodule ExGram do
     )
 
     model(
+      ForumTopicCreated,
+      [{:name, :string}, {:icon_color, :integer}, {:icon_custom_emoji_id, :string, :optional}],
+      "This object represents a service message about a new forum topic created in the chat."
+    )
+
+    model(
+      ForumTopicClosed,
+      [{:start_date, :integer}],
+      "This object represents a service message about a forum topic closed in the chat. Currently holds no information."
+    )
+
+    model(
+      ForumTopicReopened,
+      [{:start_date, :integer}],
+      "This object represents a service message about a forum topic reopened in the chat. Currently holds no information."
+    )
+
+    model(
       VideoChatScheduled,
       [{:start_date, :integer}],
       "This object represents a service message about a video chat scheduled in the chat."
@@ -1759,7 +1878,8 @@ defmodule ExGram do
         {:can_invite_users, :boolean},
         {:can_post_messages, :boolean, :optional},
         {:can_edit_messages, :boolean, :optional},
-        {:can_pin_messages, :boolean, :optional}
+        {:can_pin_messages, :boolean, :optional},
+        {:can_manage_topics, :boolean, :optional}
       ],
       "Represents the rights of an administrator in a chat."
     )
@@ -1792,6 +1912,7 @@ defmodule ExGram do
         {:can_post_messages, :boolean, :optional},
         {:can_edit_messages, :boolean, :optional},
         {:can_pin_messages, :boolean, :optional},
+        {:can_manage_topics, :boolean, :optional},
         {:custom_title, :string, :optional}
       ],
       "Represents a chat member that has some additional privileges."
@@ -1812,6 +1933,7 @@ defmodule ExGram do
         {:can_change_info, :boolean},
         {:can_invite_users, :boolean},
         {:can_pin_messages, :boolean},
+        {:can_manage_topics, :boolean},
         {:can_send_messages, :boolean},
         {:can_send_media_messages, :boolean},
         {:can_send_polls, :boolean},
@@ -1869,7 +1991,8 @@ defmodule ExGram do
         {:can_add_web_page_previews, :boolean, :optional},
         {:can_change_info, :boolean, :optional},
         {:can_invite_users, :boolean, :optional},
-        {:can_pin_messages, :boolean, :optional}
+        {:can_pin_messages, :boolean, :optional},
+        {:can_manage_topics, :boolean, :optional}
       ],
       "Describes actions that a non-administrator user is allowed to take in a chat."
     )
@@ -1878,6 +2001,17 @@ defmodule ExGram do
       ChatLocation,
       [{:location, Location}, {:address, :string}],
       "Represents a location to which a chat is connected."
+    )
+
+    model(
+      ForumTopic,
+      [
+        {:message_thread_id, :integer},
+        {:name, :string},
+        {:icon_color, :integer},
+        {:icon_custom_emoji_id, :string, :optional}
+      ],
+      "This object represents a forum topic."
     )
 
     model(
@@ -2043,6 +2177,7 @@ defmodule ExGram do
       InputFile,
       [
         {:chat_id, :integer},
+        {:message_thread_id, :integer, :optional},
         {:text, :string},
         {:parse_mode, :string, :optional},
         {:entities, {:array, MessageEntity}, :optional},
@@ -2791,7 +2926,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 127 models
+    # 131 models
 
     defmodule ChatMember do
       @moduledoc """
