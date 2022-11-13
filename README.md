@@ -27,7 +27,7 @@ See the next sections to select a different HTTP adapter or JSON engine.
 
 ### HTTP Adapter
 
-You should add Tesla or Maxwell http adapter, by default it will try to use the Tesla adapter, this are the defaults:
+You should add Tesla or Maxwell HTTP adapter, by default it will try to use the Tesla adapter, these are the defaults:
 
 On deps:
 ``` elixir
@@ -48,7 +48,7 @@ On config:
 config :tesla, adapter: Tesla.Adapter.Gun
 ```
 
-- If you prefer maxwell instead of tesla:
+- If you prefer Maxwell instead of Tesla:
 
 On deps:
 ``` elixir
@@ -65,7 +65,7 @@ config :maxwell, default_adapter: Maxwell.Adapter.Hackney
 
 ### JSON Engine
 
-By default ExGram will use `Jason` engine, but you can change it to your prefered JSON engine, the module just have to expose encode/2, encode!/2, decode/2, decode!/2
+By default ExGram will use `Jason` engine, but you can change it to your prefered JSON engine, the module just has to expose `encode/2`, `encode!/2`, `decode/2`, `decode!/2`.
 
 You can change the engine in the configuration:
 
@@ -75,7 +75,7 @@ config :ex_gram, json_engine: Poison
 
 ## Configuration
 
-There are some optional configuration that you can add to your `config.exs`:
+There are some optional configurations that you can add to your `config.exs`:
 
 
 ### Token
@@ -147,7 +147,7 @@ as the Tesla config requires.
 
 ## Framework Usage
 
-This section will show how to use the opinionated framework `ex_gram` for telegram bots!
+This section will show how to use the opinionated framework `ex_gram` for Telegram bots!
 
 ### Creating a bot!
 
@@ -179,7 +179,7 @@ children = [
 
 This is basically telling you to configure the project as shown in the [Configuration](#configuration) section. Get your token and put `ExGram` and `MyBot.Bot` under the `Application`.
 
-Now you are ready to run the bot with `mix run --no-halt` and go to Telegram and send your bot the command `/start`.
+Now you are ready to run the bot with `mix run --no-halt`, go to Telegram and send your bot the command `/start`.
 
 ### How to handle messages
 
@@ -230,7 +230,7 @@ You can configure `ex_gram` in `config.exs` as explained in the Configuration se
 ExGram.send_message("@my_channel", "Sending messages!!!")
 ```
 
-Alternatively, you can not configure ex_gram at all (or use this to use different bots, having one configured or not), and use the extra parameter `token`:
+Alternatively, you can not configure `ex_gram` at all (or use this to use different bots, having one configured or not), and use the extra parameter `token`:
 
 ``` elixir
 ExGram.send_message("@my_channel", "Sending messages!!!", token: "BOT_TOKEN")
@@ -276,9 +276,9 @@ Also, all the models have the type `t` defined, so you can use it on your typesp
 
 All the methods are inside of the `ExGram` module, they are like the documentation ones but in snake_case instead of camelCase.
 
-If a method have mandatory arguments will be the arguments (in order that are defined on the documentation) to the method, all the optional values will go in the last argument as keyword list.
+If a method has mandatory arguments they will be the arguments (in order that are defined on the documentation) to the method, all the optional values will go in the last argument as keyword list.
 
-Also, the parameters must be of the types defined on the documentation (if multiple types, it must be one of them), and the method will return the model assigned of the one in the documentation. If you want to see the parameters and types that gets and returns a method, you can use the `h` method in an `Iex` instance:
+Also, the parameters must be of the types defined on the documentation (if multiple types, it must be one of them), and the method will return the model assigned of the one in the documentation. If you want to see the parameters and types that a method gets and returns, you can use the `h` method in an `IEx` instance:
 
 ``` elixir
 >>> h ExGram.send_message
@@ -304,13 +304,13 @@ def send_message(chat_id, text, ops \\ [])
 
 All the methods have their unsafe brother with the name banged(!) (`get_me!` for the `get_me` method) that instead of returning `{:ok, model} | {:error, ExGram.Error}` will return `model` and raise if there is some error.
 
-For example, the method "getUpdates" from the documentation will be `get_updates`, and this one takes 4 optional parameters, we'll use on the example the parameters `offset` and `limit`:
+For example, the method "getUpdates" from the documentation will be `get_updates`, and this one takes 4 optional parameters. We'll use the parameters `offset` and `limit`:
 
 ``` elixir
 ExGram.get_updates(offset: 123, limit: 100)
 ```
 
-Another example, the method "sendMessage" it's `send_message`, this one have two mandatory parameters, `chat_id` (either an integer or a string) and `text` (a string), and 5 optional parameters:
+Another example, the method "sendMessage" is `send_message`, this one has two mandatory parameters, `chat_id` (either an integer or a string), `text` (a string), and 5 optional parameters:
 
 ``` elixir
 ExGram.send_message("@rockneurotiko", "Hey bro! Checkout the ExGram library!", disable_notification: true)
@@ -320,17 +320,17 @@ ExGram.send_message("@rockneurotiko", "Hey bro! Checkout the ExGram library!", d
 
 All the methods have three extra options:
 
-- `debug`: When true it will print the HTTP request response.
-- `token`: It will use this token for the request
-- `bot`: It will search on `Registry.ExGram` the `bot` name to extract the token. This registry is setted up by `ExGram` and all the bots made by the framework will register on it.
+- `debug`: When `true` it will print the HTTP request response.
+- `token`: It will use this token for the request.
+- `bot`: It will search on `Registry.ExGram` the `bot` name to extract the token. This registry is set up by `ExGram`, and all the bots made by the framework will register on it.
 
 Note: Only one of `token` and `bot` must be used.
 
 ### How it's made?
 
-There is a python script called `extractor.py`, it uses the [`telegram_api_json`](https://github.com/rockneurotiko/telegram_api_json) project that scrapes the Telegram Bot API documentation and provides a JSON with all the information, check the project description if you want to create your own projects that uses an standarized file to auto-generate the API.
+There is a Python script called `extractor.py`, it uses the [`telegram_api_json`](https://github.com/rockneurotiko/telegram_api_json) project that scrapes the Telegram Bot API documentation and provides a JSON with all the information, check the project description if you want to create your own projects that uses a standardized file to auto-generate the API.
 
-This scripts uses the JSON description and prints to the stdout the lines needed to create all the methods and models, this auto generated lines uses two macros defined on `lib/ex_gram/macros.ex`: `method` and `model`.
+This script uses the JSON description and prints to the stdout the lines needed to create all the methods and models, these auto-generated lines use two macros defined on `lib/ex_gram/macros.ex`: `method` and `model`.
 
 #### Custom types defined
 
@@ -339,14 +339,14 @@ This scripts uses the JSON description and prints to the stdout the lines needed
 - `:bool` or `:boolean` -> `boolean`
 - `:file` -> `{:file, String.t()}`
 - `{:array, t}` -> `[t]`
-- Any ExGram.Model
+- Any `ExGram.Model`
 
 
 #### Model macro
 
 Parameters:
 1. Name of the model
-2. Properties of the model, it's a list of tuples, where the first parameter is the name of the property, and the second one is the type.
+2. Properties of the model, it's a list of tuples, where the first parameter is the name of the property and the second one is the type.
 
 This macro is the simple one, just create a module with the first name passed and use the params to create the struct and typespecs.
 
@@ -357,22 +357,22 @@ Parameters:
 2. Name of the method as string, it will be underscored.
 3. The parameters of the method, this is a list of tuples, the tuples contains:
 - Name of the parameters
-- Type(s) of the parameter, it is a list of types, if there are more than one type on the list, it is expected one of them.
+- Type(s) of the parameter, it is a list of types, if there are more than one type on the list, it is expected to have one of them.
 - An optional third parameter (always `:optional`) to set that parameter as optional
 4. The type to be returned, it can be a model.
 
-The macro will create two methods, one that will return tuple ok|error, and a banged(!) version that will raise if there are some error.
+The macro will create two methods, one that will return the tuple `ok|error`, and a banged(!) version that will raise if there is some error.
 
-This methods do some stuff, like retrieving the token, check the parameters types, set up the body of some methods/verbs (specially the ones with files), call the method and parse the result.
+These methods do some stuff, like retrieving the token, checking the parameters types, setting up the body of some methods/verbs (specially the ones with files), calling the method and parsing the result.
 
 ## Creating your own updates worker
 
-The ExGram framework use updates worker to "receive" the updates and send them to the dispatcher, this is the first parameter that you provide to your bot, the ones currently are `:polling` that goes to the module `ExGram.Updates.Polling` for polling updates and `:noup` that uses `ExGram.Updates.NoUp` that do nothing (great for some offline testing). Sadly the webhook and test worker are on the way.
+The ExGram framework uses updates worker to "receive" the updates and send them to the dispatcher, this is the first parameter that you provide to your bot, the ones currently are `:polling` that goes to the module `ExGram.Updates.Polling` for polling updates and `:noup` that uses `ExGram.Updates.NoUp` that do nothing (great for some offline testing). Sadly, the webhook and test worker are on the way.
 
 But you can implement your own worker to retrieve the updates as you want!
 
-The only specs are that `start_link` will receive `{:bot, <pid>, :token, <token>}`, the PID is where you should send the updates, and the token is that specific token so your worker will be able to use it to retrieve the updates.
+The only specs are that `start_link` will receive `{:bot, <pid>, :token, <token>}`, the PID is where you should send the updates, and the token that your worker will be able to use to retrieve the updates.
 
-Whenever you have and update `ExGram.Model.Update`, send it to the bot's PID like: `{:update, <update>}` with `Genserver.call`.
+Whenever you have an update `ExGram.Model.Update`, send it to the bot's PID like: `{:update, <update>}` with `GenServer.call`.
 
 You can see the code of `ExGram.Updates.Polling`.
