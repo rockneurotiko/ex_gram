@@ -95,7 +95,7 @@ defmodule ExGram.Macros.Executer do
   defp to_size_string(false), do: "false"
   defp to_size_string(x) when is_binary(x), do: x
   defp to_size_string(x) when is_integer(x), do: Integer.to_string(x)
-  # This is usefull to encode automatically
+  # This is useful to encode automatically
   defp to_size_string(x) when is_map(x), do: encode(x)
   defp to_size_string(_), do: raise("Not sizable!")
 

@@ -214,7 +214,7 @@ defmodule ExGram.Dsl do
 
   defp send_all_answers([answer | answers], name, msg, responses) do
     error = %ExGram.Error{
-      code: :unknonwn_answer,
+      code: :unknown_answer,
       message: "Unknown answer: #{inspect(answer)}",
       metadata: %{answer: answer}
     }
