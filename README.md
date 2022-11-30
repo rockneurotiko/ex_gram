@@ -65,7 +65,7 @@ config :maxwell, default_adapter: Maxwell.Adapter.Hackney
 
 ### JSON Engine
 
-By default ExGram will use `Jason` engine, but you can change it to your prefered JSON engine, the module just has to expose `encode/2`, `encode!/2`, `decode/2`, `decode!/2`.
+By default ExGram will use `Jason` engine, but you can change it to your preferred JSON engine, the module just has to expose `encode/2`, `encode!/2`, `decode/2`, `decode!/2`.
 
 You can change the engine in the configuration:
 

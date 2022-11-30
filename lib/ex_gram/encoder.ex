@@ -18,7 +18,7 @@ defmodule ExGram.Encoder do
     This will reload the ExGram.Encoder.Engine module with the engine selected.
 
     With this we allow to define dynamically the engine backend while not having
-    to read it from the Application everytime.
+    to read it from the Application every time.
     """
 
     def compile(engine) do
