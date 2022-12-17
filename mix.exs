@@ -10,7 +10,7 @@ defmodule ExGram.Mixfile do
       package: package(),
       description: description(),
       source_url: "https://github.com/rockneurotiko/ex_gram",
-      elixir: "~> 1.6",
+      elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -54,7 +54,7 @@ defmodule ExGram.Mixfile do
   defp deps do
     [
       # Tesla adapter
-      {:tesla, "~> 1.2", optional: true},
+      {:tesla, "~> 1.5", optional: true},
       {:gun, "~> 1.3", optional: true},
       # Maxwell or Tesla
       {:hackney, "~> 1.12", optional: true},
@@ -67,7 +67,8 @@ defmodule ExGram.Mixfile do
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.23", only: :dev},
-      {:inch_ex, "~> 0.5.0", only: :docs}
+      {:inch_ex, "~> 0.5.0", only: :docs},
+      {:telemetry, "~> 1.1"}
     ]
   end
 end
