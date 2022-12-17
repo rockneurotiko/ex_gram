@@ -5,7 +5,7 @@ defmodule ExGram.Dispatcher do
 
   use GenServer
 
-  alias ExGram.Cnt
+  alias ExGram.{Cnt, Telemetry}
 
   @type t :: %__MODULE__{
           name: atom,
@@ -51,63 +51,92 @@ defmodule ExGram.Dispatcher do
     {:ok, ops}
   end
 
-  def handle_call(
-        {:update, u},
-        _from,
-        %{
-          handler: handler,
-          error_handler: error_handler
-        } = s
-      ) do
-    cnt = create_cnt(s) |> Map.put(:update, u)
+  def handle_call({:update, u}, _from, %{handler: handler, error_handler: error_handler} = state) do
+    cnt =
+      state
+      |> create_cnt()
+      |> Map.put(:update, u)
 
-    case apply_middlewares(cnt) do
-      %Cnt{halted: true} ->
-        # Logger.info "Middleware cancel"
-        true
+    meta = %{context: cnt}
 
-      cnt ->
-        info = extract_info(cnt)
-        spawn(fn -> call_handler(handler, info, cnt, error_handler) end)
-    end
+    with_span(meta, fn ->
+      case apply_middlewares(cnt) do
+        %Cnt{halted: true} ->
+          {nil, %{result: :halted}}
 
-    {:reply, :ok, s}
+        cnt ->
+          info = extract_info(cnt)
+          spawn(fn -> call_handler(handler, info, cnt, error_handler) end)
+          {nil, Map.merge(meta, %{info: info, result: :processed})}
+      end
+    end)
+
+    {:reply, :ok, state}
   end
 
-  def handle_call({:update, _u}, _from, s) do
-    # Logger.error "Update, not update? #{inspect(u)}\nState: #{inspect(s)}"
-    {:reply, :error, s}
+  def handle_call({:update, u}, _from, state) do
+    cnt =
+      state
+      |> create_cnt()
+      |> Map.put(:update, u)
+
+    meta = %{context: cnt}
+
+    with_span(meta, fn -> {nil, Map.put(meta, :result, :error)} end)
+
+    {:reply, :error, state}
   end
 
-  def handle_call(
-        {:message, origin, msg},
-        from,
-        %{handler: handler, error_handler: error_handler} = s
-      ) do
+  def handle_call({:message, origin, msg}, from, state) do
+    %{handler: handler, error_handler: error_handler} = state
+
     bot_message = {:bot_message, origin, msg}
-    cnt = create_cnt(s) |> Map.put(:message, bot_message) |> Map.put(:extra, %{from: from})
 
-    case apply_middlewares(cnt) do
-      %Cnt{halted: true} ->
-        {:reply, :halted, s}
+    cnt =
+      state
+      |> create_cnt()
+      |> Map.put(:message, bot_message)
+      |> Map.put(:extra, %{from: from})
 
-      cnt ->
-        response = call_handler(handler, {:bot_message, origin, msg}, cnt, error_handler)
-        {:reply, response, s}
-    end
+    meta = %{context: cnt}
+
+    result =
+      with_span(meta, fn ->
+        case apply_middlewares(cnt) do
+          %Cnt{halted: true} ->
+            {:halted, Map.put(meta, :result, :halted)}
+
+          cnt ->
+            response = call_handler(handler, {:bot_message, origin, msg}, cnt, error_handler)
+            {response, Map.put(meta, :result, :processed)}
+        end
+      end)
+
+    {:reply, result, state}
   end
 
-  def handle_call(msg, from, %{handler: handler, error_handler: error_handler} = s) do
-    cnt = create_cnt(s) |> Map.put(:message, {:call, msg}) |> Map.put(:extra, %{from: from})
+  def handle_call(msg, from, %{handler: handler, error_handler: error_handler} = state) do
+    cnt =
+      state
+      |> create_cnt()
+      |> Map.put(:message, {:call, msg})
+      |> Map.put(:extra, %{from: from})
 
-    case apply_middlewares(cnt) do
-      %Cnt{halted: true} ->
-        {:reply, :halted, s}
+    meta = %{context: cnt}
 
-      cnt ->
-        response = call_handler(handler, {:call, msg}, cnt, error_handler)
-        {:reply, response, s}
-    end
+    result =
+      with_span(meta, fn ->
+        case apply_middlewares(cnt) do
+          %Cnt{halted: true} ->
+            {:halted, Map.put(meta, :result, :halted)}
+
+          cnt ->
+            response = call_handler(handler, {:call, msg}, cnt, error_handler)
+            {response, Map.put(meta, :result, :processed)}
+        end
+      end)
+
+    {:reply, result, state}
   end
 
   # EditedMessage
@@ -116,31 +145,50 @@ defmodule ExGram.Dispatcher do
   # InlineQuery
   # ChosenInlineResult
 
-  def handle_cast(msg, %{handler: handler, error_handler: error_handler} = s) do
-    cnt = create_cnt(s) |> Map.put(:message, {:cast, msg})
+  def handle_cast(msg, %{handler: handler, error_handler: error_handler} = state) do
+    cnt =
+      state
+      |> create_cnt()
+      |> Map.put(:message, {:cast, msg})
 
-    case apply_middlewares(cnt) do
-      %Cnt{halted: true} ->
-        {:noreply, s}
+    meta = %{context: cnt}
 
-      cnt ->
-        spawn(fn -> call_handler(handler, {:cast, msg}, cnt, error_handler) end)
-        {:noreply, s}
-    end
+    with_span(meta, fn ->
+      case apply_middlewares(cnt) do
+        %Cnt{halted: true} ->
+          {nil, Map.put(meta, :result, :halted)}
+
+        cnt ->
+          spawn(fn -> call_handler(handler, {:cast, msg}, cnt, error_handler) end)
+          {nil, Map.put(meta, :result, :processed)}
+      end
+    end)
+
+    {:noreply, state}
   end
 
-  def handle_info(msg, %{handler: handler, error_handler: error_handler} = s) do
+  def handle_info(msg, %{handler: handler, error_handler: error_handler} = state) do
     message = {:info, msg}
-    cnt = s |> create_cnt() |> Map.put(:message, message)
 
-    case apply_middlewares(cnt) do
-      %Cnt{halted: true} ->
-        {:noreply, s}
+    cnt =
+      state
+      |> create_cnt()
+      |> Map.put(:message, message)
 
-      cnt ->
-        call_handler(handler, message, cnt, error_handler)
-        {:noreply, s}
-    end
+    meta = %{context: cnt}
+
+    with_span(meta, fn ->
+      case apply_middlewares(cnt) do
+        %Cnt{halted: true} ->
+          {nil, Map.put(meta, :result, :halted)}
+
+        cnt ->
+          call_handler(handler, message, cnt, error_handler)
+          {nil, Map.put(meta, :result, :processed)}
+      end
+    end)
+
+    {:noreply, state}
   end
 
   defp create_cnt(%__MODULE__{
@@ -277,4 +325,6 @@ defmodule ExGram.Dispatcher do
   defp call_handler({module, method}, args) do
     apply(module, method, args)
   end
+
+  defp with_span(meta, fun), do: Telemetry.span([:dispatcher], meta, fun)
 end
