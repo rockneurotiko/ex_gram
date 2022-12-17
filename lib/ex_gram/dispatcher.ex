@@ -326,6 +326,5 @@ defmodule ExGram.Dispatcher do
     apply(module, method, args)
   end
 
-  @telemetry_event_name [:dispatcher]
-  defp with_span(meta, fun), do: Telemetry.span(@telemetry_event_name, meta, fun)
+  defp with_span(meta, fun), do: Telemetry.span([:dispatcher], meta, fun)
 end
