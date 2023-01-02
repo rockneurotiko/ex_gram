@@ -199,6 +199,7 @@ defmodule ExGram do
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
       {caption_entities, [{:array, MessageEntity}], :optional},
+      {has_spoiler, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
@@ -272,6 +273,7 @@ defmodule ExGram do
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
       {caption_entities, [{:array, MessageEntity}], :optional},
+      {has_spoiler, [:boolean], :optional},
       {supports_streaming, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
@@ -298,6 +300,7 @@ defmodule ExGram do
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
       {caption_entities, [{:array, MessageEntity}], :optional},
+      {has_spoiler, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
@@ -519,7 +522,11 @@ defmodule ExGram do
   method(
     :post,
     "sendChatAction",
-    [{chat_id, [:integer, :string]}, {action, [:string]}],
+    [
+      {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
+      {action, [:string]}
+    ],
     true,
     "Use this method when you need to tell the user that something is happening on the bot's side. The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status). Returns True on success."
   )
@@ -791,7 +798,7 @@ defmodule ExGram do
     "getChatMember",
     [{chat_id, [:integer, :string]}, {user_id, [:integer]}],
     ExGram.Model.ChatMember,
-    "Use this method to get information about a member of a chat. Returns a ChatMember object on success."
+    "Use this method to get information about a member of a chat. The method is guaranteed to work only if the bot is an administrator in the chat. Returns a ChatMember object on success."
   )
 
   method(
@@ -842,8 +849,8 @@ defmodule ExGram do
     [
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer]},
-      {name, [:string]},
-      {icon_custom_emoji_id, [:string]}
+      {name, [:string], :optional},
+      {icon_custom_emoji_id, [:string], :optional}
     ],
     true,
     "Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success."
@@ -879,6 +886,46 @@ defmodule ExGram do
     [{chat_id, [:integer, :string]}, {message_thread_id, [:integer]}],
     true,
     "Use this method to clear the list of pinned messages in a forum topic. The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success."
+  )
+
+  method(
+    :post,
+    "editGeneralForumTopic",
+    [{chat_id, [:integer, :string]}, {name, [:string]}],
+    true,
+    "Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights. Returns True on success."
+  )
+
+  method(
+    :post,
+    "closeGeneralForumTopic",
+    [{chat_id, [:integer, :string]}],
+    true,
+    "Use this method to close an open 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success."
+  )
+
+  method(
+    :post,
+    "reopenGeneralForumTopic",
+    [{chat_id, [:integer, :string]}],
+    true,
+    "Use this method to reopen a closed 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. The topic will be automatically unhidden if it was hidden. Returns True on success."
+  )
+
+  method(
+    :post,
+    "hideGeneralForumTopic",
+    [{chat_id, [:integer, :string]}],
+    true,
+    "Use this method to hide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. The topic will be automatically closed if it was open. Returns True on success."
+  )
+
+  method(
+    :post,
+    "unhideGeneralForumTopic",
+    [{chat_id, [:integer, :string]}],
+    true,
+    "Use this method to unhide the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success."
   )
 
   method(
@@ -1300,7 +1347,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 96 methods
+  # 101 methods
 
   # ----------MODELS-----------
 
@@ -1391,6 +1438,8 @@ defmodule ExGram do
         {:permissions, ChatPermissions, :optional},
         {:slow_mode_delay, :integer, :optional},
         {:message_auto_delete_time, :integer, :optional},
+        {:has_aggressive_anti_spam_enabled, :boolean, :optional},
+        {:has_hidden_members, :boolean, :optional},
         {:has_protected_content, :boolean, :optional},
         {:sticker_set_name, :string, :optional},
         {:can_set_sticker_set, :boolean, :optional},
@@ -1435,6 +1484,7 @@ defmodule ExGram do
         {:voice, Voice, :optional},
         {:caption, :string, :optional},
         {:caption_entities, {:array, MessageEntity}, :optional},
+        {:has_media_spoiler, :boolean, :optional},
         {:contact, Contact, :optional},
         {:dice, Dice, :optional},
         {:game, Game, :optional},
@@ -1456,11 +1506,15 @@ defmodule ExGram do
         {:invoice, Invoice, :optional},
         {:successful_payment, SuccessfulPayment, :optional},
         {:connected_website, :string, :optional},
+        {:write_access_allowed, WriteAccessAllowed, :optional},
         {:passport_data, PassportData, :optional},
         {:proximity_alert_triggered, ProximityAlertTriggered, :optional},
         {:forum_topic_created, ForumTopicCreated, :optional},
+        {:forum_topic_edited, ForumTopicEdited, :optional},
         {:forum_topic_closed, ForumTopicClosed, :optional},
         {:forum_topic_reopened, ForumTopicReopened, :optional},
+        {:general_forum_topic_hidden, GeneralForumTopicHidden, :optional},
+        {:general_forum_topic_unhidden, GeneralForumTopicUnhidden, :optional},
         {:video_chat_scheduled, VideoChatScheduled, :optional},
         {:video_chat_started, VideoChatStarted, :optional},
         {:video_chat_ended, VideoChatEnded, :optional},
@@ -1692,14 +1746,38 @@ defmodule ExGram do
 
     model(
       ForumTopicClosed,
-      [{:start_date, :integer}],
+      [],
       "This object represents a service message about a forum topic closed in the chat. Currently holds no information."
     )
 
     model(
+      ForumTopicEdited,
+      [{:name, :string, :optional}, {:icon_custom_emoji_id, :string, :optional}],
+      "This object represents a service message about an edited forum topic."
+    )
+
+    model(
       ForumTopicReopened,
-      [{:start_date, :integer}],
+      [],
       "This object represents a service message about a forum topic reopened in the chat. Currently holds no information."
+    )
+
+    model(
+      GeneralForumTopicHidden,
+      [],
+      "This object represents a service message about General forum topic hidden in the chat. Currently holds no information."
+    )
+
+    model(
+      GeneralForumTopicUnhidden,
+      [],
+      "This object represents a service message about General forum topic unhidden in the chat. Currently holds no information."
+    )
+
+    model(
+      WriteAccessAllowed,
+      [],
+      "This object represents a service message about a user allowing a bot added to the attachment menu to write messages. Currently holds no information."
     )
 
     model(
@@ -1710,7 +1788,7 @@ defmodule ExGram do
 
     model(
       VideoChatStarted,
-      [{:duration, :integer}],
+      [],
       "This object represents a service message about a video chat started in the chat. Currently holds no information."
     )
 
@@ -1749,6 +1827,7 @@ defmodule ExGram do
       ReplyKeyboardMarkup,
       [
         {:keyboard, {:array, {:array, KeyboardButton}}},
+        {:is_persistent, :boolean, :optional},
         {:resize_keyboard, :boolean, :optional},
         {:one_time_keyboard, :boolean, :optional},
         {:input_field_placeholder, :string, :optional},
@@ -2093,7 +2172,8 @@ defmodule ExGram do
         {:media, :string},
         {:caption, :string, :optional},
         {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional}
+        {:caption_entities, {:array, MessageEntity}, :optional},
+        {:has_spoiler, :boolean, :optional}
       ],
       "This object represents the content of a media message to be sent. It should be one of"
     )
@@ -2105,7 +2185,8 @@ defmodule ExGram do
         {:media, :string},
         {:caption, :string, :optional},
         {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional}
+        {:caption_entities, {:array, MessageEntity}, :optional},
+        {:has_spoiler, :boolean, :optional}
       ],
       "Represents a photo to be sent."
     )
@@ -2122,7 +2203,8 @@ defmodule ExGram do
         {:width, :integer, :optional},
         {:height, :integer, :optional},
         {:duration, :integer, :optional},
-        {:supports_streaming, :boolean, :optional}
+        {:supports_streaming, :boolean, :optional},
+        {:has_spoiler, :boolean, :optional}
       ],
       "Represents a video to be sent."
     )
@@ -2138,7 +2220,8 @@ defmodule ExGram do
         {:caption_entities, {:array, MessageEntity}, :optional},
         {:width, :integer, :optional},
         {:height, :integer, :optional},
-        {:duration, :integer, :optional}
+        {:duration, :integer, :optional},
+        {:has_spoiler, :boolean, :optional}
       ],
       "Represents an animation file (GIF or H.264/MPEG-4 AVC video without sound) to be sent."
     )
@@ -2926,7 +3009,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 131 models
+    # 135 models
 
     defmodule ChatMember do
       @moduledoc """
