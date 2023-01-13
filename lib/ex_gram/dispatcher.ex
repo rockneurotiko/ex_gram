@@ -249,11 +249,13 @@ defmodule ExGram.Dispatcher do
   end
 
   defp call_handler({module, method}, info, cnt, error_handler) do
-    with %Cnt{} = cnt <- apply(module, method, [info, cnt]) do
-      %Cnt{responses: responses} = ExGram.Dsl.send_answers(cnt)
-      handle_responses(responses, error_handler)
-    else
-      _ -> :noop
+    case apply(module, method, [info, cnt]) do
+      %Cnt{} = cnt ->
+        %Cnt{responses: responses} = ExGram.Dsl.send_answers(cnt)
+        handle_responses(responses, error_handler)
+
+      _ ->
+        :noop
     end
   end
 
