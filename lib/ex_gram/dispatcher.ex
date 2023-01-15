@@ -81,50 +81,38 @@ defmodule ExGram.Dispatcher do
   end
 
   @impl GenServer
-  def handle_call(
-        {:update, update},
-        _from,
-        %{handler: handler, error_handler: error_handler} = state
-      ) do
+  def handle_call({:update, update}, _from, %__MODULE__{} = state) do
     cnt = %Cnt{default_context(state) | update: update}
     cnt = apply_middlewares(cnt)
 
     if not cnt.halted do
       info = extract_info(cnt)
-      spawn(fn -> call_handler(handler, info, cnt, error_handler) end)
+      spawn(fn -> call_handler(info, cnt, state) end)
     end
 
     {:reply, :ok, state}
   end
 
-  def handle_call({:update, _update}, _from, state) do
-    {:reply, :error, state}
-  end
-
-  def handle_call(
-        {:message, origin, msg},
-        from,
-        %{handler: handler, error_handler: error_handler} = state
-      ) do
+  def handle_call({:message, origin, msg}, from, %__MODULE__{} = state) do
     bot_message = {:bot_message, origin, msg}
     cnt = %Cnt{default_context(state) | message: bot_message, extra: %{from: from}}
     cnt = apply_middlewares(cnt)
 
     if not cnt.halted do
-      response = call_handler(handler, bot_message, cnt, error_handler)
+      response = call_handler(bot_message, cnt, state)
       {:reply, response, state}
     else
       {:reply, :halted, state}
     end
   end
 
-  def handle_call(msg, from, %{handler: handler, error_handler: error_handler} = state) do
+  def handle_call(msg, from, %__MODULE__{} = state) do
     message = {:call, msg}
     cnt = %Cnt{default_context(state) | message: message, extra: %{from: from}}
     cnt = apply_middlewares(cnt)
 
     if not cnt.halted do
-      response = call_handler(handler, message, cnt, error_handler)
+      response = call_handler(message, cnt, state)
       {:reply, response, state}
     else
       {:reply, :halted, state}
@@ -138,26 +126,26 @@ defmodule ExGram.Dispatcher do
   # ChosenInlineResult
 
   @impl GenServer
-  def handle_cast(msg, %{handler: handler, error_handler: error_handler} = state) do
+  def handle_cast(msg, %__MODULE__{} = state) do
     message = {:cast, msg}
     cnt = %Cnt{default_context(state) | message: message}
     cnt = apply_middlewares(cnt)
 
     if not cnt.halted do
-      spawn(fn -> call_handler(handler, message, cnt, error_handler) end)
+      spawn(fn -> call_handler(message, cnt, state) end)
     end
 
     {:noreply, state}
   end
 
   @impl GenServer
-  def handle_info(msg, %{handler: handler, error_handler: error_handler} = state) do
+  def handle_info(msg, %__MODULE__{} = state) do
     message = {:info, msg}
     cnt = %Cnt{default_context(state) | message: message}
     cnt = apply_middlewares(cnt)
 
     if not cnt.halted do
-      call_handler(handler, message, cnt, error_handler)
+      call_handler(message, cnt, state)
     end
 
     {:noreply, state}
@@ -271,25 +259,25 @@ defmodule ExGram.Dispatcher do
     apply_middlewares(%Cnt{cnt | middlewares: rest})
   end
 
-  defp call_handler({module, method}, info, cnt, error_handler) do
+  defp call_handler(info, cnt, %__MODULE__{handler: {module, method}} = state) do
     case apply(module, method, [info, cnt]) do
       %Cnt{} = cnt ->
         %Cnt{responses: responses} = ExGram.Dsl.send_answers(cnt)
-        handle_responses(responses, error_handler)
+        handle_responses(responses, state)
 
       _ ->
         :noop
     end
   end
 
-  defp handle_responses([], _error_handler), do: []
+  defp handle_responses([], _state), do: []
 
-  defp handle_responses([{:error, error} | rest], {module, method} = error_handler) do
+  defp handle_responses([{:error, error} | rest], %{error_handler: {module, method}} = state) do
     apply(module, method, [error])
-    handle_responses(rest, error_handler)
+    handle_responses(rest, state)
   end
 
-  defp handle_responses([value | rest], error_handler) do
-    [value | handle_responses(rest, error_handler)]
+  defp handle_responses([value | rest], state) do
+    [value | handle_responses(rest, state)]
   end
 end
