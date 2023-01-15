@@ -9,12 +9,25 @@ defmodule ExGram.Dispatcher do
   alias ExGram.Cnt
   alias ExGram.Model
 
-  @type t :: %__MODULE__{
-          name: atom,
+  @type custom_key() :: any()
+
+  @type parsed_message() ::
+          {:command, key :: String.t() | custom_key(), Model.Message.t()}
+          | {:text, String.t(), Model.Message.t()}
+          | {:regex, key :: custom_key(), Model.Message.t()}
+          | {:location, Model.Location.t()}
+          | {:message, Model.Message.t()}
+          | {:callback_query, Model.CallbackQuery.t()}
+          | {:inline_query, Model.InlineQuery.t()}
+          | {:edited_message, Model.Message.t()}
+          | {:update, Model.Update.t()}
+
+  @type t() :: %__MODULE__{
+          name: atom(),
           bot_info: Model.User.t() | nil,
           dispatcher_name: atom(),
           commands: %{String.t() => map()},
-          regex: list(),
+          regex: [Regex.t()],
           middlewares: [Bot.middleware()],
           handler: {module(), atom()},
           error_handler: {module(), atom()}
@@ -29,10 +42,12 @@ defmodule ExGram.Dispatcher do
             handler: nil,
             error_handler: nil
 
+  @spec new(Enumerable.t()) :: t()
   def new(overrides \\ %{}) do
     struct!(__MODULE__, overrides)
   end
 
+  @spec init_state(atom(), Model.User.t(), module()) :: t()
   def init_state(name, %Model.User{} = bot_info, module)
       when is_atom(name) and is_atom(module) do
     %__MODULE__{
@@ -47,6 +62,7 @@ defmodule ExGram.Dispatcher do
     }
   end
 
+  @spec prepare_commands([Keyword.t()]) :: %{String.t() => map()}
   defp prepare_commands(commands) when is_list(commands) do
     Map.new(commands, fn command ->
       command = Map.new(command)
@@ -54,6 +70,7 @@ defmodule ExGram.Dispatcher do
     end)
   end
 
+  @spec start_link(t()) :: GenServer.on_start()
   def start_link(%__MODULE__{dispatcher_name: name} = state) do
     GenServer.start_link(__MODULE__, state, name: name)
   end
@@ -146,6 +163,7 @@ defmodule ExGram.Dispatcher do
     {:noreply, state}
   end
 
+  @spec default_context(t()) :: Cnt.t()
   defp default_context(%__MODULE__{
          name: name,
          bot_info: bot_info,
@@ -163,6 +181,10 @@ defmodule ExGram.Dispatcher do
     }
   end
 
+  @spec handle_text(String.t(), Cnt.t()) ::
+          {:command, key :: String.t() | custom_key(), text :: String.t()}
+          | {:text, String.t()}
+          | {:regex, key :: custom_key(), text :: String.t()}
   defp handle_text("/" <> text, %Cnt{commands: commands}) do
     {cmd, text} =
       case String.split(text, " ", parts: 2) do
@@ -187,6 +209,7 @@ defmodule ExGram.Dispatcher do
     end
   end
 
+  @spec extract_info(Cnt.t()) :: parsed_message()
   defp extract_info(%Cnt{update: %{message: %{text: text} = message}} = cnt)
        when is_binary(text) do
     case handle_text(text, cnt) do

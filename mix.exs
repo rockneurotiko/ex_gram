@@ -19,6 +19,7 @@ defmodule ExGram.Mixfile do
         plt_add_deps: :app_tree,
         plt_add_apps: [:tesla, :maxwell, :mix, :eex]
       ],
+      xref: [exclude: [EEx]],
       docs: [
         main: "readme",
         extras: ["README.md"]
