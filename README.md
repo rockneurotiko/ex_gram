@@ -15,7 +15,7 @@ Add `ex_gram` as dependency in `mix.exs`
 ``` elixir
 def deps do
     [
-      {:ex_gram, "~> 0.31.0"},
+      {:ex_gram, "~> 0.32.0"},
       {:tesla, "~> 1.2"},
       {:hackney, "~> 1.12"},
       {:jason, ">= 1.0.0"}
@@ -94,6 +94,16 @@ children = [
   ExGram, # This will setup the Registry.ExGram
   {MyBot, [method: :polling, token: "TOKEN"]}
 ]
+```
+
+### Test environment
+
+Telegram has a Test Environment that you can use to test your bots, you can learn how to setup your bots there in this documentation: https://core.telegram.org/bots/webapps#using-bots-in-the-test-environment
+
+In order to use the Test Environment you need to configure the bot like this:
+
+``` elixir
+config :ex_gram, test_environment: true
 ```
 
 ### Configure Tesla middlewares
