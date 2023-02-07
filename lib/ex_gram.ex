@@ -583,6 +583,7 @@ defmodule ExGram do
       {chat_id, [:integer, :string]},
       {user_id, [:integer]},
       {permissions, [ChatPermissions]},
+      {use_independent_chat_permissions, [:boolean], :optional},
       {until_date, [:integer], :optional}
     ],
     true,
@@ -639,7 +640,11 @@ defmodule ExGram do
   method(
     :post,
     "setChatPermissions",
-    [{chat_id, [:integer, :string]}, {permissions, [ChatPermissions]}],
+    [
+      {chat_id, [:integer, :string]},
+      {permissions, [ChatPermissions]},
+      {use_independent_chat_permissions, [:boolean], :optional}
+    ],
     true,
     "Use this method to set default chat permissions for all members. The bot must be an administrator in the group or a supergroup for this to work and must have the can_restrict_members administrator rights. Returns True on success."
   )
@@ -802,7 +807,7 @@ defmodule ExGram do
     "getChatMember",
     [{chat_id, [:integer, :string]}, {user_id, [:integer]}],
     ExGram.Model.ChatMember,
-    "Use this method to get information about a member of a chat. The method is guaranteed to work only if the bot is an administrator in the chat. Returns a ChatMember object on success."
+    "Use this method to get information about a member of a chat. The method is only guaranteed to work for other users if the bot is an administrator in the chat. Returns a ChatMember object on success."
   )
 
   method(
@@ -1509,6 +1514,8 @@ defmodule ExGram do
         {:pinned_message, Message, :optional},
         {:invoice, Invoice, :optional},
         {:successful_payment, SuccessfulPayment, :optional},
+        {:user_shared, UserShared, :optional},
+        {:chat_shared, ChatShared, :optional},
         {:connected_website, :string, :optional},
         {:write_access_allowed, WriteAccessAllowed, :optional},
         {:passport_data, PassportData, :optional},
@@ -1779,6 +1786,18 @@ defmodule ExGram do
     )
 
     model(
+      UserShared,
+      [{:request_id, :integer}, {:user_id, :integer}],
+      "This object contains information about the user whose identifier was shared with the bot using a KeyboardButtonRequestUser button."
+    )
+
+    model(
+      ChatShared,
+      [{:request_id, :integer}, {:chat_id, :integer}],
+      "This object contains information about the chat whose identifier was shared with the bot using a KeyboardButtonRequestChat button."
+    )
+
+    model(
       WriteAccessAllowed,
       [],
       "This object represents a service message about a user allowing a bot added to the attachment menu to write messages. Currently holds no information."
@@ -1844,12 +1863,39 @@ defmodule ExGram do
       KeyboardButton,
       [
         {:text, :string},
+        {:request_user, KeyboardButtonRequestUser, :optional},
+        {:request_chat, KeyboardButtonRequestChat, :optional},
         {:request_contact, :boolean, :optional},
         {:request_location, :boolean, :optional},
         {:request_poll, KeyboardButtonPollType, :optional},
         {:web_app, WebAppInfo, :optional}
       ],
-      "This object represents one button of the reply keyboard. For simple text buttons String can be used instead of this object to specify text of the button. Optional fields web_app, request_contact, request_location, and request_poll are mutually exclusive."
+      "This object represents one button of the reply keyboard. For simple text buttons, String can be used instead of this object to specify the button text. The optional fields web_app, request_user, request_chat, request_contact, request_location, and request_poll are mutually exclusive."
+    )
+
+    model(
+      KeyboardButtonRequestUser,
+      [
+        {:request_id, :integer},
+        {:user_is_bot, :boolean, :optional},
+        {:user_is_premium, :boolean, :optional}
+      ],
+      "This object defines the criteria used to request a suitable user. The identifier of the selected user will be shared with the bot when the corresponding button is pressed."
+    )
+
+    model(
+      KeyboardButtonRequestChat,
+      [
+        {:request_id, :integer},
+        {:chat_is_channel, :boolean},
+        {:chat_is_forum, :boolean, :optional},
+        {:chat_has_username, :boolean, :optional},
+        {:chat_is_created, :boolean, :optional},
+        {:user_administrator_rights, ChatAdministratorRights, :optional},
+        {:bot_administrator_rights, ChatAdministratorRights, :optional},
+        {:bot_is_member, :boolean, :optional}
+      ],
+      "This object defines the criteria used to request a suitable chat. The identifier of the selected chat will be shared with the bot when the corresponding button is pressed."
     )
 
     model(
@@ -2013,15 +2059,20 @@ defmodule ExGram do
         {:status, :string},
         {:user, User},
         {:is_member, :boolean},
+        {:can_send_messages, :boolean},
+        {:can_send_audios, :boolean},
+        {:can_send_documents, :boolean},
+        {:can_send_photos, :boolean},
+        {:can_send_videos, :boolean},
+        {:can_send_video_notes, :boolean},
+        {:can_send_voice_notes, :boolean},
+        {:can_send_polls, :boolean},
+        {:can_send_other_messages, :boolean},
+        {:can_add_web_page_previews, :boolean},
         {:can_change_info, :boolean},
         {:can_invite_users, :boolean},
         {:can_pin_messages, :boolean},
         {:can_manage_topics, :boolean},
-        {:can_send_messages, :boolean},
-        {:can_send_media_messages, :boolean},
-        {:can_send_polls, :boolean},
-        {:can_send_other_messages, :boolean},
-        {:can_add_web_page_previews, :boolean},
         {:until_date, :integer}
       ],
       "Represents a chat member that is under certain restrictions in the chat. Supergroups only."
@@ -2057,6 +2108,7 @@ defmodule ExGram do
       [
         {:chat, Chat},
         {:from, User},
+        {:user_chat_id, :integer},
         {:date, :integer},
         {:bio, :string, :optional},
         {:invite_link, ChatInviteLink, :optional}
@@ -2068,7 +2120,12 @@ defmodule ExGram do
       ChatPermissions,
       [
         {:can_send_messages, :boolean, :optional},
-        {:can_send_media_messages, :boolean, :optional},
+        {:can_send_audios, :boolean, :optional},
+        {:can_send_documents, :boolean, :optional},
+        {:can_send_photos, :boolean, :optional},
+        {:can_send_videos, :boolean, :optional},
+        {:can_send_video_notes, :boolean, :optional},
+        {:can_send_voice_notes, :boolean, :optional},
         {:can_send_polls, :boolean, :optional},
         {:can_send_other_messages, :boolean, :optional},
         {:can_add_web_page_previews, :boolean, :optional},
@@ -3013,7 +3070,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 135 models
+    # 139 models
 
     defmodule ChatMember do
       @moduledoc """

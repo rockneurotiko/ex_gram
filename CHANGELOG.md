@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+
+## [0.33.0]
+- Update Telegram API to 6.5: https://core.telegram.org/bots/api#february-3-2023
 - import Config instead of use Mix.Config
 
 ## [0.32.0]
