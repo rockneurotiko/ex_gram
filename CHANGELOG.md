@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Add test_environment config and build path accordingly
 
 ## [0.31.0]
 - Update Telegram API to 6.4: https://core.telegram.org/bots/api#december-30-2022
