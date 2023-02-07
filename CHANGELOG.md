@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.32.0]
 - Add test_environment config and build path accordingly
 
 ## [0.31.0]
