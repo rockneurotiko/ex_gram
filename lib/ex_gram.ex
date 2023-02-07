@@ -30,6 +30,10 @@ defmodule ExGram do
     ExGram.Encoder.EngineCompiler.compile(engine)
   end
 
+  def test_environment? do
+    ExGram.Config.get(:ex_gram, :test_environment, false)
+  end
+
   # START AUTO GENERATED
 
   # ----------METHODS-----------
