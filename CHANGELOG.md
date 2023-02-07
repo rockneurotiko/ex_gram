@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- import Config instead of use Mix.Config
 
 ## [0.32.0]
 - Add test_environment config and build path accordingly
