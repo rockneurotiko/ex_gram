@@ -31,7 +31,7 @@ defmodule ExGram.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     # Don't need to write all applications thanks of new feature on elixir 1.4
-    [extra_applications: [:logger]]
+    [extra_applications: [:logger, :plug]]
   end
 
   defp description do
