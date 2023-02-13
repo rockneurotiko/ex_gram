@@ -34,7 +34,7 @@ defmodule ExGram.Macros.Executer do
     with {:token, token} when is_binary(token) <- {:token, token},
          {:params, :ok} <-
            {:params, check_params(check_params?, mandatory_types, method_ops, optional_types)} do
-      path = "/bot#{token}/#{name}"
+      path = build_path(token, name)
 
       body =
         body
@@ -67,6 +67,17 @@ defmodule ExGram.Macros.Executer do
       {:params, {:error, msg}} ->
         {:error, %ExGram.Error{message: msg}}
     end
+  end
+
+  defp build_path(token, name) do
+    token_part = "/bot#{token}"
+
+    if ExGram.test_environment?() do
+      [token_part, "test", name]
+    else
+      [token_part, name]
+    end
+    |> Path.join()
   end
 
   defp body_with_files(body, file_parts) do
