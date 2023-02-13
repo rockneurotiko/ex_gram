@@ -10,7 +10,7 @@ defmodule ExGram.Plug do
     %{
       headers: Keyword.get(opts, :headers, %{}),
       content_types: Keyword.get(opts, :content_types, %{}),
-      at: opts |> Keyword.fetch!(:at) |> Plug.Router.Utils.split()
+      at: ExGram.Config.get(:ex_gram, :webhook_path) |> Plug.Router.Utils.split()
     }
   end
 
@@ -32,14 +32,19 @@ defmodule ExGram.Plug do
   end
 
   defp serve_update(conn) do
+    token_hash = token_hash(conn.path_info)
+
     {:ok, body, conn} = Plug.Conn.read_body(conn)
     {:ok, update} = Jason.decode(body, keys: :atoms)
     update = struct(ExGram.Model.Update, update)
 
-    ExGram.Updates.Webhook.update(update)
+    ExGram.Updates.Webhook.update(token_hash, update)
 
     conn
     |> send_resp(200, "")
     |> halt()
   end
+
+  defp token_hash([path]) when is_binary(path), do: path
+  defp token_hash([_ | tl]), do: token_hash(tl)
 end

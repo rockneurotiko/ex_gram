@@ -6,38 +6,65 @@ defmodule ExGram.Updates.Webhook do
   use GenServer
   require Logger
 
-  def update(update) do
-    GenServer.cast(__MODULE__, {:update, update})
+  def update(token_hash, update) do
+    token_hash =
+      token_hash
+      |> String.to_atom()
+
+    GenServer.cast(token_hash, {:update, update})
   end
 
   def start_link({:bot, pid, :token, token}) do
-    GenServer.start_link(__MODULE__, {:ok, pid, token}, name: __MODULE__)
+    token_hash =
+      token_hash(token)
+      |> String.to_atom()
+
+    GenServer.start_link(__MODULE__, {:ok, pid, token}, name: token_hash)
   end
 
   def init({:ok, pid, token}) do
-    # Clean webhook
-    # ExGram.delete_webhook(token: token)
+    set_webhook(token)
 
-    {:ok, {pid, token, -1}}
+    {:ok, {pid, token}}
   end
 
-  def handle_cast({:update, update}, {pid, token, uid}) do
-    IO.inspect(pid)
-    IO.inspect(token)
-    IO.inspect(uid)
-    update |> IO.inspect(label: "webhook genserver handle_cast")
-    send_updates([update], pid)
+  def handle_cast({:update, update}, {pid, token}) do
+    GenServer.call(pid, {:update, update})
 
-    {:noreply, {pid, token, -1}}
+    {:noreply, {pid, token}}
   end
 
   def handle_info(unknown_message, state) do
-    Logger.debug("Polling updates received an unknown message #{inspect(unknown_message)}")
+    Logger.debug("Webhook updates received an unknown message #{inspect(unknown_message)}")
 
     {:noreply, state}
   end
 
-  defp send_updates(updates, pid) do
-    Enum.map(updates, &GenServer.call(pid, {:update, &1}))
+  defp token_hash(token) do
+    :crypto.hash(:sha, token)
+    |> Base.url_encode64(padding: true)
+  end
+
+  defp set_webhook(token) do
+    case ExGram.Config.get(:ex_gram, :webhook_url) do
+      webhook_url when is_binary(webhook_url) ->
+        webhook_url =
+          webhook_url
+          |> Plug.Router.Utils.split()
+
+        webhook_path =
+          ExGram.Config.get(:ex_gram, :webhook_path)
+          |> Plug.Router.Utils.split()
+
+        ExGram.set_webhook(
+          "https://#{webhook_url}/#{webhook_path}/#{token_hash(token)}",
+          token: token
+        )
+
+      nil ->
+        Logger.warning(
+          "webhook_url is not set in config. Please set webhook manual by this method: https://core.telegram.org/bots/api#setwebhook"
+        )
+    end
   end
 end
