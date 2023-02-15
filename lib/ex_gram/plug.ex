@@ -1,37 +1,24 @@
 defmodule ExGram.Plug do
   @behaviour Plug
-  @allowed_methods ~w(POST)
 
   import Plug.Conn
   alias Plug.Conn
 
   @impl true
-  def init(opts) do
-    %{
-      headers: Keyword.get(opts, :headers, %{}),
-      content_types: Keyword.get(opts, :content_types, %{}),
-      at: ExGram.Config.get(:ex_gram, :webhook_path) |> Plug.Router.Utils.split()
-    }
-  end
+  def init(opts), do: opts
 
   @impl true
-  def call(
-        conn = %Conn{method: meth},
-        %{at: at}
-      )
-      when meth in @allowed_methods do
-    if hd(at) in conn.path_info do
-      serve_update(conn)
+  def call(%Conn{method: "POST"} = conn, _) do
+    if "telegram" in conn.path_info do
+      handle_update(conn)
     else
       conn
     end
   end
 
-  def call(conn, _options) do
-    conn
-  end
+  def call(conn, _), do: conn
 
-  defp serve_update(conn) do
+  defp handle_update(conn) do
     token_hash = token_hash(conn.path_info)
 
     {:ok, body, conn} = Plug.Conn.read_body(conn)

@@ -52,12 +52,8 @@ defmodule ExGram.Updates.Webhook do
           webhook_url
           |> Plug.Router.Utils.split()
 
-        webhook_path =
-          ExGram.Config.get(:ex_gram, :webhook_path)
-          |> Plug.Router.Utils.split()
-
         ExGram.set_webhook(
-          "https://#{webhook_url}/#{webhook_path}/#{token_hash(token)}",
+          "https://#{webhook_url}/telegram/#{token_hash(token)}",
           token: token
         )
 
