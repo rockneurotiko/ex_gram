@@ -170,6 +170,41 @@ defmodule ExGram.Dsl do
   def extract_message_id(%{edited_channel_post: m}) when not is_nil(m), do: extract_message_id(m)
   def extract_message_id(_), do: :error
 
+  def extract_update_type(%{message: m}) when not is_nil(m), do: :message
+  def extract_update_type(%{edited_message: m}) when not is_nil(m), do: :edited_message
+  def extract_update_type(%{channel_post: m}) when not is_nil(m), do: :channel_post
+  def extract_update_type(%{edited_channel_post: m}) when not is_nil(m), do: :edited_channel_post
+  def extract_update_type(%{inline_query: m}) when not is_nil(m), do: :inline_query
+  def extract_update_type(%{chosen_inline_result: m}) when not is_nil(m), do: :chosen_inline_result
+  def extract_update_type(%{callback_query: m}) when not is_nil(m), do: :callback_query
+  def extract_update_type(%{shipping_query: m}) when not is_nil(m), do: :shipping_query
+  def extract_update_type(%{pre_checkout_query: m}) when not is_nil(m), do: :pre_checkout_query
+  def extract_update_type(%{poll: m}) when not is_nil(m), do: :poll
+  def extract_update_type(%{poll_answer: m}) when not is_nil(m), do: :poll_answer
+  def extract_update_type(%{my_chat_member: m}) when not is_nil(m), do: :my_chat_member
+  def extract_update_type(%{chat_member: m}) when not is_nil(m), do: :chat_member
+  def extract_update_type(%{chat_join_request: m}) when not is_nil(m), do: :chat_join_request
+  def extract_update_type(_), do: :error
+
+  def extract_message_type(%{entities: [%{type: "bot_command"}]}), do: :command
+  def extract_message_type(%{text: m}) when not is_nil(m), do: :text
+  def extract_message_type(%{animation: m}) when not is_nil(m), do: :animation
+  def extract_message_type(%{audio: m}) when not is_nil(m), do: :audio
+  def extract_message_type(%{document: m}) when not is_nil(m), do: :document
+  def extract_message_type(%{photo: m}) when not is_nil(m), do: :photo
+  def extract_message_type(%{sticker: m}) when not is_nil(m), do: :sticker
+  def extract_message_type(%{video: m}) when not is_nil(m), do: :video
+  def extract_message_type(%{video_note: m}) when not is_nil(m), do: :video_note
+  def extract_message_type(%{voice: m}) when not is_nil(m), do: :voice
+  def extract_message_type(%{contact: m}) when not is_nil(m), do: :contact
+  def extract_message_type(%{dice: m}) when not is_nil(m), do: :dice
+  def extract_message_type(%{game: m}) when not is_nil(m), do: :game
+  def extract_message_type(%{poll: m}) when not is_nil(m), do: :poll
+  def extract_message_type(%{venue: m}) when not is_nil(m), do: :venue
+  def extract_message_type(%{location: m}) when not is_nil(m), do: :location
+  def extract_message_type(%{message: m}) when not is_nil(m), do: extract_message_type(m)
+  def extract_message_type(_), do: :error
+
   def extract_inline_id_params(%{message: %{message_id: mid}} = m),
     do: %{message_id: mid, chat_id: extract_id(m)}
 
