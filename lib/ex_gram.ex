@@ -228,7 +228,7 @@ defmodule ExGram do
       {duration, [:integer], :optional},
       {performer, [:string], :optional},
       {title, [:string], :optional},
-      {thumb, [:file, :string], :optional},
+      {thumbnail, [:file, :string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
@@ -247,7 +247,7 @@ defmodule ExGram do
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {document, [:file, :string]},
-      {thumb, [:file, :string], :optional},
+      {thumbnail, [:file, :string], :optional},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
       {caption_entities, [{:array, MessageEntity}], :optional},
@@ -273,7 +273,7 @@ defmodule ExGram do
       {duration, [:integer], :optional},
       {width, [:integer], :optional},
       {height, [:integer], :optional},
-      {thumb, [:file, :string], :optional},
+      {thumbnail, [:file, :string], :optional},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
       {caption_entities, [{:array, MessageEntity}], :optional},
@@ -300,7 +300,7 @@ defmodule ExGram do
       {duration, [:integer], :optional},
       {width, [:integer], :optional},
       {height, [:integer], :optional},
-      {thumb, [:file, :string], :optional},
+      {thumbnail, [:file, :string], :optional},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
       {caption_entities, [{:array, MessageEntity}], :optional},
@@ -347,7 +347,7 @@ defmodule ExGram do
       {video_note, [:file, :string]},
       {duration, [:integer], :optional},
       {length, [:integer], :optional},
-      {thumb, [:file, :string], :optional},
+      {thumbnail, [:file, :string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
@@ -397,37 +397,6 @@ defmodule ExGram do
     ],
     ExGram.Model.Message,
     "Use this method to send point on the map. On success, the sent Message is returned."
-  )
-
-  method(
-    :post,
-    "editMessageLiveLocation",
-    [
-      {chat_id, [:integer, :string], :optional},
-      {message_id, [:integer], :optional},
-      {inline_message_id, [:string], :optional},
-      {latitude, [:float]},
-      {longitude, [:float]},
-      {horizontal_accuracy, [:float], :optional},
-      {heading, [:integer], :optional},
-      {proximity_alert_radius, [:integer], :optional},
-      {reply_markup, [InlineKeyboardMarkup], :optional}
-    ],
-    ExGram.Model.Message,
-    "Use this method to edit live location messages. A location can be edited until its live_period expires or editing is explicitly disabled by a call to stopMessageLiveLocation. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned."
-  )
-
-  method(
-    :post,
-    "stopMessageLiveLocation",
-    [
-      {chat_id, [:integer, :string], :optional},
-      {message_id, [:integer], :optional},
-      {inline_message_id, [:string], :optional},
-      {reply_markup, [InlineKeyboardMarkup], :optional}
-    ],
-    ExGram.Model.Message,
-    "Use this method to stop updating a live location message before live_period expires. On success, if the message is not an inline message, the edited Message is returned, otherwise True is returned."
   )
 
   method(
@@ -981,6 +950,38 @@ defmodule ExGram do
 
   method(
     :post,
+    "setMyDescription",
+    [{description, [:string], :optional}, {language_code, [:string], :optional}],
+    true,
+    "Use this method to change the bot's description, which is shown in the chat with the bot if the chat is empty. Returns True on success."
+  )
+
+  method(
+    :get,
+    "getMyDescription",
+    [{language_code, [:string], :optional}],
+    ExGram.Model.BotDescription,
+    "Use this method to get the current bot description for the given user language. Returns BotDescription on success."
+  )
+
+  method(
+    :post,
+    "setMyShortDescription",
+    [{short_description, [:string], :optional}, {language_code, [:string], :optional}],
+    true,
+    "Use this method to change the bot's short description, which is shown on the bot's profile page and is sent together with the link when users share the bot. Returns True on success."
+  )
+
+  method(
+    :get,
+    "getMyShortDescription",
+    [{language_code, [:string], :optional}],
+    ExGram.Model.BotShortDescription,
+    "Use this method to get the current bot short description for the given user language. Returns BotShortDescription on success."
+  )
+
+  method(
+    :post,
     "setChatMenuButton",
     [{chat_id, [:integer], :optional}, {menu_button, [MenuButton], :optional}],
     true,
@@ -1000,7 +1001,7 @@ defmodule ExGram do
     "setMyDefaultAdministratorRights",
     [{rights, [ChatAdministratorRights], :optional}, {for_channels, [:boolean], :optional}],
     true,
-    "Use this method to change the default administrator rights requested by the bot when it's added as an administrator to groups or channels. These rights will be suggested to users, but they are are free to modify the list before adding the bot. Returns True on success."
+    "Use this method to change the default administrator rights requested by the bot when it's added as an administrator to groups or channels. These rights will be suggested to users, but they are free to modify the list before adding the bot. Returns True on success."
   )
 
   method(
@@ -1060,6 +1061,37 @@ defmodule ExGram do
 
   method(
     :post,
+    "editMessageLiveLocation",
+    [
+      {chat_id, [:integer, :string], :optional},
+      {message_id, [:integer], :optional},
+      {inline_message_id, [:string], :optional},
+      {latitude, [:float]},
+      {longitude, [:float]},
+      {horizontal_accuracy, [:float], :optional},
+      {heading, [:integer], :optional},
+      {proximity_alert_radius, [:integer], :optional},
+      {reply_markup, [InlineKeyboardMarkup], :optional}
+    ],
+    ExGram.Model.Message,
+    "Use this method to edit live location messages. A location can be edited until its live_period expires or editing is explicitly disabled by a call to stopMessageLiveLocation. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned."
+  )
+
+  method(
+    :post,
+    "stopMessageLiveLocation",
+    [
+      {chat_id, [:integer, :string], :optional},
+      {message_id, [:integer], :optional},
+      {inline_message_id, [:string], :optional},
+      {reply_markup, [InlineKeyboardMarkup], :optional}
+    ],
+    ExGram.Model.Message,
+    "Use this method to stop updating a live location message before live_period expires. On success, if the message is not an inline message, the edited Message is returned, otherwise True is returned."
+  )
+
+  method(
+    :post,
     "editMessageReplyMarkup",
     [
       {chat_id, [:integer, :string], :optional},
@@ -1098,6 +1130,7 @@ defmodule ExGram do
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {sticker, [:file, :string]},
+      {emoji, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_to_message_id, [:integer], :optional},
@@ -1128,9 +1161,9 @@ defmodule ExGram do
   method(
     :post,
     "uploadStickerFile",
-    [{user_id, [:integer]}, {png_sticker, [:file]}],
+    [{user_id, [:integer]}, {sticker, [:file]}, {sticker_format, [:string]}],
     ExGram.Model.File,
-    "Use this method to upload a .PNG file with a sticker for later use in createNewStickerSet and addStickerToSet methods (can be used multiple times). Returns the uploaded File on success."
+    "Use this method to upload a file with a sticker for later use in the createNewStickerSet and addStickerToSet methods (the file can be used multiple times). Returns the uploaded File on success."
   )
 
   method(
@@ -1140,31 +1173,21 @@ defmodule ExGram do
       {user_id, [:integer]},
       {name, [:string]},
       {title, [:string]},
-      {png_sticker, [:file, :string], :optional},
-      {tgs_sticker, [:file], :optional},
-      {webm_sticker, [:file], :optional},
+      {stickers, [{:array, InputSticker}]},
+      {sticker_format, [:string]},
       {sticker_type, [:string], :optional},
-      {emojis, [:string]},
-      {mask_position, [MaskPosition], :optional}
+      {needs_repainting, [:boolean], :optional}
     ],
     true,
-    "Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. You must use exactly one of the fields png_sticker, tgs_sticker, or webm_sticker. Returns True on success."
+    "Use this method to create a new sticker set owned by a user. The bot will be able to edit the sticker set thus created. Returns True on success."
   )
 
   method(
     :post,
     "addStickerToSet",
-    [
-      {user_id, [:integer]},
-      {name, [:string]},
-      {png_sticker, [:file, :string], :optional},
-      {tgs_sticker, [:file], :optional},
-      {webm_sticker, [:file], :optional},
-      {emojis, [:string]},
-      {mask_position, [MaskPosition], :optional}
-    ],
+    [{user_id, [:integer]}, {name, [:string]}, {sticker, [InputSticker]}],
     true,
-    "Use this method to add a new sticker to a set created by the bot. You must use exactly one of the fields png_sticker, tgs_sticker, or webm_sticker. Animated stickers can be added to animated sticker sets and only to them. Animated sticker sets can have up to 50 stickers. Static sticker sets can have up to 120 stickers. Returns True on success."
+    "Use this method to add a new sticker to a set created by the bot. The format of the added sticker must match the format of the other stickers in the set. Emoji sticker sets can have up to 200 stickers. Animated and video sticker sets can have up to 50 stickers. Static sticker sets can have up to 120 stickers. Returns True on success."
   )
 
   method(
@@ -1185,10 +1208,58 @@ defmodule ExGram do
 
   method(
     :post,
-    "setStickerSetThumb",
-    [{name, [:string]}, {user_id, [:integer]}, {thumb, [:file, :string], :optional}],
+    "setStickerEmojiList",
+    [{sticker, [:string]}, {emoji_list, [{:array, :string}]}],
     true,
-    "Use this method to set the thumbnail of a sticker set. Animated thumbnails can be set for animated sticker sets only. Video thumbnails can be set only for video sticker sets only. Returns True on success."
+    "Use this method to change the list of emoji assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns True on success."
+  )
+
+  method(
+    :post,
+    "setStickerKeywords",
+    [{sticker, [:string]}, {keywords, [{:array, :string}], :optional}],
+    true,
+    "Use this method to change search keywords assigned to a regular or custom emoji sticker. The sticker must belong to a sticker set created by the bot. Returns True on success."
+  )
+
+  method(
+    :post,
+    "setStickerMaskPosition",
+    [{sticker, [:string]}, {mask_position, [MaskPosition], :optional}],
+    true,
+    "Use this method to change the mask position of a mask sticker. The sticker must belong to a sticker set that was created by the bot. Returns True on success."
+  )
+
+  method(
+    :post,
+    "setStickerSetTitle",
+    [{name, [:string]}, {title, [:string]}],
+    true,
+    "Use this method to set the title of a created sticker set. Returns True on success."
+  )
+
+  method(
+    :post,
+    "setStickerSetThumbnail",
+    [{name, [:string]}, {user_id, [:integer]}, {thumbnail, [:file, :string], :optional}],
+    true,
+    "Use this method to set the thumbnail of a regular or mask sticker set. The format of the thumbnail file must match the format of the stickers in the set. Returns True on success."
+  )
+
+  method(
+    :post,
+    "setCustomEmojiStickerSetThumbnail",
+    [{name, [:string]}, {custom_emoji_id, [:string], :optional}],
+    true,
+    "Use this method to set the thumbnail of a custom emoji sticker set. Returns True on success."
+  )
+
+  method(
+    :post,
+    "deleteStickerSet",
+    [{name, [:string]}],
+    true,
+    "Use this method to delete a sticker set that was created by the bot. Returns True on success."
   )
 
   method(
@@ -1356,7 +1427,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 101 methods
+  # 111 methods
 
   # ----------MODELS-----------
 
@@ -1576,7 +1647,7 @@ defmodule ExGram do
         {:width, :integer},
         {:height, :integer},
         {:duration, :integer},
-        {:thumb, PhotoSize, :optional},
+        {:thumbnail, PhotoSize, :optional},
         {:file_name, :string, :optional},
         {:mime_type, :string, :optional},
         {:file_size, :integer, :optional}
@@ -1595,7 +1666,7 @@ defmodule ExGram do
         {:file_name, :string, :optional},
         {:mime_type, :string, :optional},
         {:file_size, :integer, :optional},
-        {:thumb, PhotoSize, :optional}
+        {:thumbnail, PhotoSize, :optional}
       ],
       "This object represents an audio file to be treated as music by the Telegram clients."
     )
@@ -1605,7 +1676,7 @@ defmodule ExGram do
       [
         {:file_id, :string},
         {:file_unique_id, :string},
-        {:thumb, PhotoSize, :optional},
+        {:thumbnail, PhotoSize, :optional},
         {:file_name, :string, :optional},
         {:mime_type, :string, :optional},
         {:file_size, :integer, :optional}
@@ -1621,7 +1692,7 @@ defmodule ExGram do
         {:width, :integer},
         {:height, :integer},
         {:duration, :integer},
-        {:thumb, PhotoSize, :optional},
+        {:thumbnail, PhotoSize, :optional},
         {:file_name, :string, :optional},
         {:mime_type, :string, :optional},
         {:file_size, :integer, :optional}
@@ -1636,7 +1707,7 @@ defmodule ExGram do
         {:file_unique_id, :string},
         {:length, :integer},
         {:duration, :integer},
-        {:thumb, PhotoSize, :optional},
+        {:thumbnail, PhotoSize, :optional},
         {:file_size, :integer, :optional}
       ],
       "This object represents a video message (available in Telegram apps as of v.4.0)."
@@ -2203,6 +2274,18 @@ defmodule ExGram do
     )
 
     model(
+      BotDescription,
+      [{:description, :string}],
+      "This object represents the bot's description."
+    )
+
+    model(
+      BotShortDescription,
+      [{:short_description, :string}],
+      "This object represents the bot's short description."
+    )
+
+    model(
       MenuButtonCommands,
       [{:type, :string}],
       "Represents a menu button, which opens the bot's list of commands."
@@ -2257,7 +2340,7 @@ defmodule ExGram do
       [
         {:type, :string},
         {:media, :string},
-        {:thumb, :file, :optional},
+        {:thumbnail, :file, :optional},
         {:caption, :string, :optional},
         {:parse_mode, :string, :optional},
         {:caption_entities, {:array, MessageEntity}, :optional},
@@ -2275,7 +2358,7 @@ defmodule ExGram do
       [
         {:type, :string},
         {:media, :string},
-        {:thumb, :file, :optional},
+        {:thumbnail, :file, :optional},
         {:caption, :string, :optional},
         {:parse_mode, :string, :optional},
         {:caption_entities, {:array, MessageEntity}, :optional},
@@ -2292,7 +2375,7 @@ defmodule ExGram do
       [
         {:type, :string},
         {:media, :string},
-        {:thumb, :file, :optional},
+        {:thumbnail, :file, :optional},
         {:caption, :string, :optional},
         {:parse_mode, :string, :optional},
         {:caption_entities, {:array, MessageEntity}, :optional},
@@ -2308,7 +2391,7 @@ defmodule ExGram do
       [
         {:type, :string},
         {:media, :string},
-        {:thumb, :file, :optional},
+        {:thumbnail, :file, :optional},
         {:caption, :string, :optional},
         {:parse_mode, :string, :optional},
         {:caption_entities, {:array, MessageEntity}, :optional},
@@ -2345,12 +2428,13 @@ defmodule ExGram do
         {:height, :integer},
         {:is_animated, :boolean},
         {:is_video, :boolean},
-        {:thumb, PhotoSize, :optional},
+        {:thumbnail, PhotoSize, :optional},
         {:emoji, :string, :optional},
         {:set_name, :string, :optional},
         {:premium_animation, File, :optional},
         {:mask_position, MaskPosition, :optional},
         {:custom_emoji_id, :string, :optional},
+        {:needs_repainting, :boolean, :optional},
         {:file_size, :integer, :optional}
       ],
       "This object represents a sticker."
@@ -2365,7 +2449,7 @@ defmodule ExGram do
         {:is_animated, :boolean},
         {:is_video, :boolean},
         {:stickers, {:array, Sticker}},
-        {:thumb, PhotoSize, :optional}
+        {:thumbnail, PhotoSize, :optional}
       ],
       "This object represents a sticker set."
     )
@@ -2374,6 +2458,17 @@ defmodule ExGram do
       MaskPosition,
       [{:point, :string}, {:x_shift, :float}, {:y_shift, :float}, {:scale, :float}],
       "This object describes the position on faces where a mask should be placed by default."
+    )
+
+    model(
+      InputSticker,
+      [
+        {:sticker, :file},
+        {:emoji_list, {:array, :string}},
+        {:mask_position, MaskPosition, :optional},
+        {:keywords, {:array, :string}, :optional}
+      ],
+      "This object describes a sticker to be added to a sticker set."
     )
 
     model(
@@ -2400,9 +2495,9 @@ defmodule ExGram do
         {:url, :string, :optional},
         {:hide_url, :boolean, :optional},
         {:description, :string, :optional},
-        {:thumb_url, :string, :optional},
-        {:thumb_width, :integer, :optional},
-        {:thumb_height, :integer, :optional}
+        {:thumbnail_url, :string, :optional},
+        {:thumbnail_width, :integer, :optional},
+        {:thumbnail_height, :integer, :optional}
       ],
       "Represents a link to an article or web page."
     )
@@ -2413,7 +2508,7 @@ defmodule ExGram do
         {:type, :string},
         {:id, :string},
         {:photo_url, :string},
-        {:thumb_url, :string},
+        {:thumbnail_url, :string},
         {:photo_width, :integer, :optional},
         {:photo_height, :integer, :optional},
         {:title, :string, :optional},
@@ -2436,8 +2531,8 @@ defmodule ExGram do
         {:gif_width, :integer, :optional},
         {:gif_height, :integer, :optional},
         {:gif_duration, :integer, :optional},
-        {:thumb_url, :string},
-        {:thumb_mime_type, :string, :optional},
+        {:thumbnail_url, :string},
+        {:thumbnail_mime_type, :string, :optional},
         {:title, :string, :optional},
         {:caption, :string, :optional},
         {:parse_mode, :string, :optional},
@@ -2457,8 +2552,8 @@ defmodule ExGram do
         {:mpeg4_width, :integer, :optional},
         {:mpeg4_height, :integer, :optional},
         {:mpeg4_duration, :integer, :optional},
-        {:thumb_url, :string},
-        {:thumb_mime_type, :string, :optional},
+        {:thumbnail_url, :string},
+        {:thumbnail_mime_type, :string, :optional},
         {:title, :string, :optional},
         {:caption, :string, :optional},
         {:parse_mode, :string, :optional},
@@ -2476,7 +2571,7 @@ defmodule ExGram do
         {:id, :string},
         {:video_url, :string},
         {:mime_type, :string},
-        {:thumb_url, :string},
+        {:thumbnail_url, :string},
         {:title, :string},
         {:caption, :string, :optional},
         {:parse_mode, :string, :optional},
@@ -2540,9 +2635,9 @@ defmodule ExGram do
         {:description, :string, :optional},
         {:reply_markup, InlineKeyboardMarkup, :optional},
         {:input_message_content, InputMessageContent, :optional},
-        {:thumb_url, :string, :optional},
-        {:thumb_width, :integer, :optional},
-        {:thumb_height, :integer, :optional}
+        {:thumbnail_url, :string, :optional},
+        {:thumbnail_width, :integer, :optional},
+        {:thumbnail_height, :integer, :optional}
       ],
       "Represents a link to a file. By default, this file will be sent by the user with an optional caption. Alternatively, you can use input_message_content to send a message with the specified content instead of the file. Currently, only .PDF and .ZIP files can be sent using this method."
     )
@@ -2561,9 +2656,9 @@ defmodule ExGram do
         {:proximity_alert_radius, :integer, :optional},
         {:reply_markup, InlineKeyboardMarkup, :optional},
         {:input_message_content, InputMessageContent, :optional},
-        {:thumb_url, :string, :optional},
-        {:thumb_width, :integer, :optional},
-        {:thumb_height, :integer, :optional}
+        {:thumbnail_url, :string, :optional},
+        {:thumbnail_width, :integer, :optional},
+        {:thumbnail_height, :integer, :optional}
       ],
       "Represents a location on a map. By default, the location will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the location."
     )
@@ -2583,9 +2678,9 @@ defmodule ExGram do
         {:google_place_type, :string, :optional},
         {:reply_markup, InlineKeyboardMarkup, :optional},
         {:input_message_content, InputMessageContent, :optional},
-        {:thumb_url, :string, :optional},
-        {:thumb_width, :integer, :optional},
-        {:thumb_height, :integer, :optional}
+        {:thumbnail_url, :string, :optional},
+        {:thumbnail_width, :integer, :optional},
+        {:thumbnail_height, :integer, :optional}
       ],
       "Represents a venue. By default, the venue will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the venue."
     )
@@ -2601,9 +2696,9 @@ defmodule ExGram do
         {:vcard, :string, :optional},
         {:reply_markup, InlineKeyboardMarkup, :optional},
         {:input_message_content, InputMessageContent, :optional},
-        {:thumb_url, :string, :optional},
-        {:thumb_width, :integer, :optional},
-        {:thumb_height, :integer, :optional}
+        {:thumbnail_url, :string, :optional},
+        {:thumbnail_width, :integer, :optional},
+        {:thumbnail_height, :integer, :optional}
       ],
       "Represents a contact with a phone number. By default, this contact will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the contact."
     )
@@ -3070,7 +3165,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 139 models
+    # 142 models
 
     defmodule ChatMember do
       @moduledoc """

@@ -1,7 +1,7 @@
 defmodule ExGram.Mixfile do
   use Mix.Project
 
-  @version "0.33.0"
+  @version "0.34.0"
 
   def project do
     [
