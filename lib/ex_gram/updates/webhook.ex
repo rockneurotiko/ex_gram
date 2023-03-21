@@ -6,7 +6,7 @@ defmodule ExGram.Updates.Webhook do
   use GenServer
   require Logger
 
-  def update(token_hash, update) do
+  def update(update, token_hash) do
     token_hash =
       token_hash
       |> String.to_atom()
@@ -19,7 +19,9 @@ defmodule ExGram.Updates.Webhook do
       token_hash(token)
       |> String.to_atom()
 
-    GenServer.start_link(__MODULE__, {:ok, pid, token}, name: token_hash)
+    GenServer.start_link(__MODULE__, {:ok, pid, token},
+      name: Module.concat(__MODULE__, token_hash)
+    )
   end
 
   def init({:ok, pid, token}) do

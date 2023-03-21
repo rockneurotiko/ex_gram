@@ -19,16 +19,25 @@ defmodule ExGram.Plug do
   def call(conn, _), do: conn
 
   defp handle_update(conn) do
-    token_hash = token_hash(conn.path_info)
-
     {:ok, body, conn} = Plug.Conn.read_body(conn)
-    {:ok, update} = Jason.decode(body, keys: :atoms)
-    update = struct(ExGram.Model.Update, update)
 
-    ExGram.Updates.Webhook.update(token_hash, update)
+    {status, message} =
+      case ExGram.Encoder.decode(body, keys: :atoms) do
+        {:ok, update} ->
+          token_hash = token_hash(conn.path_info)
+
+          struct(ExGram.Model.Update, update)
+          |> ExGram.Updates.Webhook.update(token_hash)
+
+          {200, %{ok: true}}
+
+        {:error, _} ->
+          {400, %{ok: false}}
+      end
 
     conn
-    |> send_resp(200, "")
+    |> put_resp_content_type("application/json")
+    |> send_resp(status, ExGram.Encoder.encode!(message))
     |> halt()
   end
 
