@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Models fields now can have union types
 
 ## [0.34.0]
 - Update Telegram API to 6.6: https://core.telegram.org/bots/api#march-9-2023
