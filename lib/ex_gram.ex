@@ -1955,7 +1955,7 @@ defmodule ExGram do
         {:user_is_bot, [:boolean], :optional},
         {:user_is_premium, [:boolean], :optional}
       ],
-      "This object defines the criteria used to request a suitable user. The identifier of the selected user will be shared with the bot when the corresponding button is pressed."
+      "This object defines the criteria used to request a suitable user. The identifier of the selected user will be shared with the bot when the corresponding button is pressed. More about requesting users »"
     )
 
     model(
@@ -1970,7 +1970,7 @@ defmodule ExGram do
         {:bot_administrator_rights, [ChatAdministratorRights], :optional},
         {:bot_is_member, [:boolean], :optional}
       ],
-      "This object defines the criteria used to request a suitable chat. The identifier of the selected chat will be shared with the bot when the corresponding button is pressed."
+      "This object defines the criteria used to request a suitable chat. The identifier of the selected chat will be shared with the bot when the corresponding button is pressed. More about requesting chats »"
     )
 
     model(
@@ -2402,25 +2402,6 @@ defmodule ExGram do
         {:disable_content_type_detection, [:boolean], :optional}
       ],
       "Represents a general file to be sent."
-    )
-
-    model(
-      InputFile,
-      [
-        {:chat_id, [:integer, :string]},
-        {:message_thread_id, [:integer], :optional},
-        {:text, [:string]},
-        {:parse_mode, [:string], :optional},
-        {:entities, [{:array, MessageEntity}], :optional},
-        {:disable_web_page_preview, [:boolean], :optional},
-        {:disable_notification, [:boolean], :optional},
-        {:protect_content, [:boolean], :optional},
-        {:reply_to_message_id, [:integer], :optional},
-        {:allow_sending_without_reply, [:boolean], :optional},
-        {:reply_markup,
-         [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
-      ],
-      "This object represents the contents of a file to be uploaded. Must be posted using multipart/form-data in the usual way that files are uploaded via the browser."
     )
 
     model(
@@ -3175,7 +3156,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 142 models
+    # 141 models
 
     defmodule ChatMember do
       @moduledoc """
