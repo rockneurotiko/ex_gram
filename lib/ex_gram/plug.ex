@@ -68,16 +68,15 @@ defmodule ExGram.Plug do
         Logger.error(message)
         {:error, message}
 
-      {secret_token, config_token} when secret_token == config_token ->
-        {:ok, true}
-
       {secret_token, config_token} when secret_token != config_token ->
         message =
           "The secret token in the request header does not match the one configured in the webhook mode."
 
         Logger.error(message)
-
         {:error, message}
+
+      {secret_token, config_token} when secret_token == config_token ->
+        {:ok, true}
     end
   end
 
