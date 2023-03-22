@@ -6,22 +6,19 @@ defmodule ExGram.Updates.Webhook do
   use GenServer
   require Logger
 
-  def update(update, token_hash) do
-    token_hash =
-      token_hash
-      |> String.to_atom()
+  @posible_updates Map.keys(%ExGram.Model.Update{})
+                   |> List.delete(:__struct__)
+                   |> List.delete(:update_id)
 
-    GenServer.cast(token_hash, {:update, update})
+  def update(update, token_hash) do
+    Module.concat(__MODULE__, token_hash)
+    |> GenServer.cast({:update, update})
   end
 
   def start_link({:bot, pid, :token, token}) do
-    token_hash =
-      token_hash(token)
-      |> String.to_atom()
+    name = Module.concat(__MODULE__, token_hash(token))
 
-    GenServer.start_link(__MODULE__, {:ok, pid, token},
-      name: Module.concat(__MODULE__, token_hash)
-    )
+    GenServer.start_link(__MODULE__, {:ok, pid, token}, name: name)
   end
 
   def init({:ok, pid, token}) do
@@ -48,21 +45,71 @@ defmodule ExGram.Updates.Webhook do
   end
 
   defp set_webhook(token) do
-    case ExGram.Config.get(:ex_gram, :webhook_url) do
+    config = ExGram.Config.get(:ex_gram, :webhook)
+    params = webhook_params(config)
+
+    case config[:url] do
       webhook_url when is_binary(webhook_url) ->
         webhook_url =
           webhook_url
           |> Plug.Router.Utils.split()
 
-        ExGram.set_webhook(
-          "https://#{webhook_url}/telegram/#{token_hash(token)}",
-          token: token
-        )
+        case ExGram.set_webhook(
+               "https://#{webhook_url}/telegram/#{token_hash(token)}",
+               [{:token, token} | params]
+             ) do
+          {:ok, _} -> nil
+          {:error, error} -> Logger.error("Could not set the webhook: #{inspect(error)}")
+        end
 
       nil ->
         Logger.warning(
-          "webhook_url is not set in config. Please set webhook manual by this method: https://core.telegram.org/bots/api#setwebhook"
+          "The webhook_url is not set in the configuration. Please manually set the webhook using this method: https://core.telegram.org/bots/api#setwebhook"
         )
     end
   end
+
+  defp webhook_params(_, params \\ [])
+  defp webhook_params([], params), do: params
+
+  defp webhook_params([{:certificate, path} | tl], params) do
+    case File.read(path) do
+      {:ok, _} ->
+        webhook_params(tl, [{:certificate, {:file, path}} | params])
+
+      {:error, reason} ->
+        Logger.error("Could not read the certificate file from #{path}: #{inspect(reason)}")
+
+        webhook_params(tl, params)
+    end
+  end
+
+  defp webhook_params([{:url, _} | tl], params), do: webhook_params(tl, params)
+
+  defp webhook_params([{:max_connections, max_connections} | tl], params)
+       when is_integer(max_connections),
+       do: webhook_params(tl, [{:max_connections, max_connections} | params])
+
+  defp webhook_params([{:max_connections, max_connections} | tl], params),
+    do: webhook_params(tl, [{:max_connections, String.to_integer(max_connections)} | params])
+
+  defp webhook_params([{:allowed_updates, allowed_updates} | tl], params)
+       when is_list(allowed_updates) do
+    allowed_updates =
+      Enum.map(allowed_updates, fn update ->
+        if String.to_atom(update) in @posible_updates do
+          update
+        else
+          Logger.error("The update #{update} is not a valid update")
+
+          nil
+        end
+      end)
+      |> Enum.reject(&is_nil/1)
+
+    webhook_params(tl, [{:allowed_updates, allowed_updates} | params])
+  end
+
+  defp webhook_params([{key, value} | tl], params),
+    do: webhook_params(tl, [{key, value} | params])
 end
