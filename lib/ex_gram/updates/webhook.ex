@@ -110,6 +110,20 @@ defmodule ExGram.Updates.Webhook do
     webhook_params(tl, [{:allowed_updates, allowed_updates} | params])
   end
 
+  defp webhook_params([{:secret_token, secret_token} | tl], params) do
+    with true <- String.length(secret_token) in 1..256,
+         true <- String.match?(secret_token, ~r/^[A-Za-z0-9_-]+$/) do
+      webhook_params(tl, [{:secret_token, secret_token} | params])
+    else
+      _ ->
+        Logger.error(
+          "The secret_token must be between 1-256 characters. Only characters A-Z, a-z, 0-9, _ and - are allowed."
+        )
+
+        webhook_params(tl, params)
+    end
+  end
+
   defp webhook_params([{key, value} | tl], params),
     do: webhook_params(tl, [{key, value} | params])
 end
