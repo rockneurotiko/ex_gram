@@ -119,7 +119,7 @@ defmodule ExGram.Updates.Webhook do
     else
       _ ->
         Logger.error(
-          "The secret_token must be between #{@secret_token_length} characters. Only characters A-Z, a-z, 0-9, _ and - are allowed."
+          "The secret_token must be between 1 to 256 characters. Only characters A-Z, a-z, 0-9, _ and - are allowed."
         )
 
         webhook_params(tl, params)
