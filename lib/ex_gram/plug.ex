@@ -25,11 +25,8 @@ defmodule ExGram.Plug do
     {status, message} =
       case get_req_header(conn, "x-telegram-bot-api-secret-token")
            |> check_secret_token() do
-        {:ok, _} ->
-          handle_update(conn, ExGram.Encoder.decode(body, keys: :atoms))
-
-        {:error, error} ->
-          {400, %{error: error}}
+        :ok -> handle_update(conn, ExGram.Encoder.decode(body, keys: :atoms))
+        {:error, error} -> {400, %{error: error}}
       end
 
     conn
@@ -54,7 +51,7 @@ defmodule ExGram.Plug do
       "The secret token is not configured in webhook mode. For security purposes, it is recommended to set one."
     )
 
-    {:ok, true}
+    :ok
   end
 
   defp check_secret_token([secret_token]) do
@@ -76,7 +73,7 @@ defmodule ExGram.Plug do
         {:error, message}
 
       {secret_token, config_token} when secret_token == config_token ->
-        {:ok, true}
+        :ok
     end
   end
 

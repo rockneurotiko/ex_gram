@@ -11,12 +11,15 @@ defmodule ExGram.Updates.Webhook do
                    |> List.delete(:update_id)
 
   def update(update, token_hash) do
-    Module.concat(__MODULE__, token_hash)
+    token_hash
+    |> process_name()
     |> GenServer.cast({:update, update})
   end
 
   def start_link({:bot, pid, :token, token}) do
-    name = Module.concat(__MODULE__, token_hash(token))
+    name =
+      token_hash(token)
+      |> process_name()
 
     GenServer.start_link(__MODULE__, {:ok, pid, token}, name: name)
   end
@@ -38,6 +41,8 @@ defmodule ExGram.Updates.Webhook do
 
     {:noreply, state}
   end
+
+  defp process_name(token_hash), do: Module.concat(__MODULE__, token_hash)
 
   defp token_hash(token) do
     :crypto.hash(:sha, token)
@@ -87,11 +92,13 @@ defmodule ExGram.Updates.Webhook do
   defp webhook_params([{:url, _} | tl], params), do: webhook_params(tl, params)
 
   defp webhook_params([{:max_connections, max_connections} | tl], params)
-       when is_integer(max_connections),
-       do: webhook_params(tl, [{:max_connections, max_connections} | params])
+       when is_integer(max_connections) do
+    webhook_params(tl, [{:max_connections, max_connections} | params])
+  end
 
-  defp webhook_params([{:max_connections, max_connections} | tl], params),
-    do: webhook_params(tl, [{:max_connections, String.to_integer(max_connections)} | params])
+  defp webhook_params([{:max_connections, max_connections} | tl], params) do
+    webhook_params(tl, [{:max_connections, String.to_integer(max_connections)} | params])
+  end
 
   defp webhook_params([{:allowed_updates, allowed_updates} | tl], params)
        when is_list(allowed_updates) do
