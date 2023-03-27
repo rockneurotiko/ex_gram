@@ -31,7 +31,7 @@ defmodule ExGram.Mixfile do
   # Type "mix help compile.app" for more information
   def application do
     # Don't need to write all applications thanks of new feature on elixir 1.4
-    [extra_applications: [:logger, :plug]]
+    [extra_applications: [:logger]]
   end
 
   defp description do
@@ -63,6 +63,8 @@ defmodule ExGram.Mixfile do
       # JSON encoders/decoders
       {:jason, ">= 1.0.0", optional: true},
       {:poison, ">= 1.0.0", optional: true},
+      # Webhook adapter
+      {:plug, "~> 1.14", optional: true},
       # Development
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},

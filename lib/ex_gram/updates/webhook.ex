@@ -55,10 +55,6 @@ defmodule ExGram.Updates.Webhook do
 
     case config[:url] do
       webhook_url when is_binary(webhook_url) ->
-        webhook_url =
-          webhook_url
-          |> Plug.Router.Utils.split()
-
         case ExGram.set_webhook(
                "https://#{webhook_url}/telegram/#{token_hash(token)}",
                [{:token, token} | params]

@@ -97,6 +97,28 @@ children = [
 ```
 
 ### Webhook mode
+
+The provided Webhook adapter uses `Plug`, you will need to have that dependency in your application, and add it to your router, with basic Plug Router it would look something like this:
+
+``` elixir
+defmodule AppRouter do
+  use Plug.Router
+
+  plug ExGram.Plug
+end
+```
+
+At the moment the webhook URL will be `/telegram/<bot_token_hash>`.
+
+Then, in your bots you have to specify the webhook updater when you start it on your supervisor tree:
+
+``` elixir
+children = [
+  # ...
+  {MyBot, [method: :webhook, token: "TOKEN"]}
+]
+```
+
 In webhook mode, you can configure the following parameters:
 
 ``` elixir

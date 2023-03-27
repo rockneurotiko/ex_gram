@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Add Webhook updates adapter
 - Remove InputFile, it wasn't a real model
 
 ## [0.34.0]
