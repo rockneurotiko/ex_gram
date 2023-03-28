@@ -1,4 +1,4 @@
-if Code.ensure_loaded?(:plug) do
+if Code.ensure_loaded?(Plug) do
   defmodule ExGram.Plug do
     @behaviour Plug
 
