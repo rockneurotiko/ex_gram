@@ -2,6 +2,7 @@
 
 ## Unreleased
 - Models fields now can have union types
+- Add Webhook updates adapter
 - Remove InputFile, it wasn't a real model
 
 

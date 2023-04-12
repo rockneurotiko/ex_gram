@@ -96,6 +96,44 @@ children = [
 ]
 ```
 
+### Webhook mode
+
+The provided Webhook adapter uses `Plug`, you will need to have that dependency in your application, and add it to your router, with basic Plug Router it would look something like this:
+
+``` elixir
+defmodule AppRouter do
+  use Plug.Router
+
+  plug ExGram.Plug
+end
+```
+
+At the moment the webhook URL will be `/telegram/<bot_token_hash>`.
+
+Then, in your bots you have to specify the webhook updater when you start it on your supervisor tree:
+
+``` elixir
+children = [
+  # ...
+  {MyBot, [method: :webhook, token: "TOKEN"]}
+]
+```
+
+In webhook mode, you can configure the following parameters:
+
+``` elixir
+config :ex_gram, :webhook,
+  allowed_updates: ["message", "poll"],       # array of strings
+  certificate: "priv/cert/selfsigned.pem",    # string (file path)
+  drop_pending_updates: false,                # boolean
+  ip_address: "1.1.1.1",                      # string
+  max_connections: 50,                        # integer
+  secret_token: "some_super_secret_key",      # string
+  url: "bot.example.com"                      # string (only domain name)
+```
+
+For more information on each parameter, refer to this documentation: https://core.telegram.org/bots/api#setwebhook
+
 ### Test environment
 
 Telegram has a Test Environment that you can use to test your bots, you can learn how to setup your bots there in this documentation: https://core.telegram.org/bots/webapps#using-bots-in-the-test-environment
@@ -377,7 +415,7 @@ These methods do some stuff, like retrieving the token, checking the parameters 
 
 ## Creating your own updates worker
 
-The ExGram framework uses updates worker to "receive" the updates and send them to the dispatcher, this is the first parameter that you provide to your bot, the ones currently are `:polling` that goes to the module `ExGram.Updates.Polling` for polling updates and `:noup` that uses `ExGram.Updates.NoUp` that do nothing (great for some offline testing). Sadly, the webhook and test worker are on the way.
+The ExGram framework uses updates worker to "receive" the updates and send them to the dispatcher, this is the first parameter that you provide to your bot, the ones currently are `:polling` that goes to the module `ExGram.Updates.Polling` for polling updates, `:webhook` that goes to the module `ExGram.Updates.Webhook` for webhook updates and `:noup` that uses `ExGram.Updates.NoUp` that do nothing (great for some offline testing). Sadly, the test worker are on the way.
 
 But you can implement your own worker to retrieve the updates as you want!
 
