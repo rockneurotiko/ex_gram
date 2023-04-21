@@ -1441,21 +1441,21 @@ defmodule ExGram do
     model(
       Update,
       [
-        {:update_id, :integer},
-        {:message, Message, :optional},
-        {:edited_message, Message, :optional},
-        {:channel_post, Message, :optional},
-        {:edited_channel_post, Message, :optional},
-        {:inline_query, InlineQuery, :optional},
-        {:chosen_inline_result, ChosenInlineResult, :optional},
-        {:callback_query, CallbackQuery, :optional},
-        {:shipping_query, ShippingQuery, :optional},
-        {:pre_checkout_query, PreCheckoutQuery, :optional},
-        {:poll, Poll, :optional},
-        {:poll_answer, PollAnswer, :optional},
-        {:my_chat_member, ChatMemberUpdated, :optional},
-        {:chat_member, ChatMemberUpdated, :optional},
-        {:chat_join_request, ChatJoinRequest, :optional}
+        {:update_id, [:integer]},
+        {:message, [Message], :optional},
+        {:edited_message, [Message], :optional},
+        {:channel_post, [Message], :optional},
+        {:edited_channel_post, [Message], :optional},
+        {:inline_query, [InlineQuery], :optional},
+        {:chosen_inline_result, [ChosenInlineResult], :optional},
+        {:callback_query, [CallbackQuery], :optional},
+        {:shipping_query, [ShippingQuery], :optional},
+        {:pre_checkout_query, [PreCheckoutQuery], :optional},
+        {:poll, [Poll], :optional},
+        {:poll_answer, [PollAnswer], :optional},
+        {:my_chat_member, [ChatMemberUpdated], :optional},
+        {:chat_member, [ChatMemberUpdated], :optional},
+        {:chat_join_request, [ChatJoinRequest], :optional}
       ],
       "This object represents an incoming update. At most one of the optional parameters can be present in any given update."
     )
@@ -1463,15 +1463,15 @@ defmodule ExGram do
     model(
       WebhookInfo,
       [
-        {:url, :string},
-        {:has_custom_certificate, :boolean},
-        {:pending_update_count, :integer},
-        {:ip_address, :string, :optional},
-        {:last_error_date, :integer, :optional},
-        {:last_error_message, :string, :optional},
-        {:last_synchronization_error_date, :integer, :optional},
-        {:max_connections, :integer, :optional},
-        {:allowed_updates, {:array, :string}, :optional}
+        {:url, [:string]},
+        {:has_custom_certificate, [:boolean]},
+        {:pending_update_count, [:integer]},
+        {:ip_address, [:string], :optional},
+        {:last_error_date, [:integer], :optional},
+        {:last_error_message, [:string], :optional},
+        {:last_synchronization_error_date, [:integer], :optional},
+        {:max_connections, [:integer], :optional},
+        {:allowed_updates, [{:array, :string}], :optional}
       ],
       "Describes the current status of a webhook."
     )
@@ -1479,17 +1479,17 @@ defmodule ExGram do
     model(
       User,
       [
-        {:id, :integer},
-        {:is_bot, :boolean},
-        {:first_name, :string},
-        {:last_name, :string, :optional},
-        {:username, :string, :optional},
-        {:language_code, :string, :optional},
-        {:is_premium, :boolean, :optional},
-        {:added_to_attachment_menu, :boolean, :optional},
-        {:can_join_groups, :boolean, :optional},
-        {:can_read_all_group_messages, :boolean, :optional},
-        {:supports_inline_queries, :boolean, :optional}
+        {:id, [:integer]},
+        {:is_bot, [:boolean]},
+        {:first_name, [:string]},
+        {:last_name, [:string], :optional},
+        {:username, [:string], :optional},
+        {:language_code, [:string], :optional},
+        {:is_premium, [:boolean], :optional},
+        {:added_to_attachment_menu, [:boolean], :optional},
+        {:can_join_groups, [:boolean], :optional},
+        {:can_read_all_group_messages, [:boolean], :optional},
+        {:supports_inline_queries, [:boolean], :optional}
       ],
       "This object represents a Telegram user or bot."
     )
@@ -1497,34 +1497,34 @@ defmodule ExGram do
     model(
       Chat,
       [
-        {:id, :integer},
-        {:type, :string},
-        {:title, :string, :optional},
-        {:username, :string, :optional},
-        {:first_name, :string, :optional},
-        {:last_name, :string, :optional},
-        {:is_forum, :boolean, :optional},
-        {:photo, ChatPhoto, :optional},
-        {:active_usernames, {:array, :string}, :optional},
-        {:emoji_status_custom_emoji_id, :string, :optional},
-        {:bio, :string, :optional},
-        {:has_private_forwards, :boolean, :optional},
-        {:has_restricted_voice_and_video_messages, :boolean, :optional},
-        {:join_to_send_messages, :boolean, :optional},
-        {:join_by_request, :boolean, :optional},
-        {:description, :string, :optional},
-        {:invite_link, :string, :optional},
-        {:pinned_message, Message, :optional},
-        {:permissions, ChatPermissions, :optional},
-        {:slow_mode_delay, :integer, :optional},
-        {:message_auto_delete_time, :integer, :optional},
-        {:has_aggressive_anti_spam_enabled, :boolean, :optional},
-        {:has_hidden_members, :boolean, :optional},
-        {:has_protected_content, :boolean, :optional},
-        {:sticker_set_name, :string, :optional},
-        {:can_set_sticker_set, :boolean, :optional},
-        {:linked_chat_id, :integer, :optional},
-        {:location, ChatLocation, :optional}
+        {:id, [:integer]},
+        {:type, [:string]},
+        {:title, [:string], :optional},
+        {:username, [:string], :optional},
+        {:first_name, [:string], :optional},
+        {:last_name, [:string], :optional},
+        {:is_forum, [:boolean], :optional},
+        {:photo, [ChatPhoto], :optional},
+        {:active_usernames, [{:array, :string}], :optional},
+        {:emoji_status_custom_emoji_id, [:string], :optional},
+        {:bio, [:string], :optional},
+        {:has_private_forwards, [:boolean], :optional},
+        {:has_restricted_voice_and_video_messages, [:boolean], :optional},
+        {:join_to_send_messages, [:boolean], :optional},
+        {:join_by_request, [:boolean], :optional},
+        {:description, [:string], :optional},
+        {:invite_link, [:string], :optional},
+        {:pinned_message, [Message], :optional},
+        {:permissions, [ChatPermissions], :optional},
+        {:slow_mode_delay, [:integer], :optional},
+        {:message_auto_delete_time, [:integer], :optional},
+        {:has_aggressive_anti_spam_enabled, [:boolean], :optional},
+        {:has_hidden_members, [:boolean], :optional},
+        {:has_protected_content, [:boolean], :optional},
+        {:sticker_set_name, [:string], :optional},
+        {:can_set_sticker_set, [:boolean], :optional},
+        {:linked_chat_id, [:integer], :optional},
+        {:location, [ChatLocation], :optional}
       ],
       "This object represents a chat."
     )
@@ -1532,97 +1532,97 @@ defmodule ExGram do
     model(
       Message,
       [
-        {:message_id, :integer},
-        {:message_thread_id, :integer, :optional},
-        {:from, User, :optional},
-        {:sender_chat, Chat, :optional},
-        {:date, :integer},
-        {:chat, Chat},
-        {:forward_from, User, :optional},
-        {:forward_from_chat, Chat, :optional},
-        {:forward_from_message_id, :integer, :optional},
-        {:forward_signature, :string, :optional},
-        {:forward_sender_name, :string, :optional},
-        {:forward_date, :integer, :optional},
-        {:is_topic_message, :boolean, :optional},
-        {:is_automatic_forward, :boolean, :optional},
-        {:reply_to_message, Message, :optional},
-        {:via_bot, User, :optional},
-        {:edit_date, :integer, :optional},
-        {:has_protected_content, :boolean, :optional},
-        {:media_group_id, :string, :optional},
-        {:author_signature, :string, :optional},
-        {:text, :string, :optional},
-        {:entities, {:array, MessageEntity}, :optional},
-        {:animation, Animation, :optional},
-        {:audio, Audio, :optional},
-        {:document, Document, :optional},
-        {:photo, {:array, PhotoSize}, :optional},
-        {:sticker, Sticker, :optional},
-        {:video, Video, :optional},
-        {:video_note, VideoNote, :optional},
-        {:voice, Voice, :optional},
-        {:caption, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:has_media_spoiler, :boolean, :optional},
-        {:contact, Contact, :optional},
-        {:dice, Dice, :optional},
-        {:game, Game, :optional},
-        {:poll, Poll, :optional},
-        {:venue, Venue, :optional},
-        {:location, Location, :optional},
-        {:new_chat_members, {:array, User}, :optional},
-        {:left_chat_member, User, :optional},
-        {:new_chat_title, :string, :optional},
-        {:new_chat_photo, {:array, PhotoSize}, :optional},
-        {:delete_chat_photo, :boolean, :optional},
-        {:group_chat_created, :boolean, :optional},
-        {:supergroup_chat_created, :boolean, :optional},
-        {:channel_chat_created, :boolean, :optional},
-        {:message_auto_delete_timer_changed, MessageAutoDeleteTimerChanged, :optional},
-        {:migrate_to_chat_id, :integer, :optional},
-        {:migrate_from_chat_id, :integer, :optional},
-        {:pinned_message, Message, :optional},
-        {:invoice, Invoice, :optional},
-        {:successful_payment, SuccessfulPayment, :optional},
-        {:user_shared, UserShared, :optional},
-        {:chat_shared, ChatShared, :optional},
-        {:connected_website, :string, :optional},
-        {:write_access_allowed, WriteAccessAllowed, :optional},
-        {:passport_data, PassportData, :optional},
-        {:proximity_alert_triggered, ProximityAlertTriggered, :optional},
-        {:forum_topic_created, ForumTopicCreated, :optional},
-        {:forum_topic_edited, ForumTopicEdited, :optional},
-        {:forum_topic_closed, ForumTopicClosed, :optional},
-        {:forum_topic_reopened, ForumTopicReopened, :optional},
-        {:general_forum_topic_hidden, GeneralForumTopicHidden, :optional},
-        {:general_forum_topic_unhidden, GeneralForumTopicUnhidden, :optional},
-        {:video_chat_scheduled, VideoChatScheduled, :optional},
-        {:video_chat_started, VideoChatStarted, :optional},
-        {:video_chat_ended, VideoChatEnded, :optional},
-        {:video_chat_participants_invited, VideoChatParticipantsInvited, :optional},
-        {:web_app_data, WebAppData, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional}
+        {:message_id, [:integer]},
+        {:message_thread_id, [:integer], :optional},
+        {:from, [User], :optional},
+        {:sender_chat, [Chat], :optional},
+        {:date, [:integer]},
+        {:chat, [Chat]},
+        {:forward_from, [User], :optional},
+        {:forward_from_chat, [Chat], :optional},
+        {:forward_from_message_id, [:integer], :optional},
+        {:forward_signature, [:string], :optional},
+        {:forward_sender_name, [:string], :optional},
+        {:forward_date, [:integer], :optional},
+        {:is_topic_message, [:boolean], :optional},
+        {:is_automatic_forward, [:boolean], :optional},
+        {:reply_to_message, [Message], :optional},
+        {:via_bot, [User], :optional},
+        {:edit_date, [:integer], :optional},
+        {:has_protected_content, [:boolean], :optional},
+        {:media_group_id, [:string], :optional},
+        {:author_signature, [:string], :optional},
+        {:text, [:string], :optional},
+        {:entities, [{:array, MessageEntity}], :optional},
+        {:animation, [Animation], :optional},
+        {:audio, [Audio], :optional},
+        {:document, [Document], :optional},
+        {:photo, [{:array, PhotoSize}], :optional},
+        {:sticker, [Sticker], :optional},
+        {:video, [Video], :optional},
+        {:video_note, [VideoNote], :optional},
+        {:voice, [Voice], :optional},
+        {:caption, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:has_media_spoiler, [:boolean], :optional},
+        {:contact, [Contact], :optional},
+        {:dice, [Dice], :optional},
+        {:game, [Game], :optional},
+        {:poll, [Poll], :optional},
+        {:venue, [Venue], :optional},
+        {:location, [Location], :optional},
+        {:new_chat_members, [{:array, User}], :optional},
+        {:left_chat_member, [User], :optional},
+        {:new_chat_title, [:string], :optional},
+        {:new_chat_photo, [{:array, PhotoSize}], :optional},
+        {:delete_chat_photo, [:boolean], :optional},
+        {:group_chat_created, [:boolean], :optional},
+        {:supergroup_chat_created, [:boolean], :optional},
+        {:channel_chat_created, [:boolean], :optional},
+        {:message_auto_delete_timer_changed, [MessageAutoDeleteTimerChanged], :optional},
+        {:migrate_to_chat_id, [:integer], :optional},
+        {:migrate_from_chat_id, [:integer], :optional},
+        {:pinned_message, [Message], :optional},
+        {:invoice, [Invoice], :optional},
+        {:successful_payment, [SuccessfulPayment], :optional},
+        {:user_shared, [UserShared], :optional},
+        {:chat_shared, [ChatShared], :optional},
+        {:connected_website, [:string], :optional},
+        {:write_access_allowed, [WriteAccessAllowed], :optional},
+        {:passport_data, [PassportData], :optional},
+        {:proximity_alert_triggered, [ProximityAlertTriggered], :optional},
+        {:forum_topic_created, [ForumTopicCreated], :optional},
+        {:forum_topic_edited, [ForumTopicEdited], :optional},
+        {:forum_topic_closed, [ForumTopicClosed], :optional},
+        {:forum_topic_reopened, [ForumTopicReopened], :optional},
+        {:general_forum_topic_hidden, [GeneralForumTopicHidden], :optional},
+        {:general_forum_topic_unhidden, [GeneralForumTopicUnhidden], :optional},
+        {:video_chat_scheduled, [VideoChatScheduled], :optional},
+        {:video_chat_started, [VideoChatStarted], :optional},
+        {:video_chat_ended, [VideoChatEnded], :optional},
+        {:video_chat_participants_invited, [VideoChatParticipantsInvited], :optional},
+        {:web_app_data, [WebAppData], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional}
       ],
       "This object represents a message."
     )
 
     model(
       MessageId,
-      [{:message_id, :integer}],
+      [{:message_id, [:integer]}],
       "This object represents a unique message identifier."
     )
 
     model(
       MessageEntity,
       [
-        {:type, :string},
-        {:offset, :integer},
-        {:length, :integer},
-        {:url, :string, :optional},
-        {:user, User, :optional},
-        {:language, :string, :optional},
-        {:custom_emoji_id, :string, :optional}
+        {:type, [:string]},
+        {:offset, [:integer]},
+        {:length, [:integer]},
+        {:url, [:string], :optional},
+        {:user, [User], :optional},
+        {:language, [:string], :optional},
+        {:custom_emoji_id, [:string], :optional}
       ],
       "This object represents one special entity in a text message. For example, hashtags, usernames, URLs, etc."
     )
@@ -1630,11 +1630,11 @@ defmodule ExGram do
     model(
       PhotoSize,
       [
-        {:file_id, :string},
-        {:file_unique_id, :string},
-        {:width, :integer},
-        {:height, :integer},
-        {:file_size, :integer, :optional}
+        {:file_id, [:string]},
+        {:file_unique_id, [:string]},
+        {:width, [:integer]},
+        {:height, [:integer]},
+        {:file_size, [:integer], :optional}
       ],
       "This object represents one size of a photo or a file / sticker thumbnail."
     )
@@ -1642,15 +1642,15 @@ defmodule ExGram do
     model(
       Animation,
       [
-        {:file_id, :string},
-        {:file_unique_id, :string},
-        {:width, :integer},
-        {:height, :integer},
-        {:duration, :integer},
-        {:thumbnail, PhotoSize, :optional},
-        {:file_name, :string, :optional},
-        {:mime_type, :string, :optional},
-        {:file_size, :integer, :optional}
+        {:file_id, [:string]},
+        {:file_unique_id, [:string]},
+        {:width, [:integer]},
+        {:height, [:integer]},
+        {:duration, [:integer]},
+        {:thumbnail, [PhotoSize], :optional},
+        {:file_name, [:string], :optional},
+        {:mime_type, [:string], :optional},
+        {:file_size, [:integer], :optional}
       ],
       "This object represents an animation file (GIF or H.264/MPEG-4 AVC video without sound)."
     )
@@ -1658,15 +1658,15 @@ defmodule ExGram do
     model(
       Audio,
       [
-        {:file_id, :string},
-        {:file_unique_id, :string},
-        {:duration, :integer},
-        {:performer, :string, :optional},
-        {:title, :string, :optional},
-        {:file_name, :string, :optional},
-        {:mime_type, :string, :optional},
-        {:file_size, :integer, :optional},
-        {:thumbnail, PhotoSize, :optional}
+        {:file_id, [:string]},
+        {:file_unique_id, [:string]},
+        {:duration, [:integer]},
+        {:performer, [:string], :optional},
+        {:title, [:string], :optional},
+        {:file_name, [:string], :optional},
+        {:mime_type, [:string], :optional},
+        {:file_size, [:integer], :optional},
+        {:thumbnail, [PhotoSize], :optional}
       ],
       "This object represents an audio file to be treated as music by the Telegram clients."
     )
@@ -1674,12 +1674,12 @@ defmodule ExGram do
     model(
       Document,
       [
-        {:file_id, :string},
-        {:file_unique_id, :string},
-        {:thumbnail, PhotoSize, :optional},
-        {:file_name, :string, :optional},
-        {:mime_type, :string, :optional},
-        {:file_size, :integer, :optional}
+        {:file_id, [:string]},
+        {:file_unique_id, [:string]},
+        {:thumbnail, [PhotoSize], :optional},
+        {:file_name, [:string], :optional},
+        {:mime_type, [:string], :optional},
+        {:file_size, [:integer], :optional}
       ],
       "This object represents a general file (as opposed to photos, voice messages and audio files)."
     )
@@ -1687,15 +1687,15 @@ defmodule ExGram do
     model(
       Video,
       [
-        {:file_id, :string},
-        {:file_unique_id, :string},
-        {:width, :integer},
-        {:height, :integer},
-        {:duration, :integer},
-        {:thumbnail, PhotoSize, :optional},
-        {:file_name, :string, :optional},
-        {:mime_type, :string, :optional},
-        {:file_size, :integer, :optional}
+        {:file_id, [:string]},
+        {:file_unique_id, [:string]},
+        {:width, [:integer]},
+        {:height, [:integer]},
+        {:duration, [:integer]},
+        {:thumbnail, [PhotoSize], :optional},
+        {:file_name, [:string], :optional},
+        {:mime_type, [:string], :optional},
+        {:file_size, [:integer], :optional}
       ],
       "This object represents a video file."
     )
@@ -1703,12 +1703,12 @@ defmodule ExGram do
     model(
       VideoNote,
       [
-        {:file_id, :string},
-        {:file_unique_id, :string},
-        {:length, :integer},
-        {:duration, :integer},
-        {:thumbnail, PhotoSize, :optional},
-        {:file_size, :integer, :optional}
+        {:file_id, [:string]},
+        {:file_unique_id, [:string]},
+        {:length, [:integer]},
+        {:duration, [:integer]},
+        {:thumbnail, [PhotoSize], :optional},
+        {:file_size, [:integer], :optional}
       ],
       "This object represents a video message (available in Telegram apps as of v.4.0)."
     )
@@ -1716,11 +1716,11 @@ defmodule ExGram do
     model(
       Voice,
       [
-        {:file_id, :string},
-        {:file_unique_id, :string},
-        {:duration, :integer},
-        {:mime_type, :string, :optional},
-        {:file_size, :integer, :optional}
+        {:file_id, [:string]},
+        {:file_unique_id, [:string]},
+        {:duration, [:integer]},
+        {:mime_type, [:string], :optional},
+        {:file_size, [:integer], :optional}
       ],
       "This object represents a voice note."
     )
@@ -1728,49 +1728,49 @@ defmodule ExGram do
     model(
       Contact,
       [
-        {:phone_number, :string},
-        {:first_name, :string},
-        {:last_name, :string, :optional},
-        {:user_id, :integer, :optional},
-        {:vcard, :string, :optional}
+        {:phone_number, [:string]},
+        {:first_name, [:string]},
+        {:last_name, [:string], :optional},
+        {:user_id, [:integer], :optional},
+        {:vcard, [:string], :optional}
       ],
       "This object represents a phone contact."
     )
 
     model(
       Dice,
-      [{:emoji, :string}, {:value, :integer}],
+      [{:emoji, [:string]}, {:value, [:integer]}],
       "This object represents an animated emoji that displays a random value."
     )
 
     model(
       PollOption,
-      [{:text, :string}, {:voter_count, :integer}],
+      [{:text, [:string]}, {:voter_count, [:integer]}],
       "This object contains information about one answer option in a poll."
     )
 
     model(
       PollAnswer,
-      [{:poll_id, :string}, {:user, User}, {:option_ids, {:array, :integer}}],
+      [{:poll_id, [:string]}, {:user, [User]}, {:option_ids, [{:array, :integer}]}],
       "This object represents an answer of a user in a non-anonymous poll."
     )
 
     model(
       Poll,
       [
-        {:id, :string},
-        {:question, :string},
-        {:options, {:array, PollOption}},
-        {:total_voter_count, :integer},
-        {:is_closed, :boolean},
-        {:is_anonymous, :boolean},
-        {:type, :string},
-        {:allows_multiple_answers, :boolean},
-        {:correct_option_id, :integer, :optional},
-        {:explanation, :string, :optional},
-        {:explanation_entities, {:array, MessageEntity}, :optional},
-        {:open_period, :integer, :optional},
-        {:close_date, :integer, :optional}
+        {:id, [:string]},
+        {:question, [:string]},
+        {:options, [{:array, PollOption}]},
+        {:total_voter_count, [:integer]},
+        {:is_closed, [:boolean]},
+        {:is_anonymous, [:boolean]},
+        {:type, [:string]},
+        {:allows_multiple_answers, [:boolean]},
+        {:correct_option_id, [:integer], :optional},
+        {:explanation, [:string], :optional},
+        {:explanation_entities, [{:array, MessageEntity}], :optional},
+        {:open_period, [:integer], :optional},
+        {:close_date, [:integer], :optional}
       ],
       "This object contains information about a poll."
     )
@@ -1778,12 +1778,12 @@ defmodule ExGram do
     model(
       Location,
       [
-        {:longitude, :float},
-        {:latitude, :float},
-        {:horizontal_accuracy, :float, :optional},
-        {:live_period, :integer, :optional},
-        {:heading, :integer, :optional},
-        {:proximity_alert_radius, :integer, :optional}
+        {:longitude, [:float]},
+        {:latitude, [:float]},
+        {:horizontal_accuracy, [:float], :optional},
+        {:live_period, [:integer], :optional},
+        {:heading, [:integer], :optional},
+        {:proximity_alert_radius, [:integer], :optional}
       ],
       "This object represents a point on the map."
     )
@@ -1791,38 +1791,42 @@ defmodule ExGram do
     model(
       Venue,
       [
-        {:location, Location},
-        {:title, :string},
-        {:address, :string},
-        {:foursquare_id, :string, :optional},
-        {:foursquare_type, :string, :optional},
-        {:google_place_id, :string, :optional},
-        {:google_place_type, :string, :optional}
+        {:location, [Location]},
+        {:title, [:string]},
+        {:address, [:string]},
+        {:foursquare_id, [:string], :optional},
+        {:foursquare_type, [:string], :optional},
+        {:google_place_id, [:string], :optional},
+        {:google_place_type, [:string], :optional}
       ],
       "This object represents a venue."
     )
 
     model(
       WebAppData,
-      [{:data, :string}, {:button_text, :string}],
+      [{:data, [:string]}, {:button_text, [:string]}],
       "Describes data sent from a Web App to the bot."
     )
 
     model(
       ProximityAlertTriggered,
-      [{:traveler, User}, {:watcher, User}, {:distance, :integer}],
+      [{:traveler, [User]}, {:watcher, [User]}, {:distance, [:integer]}],
       "This object represents the content of a service message, sent whenever a user in the chat triggers a proximity alert set by another user."
     )
 
     model(
       MessageAutoDeleteTimerChanged,
-      [{:message_auto_delete_time, :integer}],
+      [{:message_auto_delete_time, [:integer]}],
       "This object represents a service message about a change in auto-delete timer settings."
     )
 
     model(
       ForumTopicCreated,
-      [{:name, :string}, {:icon_color, :integer}, {:icon_custom_emoji_id, :string, :optional}],
+      [
+        {:name, [:string]},
+        {:icon_color, [:integer]},
+        {:icon_custom_emoji_id, [:string], :optional}
+      ],
       "This object represents a service message about a new forum topic created in the chat."
     )
 
@@ -1834,7 +1838,7 @@ defmodule ExGram do
 
     model(
       ForumTopicEdited,
-      [{:name, :string, :optional}, {:icon_custom_emoji_id, :string, :optional}],
+      [{:name, [:string], :optional}, {:icon_custom_emoji_id, [:string], :optional}],
       "This object represents a service message about an edited forum topic."
     )
 
@@ -1858,13 +1862,13 @@ defmodule ExGram do
 
     model(
       UserShared,
-      [{:request_id, :integer}, {:user_id, :integer}],
+      [{:request_id, [:integer]}, {:user_id, [:integer]}],
       "This object contains information about the user whose identifier was shared with the bot using a KeyboardButtonRequestUser button."
     )
 
     model(
       ChatShared,
-      [{:request_id, :integer}, {:chat_id, :integer}],
+      [{:request_id, [:integer]}, {:chat_id, [:integer]}],
       "This object contains information about the chat whose identifier was shared with the bot using a KeyboardButtonRequestChat button."
     )
 
@@ -1876,7 +1880,7 @@ defmodule ExGram do
 
     model(
       VideoChatScheduled,
-      [{:start_date, :integer}],
+      [{:start_date, [:integer]}],
       "This object represents a service message about a video chat scheduled in the chat."
     )
 
@@ -1888,44 +1892,44 @@ defmodule ExGram do
 
     model(
       VideoChatEnded,
-      [{:duration, :integer}],
+      [{:duration, [:integer]}],
       "This object represents a service message about a video chat ended in the chat."
     )
 
     model(
       VideoChatParticipantsInvited,
-      [{:users, {:array, User}}],
+      [{:users, [{:array, User}]}],
       "This object represents a service message about new members invited to a video chat."
     )
 
     model(
       UserProfilePhotos,
-      [{:total_count, :integer}, {:photos, {:array, {:array, PhotoSize}}}],
+      [{:total_count, [:integer]}, {:photos, [{:array, {:array, PhotoSize}}]}],
       "This object represent a user's profile pictures."
     )
 
     model(
       File,
       [
-        {:file_id, :string},
-        {:file_unique_id, :string},
-        {:file_size, :integer, :optional},
-        {:file_path, :string, :optional}
+        {:file_id, [:string]},
+        {:file_unique_id, [:string]},
+        {:file_size, [:integer], :optional},
+        {:file_path, [:string], :optional}
       ],
       "This object represents a file ready to be downloaded. The file can be downloaded via the link https://api.telegram.org/file/bot<token>/<file_path>. It is guaranteed that the link will be valid for at least 1 hour. When the link expires, a new one can be requested by calling getFile."
     )
 
-    model(WebAppInfo, [{:url, :string}], "Describes a Web App.")
+    model(WebAppInfo, [{:url, [:string]}], "Describes a Web App.")
 
     model(
       ReplyKeyboardMarkup,
       [
-        {:keyboard, {:array, {:array, KeyboardButton}}},
-        {:is_persistent, :boolean, :optional},
-        {:resize_keyboard, :boolean, :optional},
-        {:one_time_keyboard, :boolean, :optional},
-        {:input_field_placeholder, :string, :optional},
-        {:selective, :boolean, :optional}
+        {:keyboard, [{:array, {:array, KeyboardButton}}]},
+        {:is_persistent, [:boolean], :optional},
+        {:resize_keyboard, [:boolean], :optional},
+        {:one_time_keyboard, [:boolean], :optional},
+        {:input_field_placeholder, [:string], :optional},
+        {:selective, [:boolean], :optional}
       ],
       "This object represents a custom keyboard with reply options (see Introduction to bots for details and examples)."
     )
@@ -1933,13 +1937,13 @@ defmodule ExGram do
     model(
       KeyboardButton,
       [
-        {:text, :string},
-        {:request_user, KeyboardButtonRequestUser, :optional},
-        {:request_chat, KeyboardButtonRequestChat, :optional},
-        {:request_contact, :boolean, :optional},
-        {:request_location, :boolean, :optional},
-        {:request_poll, KeyboardButtonPollType, :optional},
-        {:web_app, WebAppInfo, :optional}
+        {:text, [:string]},
+        {:request_user, [KeyboardButtonRequestUser], :optional},
+        {:request_chat, [KeyboardButtonRequestChat], :optional},
+        {:request_contact, [:boolean], :optional},
+        {:request_location, [:boolean], :optional},
+        {:request_poll, [KeyboardButtonPollType], :optional},
+        {:web_app, [WebAppInfo], :optional}
       ],
       "This object represents one button of the reply keyboard. For simple text buttons, String can be used instead of this object to specify the button text. The optional fields web_app, request_user, request_chat, request_contact, request_location, and request_poll are mutually exclusive."
     )
@@ -1947,9 +1951,9 @@ defmodule ExGram do
     model(
       KeyboardButtonRequestUser,
       [
-        {:request_id, :integer},
-        {:user_is_bot, :boolean, :optional},
-        {:user_is_premium, :boolean, :optional}
+        {:request_id, [:integer]},
+        {:user_is_bot, [:boolean], :optional},
+        {:user_is_premium, [:boolean], :optional}
       ],
       "This object defines the criteria used to request a suitable user. The identifier of the selected user will be shared with the bot when the corresponding button is pressed. More about requesting users »"
     )
@@ -1957,48 +1961,48 @@ defmodule ExGram do
     model(
       KeyboardButtonRequestChat,
       [
-        {:request_id, :integer},
-        {:chat_is_channel, :boolean},
-        {:chat_is_forum, :boolean, :optional},
-        {:chat_has_username, :boolean, :optional},
-        {:chat_is_created, :boolean, :optional},
-        {:user_administrator_rights, ChatAdministratorRights, :optional},
-        {:bot_administrator_rights, ChatAdministratorRights, :optional},
-        {:bot_is_member, :boolean, :optional}
+        {:request_id, [:integer]},
+        {:chat_is_channel, [:boolean]},
+        {:chat_is_forum, [:boolean], :optional},
+        {:chat_has_username, [:boolean], :optional},
+        {:chat_is_created, [:boolean], :optional},
+        {:user_administrator_rights, [ChatAdministratorRights], :optional},
+        {:bot_administrator_rights, [ChatAdministratorRights], :optional},
+        {:bot_is_member, [:boolean], :optional}
       ],
       "This object defines the criteria used to request a suitable chat. The identifier of the selected chat will be shared with the bot when the corresponding button is pressed. More about requesting chats »"
     )
 
     model(
       KeyboardButtonPollType,
-      [{:type, :string, :optional}],
+      [{:type, [:string], :optional}],
       "This object represents type of a poll, which is allowed to be created and sent when the corresponding button is pressed."
     )
 
     model(
       ReplyKeyboardRemove,
-      [{:remove_keyboard, :boolean}, {:selective, :boolean, :optional}],
+      [{:remove_keyboard, [:boolean]}, {:selective, [:boolean], :optional}],
       "Upon receiving a message with this object, Telegram clients will remove the current custom keyboard and display the default letter-keyboard. By default, custom keyboards are displayed until a new keyboard is sent by a bot. An exception is made for one-time keyboards that are hidden immediately after the user presses a button (see ReplyKeyboardMarkup)."
     )
 
     model(
       InlineKeyboardMarkup,
-      [{:inline_keyboard, {:array, {:array, InlineKeyboardButton}}}],
+      [{:inline_keyboard, [{:array, {:array, InlineKeyboardButton}}]}],
       "This object represents an inline keyboard that appears right next to the message it belongs to."
     )
 
     model(
       InlineKeyboardButton,
       [
-        {:text, :string},
-        {:url, :string, :optional},
-        {:callback_data, :string, :optional},
-        {:web_app, WebAppInfo, :optional},
-        {:login_url, LoginUrl, :optional},
-        {:switch_inline_query, :string, :optional},
-        {:switch_inline_query_current_chat, :string, :optional},
-        {:callback_game, CallbackGame, :optional},
-        {:pay, :boolean, :optional}
+        {:text, [:string]},
+        {:url, [:string], :optional},
+        {:callback_data, [:string], :optional},
+        {:web_app, [WebAppInfo], :optional},
+        {:login_url, [LoginUrl], :optional},
+        {:switch_inline_query, [:string], :optional},
+        {:switch_inline_query_current_chat, [:string], :optional},
+        {:callback_game, [CallbackGame], :optional},
+        {:pay, [:boolean], :optional}
       ],
       "This object represents one button of an inline keyboard. You must use exactly one of the optional fields."
     )
@@ -2006,10 +2010,10 @@ defmodule ExGram do
     model(
       LoginUrl,
       [
-        {:url, :string},
-        {:forward_text, :string, :optional},
-        {:bot_username, :string, :optional},
-        {:request_write_access, :boolean, :optional}
+        {:url, [:string]},
+        {:forward_text, [:string], :optional},
+        {:bot_username, [:string], :optional},
+        {:request_write_access, [:boolean], :optional}
       ],
       "This object represents a parameter of the inline keyboard button used to automatically authorize a user. Serves as a great replacement for the Telegram Login Widget when the user is coming from Telegram. All the user needs to do is tap/click a button and confirm that they want to log in:"
     )
@@ -2017,13 +2021,13 @@ defmodule ExGram do
     model(
       CallbackQuery,
       [
-        {:id, :string},
-        {:from, User},
-        {:message, Message, :optional},
-        {:inline_message_id, :string, :optional},
-        {:chat_instance, :string},
-        {:data, :string, :optional},
-        {:game_short_name, :string, :optional}
+        {:id, [:string]},
+        {:from, [User]},
+        {:message, [Message], :optional},
+        {:inline_message_id, [:string], :optional},
+        {:chat_instance, [:string]},
+        {:data, [:string], :optional},
+        {:game_short_name, [:string], :optional}
       ],
       "This object represents an incoming callback query from a callback button in an inline keyboard. If the button that originated the query was attached to a message sent by the bot, the field message will be present. If the button was attached to a message sent via the bot (in inline mode), the field inline_message_id will be present. Exactly one of the fields data or game_short_name will be present."
     )
@@ -2031,9 +2035,9 @@ defmodule ExGram do
     model(
       ForceReply,
       [
-        {:force_reply, :boolean},
-        {:input_field_placeholder, :string, :optional},
-        {:selective, :boolean, :optional}
+        {:force_reply, [:boolean]},
+        {:input_field_placeholder, [:string], :optional},
+        {:selective, [:boolean], :optional}
       ],
       "Upon receiving a message with this object, Telegram clients will display a reply interface to the user (act as if the user has selected the bot's message and tapped 'Reply'). This can be extremely useful if you want to create user-friendly step-by-step interfaces without having to sacrifice privacy mode."
     )
@@ -2041,10 +2045,10 @@ defmodule ExGram do
     model(
       ChatPhoto,
       [
-        {:small_file_id, :string},
-        {:small_file_unique_id, :string},
-        {:big_file_id, :string},
-        {:big_file_unique_id, :string}
+        {:small_file_id, [:string]},
+        {:small_file_unique_id, [:string]},
+        {:big_file_id, [:string]},
+        {:big_file_unique_id, [:string]}
       ],
       "This object represents a chat photo."
     )
@@ -2052,15 +2056,15 @@ defmodule ExGram do
     model(
       ChatInviteLink,
       [
-        {:invite_link, :string},
-        {:creator, User},
-        {:creates_join_request, :boolean},
-        {:is_primary, :boolean},
-        {:is_revoked, :boolean},
-        {:name, :string, :optional},
-        {:expire_date, :integer, :optional},
-        {:member_limit, :integer, :optional},
-        {:pending_join_request_count, :integer, :optional}
+        {:invite_link, [:string]},
+        {:creator, [User]},
+        {:creates_join_request, [:boolean]},
+        {:is_primary, [:boolean]},
+        {:is_revoked, [:boolean]},
+        {:name, [:string], :optional},
+        {:expire_date, [:integer], :optional},
+        {:member_limit, [:integer], :optional},
+        {:pending_join_request_count, [:integer], :optional}
       ],
       "Represents an invite link for a chat."
     )
@@ -2068,18 +2072,18 @@ defmodule ExGram do
     model(
       ChatAdministratorRights,
       [
-        {:is_anonymous, :boolean},
-        {:can_manage_chat, :boolean},
-        {:can_delete_messages, :boolean},
-        {:can_manage_video_chats, :boolean},
-        {:can_restrict_members, :boolean},
-        {:can_promote_members, :boolean},
-        {:can_change_info, :boolean},
-        {:can_invite_users, :boolean},
-        {:can_post_messages, :boolean, :optional},
-        {:can_edit_messages, :boolean, :optional},
-        {:can_pin_messages, :boolean, :optional},
-        {:can_manage_topics, :boolean, :optional}
+        {:is_anonymous, [:boolean]},
+        {:can_manage_chat, [:boolean]},
+        {:can_delete_messages, [:boolean]},
+        {:can_manage_video_chats, [:boolean]},
+        {:can_restrict_members, [:boolean]},
+        {:can_promote_members, [:boolean]},
+        {:can_change_info, [:boolean]},
+        {:can_invite_users, [:boolean]},
+        {:can_post_messages, [:boolean], :optional},
+        {:can_edit_messages, [:boolean], :optional},
+        {:can_pin_messages, [:boolean], :optional},
+        {:can_manage_topics, [:boolean], :optional}
       ],
       "Represents the rights of an administrator in a chat."
     )
@@ -2087,10 +2091,10 @@ defmodule ExGram do
     model(
       ChatMemberOwner,
       [
-        {:status, :string},
-        {:user, User},
-        {:is_anonymous, :boolean},
-        {:custom_title, :string, :optional}
+        {:status, [:string]},
+        {:user, [User]},
+        {:is_anonymous, [:boolean]},
+        {:custom_title, [:string], :optional}
       ],
       "Represents a chat member that owns the chat and has all administrator privileges."
     )
@@ -2098,78 +2102,78 @@ defmodule ExGram do
     model(
       ChatMemberAdministrator,
       [
-        {:status, :string},
-        {:user, User},
-        {:can_be_edited, :boolean},
-        {:is_anonymous, :boolean},
-        {:can_manage_chat, :boolean},
-        {:can_delete_messages, :boolean},
-        {:can_manage_video_chats, :boolean},
-        {:can_restrict_members, :boolean},
-        {:can_promote_members, :boolean},
-        {:can_change_info, :boolean},
-        {:can_invite_users, :boolean},
-        {:can_post_messages, :boolean, :optional},
-        {:can_edit_messages, :boolean, :optional},
-        {:can_pin_messages, :boolean, :optional},
-        {:can_manage_topics, :boolean, :optional},
-        {:custom_title, :string, :optional}
+        {:status, [:string]},
+        {:user, [User]},
+        {:can_be_edited, [:boolean]},
+        {:is_anonymous, [:boolean]},
+        {:can_manage_chat, [:boolean]},
+        {:can_delete_messages, [:boolean]},
+        {:can_manage_video_chats, [:boolean]},
+        {:can_restrict_members, [:boolean]},
+        {:can_promote_members, [:boolean]},
+        {:can_change_info, [:boolean]},
+        {:can_invite_users, [:boolean]},
+        {:can_post_messages, [:boolean], :optional},
+        {:can_edit_messages, [:boolean], :optional},
+        {:can_pin_messages, [:boolean], :optional},
+        {:can_manage_topics, [:boolean], :optional},
+        {:custom_title, [:string], :optional}
       ],
       "Represents a chat member that has some additional privileges."
     )
 
     model(
       ChatMemberMember,
-      [{:status, :string}, {:user, User}],
+      [{:status, [:string]}, {:user, [User]}],
       "Represents a chat member that has no additional privileges or restrictions."
     )
 
     model(
       ChatMemberRestricted,
       [
-        {:status, :string},
-        {:user, User},
-        {:is_member, :boolean},
-        {:can_send_messages, :boolean},
-        {:can_send_audios, :boolean},
-        {:can_send_documents, :boolean},
-        {:can_send_photos, :boolean},
-        {:can_send_videos, :boolean},
-        {:can_send_video_notes, :boolean},
-        {:can_send_voice_notes, :boolean},
-        {:can_send_polls, :boolean},
-        {:can_send_other_messages, :boolean},
-        {:can_add_web_page_previews, :boolean},
-        {:can_change_info, :boolean},
-        {:can_invite_users, :boolean},
-        {:can_pin_messages, :boolean},
-        {:can_manage_topics, :boolean},
-        {:until_date, :integer}
+        {:status, [:string]},
+        {:user, [User]},
+        {:is_member, [:boolean]},
+        {:can_send_messages, [:boolean]},
+        {:can_send_audios, [:boolean]},
+        {:can_send_documents, [:boolean]},
+        {:can_send_photos, [:boolean]},
+        {:can_send_videos, [:boolean]},
+        {:can_send_video_notes, [:boolean]},
+        {:can_send_voice_notes, [:boolean]},
+        {:can_send_polls, [:boolean]},
+        {:can_send_other_messages, [:boolean]},
+        {:can_add_web_page_previews, [:boolean]},
+        {:can_change_info, [:boolean]},
+        {:can_invite_users, [:boolean]},
+        {:can_pin_messages, [:boolean]},
+        {:can_manage_topics, [:boolean]},
+        {:until_date, [:integer]}
       ],
       "Represents a chat member that is under certain restrictions in the chat. Supergroups only."
     )
 
     model(
       ChatMemberLeft,
-      [{:status, :string}, {:user, User}],
+      [{:status, [:string]}, {:user, [User]}],
       "Represents a chat member that isn't currently a member of the chat, but may join it themselves."
     )
 
     model(
       ChatMemberBanned,
-      [{:status, :string}, {:user, User}, {:until_date, :integer}],
+      [{:status, [:string]}, {:user, [User]}, {:until_date, [:integer]}],
       "Represents a chat member that was banned in the chat and can't return to the chat or view chat messages."
     )
 
     model(
       ChatMemberUpdated,
       [
-        {:chat, Chat},
-        {:from, User},
-        {:date, :integer},
-        {:old_chat_member, ChatMember},
-        {:new_chat_member, ChatMember},
-        {:invite_link, ChatInviteLink, :optional}
+        {:chat, [Chat]},
+        {:from, [User]},
+        {:date, [:integer]},
+        {:old_chat_member, [ChatMember]},
+        {:new_chat_member, [ChatMember]},
+        {:invite_link, [ChatInviteLink], :optional}
       ],
       "This object represents changes in the status of a chat member."
     )
@@ -2177,12 +2181,12 @@ defmodule ExGram do
     model(
       ChatJoinRequest,
       [
-        {:chat, Chat},
-        {:from, User},
-        {:user_chat_id, :integer},
-        {:date, :integer},
-        {:bio, :string, :optional},
-        {:invite_link, ChatInviteLink, :optional}
+        {:chat, [Chat]},
+        {:from, [User]},
+        {:user_chat_id, [:integer]},
+        {:date, [:integer]},
+        {:bio, [:string], :optional},
+        {:invite_link, [ChatInviteLink], :optional}
       ],
       "Represents a join request sent to a chat."
     )
@@ -2190,134 +2194,134 @@ defmodule ExGram do
     model(
       ChatPermissions,
       [
-        {:can_send_messages, :boolean, :optional},
-        {:can_send_audios, :boolean, :optional},
-        {:can_send_documents, :boolean, :optional},
-        {:can_send_photos, :boolean, :optional},
-        {:can_send_videos, :boolean, :optional},
-        {:can_send_video_notes, :boolean, :optional},
-        {:can_send_voice_notes, :boolean, :optional},
-        {:can_send_polls, :boolean, :optional},
-        {:can_send_other_messages, :boolean, :optional},
-        {:can_add_web_page_previews, :boolean, :optional},
-        {:can_change_info, :boolean, :optional},
-        {:can_invite_users, :boolean, :optional},
-        {:can_pin_messages, :boolean, :optional},
-        {:can_manage_topics, :boolean, :optional}
+        {:can_send_messages, [:boolean], :optional},
+        {:can_send_audios, [:boolean], :optional},
+        {:can_send_documents, [:boolean], :optional},
+        {:can_send_photos, [:boolean], :optional},
+        {:can_send_videos, [:boolean], :optional},
+        {:can_send_video_notes, [:boolean], :optional},
+        {:can_send_voice_notes, [:boolean], :optional},
+        {:can_send_polls, [:boolean], :optional},
+        {:can_send_other_messages, [:boolean], :optional},
+        {:can_add_web_page_previews, [:boolean], :optional},
+        {:can_change_info, [:boolean], :optional},
+        {:can_invite_users, [:boolean], :optional},
+        {:can_pin_messages, [:boolean], :optional},
+        {:can_manage_topics, [:boolean], :optional}
       ],
       "Describes actions that a non-administrator user is allowed to take in a chat."
     )
 
     model(
       ChatLocation,
-      [{:location, Location}, {:address, :string}],
+      [{:location, [Location]}, {:address, [:string]}],
       "Represents a location to which a chat is connected."
     )
 
     model(
       ForumTopic,
       [
-        {:message_thread_id, :integer},
-        {:name, :string},
-        {:icon_color, :integer},
-        {:icon_custom_emoji_id, :string, :optional}
+        {:message_thread_id, [:integer]},
+        {:name, [:string]},
+        {:icon_color, [:integer]},
+        {:icon_custom_emoji_id, [:string], :optional}
       ],
       "This object represents a forum topic."
     )
 
     model(
       BotCommand,
-      [{:command, :string}, {:description, :string}],
+      [{:command, [:string]}, {:description, [:string]}],
       "This object represents a bot command."
     )
 
     model(
       BotCommandScopeDefault,
-      [{:type, :string}],
+      [{:type, [:string]}],
       "Represents the default scope of bot commands. Default commands are used if no commands with a narrower scope are specified for the user."
     )
 
     model(
       BotCommandScopeAllPrivateChats,
-      [{:type, :string}],
+      [{:type, [:string]}],
       "Represents the scope of bot commands, covering all private chats."
     )
 
     model(
       BotCommandScopeAllGroupChats,
-      [{:type, :string}],
+      [{:type, [:string]}],
       "Represents the scope of bot commands, covering all group and supergroup chats."
     )
 
     model(
       BotCommandScopeAllChatAdministrators,
-      [{:type, :string}],
+      [{:type, [:string]}],
       "Represents the scope of bot commands, covering all group and supergroup chat administrators."
     )
 
     model(
       BotCommandScopeChat,
-      [{:type, :string}, {:chat_id, :integer}],
+      [{:type, [:string]}, {:chat_id, [:integer, :string]}],
       "Represents the scope of bot commands, covering a specific chat."
     )
 
     model(
       BotCommandScopeChatAdministrators,
-      [{:type, :string}, {:chat_id, :integer}],
+      [{:type, [:string]}, {:chat_id, [:integer, :string]}],
       "Represents the scope of bot commands, covering all administrators of a specific group or supergroup chat."
     )
 
     model(
       BotCommandScopeChatMember,
-      [{:type, :string}, {:chat_id, :integer}, {:user_id, :integer}],
+      [{:type, [:string]}, {:chat_id, [:integer, :string]}, {:user_id, [:integer]}],
       "Represents the scope of bot commands, covering a specific member of a group or supergroup chat."
     )
 
     model(
       BotDescription,
-      [{:description, :string}],
+      [{:description, [:string]}],
       "This object represents the bot's description."
     )
 
     model(
       BotShortDescription,
-      [{:short_description, :string}],
+      [{:short_description, [:string]}],
       "This object represents the bot's short description."
     )
 
     model(
       MenuButtonCommands,
-      [{:type, :string}],
+      [{:type, [:string]}],
       "Represents a menu button, which opens the bot's list of commands."
     )
 
     model(
       MenuButtonWebApp,
-      [{:type, :string}, {:text, :string}, {:web_app, WebAppInfo}],
+      [{:type, [:string]}, {:text, [:string]}, {:web_app, [WebAppInfo]}],
       "Represents a menu button, which launches a Web App."
     )
 
     model(
       MenuButtonDefault,
-      [{:type, :string}],
+      [{:type, [:string]}],
       "Describes that no specific value for the menu button was set."
     )
 
     model(
       ResponseParameters,
-      [{:migrate_to_chat_id, :integer, :optional}, {:retry_after, :integer, :optional}],
+      [{:migrate_to_chat_id, [:integer], :optional}, {:retry_after, [:integer], :optional}],
       "Describes why a request was unsuccessful."
     )
 
     model(
       InputMedia,
       [
-        {:type, :string},
-        {:media, :string},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:has_spoiler, :boolean, :optional}
+        {:type, [:string]},
+        {:media, [:string]},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:has_spoiler, [:boolean], :optional}
       ],
       "This object represents the content of a media message to be sent. It should be one of"
     )
@@ -2325,12 +2329,12 @@ defmodule ExGram do
     model(
       InputMediaPhoto,
       [
-        {:type, :string},
-        {:media, :string},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:has_spoiler, :boolean, :optional}
+        {:type, [:string]},
+        {:media, [:string]},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:has_spoiler, [:boolean], :optional}
       ],
       "Represents a photo to be sent."
     )
@@ -2338,17 +2342,17 @@ defmodule ExGram do
     model(
       InputMediaVideo,
       [
-        {:type, :string},
-        {:media, :string},
-        {:thumbnail, :file, :optional},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:width, :integer, :optional},
-        {:height, :integer, :optional},
-        {:duration, :integer, :optional},
-        {:supports_streaming, :boolean, :optional},
-        {:has_spoiler, :boolean, :optional}
+        {:type, [:string]},
+        {:media, [:string]},
+        {:thumbnail, [:file, :string], :optional},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:width, [:integer], :optional},
+        {:height, [:integer], :optional},
+        {:duration, [:integer], :optional},
+        {:supports_streaming, [:boolean], :optional},
+        {:has_spoiler, [:boolean], :optional}
       ],
       "Represents a video to be sent."
     )
@@ -2356,16 +2360,16 @@ defmodule ExGram do
     model(
       InputMediaAnimation,
       [
-        {:type, :string},
-        {:media, :string},
-        {:thumbnail, :file, :optional},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:width, :integer, :optional},
-        {:height, :integer, :optional},
-        {:duration, :integer, :optional},
-        {:has_spoiler, :boolean, :optional}
+        {:type, [:string]},
+        {:media, [:string]},
+        {:thumbnail, [:file, :string], :optional},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:width, [:integer], :optional},
+        {:height, [:integer], :optional},
+        {:duration, [:integer], :optional},
+        {:has_spoiler, [:boolean], :optional}
       ],
       "Represents an animation file (GIF or H.264/MPEG-4 AVC video without sound) to be sent."
     )
@@ -2373,15 +2377,15 @@ defmodule ExGram do
     model(
       InputMediaAudio,
       [
-        {:type, :string},
-        {:media, :string},
-        {:thumbnail, :file, :optional},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:duration, :integer, :optional},
-        {:performer, :string, :optional},
-        {:title, :string, :optional}
+        {:type, [:string]},
+        {:media, [:string]},
+        {:thumbnail, [:file, :string], :optional},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:duration, [:integer], :optional},
+        {:performer, [:string], :optional},
+        {:title, [:string], :optional}
       ],
       "Represents an audio file to be treated as music to be sent."
     )
@@ -2389,13 +2393,13 @@ defmodule ExGram do
     model(
       InputMediaDocument,
       [
-        {:type, :string},
-        {:media, :string},
-        {:thumbnail, :file, :optional},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:disable_content_type_detection, :boolean, :optional}
+        {:type, [:string]},
+        {:media, [:string]},
+        {:thumbnail, [:file, :string], :optional},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:disable_content_type_detection, [:boolean], :optional}
       ],
       "Represents a general file to be sent."
     )
@@ -2403,21 +2407,21 @@ defmodule ExGram do
     model(
       Sticker,
       [
-        {:file_id, :string},
-        {:file_unique_id, :string},
-        {:type, :string},
-        {:width, :integer},
-        {:height, :integer},
-        {:is_animated, :boolean},
-        {:is_video, :boolean},
-        {:thumbnail, PhotoSize, :optional},
-        {:emoji, :string, :optional},
-        {:set_name, :string, :optional},
-        {:premium_animation, File, :optional},
-        {:mask_position, MaskPosition, :optional},
-        {:custom_emoji_id, :string, :optional},
-        {:needs_repainting, :boolean, :optional},
-        {:file_size, :integer, :optional}
+        {:file_id, [:string]},
+        {:file_unique_id, [:string]},
+        {:type, [:string]},
+        {:width, [:integer]},
+        {:height, [:integer]},
+        {:is_animated, [:boolean]},
+        {:is_video, [:boolean]},
+        {:thumbnail, [PhotoSize], :optional},
+        {:emoji, [:string], :optional},
+        {:set_name, [:string], :optional},
+        {:premium_animation, [File], :optional},
+        {:mask_position, [MaskPosition], :optional},
+        {:custom_emoji_id, [:string], :optional},
+        {:needs_repainting, [:boolean], :optional},
+        {:file_size, [:integer], :optional}
       ],
       "This object represents a sticker."
     )
@@ -2425,30 +2429,30 @@ defmodule ExGram do
     model(
       StickerSet,
       [
-        {:name, :string},
-        {:title, :string},
-        {:sticker_type, :string},
-        {:is_animated, :boolean},
-        {:is_video, :boolean},
-        {:stickers, {:array, Sticker}},
-        {:thumbnail, PhotoSize, :optional}
+        {:name, [:string]},
+        {:title, [:string]},
+        {:sticker_type, [:string]},
+        {:is_animated, [:boolean]},
+        {:is_video, [:boolean]},
+        {:stickers, [{:array, Sticker}]},
+        {:thumbnail, [PhotoSize], :optional}
       ],
       "This object represents a sticker set."
     )
 
     model(
       MaskPosition,
-      [{:point, :string}, {:x_shift, :float}, {:y_shift, :float}, {:scale, :float}],
+      [{:point, [:string]}, {:x_shift, [:float]}, {:y_shift, [:float]}, {:scale, [:float]}],
       "This object describes the position on faces where a mask should be placed by default."
     )
 
     model(
       InputSticker,
       [
-        {:sticker, :file},
-        {:emoji_list, {:array, :string}},
-        {:mask_position, MaskPosition, :optional},
-        {:keywords, {:array, :string}, :optional}
+        {:sticker, [:file, :string]},
+        {:emoji_list, [{:array, :string}]},
+        {:mask_position, [MaskPosition], :optional},
+        {:keywords, [{:array, :string}], :optional}
       ],
       "This object describes a sticker to be added to a sticker set."
     )
@@ -2456,12 +2460,12 @@ defmodule ExGram do
     model(
       InlineQuery,
       [
-        {:id, :string},
-        {:from, User},
-        {:query, :string},
-        {:offset, :string},
-        {:chat_type, :string, :optional},
-        {:location, Location, :optional}
+        {:id, [:string]},
+        {:from, [User]},
+        {:query, [:string]},
+        {:offset, [:string]},
+        {:chat_type, [:string], :optional},
+        {:location, [Location], :optional}
       ],
       "This object represents an incoming inline query. When the user sends an empty query, your bot could return some default or trending results."
     )
@@ -2469,17 +2473,17 @@ defmodule ExGram do
     model(
       InlineQueryResultArticle,
       [
-        {:type, :string},
-        {:id, :string},
-        {:title, :string},
-        {:input_message_content, InputMessageContent},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:url, :string, :optional},
-        {:hide_url, :boolean, :optional},
-        {:description, :string, :optional},
-        {:thumbnail_url, :string, :optional},
-        {:thumbnail_width, :integer, :optional},
-        {:thumbnail_height, :integer, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:title, [:string]},
+        {:input_message_content, [InputMessageContent]},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:url, [:string], :optional},
+        {:hide_url, [:boolean], :optional},
+        {:description, [:string], :optional},
+        {:thumbnail_url, [:string], :optional},
+        {:thumbnail_width, [:integer], :optional},
+        {:thumbnail_height, [:integer], :optional}
       ],
       "Represents a link to an article or web page."
     )
@@ -2487,19 +2491,19 @@ defmodule ExGram do
     model(
       InlineQueryResultPhoto,
       [
-        {:type, :string},
-        {:id, :string},
-        {:photo_url, :string},
-        {:thumbnail_url, :string},
-        {:photo_width, :integer, :optional},
-        {:photo_height, :integer, :optional},
-        {:title, :string, :optional},
-        {:description, :string, :optional},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:photo_url, [:string]},
+        {:thumbnail_url, [:string]},
+        {:photo_width, [:integer], :optional},
+        {:photo_height, [:integer], :optional},
+        {:title, [:string], :optional},
+        {:description, [:string], :optional},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional}
       ],
       "Represents a link to a photo. By default, this photo will be sent by the user with optional caption. Alternatively, you can use input_message_content to send a message with the specified content instead of the photo."
     )
@@ -2507,20 +2511,20 @@ defmodule ExGram do
     model(
       InlineQueryResultGif,
       [
-        {:type, :string},
-        {:id, :string},
-        {:gif_url, :string},
-        {:gif_width, :integer, :optional},
-        {:gif_height, :integer, :optional},
-        {:gif_duration, :integer, :optional},
-        {:thumbnail_url, :string},
-        {:thumbnail_mime_type, :string, :optional},
-        {:title, :string, :optional},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:gif_url, [:string]},
+        {:gif_width, [:integer], :optional},
+        {:gif_height, [:integer], :optional},
+        {:gif_duration, [:integer], :optional},
+        {:thumbnail_url, [:string]},
+        {:thumbnail_mime_type, [:string], :optional},
+        {:title, [:string], :optional},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional}
       ],
       "Represents a link to an animated GIF file. By default, this animated GIF file will be sent by the user with optional caption. Alternatively, you can use input_message_content to send a message with the specified content instead of the animation."
     )
@@ -2528,20 +2532,20 @@ defmodule ExGram do
     model(
       InlineQueryResultMpeg4Gif,
       [
-        {:type, :string},
-        {:id, :string},
-        {:mpeg4_url, :string},
-        {:mpeg4_width, :integer, :optional},
-        {:mpeg4_height, :integer, :optional},
-        {:mpeg4_duration, :integer, :optional},
-        {:thumbnail_url, :string},
-        {:thumbnail_mime_type, :string, :optional},
-        {:title, :string, :optional},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:mpeg4_url, [:string]},
+        {:mpeg4_width, [:integer], :optional},
+        {:mpeg4_height, [:integer], :optional},
+        {:mpeg4_duration, [:integer], :optional},
+        {:thumbnail_url, [:string]},
+        {:thumbnail_mime_type, [:string], :optional},
+        {:title, [:string], :optional},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional}
       ],
       "Represents a link to a video animation (H.264/MPEG-4 AVC video without sound). By default, this animated MPEG-4 file will be sent by the user with optional caption. Alternatively, you can use input_message_content to send a message with the specified content instead of the animation."
     )
@@ -2549,21 +2553,21 @@ defmodule ExGram do
     model(
       InlineQueryResultVideo,
       [
-        {:type, :string},
-        {:id, :string},
-        {:video_url, :string},
-        {:mime_type, :string},
-        {:thumbnail_url, :string},
-        {:title, :string},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:video_width, :integer, :optional},
-        {:video_height, :integer, :optional},
-        {:video_duration, :integer, :optional},
-        {:description, :string, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:video_url, [:string]},
+        {:mime_type, [:string]},
+        {:thumbnail_url, [:string]},
+        {:title, [:string]},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:video_width, [:integer], :optional},
+        {:video_height, [:integer], :optional},
+        {:video_duration, [:integer], :optional},
+        {:description, [:string], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional}
       ],
       "Represents a link to a page containing an embedded video player or a video file. By default, this video file will be sent by the user with an optional caption. Alternatively, you can use input_message_content to send a message with the specified content instead of the video."
     )
@@ -2571,17 +2575,17 @@ defmodule ExGram do
     model(
       InlineQueryResultAudio,
       [
-        {:type, :string},
-        {:id, :string},
-        {:audio_url, :string},
-        {:title, :string},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:performer, :string, :optional},
-        {:audio_duration, :integer, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:audio_url, [:string]},
+        {:title, [:string]},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:performer, [:string], :optional},
+        {:audio_duration, [:integer], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional}
       ],
       "Represents a link to an MP3 audio file. By default, this audio file will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the audio."
     )
@@ -2589,16 +2593,16 @@ defmodule ExGram do
     model(
       InlineQueryResultVoice,
       [
-        {:type, :string},
-        {:id, :string},
-        {:voice_url, :string},
-        {:title, :string},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:voice_duration, :integer, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:voice_url, [:string]},
+        {:title, [:string]},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:voice_duration, [:integer], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional}
       ],
       "Represents a link to a voice recording in an .OGG container encoded with OPUS. By default, this voice recording will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the the voice message."
     )
@@ -2606,20 +2610,20 @@ defmodule ExGram do
     model(
       InlineQueryResultDocument,
       [
-        {:type, :string},
-        {:id, :string},
-        {:title, :string},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:document_url, :string},
-        {:mime_type, :string},
-        {:description, :string, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional},
-        {:thumbnail_url, :string, :optional},
-        {:thumbnail_width, :integer, :optional},
-        {:thumbnail_height, :integer, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:title, [:string]},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:document_url, [:string]},
+        {:mime_type, [:string]},
+        {:description, [:string], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional},
+        {:thumbnail_url, [:string], :optional},
+        {:thumbnail_width, [:integer], :optional},
+        {:thumbnail_height, [:integer], :optional}
       ],
       "Represents a link to a file. By default, this file will be sent by the user with an optional caption. Alternatively, you can use input_message_content to send a message with the specified content instead of the file. Currently, only .PDF and .ZIP files can be sent using this method."
     )
@@ -2627,20 +2631,20 @@ defmodule ExGram do
     model(
       InlineQueryResultLocation,
       [
-        {:type, :string},
-        {:id, :string},
-        {:latitude, :float},
-        {:longitude, :float},
-        {:title, :string},
-        {:horizontal_accuracy, :float, :optional},
-        {:live_period, :integer, :optional},
-        {:heading, :integer, :optional},
-        {:proximity_alert_radius, :integer, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional},
-        {:thumbnail_url, :string, :optional},
-        {:thumbnail_width, :integer, :optional},
-        {:thumbnail_height, :integer, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:latitude, [:float]},
+        {:longitude, [:float]},
+        {:title, [:string]},
+        {:horizontal_accuracy, [:float], :optional},
+        {:live_period, [:integer], :optional},
+        {:heading, [:integer], :optional},
+        {:proximity_alert_radius, [:integer], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional},
+        {:thumbnail_url, [:string], :optional},
+        {:thumbnail_width, [:integer], :optional},
+        {:thumbnail_height, [:integer], :optional}
       ],
       "Represents a location on a map. By default, the location will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the location."
     )
@@ -2648,21 +2652,21 @@ defmodule ExGram do
     model(
       InlineQueryResultVenue,
       [
-        {:type, :string},
-        {:id, :string},
-        {:latitude, :float},
-        {:longitude, :float},
-        {:title, :string},
-        {:address, :string},
-        {:foursquare_id, :string, :optional},
-        {:foursquare_type, :string, :optional},
-        {:google_place_id, :string, :optional},
-        {:google_place_type, :string, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional},
-        {:thumbnail_url, :string, :optional},
-        {:thumbnail_width, :integer, :optional},
-        {:thumbnail_height, :integer, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:latitude, [:float]},
+        {:longitude, [:float]},
+        {:title, [:string]},
+        {:address, [:string]},
+        {:foursquare_id, [:string], :optional},
+        {:foursquare_type, [:string], :optional},
+        {:google_place_id, [:string], :optional},
+        {:google_place_type, [:string], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional},
+        {:thumbnail_url, [:string], :optional},
+        {:thumbnail_width, [:integer], :optional},
+        {:thumbnail_height, [:integer], :optional}
       ],
       "Represents a venue. By default, the venue will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the venue."
     )
@@ -2670,17 +2674,17 @@ defmodule ExGram do
     model(
       InlineQueryResultContact,
       [
-        {:type, :string},
-        {:id, :string},
-        {:phone_number, :string},
-        {:first_name, :string},
-        {:last_name, :string, :optional},
-        {:vcard, :string, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional},
-        {:thumbnail_url, :string, :optional},
-        {:thumbnail_width, :integer, :optional},
-        {:thumbnail_height, :integer, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:phone_number, [:string]},
+        {:first_name, [:string]},
+        {:last_name, [:string], :optional},
+        {:vcard, [:string], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional},
+        {:thumbnail_url, [:string], :optional},
+        {:thumbnail_width, [:integer], :optional},
+        {:thumbnail_height, [:integer], :optional}
       ],
       "Represents a contact with a phone number. By default, this contact will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the contact."
     )
@@ -2688,10 +2692,10 @@ defmodule ExGram do
     model(
       InlineQueryResultGame,
       [
-        {:type, :string},
-        {:id, :string},
-        {:game_short_name, :string},
-        {:reply_markup, InlineKeyboardMarkup, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:game_short_name, [:string]},
+        {:reply_markup, [InlineKeyboardMarkup], :optional}
       ],
       "Represents a Game."
     )
@@ -2699,16 +2703,16 @@ defmodule ExGram do
     model(
       InlineQueryResultCachedPhoto,
       [
-        {:type, :string},
-        {:id, :string},
-        {:photo_file_id, :string},
-        {:title, :string, :optional},
-        {:description, :string, :optional},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:photo_file_id, [:string]},
+        {:title, [:string], :optional},
+        {:description, [:string], :optional},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional}
       ],
       "Represents a link to a photo stored on the Telegram servers. By default, this photo will be sent by the user with an optional caption. Alternatively, you can use input_message_content to send a message with the specified content instead of the photo."
     )
@@ -2716,15 +2720,15 @@ defmodule ExGram do
     model(
       InlineQueryResultCachedGif,
       [
-        {:type, :string},
-        {:id, :string},
-        {:gif_file_id, :string},
-        {:title, :string, :optional},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:gif_file_id, [:string]},
+        {:title, [:string], :optional},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional}
       ],
       "Represents a link to an animated GIF file stored on the Telegram servers. By default, this animated GIF file will be sent by the user with an optional caption. Alternatively, you can use input_message_content to send a message with specified content instead of the animation."
     )
@@ -2732,15 +2736,15 @@ defmodule ExGram do
     model(
       InlineQueryResultCachedMpeg4Gif,
       [
-        {:type, :string},
-        {:id, :string},
-        {:mpeg4_file_id, :string},
-        {:title, :string, :optional},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:mpeg4_file_id, [:string]},
+        {:title, [:string], :optional},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional}
       ],
       "Represents a link to a video animation (H.264/MPEG-4 AVC video without sound) stored on the Telegram servers. By default, this animated MPEG-4 file will be sent by the user with an optional caption. Alternatively, you can use input_message_content to send a message with the specified content instead of the animation."
     )
@@ -2748,11 +2752,11 @@ defmodule ExGram do
     model(
       InlineQueryResultCachedSticker,
       [
-        {:type, :string},
-        {:id, :string},
-        {:sticker_file_id, :string},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:sticker_file_id, [:string]},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional}
       ],
       "Represents a link to a sticker stored on the Telegram servers. By default, this sticker will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the sticker."
     )
@@ -2760,16 +2764,16 @@ defmodule ExGram do
     model(
       InlineQueryResultCachedDocument,
       [
-        {:type, :string},
-        {:id, :string},
-        {:title, :string},
-        {:document_file_id, :string},
-        {:description, :string, :optional},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:title, [:string]},
+        {:document_file_id, [:string]},
+        {:description, [:string], :optional},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional}
       ],
       "Represents a link to a file stored on the Telegram servers. By default, this file will be sent by the user with an optional caption. Alternatively, you can use input_message_content to send a message with the specified content instead of the file."
     )
@@ -2777,16 +2781,16 @@ defmodule ExGram do
     model(
       InlineQueryResultCachedVideo,
       [
-        {:type, :string},
-        {:id, :string},
-        {:video_file_id, :string},
-        {:title, :string},
-        {:description, :string, :optional},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:video_file_id, [:string]},
+        {:title, [:string]},
+        {:description, [:string], :optional},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional}
       ],
       "Represents a link to a video file stored on the Telegram servers. By default, this video file will be sent by the user with an optional caption. Alternatively, you can use input_message_content to send a message with the specified content instead of the video."
     )
@@ -2794,15 +2798,15 @@ defmodule ExGram do
     model(
       InlineQueryResultCachedVoice,
       [
-        {:type, :string},
-        {:id, :string},
-        {:voice_file_id, :string},
-        {:title, :string},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:voice_file_id, [:string]},
+        {:title, [:string]},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional}
       ],
       "Represents a link to a voice message stored on the Telegram servers. By default, this voice message will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the voice message."
     )
@@ -2810,14 +2814,14 @@ defmodule ExGram do
     model(
       InlineQueryResultCachedAudio,
       [
-        {:type, :string},
-        {:id, :string},
-        {:audio_file_id, :string},
-        {:caption, :string, :optional},
-        {:parse_mode, :string, :optional},
-        {:caption_entities, {:array, MessageEntity}, :optional},
-        {:reply_markup, InlineKeyboardMarkup, :optional},
-        {:input_message_content, InputMessageContent, :optional}
+        {:type, [:string]},
+        {:id, [:string]},
+        {:audio_file_id, [:string]},
+        {:caption, [:string], :optional},
+        {:parse_mode, [:string], :optional},
+        {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:reply_markup, [InlineKeyboardMarkup], :optional},
+        {:input_message_content, [InputMessageContent], :optional}
       ],
       "Represents a link to an MP3 audio file stored on the Telegram servers. By default, this audio file will be sent by the user. Alternatively, you can use input_message_content to send a message with the specified content instead of the audio."
     )
@@ -2825,10 +2829,10 @@ defmodule ExGram do
     model(
       InputTextMessageContent,
       [
-        {:message_text, :string},
-        {:parse_mode, :string, :optional},
-        {:entities, {:array, MessageEntity}, :optional},
-        {:disable_web_page_preview, :boolean, :optional}
+        {:message_text, [:string]},
+        {:parse_mode, [:string], :optional},
+        {:entities, [{:array, MessageEntity}], :optional},
+        {:disable_web_page_preview, [:boolean], :optional}
       ],
       "Represents the content of a text message to be sent as the result of an inline query."
     )
@@ -2836,12 +2840,12 @@ defmodule ExGram do
     model(
       InputLocationMessageContent,
       [
-        {:latitude, :float},
-        {:longitude, :float},
-        {:horizontal_accuracy, :float, :optional},
-        {:live_period, :integer, :optional},
-        {:heading, :integer, :optional},
-        {:proximity_alert_radius, :integer, :optional}
+        {:latitude, [:float]},
+        {:longitude, [:float]},
+        {:horizontal_accuracy, [:float], :optional},
+        {:live_period, [:integer], :optional},
+        {:heading, [:integer], :optional},
+        {:proximity_alert_radius, [:integer], :optional}
       ],
       "Represents the content of a location message to be sent as the result of an inline query."
     )
@@ -2849,14 +2853,14 @@ defmodule ExGram do
     model(
       InputVenueMessageContent,
       [
-        {:latitude, :float},
-        {:longitude, :float},
-        {:title, :string},
-        {:address, :string},
-        {:foursquare_id, :string, :optional},
-        {:foursquare_type, :string, :optional},
-        {:google_place_id, :string, :optional},
-        {:google_place_type, :string, :optional}
+        {:latitude, [:float]},
+        {:longitude, [:float]},
+        {:title, [:string]},
+        {:address, [:string]},
+        {:foursquare_id, [:string], :optional},
+        {:foursquare_type, [:string], :optional},
+        {:google_place_id, [:string], :optional},
+        {:google_place_type, [:string], :optional}
       ],
       "Represents the content of a venue message to be sent as the result of an inline query."
     )
@@ -2864,10 +2868,10 @@ defmodule ExGram do
     model(
       InputContactMessageContent,
       [
-        {:phone_number, :string},
-        {:first_name, :string},
-        {:last_name, :string, :optional},
-        {:vcard, :string, :optional}
+        {:phone_number, [:string]},
+        {:first_name, [:string]},
+        {:last_name, [:string], :optional},
+        {:vcard, [:string], :optional}
       ],
       "Represents the content of a contact message to be sent as the result of an inline query."
     )
@@ -2875,26 +2879,26 @@ defmodule ExGram do
     model(
       InputInvoiceMessageContent,
       [
-        {:title, :string},
-        {:description, :string},
-        {:payload, :string},
-        {:provider_token, :string},
-        {:currency, :string},
-        {:prices, {:array, LabeledPrice}},
-        {:max_tip_amount, :integer, :optional},
-        {:suggested_tip_amounts, {:array, :integer}, :optional},
-        {:provider_data, :string, :optional},
-        {:photo_url, :string, :optional},
-        {:photo_size, :integer, :optional},
-        {:photo_width, :integer, :optional},
-        {:photo_height, :integer, :optional},
-        {:need_name, :boolean, :optional},
-        {:need_phone_number, :boolean, :optional},
-        {:need_email, :boolean, :optional},
-        {:need_shipping_address, :boolean, :optional},
-        {:send_phone_number_to_provider, :boolean, :optional},
-        {:send_email_to_provider, :boolean, :optional},
-        {:is_flexible, :boolean, :optional}
+        {:title, [:string]},
+        {:description, [:string]},
+        {:payload, [:string]},
+        {:provider_token, [:string]},
+        {:currency, [:string]},
+        {:prices, [{:array, LabeledPrice}]},
+        {:max_tip_amount, [:integer], :optional},
+        {:suggested_tip_amounts, [{:array, :integer}], :optional},
+        {:provider_data, [:string], :optional},
+        {:photo_url, [:string], :optional},
+        {:photo_size, [:integer], :optional},
+        {:photo_width, [:integer], :optional},
+        {:photo_height, [:integer], :optional},
+        {:need_name, [:boolean], :optional},
+        {:need_phone_number, [:boolean], :optional},
+        {:need_email, [:boolean], :optional},
+        {:need_shipping_address, [:boolean], :optional},
+        {:send_phone_number_to_provider, [:boolean], :optional},
+        {:send_email_to_provider, [:boolean], :optional},
+        {:is_flexible, [:boolean], :optional}
       ],
       "Represents the content of an invoice message to be sent as the result of an inline query."
     )
@@ -2902,35 +2906,35 @@ defmodule ExGram do
     model(
       ChosenInlineResult,
       [
-        {:result_id, :string},
-        {:from, User},
-        {:location, Location, :optional},
-        {:inline_message_id, :string, :optional},
-        {:query, :string}
+        {:result_id, [:string]},
+        {:from, [User]},
+        {:location, [Location], :optional},
+        {:inline_message_id, [:string], :optional},
+        {:query, [:string]}
       ],
       "Represents a result of an inline query that was chosen by the user and sent to their chat partner."
     )
 
     model(
       SentWebAppMessage,
-      [{:inline_message_id, :string, :optional}],
+      [{:inline_message_id, [:string], :optional}],
       "Describes an inline message sent by a Web App on behalf of a user."
     )
 
     model(
       LabeledPrice,
-      [{:label, :string}, {:amount, :integer}],
+      [{:label, [:string]}, {:amount, [:integer]}],
       "This object represents a portion of the price for goods or services."
     )
 
     model(
       Invoice,
       [
-        {:title, :string},
-        {:description, :string},
-        {:start_parameter, :string},
-        {:currency, :string},
-        {:total_amount, :integer}
+        {:title, [:string]},
+        {:description, [:string]},
+        {:start_parameter, [:string]},
+        {:currency, [:string]},
+        {:total_amount, [:integer]}
       ],
       "This object contains basic information about an invoice."
     )
@@ -2938,12 +2942,12 @@ defmodule ExGram do
     model(
       ShippingAddress,
       [
-        {:country_code, :string},
-        {:state, :string},
-        {:city, :string},
-        {:street_line1, :string},
-        {:street_line2, :string},
-        {:post_code, :string}
+        {:country_code, [:string]},
+        {:state, [:string]},
+        {:city, [:string]},
+        {:street_line1, [:string]},
+        {:street_line2, [:string]},
+        {:post_code, [:string]}
       ],
       "This object represents a shipping address."
     )
@@ -2951,30 +2955,30 @@ defmodule ExGram do
     model(
       OrderInfo,
       [
-        {:name, :string, :optional},
-        {:phone_number, :string, :optional},
-        {:email, :string, :optional},
-        {:shipping_address, ShippingAddress, :optional}
+        {:name, [:string], :optional},
+        {:phone_number, [:string], :optional},
+        {:email, [:string], :optional},
+        {:shipping_address, [ShippingAddress], :optional}
       ],
       "This object represents information about an order."
     )
 
     model(
       ShippingOption,
-      [{:id, :string}, {:title, :string}, {:prices, {:array, LabeledPrice}}],
+      [{:id, [:string]}, {:title, [:string]}, {:prices, [{:array, LabeledPrice}]}],
       "This object represents one shipping option."
     )
 
     model(
       SuccessfulPayment,
       [
-        {:currency, :string},
-        {:total_amount, :integer},
-        {:invoice_payload, :string},
-        {:shipping_option_id, :string, :optional},
-        {:order_info, OrderInfo, :optional},
-        {:telegram_payment_charge_id, :string},
-        {:provider_payment_charge_id, :string}
+        {:currency, [:string]},
+        {:total_amount, [:integer]},
+        {:invoice_payload, [:string]},
+        {:shipping_option_id, [:string], :optional},
+        {:order_info, [OrderInfo], :optional},
+        {:telegram_payment_charge_id, [:string]},
+        {:provider_payment_charge_id, [:string]}
       ],
       "This object contains basic information about a successful payment."
     )
@@ -2982,10 +2986,10 @@ defmodule ExGram do
     model(
       ShippingQuery,
       [
-        {:id, :string},
-        {:from, User},
-        {:invoice_payload, :string},
-        {:shipping_address, ShippingAddress}
+        {:id, [:string]},
+        {:from, [User]},
+        {:invoice_payload, [:string]},
+        {:shipping_address, [ShippingAddress]}
       ],
       "This object contains information about an incoming shipping query."
     )
@@ -2993,30 +2997,30 @@ defmodule ExGram do
     model(
       PreCheckoutQuery,
       [
-        {:id, :string},
-        {:from, User},
-        {:currency, :string},
-        {:total_amount, :integer},
-        {:invoice_payload, :string},
-        {:shipping_option_id, :string, :optional},
-        {:order_info, OrderInfo, :optional}
+        {:id, [:string]},
+        {:from, [User]},
+        {:currency, [:string]},
+        {:total_amount, [:integer]},
+        {:invoice_payload, [:string]},
+        {:shipping_option_id, [:string], :optional},
+        {:order_info, [OrderInfo], :optional}
       ],
       "This object contains information about an incoming pre-checkout query."
     )
 
     model(
       PassportData,
-      [{:data, {:array, EncryptedPassportElement}}, {:credentials, EncryptedCredentials}],
+      [{:data, [{:array, EncryptedPassportElement}]}, {:credentials, [EncryptedCredentials]}],
       "Describes Telegram Passport data shared with the bot by the user."
     )
 
     model(
       PassportFile,
       [
-        {:file_id, :string},
-        {:file_unique_id, :string},
-        {:file_size, :integer},
-        {:file_date, :integer}
+        {:file_id, [:string]},
+        {:file_unique_id, [:string]},
+        {:file_size, [:integer]},
+        {:file_date, [:integer]}
       ],
       "This object represents a file uploaded to Telegram Passport. Currently all Telegram Passport files are in JPEG format when decrypted and don't exceed 10MB."
     )
@@ -3024,105 +3028,110 @@ defmodule ExGram do
     model(
       EncryptedPassportElement,
       [
-        {:type, :string},
-        {:data, :string, :optional},
-        {:phone_number, :string, :optional},
-        {:email, :string, :optional},
-        {:files, {:array, PassportFile}, :optional},
-        {:front_side, PassportFile, :optional},
-        {:reverse_side, PassportFile, :optional},
-        {:selfie, PassportFile, :optional},
-        {:translation, {:array, PassportFile}, :optional},
-        {:hash, :string}
+        {:type, [:string]},
+        {:data, [:string], :optional},
+        {:phone_number, [:string], :optional},
+        {:email, [:string], :optional},
+        {:files, [{:array, PassportFile}], :optional},
+        {:front_side, [PassportFile], :optional},
+        {:reverse_side, [PassportFile], :optional},
+        {:selfie, [PassportFile], :optional},
+        {:translation, [{:array, PassportFile}], :optional},
+        {:hash, [:string]}
       ],
       "Describes documents or other Telegram Passport elements shared with the bot by the user."
     )
 
     model(
       EncryptedCredentials,
-      [{:data, :string}, {:hash, :string}, {:secret, :string}],
+      [{:data, [:string]}, {:hash, [:string]}, {:secret, [:string]}],
       "Describes data required for decrypting and authenticating EncryptedPassportElement. See the Telegram Passport Documentation for a complete description of the data decryption and authentication processes."
     )
 
     model(
       PassportElementErrorDataField,
       [
-        {:source, :string},
-        {:type, :string},
-        {:field_name, :string},
-        {:data_hash, :string},
-        {:message, :string}
+        {:source, [:string]},
+        {:type, [:string]},
+        {:field_name, [:string]},
+        {:data_hash, [:string]},
+        {:message, [:string]}
       ],
       "Represents an issue in one of the data fields that was provided by the user. The error is considered resolved when the field's value changes."
     )
 
     model(
       PassportElementErrorFrontSide,
-      [{:source, :string}, {:type, :string}, {:file_hash, :string}, {:message, :string}],
+      [{:source, [:string]}, {:type, [:string]}, {:file_hash, [:string]}, {:message, [:string]}],
       "Represents an issue with the front side of a document. The error is considered resolved when the file with the front side of the document changes."
     )
 
     model(
       PassportElementErrorReverseSide,
-      [{:source, :string}, {:type, :string}, {:file_hash, :string}, {:message, :string}],
+      [{:source, [:string]}, {:type, [:string]}, {:file_hash, [:string]}, {:message, [:string]}],
       "Represents an issue with the reverse side of a document. The error is considered resolved when the file with reverse side of the document changes."
     )
 
     model(
       PassportElementErrorSelfie,
-      [{:source, :string}, {:type, :string}, {:file_hash, :string}, {:message, :string}],
+      [{:source, [:string]}, {:type, [:string]}, {:file_hash, [:string]}, {:message, [:string]}],
       "Represents an issue with the selfie with a document. The error is considered resolved when the file with the selfie changes."
     )
 
     model(
       PassportElementErrorFile,
-      [{:source, :string}, {:type, :string}, {:file_hash, :string}, {:message, :string}],
+      [{:source, [:string]}, {:type, [:string]}, {:file_hash, [:string]}, {:message, [:string]}],
       "Represents an issue with a document scan. The error is considered resolved when the file with the document scan changes."
     )
 
     model(
       PassportElementErrorFiles,
       [
-        {:source, :string},
-        {:type, :string},
-        {:file_hashes, {:array, :string}},
-        {:message, :string}
+        {:source, [:string]},
+        {:type, [:string]},
+        {:file_hashes, [{:array, :string}]},
+        {:message, [:string]}
       ],
       "Represents an issue with a list of scans. The error is considered resolved when the list of files containing the scans changes."
     )
 
     model(
       PassportElementErrorTranslationFile,
-      [{:source, :string}, {:type, :string}, {:file_hash, :string}, {:message, :string}],
+      [{:source, [:string]}, {:type, [:string]}, {:file_hash, [:string]}, {:message, [:string]}],
       "Represents an issue with one of the files that constitute the translation of a document. The error is considered resolved when the file changes."
     )
 
     model(
       PassportElementErrorTranslationFiles,
       [
-        {:source, :string},
-        {:type, :string},
-        {:file_hashes, {:array, :string}},
-        {:message, :string}
+        {:source, [:string]},
+        {:type, [:string]},
+        {:file_hashes, [{:array, :string}]},
+        {:message, [:string]}
       ],
       "Represents an issue with the translated version of a document. The error is considered resolved when a file with the document translation change."
     )
 
     model(
       PassportElementErrorUnspecified,
-      [{:source, :string}, {:type, :string}, {:element_hash, :string}, {:message, :string}],
+      [
+        {:source, [:string]},
+        {:type, [:string]},
+        {:element_hash, [:string]},
+        {:message, [:string]}
+      ],
       "Represents an issue in an unspecified place. The error is considered resolved when new data is added."
     )
 
     model(
       Game,
       [
-        {:title, :string},
-        {:description, :string},
-        {:photo, {:array, PhotoSize}},
-        {:text, :string, :optional},
-        {:text_entities, {:array, MessageEntity}, :optional},
-        {:animation, Animation, :optional}
+        {:title, [:string]},
+        {:description, [:string]},
+        {:photo, [{:array, PhotoSize}]},
+        {:text, [:string], :optional},
+        {:text_entities, [{:array, MessageEntity}], :optional},
+        {:animation, [Animation], :optional}
       ],
       "This object represents a game. Use BotFather to create and edit games, their short names will act as unique identifiers."
     )
@@ -3130,20 +3139,20 @@ defmodule ExGram do
     model(
       CallbackGame,
       [
-        {:user_id, :integer},
-        {:score, :integer},
-        {:force, :boolean, :optional},
-        {:disable_edit_message, :boolean, :optional},
-        {:chat_id, :integer, :optional},
-        {:message_id, :integer, :optional},
-        {:inline_message_id, :string, :optional}
+        {:user_id, [:integer]},
+        {:score, [:integer]},
+        {:force, [:boolean], :optional},
+        {:disable_edit_message, [:boolean], :optional},
+        {:chat_id, [:integer], :optional},
+        {:message_id, [:integer], :optional},
+        {:inline_message_id, [:string], :optional}
       ],
       "A placeholder, currently holds no information. Use BotFather to set up your game."
     )
 
     model(
       GameHighScore,
-      [{:position, :integer}, {:user, User}, {:score, :integer}],
+      [{:position, [:integer]}, {:user, [User]}, {:score, [:integer]}],
       "This object represents one row of the high scores table for a game."
     )
 

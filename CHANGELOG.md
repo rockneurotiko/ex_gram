@@ -1,8 +1,10 @@
 # Changelog
 
 ## Unreleased
+- Models fields now can have union types
 - Add Webhook updates adapter
 - Remove InputFile, it wasn't a real model
+
 
 ## [0.34.0]
 - Update Telegram API to 6.6: https://core.telegram.org/bots/api#march-9-2023
