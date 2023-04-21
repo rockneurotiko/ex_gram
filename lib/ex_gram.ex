@@ -950,6 +950,22 @@ defmodule ExGram do
 
   method(
     :post,
+    "setMyName",
+    [{name, [:string], :optional}, {language_code, [:string], :optional}],
+    true,
+    "Use this method to change the bot's name. Returns True on success."
+  )
+
+  method(
+    :get,
+    "getMyName",
+    [{language_code, [:string], :optional}],
+    ExGram.Model.BotName,
+    "Use this method to get the current bot name for the given user language. Returns BotName on success."
+  )
+
+  method(
+    :post,
     "setMyDescription",
     [{description, [:string], :optional}, {language_code, [:string], :optional}],
     true,
@@ -1271,8 +1287,7 @@ defmodule ExGram do
       {cache_time, [:integer], :optional},
       {is_personal, [:boolean], :optional},
       {next_offset, [:string], :optional},
-      {switch_pm_text, [:string], :optional},
-      {switch_pm_parameter, [:string], :optional}
+      {button, [InlineQueryResultsButton], :optional}
     ],
     true,
     "Use this method to send answers to an inline query. On success, True is returned. No more than 50 results per query are allowed."
@@ -1427,7 +1442,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 111 methods
+  # 113 methods
 
   # ----------MODELS-----------
 
@@ -1874,8 +1889,8 @@ defmodule ExGram do
 
     model(
       WriteAccessAllowed,
-      [],
-      "This object represents a service message about a user allowing a bot added to the attachment menu to write messages. Currently holds no information."
+      [{:web_app_name, [:string], :optional}],
+      "This object represents a service message about a user allowing a bot to write messages after adding the bot to the attachment menu or launching a Web App from a link."
     )
 
     model(
@@ -2001,6 +2016,7 @@ defmodule ExGram do
         {:login_url, [LoginUrl], :optional},
         {:switch_inline_query, [:string], :optional},
         {:switch_inline_query_current_chat, [:string], :optional},
+        {:switch_inline_query_chosen_chat, [SwitchInlineQueryChosenChat], :optional},
         {:callback_game, [CallbackGame], :optional},
         {:pay, [:boolean], :optional}
       ],
@@ -2016,6 +2032,18 @@ defmodule ExGram do
         {:request_write_access, [:boolean], :optional}
       ],
       "This object represents a parameter of the inline keyboard button used to automatically authorize a user. Serves as a great replacement for the Telegram Login Widget when the user is coming from Telegram. All the user needs to do is tap/click a button and confirm that they want to log in:"
+    )
+
+    model(
+      SwitchInlineQueryChosenChat,
+      [
+        {:query, [:string], :optional},
+        {:allow_user_chats, [:boolean], :optional},
+        {:allow_bot_chats, [:boolean], :optional},
+        {:allow_group_chats, [:boolean], :optional},
+        {:allow_channel_chats, [:boolean], :optional}
+      ],
+      "This object represents an inline button that switches the current user to inline mode in a chosen chat, with an optional default inline query."
     )
 
     model(
@@ -2173,7 +2201,8 @@ defmodule ExGram do
         {:date, [:integer]},
         {:old_chat_member, [ChatMember]},
         {:new_chat_member, [ChatMember]},
-        {:invite_link, [ChatInviteLink], :optional}
+        {:invite_link, [ChatInviteLink], :optional},
+        {:via_chat_folder_invite_link, [:boolean], :optional}
       ],
       "This object represents changes in the status of a chat member."
     )
@@ -2276,6 +2305,8 @@ defmodule ExGram do
       [{:type, [:string]}, {:chat_id, [:integer, :string]}, {:user_id, [:integer]}],
       "Represents the scope of bot commands, covering a specific member of a group or supergroup chat."
     )
+
+    model(BotName, [{:name, [:string]}], "This object represents the bot's name.")
 
     model(
       BotDescription,
@@ -2468,6 +2499,16 @@ defmodule ExGram do
         {:location, [Location], :optional}
       ],
       "This object represents an incoming inline query. When the user sends an empty query, your bot could return some default or trending results."
+    )
+
+    model(
+      InlineQueryResultsButton,
+      [
+        {:text, [:string]},
+        {:web_app, [WebAppInfo], :optional},
+        {:start_parameter, [:string], :optional}
+      ],
+      "This object represents a button to be shown above inline query results. You must use exactly one of the optional fields."
     )
 
     model(
@@ -3156,7 +3197,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 141 models
+    # 144 models
 
     defmodule ChatMember do
       @moduledoc """
