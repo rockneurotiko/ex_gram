@@ -2345,19 +2345,6 @@ defmodule ExGram do
     )
 
     model(
-      InputMedia,
-      [
-        {:type, [:string]},
-        {:media, [:string]},
-        {:caption, [:string], :optional},
-        {:parse_mode, [:string], :optional},
-        {:caption_entities, [{:array, MessageEntity}], :optional},
-        {:has_spoiler, [:boolean], :optional}
-      ],
-      "This object represents the content of a media message to be sent. It should be one of"
-    )
-
-    model(
       InputMediaPhoto,
       [
         {:type, [:string]},
@@ -3197,7 +3184,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 144 models
+    # 143 models
 
     defmodule ChatMember do
       @moduledoc """
@@ -3210,6 +3197,8 @@ defmodule ExGram do
               | ChatMemberRestricted.t()
               | ChatMemberLeft.t()
               | ChatMemberBanned.t()
+
+      defstruct []
 
       def decode_as, do: %{}
 
@@ -3238,6 +3227,8 @@ defmodule ExGram do
               | BotCommandScopeChatAdministrators.t()
               | BotCommandScopeChatMember.t()
 
+      defstruct []
+
       def decode_as, do: %{}
 
       def subtypes do
@@ -3259,10 +3250,38 @@ defmodule ExGram do
       """
       @type t :: MenuButtonCommands.t() | MenuButtonWebApp.t() | MenuButtonDefault.t()
 
+      defstruct []
+
       def decode_as, do: %{}
 
       def subtypes do
         [MenuButtonCommands, MenuButtonWebApp, MenuButtonDefault]
+      end
+    end
+
+    defmodule InputMedia do
+      @moduledoc """
+      InputMedia model. Valid subtypes: InputMediaAnimation, InputMediaDocument, InputMediaAudio, InputMediaPhoto, InputMediaVideo
+      """
+      @type t ::
+              InputMediaAnimation.t()
+              | InputMediaDocument.t()
+              | InputMediaAudio.t()
+              | InputMediaPhoto.t()
+              | InputMediaVideo.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [
+          InputMediaAnimation,
+          InputMediaDocument,
+          InputMediaAudio,
+          InputMediaPhoto,
+          InputMediaVideo
+        ]
       end
     end
 
@@ -3291,6 +3310,8 @@ defmodule ExGram do
               | InlineQueryResultVenue.t()
               | InlineQueryResultVideo.t()
               | InlineQueryResultVoice.t()
+
+      defstruct []
 
       def decode_as, do: %{}
 
@@ -3331,6 +3352,8 @@ defmodule ExGram do
               | InputContactMessageContent.t()
               | InputInvoiceMessageContent.t()
 
+      defstruct []
+
       def decode_as, do: %{}
 
       def subtypes do
@@ -3359,6 +3382,8 @@ defmodule ExGram do
               | PassportElementErrorTranslationFiles.t()
               | PassportElementErrorUnspecified.t()
 
+      defstruct []
+
       def decode_as, do: %{}
 
       def subtypes do
@@ -3376,7 +3401,7 @@ defmodule ExGram do
       end
     end
 
-    # 6 generics
+    # 7 generics
   end
 
   # END AUTO GENERATED

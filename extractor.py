@@ -113,6 +113,9 @@ def generate_generic(model):
   \"\"\"
   @type t :: {}
 
+
+  defstruct []
+
   def decode_as, do: %{}
 
   def subtypes do
