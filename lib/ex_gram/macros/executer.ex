@@ -138,10 +138,26 @@ defmodule ExGram.Macros.Executer do
   defp process_result(elem, true), do: elem
 
   defp process_result(elem, t) when is_atom(t) do
-    struct(t, elem)
+    if is_subtype?(t) do
+      apply_subtype(t, elem)
+    else
+      struct(t, elem)
+    end
   end
 
   defp process_result(elem, _t), do: elem
+
+  defp is_subtype?(t) do
+    ExGram.Model.Subtype.impl_for(struct(t, %{}))
+  end
+
+  defp apply_subtype(t, params) do
+    base = struct(t, %{})
+    selector = ExGram.Model.Subtype.selector_value(base, params)
+    subtype = ExGram.Model.Subtype.subtype(base, selector)
+
+    struct(subtype, params)
+  end
 
   defp create_multipart(body, []), do: body
 
