@@ -72,7 +72,7 @@ defmodule ExGram do
   method(
     :post,
     "deleteWebhook",
-    [],
+    [{drop_pending_updates, [:boolean], :optional}],
     true,
     "Use this method to remove webhook integration if you decide to switch back to getUpdates. Returns True on success."
   )
@@ -943,7 +943,7 @@ defmodule ExGram do
   method(
     :get,
     "getMyCommands",
-    [],
+    [{scope, [BotCommandScope], :optional}, {language_code, [:string], :optional}],
     [ExGram.Model.BotCommand],
     "Use this method to get the current list of the bot's commands for the given scope and user language. Returns an Array of BotCommand objects. If commands aren't set, an empty list is returned."
   )

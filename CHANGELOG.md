@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- getMyCommands and deleteWebhook has parameters
 - Update Telegram API to 6.7: https://core.telegram.org/bots/api#april-21-2023
 - Models fields now can have union types
 - Add Webhook updates adapter
