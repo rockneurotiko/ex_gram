@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Fix return types for arrays
 
 ## [0.40.0]
 - getMyCommands and deleteWebhook has parameters

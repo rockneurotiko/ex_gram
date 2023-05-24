@@ -49,7 +49,7 @@ defmodule ExGram do
       {timeout, [:integer], :optional},
       {allowed_updates, [{:array, :string}], :optional}
     ],
-    [ExGram.Model.Update],
+    {:array, ExGram.Model.Update},
     "Use this method to receive incoming updates using long polling (wiki). Returns an Array of Update objects."
   )
 
@@ -372,7 +372,7 @@ defmodule ExGram do
       {reply_to_message_id, [:integer], :optional},
       {allow_sending_without_reply, [:boolean], :optional}
     ],
-    [ExGram.Model.Message],
+    {:array, ExGram.Model.Message},
     "Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of Messages that were sent is returned."
   )
 
@@ -759,7 +759,7 @@ defmodule ExGram do
     :get,
     "getChatAdministrators",
     [{chat_id, [:integer, :string]}],
-    [ExGram.Model.ChatMember],
+    {:array, ExGram.Model.ChatMember},
     "Use this method to get a list of administrators in a chat, which aren't bots. Returns an Array of ChatMember objects."
   )
 
@@ -804,7 +804,7 @@ defmodule ExGram do
       {icon_color, [:integer], :optional},
       {icon_custom_emoji_id, [:string], :optional}
     ],
-    [ExGram.Model.Sticker],
+    {:array, ExGram.Model.Sticker},
     "Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user. Requires no parameters. Returns an Array of Sticker objects."
   )
 
@@ -944,7 +944,7 @@ defmodule ExGram do
     :get,
     "getMyCommands",
     [{scope, [BotCommandScope], :optional}, {language_code, [:string], :optional}],
-    [ExGram.Model.BotCommand],
+    {:array, ExGram.Model.BotCommand},
     "Use this method to get the current list of the bot's commands for the given scope and user language. Returns an Array of BotCommand objects. If commands aren't set, an empty list is returned."
   )
 
@@ -1170,7 +1170,7 @@ defmodule ExGram do
     :get,
     "getCustomEmojiStickers",
     [{custom_emoji_ids, [{:array, :string}]}],
-    [ExGram.Model.Sticker],
+    {:array, ExGram.Model.Sticker},
     "Use this method to get information about custom emoji stickers by their identifiers. Returns an Array of Sticker objects."
   )
 
@@ -1438,7 +1438,7 @@ defmodule ExGram do
       {message_id, [:integer], :optional},
       {inline_message_id, [:string], :optional}
     ],
-    [ExGram.Model.GameHighScore],
+    {:array, ExGram.Model.GameHighScore},
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
