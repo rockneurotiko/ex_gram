@@ -255,6 +255,30 @@ This are the type of tuples that `handle/2` can receive as first parameter:
   - `{:message, message}` → This will match any message that does not fit with the ones described above
   - `{:update, update}` → This tuple will match as a default handle
 
+### Execute code on initialization
+
+The bots have an optional callback that will be executed *before* starting to consume messages. This method can be used to initialize things before starting the bot, for example setting the bot's description or name.
+
+The callback is `init/1`, the parameter is a keyword list with two values, `:bot` which is the bot's name, and `:token` with the token used when starting the bot. Either of this can be used when calling `ExGram` methods.
+
+Example of usage:
+
+``` elixir
+defmodule MyBot.Bot do
+  @bot :my_bot
+
+  use ExGram.Bot, name: @bot
+
+  def init(opts) do
+    ExGram.set_my_description!(description: "This is my description", bot: opts[:bot]) # with :bot
+    ExGram.set_my_name!(name: "My Bot", token: opts[:token]) # with :token
+    :ok
+  end
+
+  # ...
+end
+```
+
 ### Sending files
 
 `ExGram` lets you send files by id (this means using files already uploaded to Telegram servers), providing a local path, or with the content directly. Some examples of this methods for sending files:

@@ -54,6 +54,8 @@ defmodule ExGram.Bot.Supervisor do
 
     bot_info = maybe_fetch_bot(opts[:username], token)
 
+    module.init(bot: name, token: token)
+
     dispatcher_opts = %ExGram.Dispatcher{
       name: name,
       bot_info: bot_info,
