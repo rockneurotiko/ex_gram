@@ -82,6 +82,12 @@ defmodule ExGram.Bot do
         raise message
       end
 
+      @type init_opts :: [bot: atom() | String.t(), token: String.t()]
+      @spec init(init_opts) :: :ok
+      def init(_opts) do
+        :ok
+      end
+
       def message(from, message) do
         GenServer.call(name(), {:message, from, message})
       end
@@ -98,6 +104,7 @@ defmodule ExGram.Bot do
       end
 
       defoverridable ExGram.Handler
+      defoverridable init: 1
     end
   end
 end
