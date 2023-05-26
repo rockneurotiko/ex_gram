@@ -131,7 +131,7 @@ defmodule ExGram.Macros.Executer do
   defp clean_body(m) when is_list(m), do: Enum.map(m, &clean_body/1)
   defp clean_body(m), do: m
 
-  defp process_result(list, [t]), do: Enum.map(list, &process_result(&1, t))
+  defp process_result(list, {:array, t}), do: Enum.map(list, &process_result(&1, t))
 
   defp process_result(elem, :integer), do: elem
   defp process_result(elem, :string), do: elem
