@@ -1,6 +1,21 @@
 # Changelog
 
 ## Unreleased
+- Fix return types for arrays
+
+## [0.40.0]
+- getMyCommands and deleteWebhook has parameters
+- Update Telegram API to 6.7: https://core.telegram.org/bots/api#april-21-2023
+- Models fields now can have union types
+- Add Webhook updates adapter
+- Remove InputFile, it wasn't a real model
+
+
+## [0.34.0]
+- Update Telegram API to 6.6: https://core.telegram.org/bots/api#march-9-2023
+- Breaking changes from the API:
+
+`thumb` fields renamed to `thumbnail` on models and methods.
 
 ## [0.33.0]
 - Update Telegram API to 6.5: https://core.telegram.org/bots/api#february-3-2023

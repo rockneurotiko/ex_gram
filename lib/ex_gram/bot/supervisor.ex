@@ -32,7 +32,7 @@ defmodule ExGram.Bot.Supervisor do
     updates_worker =
       case updates_method do
         :webhook ->
-          raise "Not implemented yet"
+          ExGram.Updates.Webhook
 
         :noup ->
           ExGram.Updates.Noup
@@ -53,6 +53,8 @@ defmodule ExGram.Bot.Supervisor do
     maybe_setup_commands(opts[:setup_commands], commands, token)
 
     bot_info = maybe_fetch_bot(opts[:username], token)
+
+    module.init(bot: name, token: token)
 
     dispatcher_opts = %ExGram.Dispatcher{
       name: name,
