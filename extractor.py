@@ -69,7 +69,7 @@ def generate_param(param, model):
     name = ":{}".format(param['name']) if model else param['name']
     debug("Extracting type: " + name)
     ts = generate_type(param['type'], False)
-    t = ts[0] if model else "[{}]".format(', '.join(ts))
+    t = "[{}]".format(', '.join(ts))
     debug(str(t))
     extra = "" if not param['optional'] else ", :optional"
 
@@ -112,6 +112,9 @@ def generate_generic(model):
   {} model. Valid subtypes: {}
   \"\"\"
   @type t :: {}
+
+
+  defstruct []
 
   def decode_as, do: %{}
 

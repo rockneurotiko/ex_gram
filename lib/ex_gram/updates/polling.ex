@@ -34,8 +34,8 @@ defmodule ExGram.Updates.Polling do
     {:noreply, {pid, token, nid}, @polling_timeout}
   end
 
-  def handle_info(unknonwn_message, state) do
-    Logger.debug("Polling updates received an unknown message #{inspect(unknonwn_message)}")
+  def handle_info(unknown_message, state) do
+    Logger.debug("Polling updates received an unknown message #{inspect(unknown_message)}")
 
     {:noreply, state, @polling_timeout}
   end

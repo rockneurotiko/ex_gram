@@ -34,7 +34,7 @@ defmodule ExGram.Macros.Executer do
     with {:token, token} when is_binary(token) <- {:token, token},
          {:params, :ok} <-
            {:params, check_params(check_params?, mandatory_types, method_ops, optional_types)} do
-      path = "/bot#{token}/#{name}"
+      path = build_path(token, name)
 
       body =
         body
@@ -69,6 +69,17 @@ defmodule ExGram.Macros.Executer do
     end
   end
 
+  defp build_path(token, name) do
+    token_part = "/bot#{token}"
+
+    if ExGram.test_environment?() do
+      [token_part, "test", name]
+    else
+      [token_part, name]
+    end
+    |> Path.join()
+  end
+
   defp body_with_files(body, file_parts) do
     file_parts =
       file_parts
@@ -95,7 +106,7 @@ defmodule ExGram.Macros.Executer do
   defp to_size_string(false), do: "false"
   defp to_size_string(x) when is_binary(x), do: x
   defp to_size_string(x) when is_integer(x), do: Integer.to_string(x)
-  # This is usefull to encode automatically
+  # This is useful to encode automatically
   defp to_size_string(x) when is_map(x), do: encode(x)
   defp to_size_string(_), do: raise("Not sizable!")
 
@@ -120,17 +131,33 @@ defmodule ExGram.Macros.Executer do
   defp clean_body(m) when is_list(m), do: Enum.map(m, &clean_body/1)
   defp clean_body(m), do: m
 
-  defp process_result(list, [t]), do: Enum.map(list, &process_result(&1, t))
+  defp process_result(list, {:array, t}), do: Enum.map(list, &process_result(&1, t))
 
   defp process_result(elem, :integer), do: elem
   defp process_result(elem, :string), do: elem
   defp process_result(elem, true), do: elem
 
   defp process_result(elem, t) when is_atom(t) do
-    struct(t, elem)
+    if is_subtype?(t) do
+      apply_subtype(t, elem)
+    else
+      struct(t, elem)
+    end
   end
 
   defp process_result(elem, _t), do: elem
+
+  defp is_subtype?(t) do
+    ExGram.Model.Subtype.impl_for(struct(t, %{}))
+  end
+
+  defp apply_subtype(t, params) do
+    base = struct(t, %{})
+    selector = ExGram.Model.Subtype.selector_value(base, params)
+    subtype = ExGram.Model.Subtype.subtype(base, selector)
+
+    struct(subtype, params)
+  end
 
   defp create_multipart(body, []), do: body
 

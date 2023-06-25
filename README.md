@@ -15,7 +15,7 @@ Add `ex_gram` as dependency in `mix.exs`
 ``` elixir
 def deps do
     [
-      {:ex_gram, "~> 0.30.0"},
+      {:ex_gram, "~> 0.40.0"},
       {:tesla, "~> 1.2"},
       {:hackney, "~> 1.12"},
       {:jason, ">= 1.0.0"}
@@ -65,7 +65,7 @@ config :maxwell, default_adapter: Maxwell.Adapter.Hackney
 
 ### JSON Engine
 
-By default ExGram will use `Jason` engine, but you can change it to your prefered JSON engine, the module just has to expose `encode/2`, `encode!/2`, `decode/2`, `decode!/2`.
+By default ExGram will use `Jason` engine, but you can change it to your preferred JSON engine, the module just has to expose `encode/2`, `encode!/2`, `decode/2`, `decode!/2`.
 
 You can change the engine in the configuration:
 
@@ -94,6 +94,54 @@ children = [
   ExGram, # This will setup the Registry.ExGram
   {MyBot, [method: :polling, token: "TOKEN"]}
 ]
+```
+
+### Webhook mode
+
+The provided Webhook adapter uses `Plug`, you will need to have that dependency in your application, and add it to your router, with basic Plug Router it would look something like this:
+
+``` elixir
+defmodule AppRouter do
+  use Plug.Router
+
+  plug ExGram.Plug
+end
+```
+
+At the moment the webhook URL will be `/telegram/<bot_token_hash>`.
+
+Then, in your bots you have to specify the webhook updater when you start it on your supervisor tree:
+
+``` elixir
+children = [
+  # ...
+  {MyBot, [method: :webhook, token: "TOKEN"]}
+]
+```
+
+In webhook mode, you can configure the following parameters:
+
+``` elixir
+config :ex_gram, :webhook,
+  allowed_updates: ["message", "poll"],       # array of strings
+  certificate: "priv/cert/selfsigned.pem",    # string (file path)
+  drop_pending_updates: false,                # boolean
+  ip_address: "1.1.1.1",                      # string
+  max_connections: 50,                        # integer
+  secret_token: "some_super_secret_key",      # string
+  url: "bot.example.com"                      # string (only domain name)
+```
+
+For more information on each parameter, refer to this documentation: https://core.telegram.org/bots/api#setwebhook
+
+### Test environment
+
+Telegram has a Test Environment that you can use to test your bots, you can learn how to setup your bots there in this documentation: https://core.telegram.org/bots/webapps#using-bots-in-the-test-environment
+
+In order to use the Test Environment you need to configure the bot like this:
+
+``` elixir
+config :ex_gram, test_environment: true
 ```
 
 ### Configure Tesla middlewares
@@ -206,6 +254,30 @@ This are the type of tuples that `handle/2` can receive as first parameter:
   - `{:edited_message, edited_message}` → This tuple will match when a message is edited
   - `{:message, message}` → This will match any message that does not fit with the ones described above
   - `{:update, update}` → This tuple will match as a default handle
+
+### Execute code on initialization
+
+The bots have an optional callback that will be executed *before* starting to consume messages. This method can be used to initialize things before starting the bot, for example setting the bot's description or name.
+
+The callback is `init/1`, the parameter is a keyword list with two values, `:bot` which is the bot's name, and `:token` with the token used when starting the bot. Either of this can be used when calling `ExGram` methods.
+
+Example of usage:
+
+``` elixir
+defmodule MyBot.Bot do
+  @bot :my_bot
+
+  use ExGram.Bot, name: @bot
+
+  def init(opts) do
+    ExGram.set_my_description!(description: "This is my description", bot: opts[:bot]) # with :bot
+    ExGram.set_my_name!(name: "My Bot", token: opts[:token]) # with :token
+    :ok
+  end
+
+  # ...
+end
+```
 
 ### Sending files
 
@@ -367,7 +439,7 @@ These methods do some stuff, like retrieving the token, checking the parameters 
 
 ## Creating your own updates worker
 
-The ExGram framework uses updates worker to "receive" the updates and send them to the dispatcher, this is the first parameter that you provide to your bot, the ones currently are `:polling` that goes to the module `ExGram.Updates.Polling` for polling updates and `:noup` that uses `ExGram.Updates.NoUp` that do nothing (great for some offline testing). Sadly, the webhook and test worker are on the way.
+The ExGram framework uses updates worker to "receive" the updates and send them to the dispatcher, this is the first parameter that you provide to your bot, the ones currently are `:polling` that goes to the module `ExGram.Updates.Polling` for polling updates, `:webhook` that goes to the module `ExGram.Updates.Webhook` for webhook updates and `:noup` that uses `ExGram.Updates.NoUp` that do nothing (great for some offline testing). Sadly, the test worker are on the way.
 
 But you can implement your own worker to retrieve the updates as you want!
 
