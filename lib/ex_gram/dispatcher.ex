@@ -47,8 +47,8 @@ defmodule ExGram.Dispatcher do
     struct!(__MODULE__, overrides)
   end
 
-  @spec init_state(atom(), Model.User.t(), module()) :: t()
-  def init_state(name, %Model.User{} = bot_info, module)
+  @spec init_state(atom(), Model.User.t() | nil, module()) :: t()
+  def init_state(name, bot_info, module)
       when is_atom(name) and is_atom(module) do
     %__MODULE__{
       name: name,
