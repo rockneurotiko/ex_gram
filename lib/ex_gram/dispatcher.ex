@@ -5,108 +5,117 @@ defmodule ExGram.Dispatcher do
 
   use GenServer
 
+  alias ExGram.Bot
   alias ExGram.Cnt
+  alias ExGram.Model
 
-  @type t :: %__MODULE__{
-          name: atom,
-          bot_info: ExGram.Model.User.t() | nil,
-          dispatcher_name: atom,
-          commands: list(),
-          regex: list(),
-          middlewares: list(),
-          handler: function,
-          error_handler: function
+  @type custom_key() :: any()
+
+  @type parsed_message() ::
+          {:command, key :: String.t() | custom_key(), Model.Message.t()}
+          | {:text, String.t(), Model.Message.t()}
+          | {:regex, key :: custom_key(), Model.Message.t()}
+          | {:location, Model.Location.t()}
+          | {:message, Model.Message.t()}
+          | {:callback_query, Model.CallbackQuery.t()}
+          | {:inline_query, Model.InlineQuery.t()}
+          | {:edited_message, Model.Message.t()}
+          | {:update, Model.Update.t()}
+
+  @type t() :: %__MODULE__{
+          name: atom(),
+          bot_info: Model.User.t() | nil,
+          dispatcher_name: atom(),
+          commands: %{String.t() => map()},
+          regex: [Regex.t()],
+          middlewares: [Bot.middleware()],
+          handler: {module(), atom()},
+          error_handler: {module(), atom()}
         }
 
-  defstruct [
-    :name,
-    :bot_info,
-    :dispatcher_name,
-    :commands,
-    :regex,
-    :middlewares,
-    :handler,
-    :error_handler
-  ]
+  defstruct name: __MODULE__,
+            bot_info: nil,
+            dispatcher_name: __MODULE__,
+            commands: %{},
+            regex: [],
+            middlewares: [],
+            handler: nil,
+            error_handler: nil
 
-  def new(extra \\ %{}) do
+  @spec new(Enumerable.t()) :: t()
+  def new(overrides \\ %{}) do
+    struct!(__MODULE__, overrides)
+  end
+
+  @spec init_state(atom(), Model.User.t() | nil, module()) :: t()
+  def init_state(name, bot_info, module)
+      when is_atom(name) and is_atom(module) do
     %__MODULE__{
-      name: __MODULE__,
-      bot_info: nil,
-      dispatcher_name: __MODULE__,
-      commands: [],
-      regex: [],
-      middlewares: [],
-      handler: nil,
-      error_handler: nil
+      name: name,
+      bot_info: bot_info,
+      dispatcher_name: name,
+      commands: prepare_commands(module.commands()),
+      regex: module.regexes(),
+      middlewares: module.middlewares(),
+      handler: {module, :handle},
+      error_handler: {module, :handle_error}
     }
-    |> Map.merge(extra)
   end
 
-  def start_link(%__MODULE__{dispatcher_name: name} = ops) do
-    GenServer.start_link(__MODULE__, {:ok, ops}, name: name)
+  @spec prepare_commands([Keyword.t()]) :: %{String.t() => map()}
+  defp prepare_commands(commands) when is_list(commands) do
+    Map.new(commands, fn command ->
+      command = Map.new(command)
+      {command.command, command}
+    end)
   end
 
-  def init({:ok, ops}) do
-    {:ok, ops}
+  @spec start_link(t()) :: GenServer.on_start()
+  def start_link(%__MODULE__{dispatcher_name: name} = state) do
+    GenServer.start_link(__MODULE__, state, name: name)
   end
 
-  def handle_call(
-        {:update, u},
-        _from,
-        %{
-          handler: handler,
-          error_handler: error_handler
-        } = s
-      ) do
-    cnt = create_cnt(s) |> Map.put(:update, u)
+  @impl GenServer
+  def init(%__MODULE__{} = state) do
+    {:ok, state}
+  end
 
-    case apply_middlewares(cnt) do
-      %Cnt{halted: true} ->
-        # Logger.info "Middleware cancel"
-        true
+  @impl GenServer
+  def handle_call({:update, update}, _from, %__MODULE__{} = state) do
+    cnt = %Cnt{default_context(state) | update: update}
+    cnt = apply_middlewares(cnt)
 
-      cnt ->
-        info = extract_info(cnt)
-        spawn(fn -> call_handler(handler, info, cnt, error_handler) end)
+    if not cnt.halted do
+      info = extract_info(cnt)
+      spawn(fn -> call_handler(info, cnt, state) end)
     end
 
-    {:reply, :ok, s}
+    {:reply, :ok, state}
   end
 
-  def handle_call({:update, _u}, _from, s) do
-    # Logger.error "Update, not update? #{inspect(u)}\nState: #{inspect(s)}"
-    {:reply, :error, s}
-  end
-
-  def handle_call(
-        {:message, origin, msg},
-        from,
-        %{handler: handler, error_handler: error_handler} = s
-      ) do
+  def handle_call({:message, origin, msg}, from, %__MODULE__{} = state) do
     bot_message = {:bot_message, origin, msg}
-    cnt = create_cnt(s) |> Map.put(:message, bot_message) |> Map.put(:extra, %{from: from})
+    cnt = %Cnt{default_context(state) | message: bot_message, extra: %{from: from}}
+    cnt = apply_middlewares(cnt)
 
-    case apply_middlewares(cnt) do
-      %Cnt{halted: true} ->
-        {:reply, :halted, s}
-
-      cnt ->
-        response = call_handler(handler, {:bot_message, origin, msg}, cnt, error_handler)
-        {:reply, response, s}
+    if not cnt.halted do
+      response = call_handler(bot_message, cnt, state)
+      {:reply, response, state}
+    else
+      {:reply, :halted, state}
     end
   end
 
-  def handle_call(msg, from, %{handler: handler, error_handler: error_handler} = s) do
-    cnt = create_cnt(s) |> Map.put(:message, {:call, msg}) |> Map.put(:extra, %{from: from})
+  def handle_call(msg, from, %__MODULE__{} = state) do
+    message = {:call, msg}
+    cnt = %Cnt{default_context(state) | message: message, extra: %{from: from}}
+    cnt = apply_middlewares(cnt)
 
-    case apply_middlewares(cnt) do
-      %Cnt{halted: true} ->
-        {:reply, :halted, s}
-
-      cnt ->
-        response = call_handler(handler, {:call, msg}, cnt, error_handler)
-        {:reply, response, s}
+    if not cnt.halted do
+      response = call_handler(message, cnt, state)
+      {:reply, response, state}
+    else
+      {:reply, :halted, state}
     end
   end
 
@@ -116,106 +125,105 @@ defmodule ExGram.Dispatcher do
   # InlineQuery
   # ChosenInlineResult
 
-  def handle_cast(msg, %{handler: handler, error_handler: error_handler} = s) do
-    cnt = create_cnt(s) |> Map.put(:message, {:cast, msg})
+  @impl GenServer
+  def handle_cast(msg, %__MODULE__{} = state) do
+    message = {:cast, msg}
+    cnt = %Cnt{default_context(state) | message: message}
+    cnt = apply_middlewares(cnt)
 
-    case apply_middlewares(cnt) do
-      %Cnt{halted: true} ->
-        {:noreply, s}
-
-      cnt ->
-        spawn(fn -> call_handler(handler, {:cast, msg}, cnt, error_handler) end)
-        {:noreply, s}
+    if not cnt.halted do
+      spawn(fn -> call_handler(message, cnt, state) end)
     end
+
+    {:noreply, state}
   end
 
-  def handle_info(msg, %{handler: handler, error_handler: error_handler} = s) do
+  @impl GenServer
+  def handle_info(msg, %__MODULE__{} = state) do
     message = {:info, msg}
-    cnt = s |> create_cnt() |> Map.put(:message, message)
+    cnt = %Cnt{default_context(state) | message: message}
+    cnt = apply_middlewares(cnt)
 
-    case apply_middlewares(cnt) do
-      %Cnt{halted: true} ->
-        {:noreply, s}
-
-      cnt ->
-        call_handler(handler, message, cnt, error_handler)
-        {:noreply, s}
+    if not cnt.halted do
+      call_handler(message, cnt, state)
     end
+
+    {:noreply, state}
   end
 
-  defp create_cnt(%__MODULE__{
+  @spec default_context(t()) :: Cnt.t()
+  defp default_context(%__MODULE__{
          name: name,
          bot_info: bot_info,
          middlewares: middlewares,
          commands: commands,
          regex: regex
        }) do
-    Cnt.new(%{
+    %Cnt{
       name: name,
       bot_info: bot_info,
       halted: false,
       middlewares: middlewares,
       commands: commands,
       regex: regex
-    })
+    }
   end
 
-  defp extract_command(cmd),
-    do:
-      cmd
-      |> String.split(" ")
-      |> Enum.at(0)
-      |> String.replace_prefix("/", "")
-
-  defp handle_text(text, %Cnt{commands: commands, regex: regex}) do
-    if String.starts_with?(text, "/") do
-      cmd = extract_command(text)
-      t = text |> String.split(" ") |> Enum.drop(1) |> Enum.join(" ")
-
-      case Enum.find(commands, &(Keyword.get(&1, :command) == cmd)) do
-        nil ->
-          {:command, cmd, t}
-
-        cmd ->
-          {:command, Keyword.get(cmd, :name), t}
+  @spec handle_text(String.t(), Cnt.t()) ::
+          {:command, key :: String.t() | custom_key(), text :: String.t()}
+          | {:text, String.t()}
+          | {:regex, key :: custom_key(), text :: String.t()}
+  defp handle_text("/" <> text, %Cnt{commands: commands}) do
+    {cmd, text} =
+      case String.split(text, " ", parts: 2) do
+        [cmd] -> {cmd, ""}
+        [cmd, rest] -> {cmd, rest}
       end
-    else
-      case Enum.find(regex, &Regex.match?(Keyword.get(&1, :regex), text)) do
-        nil ->
-          {:text, text}
 
-        reg ->
-          {:regex, Keyword.get(reg, :name), text}
-      end
+    case Map.get(commands, cmd) do
+      %{name: name} -> {:command, name, text}
+      nil -> {:command, cmd, text}
     end
   end
 
-  defp extract_info(%Cnt{update: %{message: %{text: t} = message}} = cnt) when is_bitstring(t) do
-    case handle_text(t, cnt) do
+  defp handle_text(text, %Cnt{regex: []}) do
+    {:text, text}
+  end
+
+  defp handle_text(text, %Cnt{regex: regex}) do
+    case Enum.find(regex, &Regex.match?(Keyword.get(&1, :regex), text)) do
+      nil -> {:text, text}
+      reg -> {:regex, Keyword.get(reg, :name), text}
+    end
+  end
+
+  @spec extract_info(Cnt.t()) :: parsed_message()
+  defp extract_info(%Cnt{update: %{message: %{text: text} = message}} = cnt)
+       when is_binary(text) do
+    case handle_text(text, cnt) do
       {:command, key, text} -> {:command, key, %{message | text: text}}
       {:text, text} -> {:text, text, %{message | text: text}}
       {:regex, key, text} -> {:regex, key, %{message | text: text}}
     end
   end
 
-  defp extract_info(%Cnt{update: %{message: %{location: location}}}) when not is_nil(location) do
+  defp extract_info(%Cnt{update: %{message: %{location: %{} = location}}}) do
     {:location, location}
   end
 
-  defp extract_info(%Cnt{update: %{message: message}}) when not is_nil(message) do
+  defp extract_info(%Cnt{update: %{message: %{} = message}}) do
     {:message, message}
   end
 
-  defp extract_info(%Cnt{update: %{callback_query: cbq}}) when not is_nil(cbq) do
-    {:callback_query, cbq}
+  defp extract_info(%Cnt{update: %{callback_query: %{} = callback_query}}) do
+    {:callback_query, callback_query}
   end
 
-  defp extract_info(%Cnt{update: %{inline_query: inline}}) when not is_nil(inline) do
-    {:inline_query, inline}
+  defp extract_info(%Cnt{update: %{inline_query: %{} = inline_query}}) do
+    {:inline_query, inline_query}
   end
 
-  defp extract_info(%Cnt{update: %{edited_message: edited_message}})
-       when not is_nil(edited_message) do
+  defp extract_info(%Cnt{update: %{edited_message: %{} = edited_message}}) do
     {:edited_message, edited_message}
   end
 
@@ -224,57 +232,52 @@ defmodule ExGram.Dispatcher do
   # chosen_inline_result
   # shipping_query
   # pre_checkout_query
-  defp extract_info(%Cnt{update: u}) do
-    {:update, u}
+  defp extract_info(%Cnt{update: update}) do
+    {:update, update}
   end
 
   defp apply_middlewares(%Cnt{middlewares: []} = cnt), do: cnt
   defp apply_middlewares(%Cnt{halted: true} = cnt), do: cnt
   defp apply_middlewares(%Cnt{middleware_halted: true} = cnt), do: cnt
 
-  defp apply_middlewares(%Cnt{middlewares: [{midd, ops} | xs]} = cnt) when is_function(midd) do
-    cnt = cnt |> Map.put(:middlewares, xs)
-    new_cnt = midd.(cnt, ops)
-    apply_middlewares(new_cnt)
+  defp apply_middlewares(%Cnt{middlewares: [{fun, opts} | rest]} = cnt)
+       when is_function(fun, 2) do
+    %Cnt{cnt | middlewares: rest}
+    |> fun.(opts)
+    |> apply_middlewares()
   end
 
-  defp apply_middlewares(%Cnt{middlewares: [{midd, ops} | xs]} = cnt) when is_atom(midd) do
-    cnt = cnt |> Map.put(:middlewares, xs)
-    init_ops = midd.init(ops)
-    new_cnt = midd.call(cnt, init_ops)
-    apply_middlewares(new_cnt)
+  defp apply_middlewares(%Cnt{middlewares: [{module, opts} | rest]} = cnt) when is_atom(module) do
+    init_opts = module.init(opts)
+
+    %Cnt{cnt | middlewares: rest}
+    |> module.call(init_opts)
+    |> apply_middlewares()
   end
 
-  defp apply_middlewares(%Cnt{middlewares: [_ | xs]} = cnt),
-    do: cnt |> Map.put(:middlewares, xs) |> apply_middlewares()
+  defp apply_middlewares(%Cnt{middlewares: [_ | rest]} = cnt) do
+    apply_middlewares(%Cnt{cnt | middlewares: rest})
+  end
 
-  defp call_handler(handler, info, cnt, error_handler) do
-    case call_handler(handler, [info, cnt]) do
+  defp call_handler(info, cnt, %__MODULE__{handler: {module, method}} = state) do
+    case apply(module, method, [info, cnt]) do
       %Cnt{} = cnt ->
-        cnt
-        |> ExGram.Dsl.send_answers()
-        |> handle_responses(error_handler)
+        %Cnt{responses: responses} = ExGram.Dsl.send_answers(cnt)
+        handle_responses(responses, state)
 
       _ ->
         :noop
     end
   end
 
-  defp handle_responses(%Cnt{responses: responses}, error_handler),
-    do: handle_responses(responses, error_handler, [])
+  defp handle_responses([], _state), do: []
 
-  defp handle_responses([], _error_handler, acc), do: acc
-
-  defp handle_responses([{:error, error} | rest], error_handler, acc) do
-    call_handler(error_handler, [error])
-    handle_responses(rest, error_handler, acc)
+  defp handle_responses([{:error, error} | rest], %{error_handler: {module, method}} = state) do
+    apply(module, method, [error])
+    handle_responses(rest, state)
   end
 
-  defp handle_responses([value | rest], error_handler, acc) do
-    handle_responses(rest, error_handler, acc ++ [value])
-  end
-
-  defp call_handler({module, method}, args) do
-    apply(module, method, args)
+  defp handle_responses([value | rest], state) do
+    [value | handle_responses(rest, state)]
   end
 end

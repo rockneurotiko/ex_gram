@@ -35,19 +35,16 @@ defmodule ExGram.Bot do
   ]
   ```
   """
+  alias ExGram.Cnt
 
-  defmacro __using__(ops) do
-    name =
-      case Keyword.fetch(ops, :name) do
-        {:ok, n} -> n
-        _ -> raise "name parameter is mandatory"
-      end
+  @type middleware_fn() :: (Cnt.t(), opts :: any() -> Cnt.t())
+  @type middleware() :: {module() | middleware_fn(), opts :: any()}
 
-    username = Keyword.fetch(ops, :username)
-    setup_commands = Keyword.get(ops, :setup_commands, false)
+  defmacro __using__(opts) do
+    name = Keyword.get(opts, :name) || raise ArgumentError, "name parameter is mandatory"
+    module_opts = Keyword.take(opts, [:username, :setup_commands])
 
     quote location: :keep do
-      # quote do
       use ExGram.Middleware.Builder
 
       import ExGram.Dsl
@@ -57,29 +54,8 @@ defmodule ExGram.Bot do
       def name(), do: unquote(name)
 
       def child_spec(opts) do
-        opts =
-          Keyword.merge(opts, setup_commands: unquote(setup_commands), username: unquote(username))
-
+        opts = Keyword.merge(opts, unquote(module_opts))
         ExGram.Bot.Supervisor.child_spec(opts, __MODULE__)
-      end
-
-      @dialyzer {:nowarn_function, start_link: 1}
-      def start_link(opts) when is_list(opts) do
-        message = """
-        Outdate child specification, change your bot's children config to the following:
-        {#{__MODULE__}, #{inspect(opts)}}
-        """
-
-        raise message
-      end
-
-      def start_link(m, token \\ nil) do
-        message = """
-        Outdate child specification, change your bot's children config to the following:
-        {#{__MODULE__}, [method: #{m}, token: #{token}]}
-        """
-
-        raise message
       end
 
       @type init_opts :: [bot: atom() | String.t(), token: String.t()]
@@ -93,14 +69,18 @@ defmodule ExGram.Bot do
       end
 
       # Default implementations
+
+      @impl ExGram.Handler
       def handle(msg, _cnt) do
-        error = %ExGram.Error{code: :not_handled, message: "Message not handled: #{inspect(msg)}"}
-        handle_error(error)
+        handle_error(%ExGram.Error{
+          code: :not_handled,
+          message: "Message not handled: #{inspect(msg)}"
+        })
       end
 
+      @impl ExGram.Handler
       def handle_error(error) do
         error
-        # IO.inspect("Error received: #{inspect(error)}")
       end
 
       defoverridable ExGram.Handler

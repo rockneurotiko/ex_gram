@@ -9,10 +9,7 @@ defmodule Mix.Tasks.Bot.New do
 
   def run(_args) do
     app = Mix.Project.config()[:app]
-    app_string = app |> Atom.to_string()
-
-    app_module =
-      app_string |> String.split("_") |> Enum.map(&String.capitalize/1) |> Enum.join("")
+    app_module = app |> Atom.to_string() |> Macro.camelize()
 
     target = "lib/#{app}/bot.ex"
     template_path = Path.expand("../../../templates/bot.ex", __DIR__)

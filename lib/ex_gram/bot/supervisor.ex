@@ -2,6 +2,7 @@ defmodule ExGram.Bot.Supervisor do
   @moduledoc """
   Bot supervisor that starts the dispatcher and updates processes and tie them together
   """
+  alias ExGram.Dispatcher
 
   def child_spec(opts, module) do
     %{
@@ -15,7 +16,7 @@ defmodule ExGram.Bot.Supervisor do
 
   def start_link(opts, module) do
     name = opts[:name] || module.name()
-    supervisor_name = String.to_atom(Atom.to_string(name) <> "_supervisor")
+    supervisor_name = Module.concat(module, Supervisor)
     params = Keyword.merge(opts, name: name, module: module)
     Supervisor.start_link(ExGram.Bot.Supervisor, params, name: supervisor_name)
   end
@@ -24,8 +25,7 @@ defmodule ExGram.Bot.Supervisor do
     updates_method = Keyword.fetch!(opts, :method)
     token = Keyword.fetch!(opts, :token)
     name = Keyword.fetch!(opts, :name)
-    module = opts[:module]
-    commands = module.commands()
+    module = Keyword.fetch!(opts, :module)
 
     {:ok, _} = Registry.register(Registry.ExGram, name, token)
 
@@ -50,56 +50,39 @@ defmodule ExGram.Bot.Supervisor do
           other
       end
 
-    maybe_setup_commands(opts[:setup_commands], commands, token)
-
-    bot_info = maybe_fetch_bot(opts[:username], token)
-
     module.init(bot: name, token: token)
+    if opts[:setup_commands], do: setup_commands(module.commands(), token)
 
-    dispatcher_opts = %ExGram.Dispatcher{
-      name: name,
-      bot_info: bot_info,
-      dispatcher_name: name,
-      commands: commands,
-      regex: module.regexes(),
-      middlewares: module.middlewares(),
-      handler: {module, :handle},
-      error_handler: {module, :handle_error}
-    }
+    bot_info = get_bot_info(opts[:username], token)
+    dispatcher_opts = Dispatcher.init_state(name, bot_info, module)
 
     children = [
-      {ExGram.Dispatcher, dispatcher_opts},
+      {Dispatcher, dispatcher_opts},
       {updates_worker, {:bot, name, :token, token}}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
   end
 
-  defp maybe_fetch_bot(username, _token) when is_binary(username),
+  defp get_bot_info(username, _token) when is_binary(username),
     do: %ExGram.Model.User{username: username, is_bot: true}
 
-  defp maybe_fetch_bot(_username, token) do
+  defp get_bot_info(_username, token) do
     case ExGram.get_me(token: token) do
       {:ok, bot} -> bot
       _ -> nil
     end
   end
 
-  defp maybe_setup_commands(true, commands, token) do
+  defp setup_commands(commands, token) do
     send_commands =
-      commands
-      |> Stream.filter(fn command ->
-        not is_nil(command[:description])
-      end)
-      |> Enum.map(fn command ->
+      for command <- commands, command[:description] != nil do
         %ExGram.Model.BotCommand{
           command: command[:command],
           description: command[:description]
         }
-      end)
+      end
 
     ExGram.set_my_commands(send_commands, token: token)
   end
-
-  defp maybe_setup_commands(_, _commands, _token), do: :nop
 end
