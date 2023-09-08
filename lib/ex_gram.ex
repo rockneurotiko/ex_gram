@@ -96,20 +96,7 @@ defmodule ExGram do
   method(
     :post,
     "logOut",
-    [
-      {chat_id, [:integer, :string]},
-      {message_thread_id, [:integer], :optional},
-      {text, [:string]},
-      {parse_mode, [:string], :optional},
-      {entities, [{:array, MessageEntity}], :optional},
-      {disable_web_page_preview, [:boolean], :optional},
-      {disable_notification, [:boolean], :optional},
-      {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
-    ],
+    [],
     true,
     "Use this method to log out from the cloud Bot API server before launching the bot locally. You must log out the bot before running it locally, otherwise there is no guarantee that the bot will receive updates. After a successful call, you can immediately log in on a local server, but will not be able to log in back to the cloud Bot API server for 10 minutes. Returns True on success. Requires no parameters."
   )
@@ -117,20 +104,7 @@ defmodule ExGram do
   method(
     :post,
     "close",
-    [
-      {chat_id, [:integer, :string]},
-      {message_thread_id, [:integer], :optional},
-      {text, [:string]},
-      {parse_mode, [:string], :optional},
-      {entities, [{:array, MessageEntity}], :optional},
-      {disable_web_page_preview, [:boolean], :optional},
-      {disable_notification, [:boolean], :optional},
-      {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
-    ],
+    [],
     true,
     "Use this method to close the bot instance before moving it from one local server to another. You need to delete the webhook before calling this method to ensure that the bot isn't launched again after server restart. The method will return error 429 in the first 10 minutes after the bot is launched. Returns True on success. Requires no parameters."
   )
@@ -908,6 +882,14 @@ defmodule ExGram do
 
   method(
     :post,
+    "unpinAllGeneralForumTopicMessages",
+    [{chat_id, [:integer, :string]}],
+    true,
+    "Use this method to clear the list of pinned messages in a General forum topic. The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success."
+  )
+
+  method(
+    :post,
     "answerCallbackQuery",
     [
       {callback_query_id, [:string]},
@@ -1442,7 +1424,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 113 methods
+  # 114 methods
 
   # ----------MODELS-----------
 
@@ -1522,6 +1504,7 @@ defmodule ExGram do
         {:photo, [ChatPhoto], :optional},
         {:active_usernames, [{:array, :string}], :optional},
         {:emoji_status_custom_emoji_id, [:string], :optional},
+        {:emoji_status_expiration_date, [:integer], :optional},
         {:bio, [:string], :optional},
         {:has_private_forwards, [:boolean], :optional},
         {:has_restricted_voice_and_video_messages, [:boolean], :optional},
@@ -1574,6 +1557,7 @@ defmodule ExGram do
         {:document, [Document], :optional},
         {:photo, [{:array, PhotoSize}], :optional},
         {:sticker, [Sticker], :optional},
+        {:story, [Story], :optional},
         {:video, [Video], :optional},
         {:video_note, [VideoNote], :optional},
         {:voice, [Voice], :optional},
@@ -1700,6 +1684,12 @@ defmodule ExGram do
     )
 
     model(
+      Story,
+      [],
+      "This object represents a message about a forwarded story in the chat. Currently holds no information."
+    )
+
+    model(
       Video,
       [
         {:file_id, [:string]},
@@ -1766,7 +1756,12 @@ defmodule ExGram do
 
     model(
       PollAnswer,
-      [{:poll_id, [:string]}, {:user, [User]}, {:option_ids, [{:array, :integer}]}],
+      [
+        {:poll_id, [:string]},
+        {:voter_chat, [Chat], :optional},
+        {:user, [User], :optional},
+        {:option_ids, [{:array, :integer}]}
+      ],
       "This object represents an answer of a user in a non-anonymous poll."
     )
 
@@ -3184,7 +3179,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 143 models
+    # 144 models
 
     defmodule ChatMember do
       @moduledoc """
