@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+
+## [0.41.0]
+- Update Telegram API to 6.8: https://core.telegram.org/bots/api#august-18-2023
 - Fix return types for arrays
 
 ## [0.40.0]
