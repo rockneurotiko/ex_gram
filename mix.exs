@@ -58,7 +58,7 @@ defmodule ExGram.Mixfile do
       {:tesla, "~> 1.2", optional: true},
       {:gun, "~> 1.3", optional: true},
       # Maxwell or Tesla
-      {:hackney, "~> 1.12", optional: true},
+      {:hackney, "~> 1.20", optional: true},
       # Maxwell adapter
       {:maxwell, "~> 2.3.1", optional: true},
       # JSON encoders/decoders
@@ -66,7 +66,6 @@ defmodule ExGram.Mixfile do
       {:poison, ">= 1.0.0", optional: true},
       # Webhook adapter
       {:plug, "~> 1.14", optional: true},
-      {:ssl_verify_fun, "~> 1.1.7", manager: :rebar3, override: true},
       # Development
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
