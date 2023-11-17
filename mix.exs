@@ -66,6 +66,7 @@ defmodule ExGram.Mixfile do
       {:poison, ">= 1.0.0", optional: true},
       # Webhook adapter
       {:plug, "~> 1.14", optional: true},
+      {:ssl_verify_fun, "~> 1.1.7", manager: :rebar3, override: true},
       # Development
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
