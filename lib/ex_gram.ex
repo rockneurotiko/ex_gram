@@ -118,11 +118,10 @@ defmodule ExGram do
       {text, [:string]},
       {parse_mode, [:string], :optional},
       {entities, [{:array, MessageEntity}], :optional},
-      {disable_web_page_preview, [:boolean], :optional},
+      {link_preview_options, [LinkPreviewOptions], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -142,7 +141,22 @@ defmodule ExGram do
       {message_id, [:integer]}
     ],
     ExGram.Model.Message,
-    "Use this method to forward messages of any kind. Service messages can't be forwarded. On success, the sent Message is returned."
+    "Use this method to forward messages of any kind. Service messages and messages with protected content can't be forwarded. On success, the sent Message is returned."
+  )
+
+  method(
+    :post,
+    "forwardMessages",
+    [
+      {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
+      {from_chat_id, [:integer, :string]},
+      {message_ids, [{:array, :integer}]},
+      {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional}
+    ],
+    :any,
+    "Use this method to forward multiple messages of any kind. If some of the specified messages can't be found or forwarded, they are skipped. Service messages and messages with protected content can't be forwarded. Album grouping is kept for forwarded messages. On success, an array of MessageId of the sent messages is returned."
   )
 
   method(
@@ -158,13 +172,28 @@ defmodule ExGram do
       {caption_entities, [{:array, MessageEntity}], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
     ExGram.Model.MessageId,
-    "Use this method to copy messages of any kind. Service messages and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success."
+    "Use this method to copy messages of any kind. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success."
+  )
+
+  method(
+    :post,
+    "copyMessages",
+    [
+      {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
+      {from_chat_id, [:integer, :string]},
+      {message_ids, [{:array, :integer}]},
+      {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
+      {remove_caption, [:boolean], :optional}
+    ],
+    :any,
+    "Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of MessageId of the sent messages is returned."
   )
 
   method(
@@ -180,8 +209,7 @@ defmodule ExGram do
       {has_spoiler, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -205,8 +233,7 @@ defmodule ExGram do
       {thumbnail, [:file, :string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -228,8 +255,7 @@ defmodule ExGram do
       {disable_content_type_detection, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -255,8 +281,7 @@ defmodule ExGram do
       {supports_streaming, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -281,8 +306,7 @@ defmodule ExGram do
       {has_spoiler, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -303,8 +327,7 @@ defmodule ExGram do
       {duration, [:integer], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -324,8 +347,7 @@ defmodule ExGram do
       {thumbnail, [:file, :string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -343,8 +365,7 @@ defmodule ExGram do
        [{:array, [InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo]}]},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional}
+      {reply_parameters, [ReplyParameters], :optional}
     ],
     {:array, ExGram.Model.Message},
     "Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of Messages that were sent is returned."
@@ -364,8 +385,7 @@ defmodule ExGram do
       {proximity_alert_radius, [:integer], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -389,8 +409,7 @@ defmodule ExGram do
       {google_place_type, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -410,8 +429,7 @@ defmodule ExGram do
       {vcard, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -439,8 +457,7 @@ defmodule ExGram do
       {is_closed, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -457,8 +474,7 @@ defmodule ExGram do
       {emoji, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -476,6 +492,19 @@ defmodule ExGram do
     ],
     true,
     "Use this method when you need to tell the user that something is happening on the bot's side. The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status). Returns True on success."
+  )
+
+  method(
+    :post,
+    "setMessageReaction",
+    [
+      {chat_id, [:integer, :string]},
+      {message_id, [:integer]},
+      {reaction, [{:array, ReactionType}], :optional},
+      {is_big, [:boolean], :optional}
+    ],
+    true,
+    "Use this method to change the chosen reactions on a message. Service messages can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. In albums, bots must react to the first message. Returns True on success."
   )
 
   method(
@@ -541,15 +570,18 @@ defmodule ExGram do
       {user_id, [:integer]},
       {is_anonymous, [:boolean], :optional},
       {can_manage_chat, [:boolean], :optional},
-      {can_post_messages, [:boolean], :optional},
-      {can_edit_messages, [:boolean], :optional},
       {can_delete_messages, [:boolean], :optional},
       {can_manage_video_chats, [:boolean], :optional},
       {can_restrict_members, [:boolean], :optional},
       {can_promote_members, [:boolean], :optional},
       {can_change_info, [:boolean], :optional},
       {can_invite_users, [:boolean], :optional},
+      {can_post_messages, [:boolean], :optional},
+      {can_edit_messages, [:boolean], :optional},
       {can_pin_messages, [:boolean], :optional},
+      {can_post_stories, [:boolean], :optional},
+      {can_edit_stories, [:boolean], :optional},
+      {can_delete_stories, [:boolean], :optional},
       {can_manage_topics, [:boolean], :optional}
     ],
     true,
@@ -726,7 +758,7 @@ defmodule ExGram do
     "getChat",
     [{chat_id, [:integer, :string]}],
     ExGram.Model.Chat,
-    "Use this method to get up to date information about the chat (current name of the user for one-on-one conversations, current username of a user, group or channel, etc.). Returns a Chat object on success."
+    "Use this method to get up to date information about the chat. Returns a Chat object on success."
   )
 
   method(
@@ -903,6 +935,14 @@ defmodule ExGram do
   )
 
   method(
+    :get,
+    "getUserChatBoosts",
+    [{chat_id, [:integer, :string]}, {user_id, [:integer]}],
+    ExGram.Model.UserChatBoosts,
+    "Use this method to get the list of boosts added to a chat by a user. Requires administrator rights in the chat. Returns a UserChatBoosts object."
+  )
+
+  method(
     :post,
     "setMyCommands",
     [
@@ -1020,7 +1060,7 @@ defmodule ExGram do
       {text, [:string]},
       {parse_mode, [:string], :optional},
       {entities, [{:array, MessageEntity}], :optional},
-      {disable_web_page_preview, [:boolean], :optional},
+      {link_preview_options, [LinkPreviewOptions], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
     ExGram.Model.Message,
@@ -1123,6 +1163,14 @@ defmodule ExGram do
 
   method(
     :post,
+    "deleteMessages",
+    [{chat_id, [:integer, :string]}, {message_ids, [{:array, :integer}]}],
+    true,
+    "Use this method to delete multiple messages simultaneously. If some of the specified messages can't be found, they are skipped. Returns True on success."
+  )
+
+  method(
+    :post,
     "sendSticker",
     [
       {chat_id, [:integer, :string]},
@@ -1131,8 +1179,7 @@ defmodule ExGram do
       {emoji, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
        :optional}
     ],
@@ -1312,8 +1359,7 @@ defmodule ExGram do
       {is_flexible, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
     ExGram.Model.Message,
@@ -1387,8 +1433,7 @@ defmodule ExGram do
       {game_short_name, [:string]},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
-      {reply_to_message_id, [:integer], :optional},
-      {allow_sending_without_reply, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
     ExGram.Model.Message,
@@ -1424,7 +1469,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 114 methods
+  # 119 methods
 
   # ----------MODELS-----------
 
@@ -1443,6 +1488,8 @@ defmodule ExGram do
         {:edited_message, [Message], :optional},
         {:channel_post, [Message], :optional},
         {:edited_channel_post, [Message], :optional},
+        {:message_reaction, [MessageReactionUpdated], :optional},
+        {:message_reaction_count, [MessageReactionCountUpdated], :optional},
         {:inline_query, [InlineQuery], :optional},
         {:chosen_inline_result, [ChosenInlineResult], :optional},
         {:callback_query, [CallbackQuery], :optional},
@@ -1452,7 +1499,9 @@ defmodule ExGram do
         {:poll_answer, [PollAnswer], :optional},
         {:my_chat_member, [ChatMemberUpdated], :optional},
         {:chat_member, [ChatMemberUpdated], :optional},
-        {:chat_join_request, [ChatJoinRequest], :optional}
+        {:chat_join_request, [ChatJoinRequest], :optional},
+        {:chat_boost, [ChatBoostUpdated], :optional},
+        {:removed_chat_boost, [ChatBoostRemoved], :optional}
       ],
       "This object represents an incoming update. At most one of the optional parameters can be present in any given update."
     )
@@ -1503,6 +1552,11 @@ defmodule ExGram do
         {:is_forum, [:boolean], :optional},
         {:photo, [ChatPhoto], :optional},
         {:active_usernames, [{:array, :string}], :optional},
+        {:available_reactions, [{:array, ReactionType}], :optional},
+        {:accent_color_id, [:integer], :optional},
+        {:background_custom_emoji_id, [:string], :optional},
+        {:profile_accent_color_id, [:integer], :optional},
+        {:profile_background_custom_emoji_id, [:string], :optional},
         {:emoji_status_custom_emoji_id, [:string], :optional},
         {:emoji_status_expiration_date, [:integer], :optional},
         {:bio, [:string], :optional},
@@ -1519,6 +1573,7 @@ defmodule ExGram do
         {:has_aggressive_anti_spam_enabled, [:boolean], :optional},
         {:has_hidden_members, [:boolean], :optional},
         {:has_protected_content, [:boolean], :optional},
+        {:has_visible_history, [:boolean], :optional},
         {:sticker_set_name, [:string], :optional},
         {:can_set_sticker_set, [:boolean], :optional},
         {:linked_chat_id, [:integer], :optional},
@@ -1536,15 +1591,12 @@ defmodule ExGram do
         {:sender_chat, [Chat], :optional},
         {:date, [:integer]},
         {:chat, [Chat]},
-        {:forward_from, [User], :optional},
-        {:forward_from_chat, [Chat], :optional},
-        {:forward_from_message_id, [:integer], :optional},
-        {:forward_signature, [:string], :optional},
-        {:forward_sender_name, [:string], :optional},
-        {:forward_date, [:integer], :optional},
+        {:forward_origin, [MessageOrigin], :optional},
         {:is_topic_message, [:boolean], :optional},
         {:is_automatic_forward, [:boolean], :optional},
         {:reply_to_message, [Message], :optional},
+        {:external_reply, [ExternalReplyInfo], :optional},
+        {:quote, [TextQuote], :optional},
         {:via_bot, [User], :optional},
         {:edit_date, [:integer], :optional},
         {:has_protected_content, [:boolean], :optional},
@@ -1552,6 +1604,7 @@ defmodule ExGram do
         {:author_signature, [:string], :optional},
         {:text, [:string], :optional},
         {:entities, [{:array, MessageEntity}], :optional},
+        {:link_preview_options, [LinkPreviewOptions], :optional},
         {:animation, [Animation], :optional},
         {:audio, [Audio], :optional},
         {:document, [Document], :optional},
@@ -1581,10 +1634,10 @@ defmodule ExGram do
         {:message_auto_delete_timer_changed, [MessageAutoDeleteTimerChanged], :optional},
         {:migrate_to_chat_id, [:integer], :optional},
         {:migrate_from_chat_id, [:integer], :optional},
-        {:pinned_message, [Message], :optional},
+        {:pinned_message, [MaybeInaccessibleMessage], :optional},
         {:invoice, [Invoice], :optional},
         {:successful_payment, [SuccessfulPayment], :optional},
-        {:user_shared, [UserShared], :optional},
+        {:users_shared, [UsersShared], :optional},
         {:chat_shared, [ChatShared], :optional},
         {:connected_website, [:string], :optional},
         {:write_access_allowed, [WriteAccessAllowed], :optional},
@@ -1596,6 +1649,10 @@ defmodule ExGram do
         {:forum_topic_reopened, [ForumTopicReopened], :optional},
         {:general_forum_topic_hidden, [GeneralForumTopicHidden], :optional},
         {:general_forum_topic_unhidden, [GeneralForumTopicUnhidden], :optional},
+        {:giveaway_created, [GiveawayCreated], :optional},
+        {:giveaway, [Giveaway], :optional},
+        {:giveaway_winners, [GiveawayWinners], :optional},
+        {:giveaway_completed, [GiveawayCompleted], :optional},
         {:video_chat_scheduled, [VideoChatScheduled], :optional},
         {:video_chat_started, [VideoChatStarted], :optional},
         {:video_chat_ended, [VideoChatEnded], :optional},
@@ -1613,6 +1670,26 @@ defmodule ExGram do
     )
 
     model(
+      InaccessibleMessage,
+      [{:chat, [Chat]}, {:message_id, [:integer]}, {:date, [:integer]}],
+      "This object describes a message that was deleted or is otherwise inaccessible to the bot."
+    )
+
+    model(
+      MaybeInaccessibleMessage,
+      [
+        {:type, [:string]},
+        {:offset, [:integer]},
+        {:length, [:integer]},
+        {:url, [:string], :optional},
+        {:user, [User], :optional},
+        {:language, [:string], :optional},
+        {:custom_emoji_id, [:string], :optional}
+      ],
+      "This object describes a message that can be inaccessible to the bot. It can be one of"
+    )
+
+    model(
       MessageEntity,
       [
         {:type, [:string]},
@@ -1624,6 +1701,102 @@ defmodule ExGram do
         {:custom_emoji_id, [:string], :optional}
       ],
       "This object represents one special entity in a text message. For example, hashtags, usernames, URLs, etc."
+    )
+
+    model(
+      TextQuote,
+      [
+        {:text, [:string]},
+        {:entities, [{:array, MessageEntity}], :optional},
+        {:position, [:integer]},
+        {:is_manual, [:boolean], :optional}
+      ],
+      "This object contains information about the quoted part of a message that is replied to by the given message."
+    )
+
+    model(
+      ExternalReplyInfo,
+      [
+        {:origin, [MessageOrigin]},
+        {:chat, [Chat], :optional},
+        {:message_id, [:integer], :optional},
+        {:link_preview_options, [LinkPreviewOptions], :optional},
+        {:animation, [Animation], :optional},
+        {:audio, [Audio], :optional},
+        {:document, [Document], :optional},
+        {:photo, [{:array, PhotoSize}], :optional},
+        {:sticker, [Sticker], :optional},
+        {:story, [Story], :optional},
+        {:video, [Video], :optional},
+        {:video_note, [VideoNote], :optional},
+        {:voice, [Voice], :optional},
+        {:has_media_spoiler, [:boolean], :optional},
+        {:contact, [Contact], :optional},
+        {:dice, [Dice], :optional},
+        {:game, [Game], :optional},
+        {:giveaway, [Giveaway], :optional},
+        {:giveaway_winners, [GiveawayWinners], :optional},
+        {:invoice, [Invoice], :optional},
+        {:location, [Location], :optional},
+        {:poll, [Poll], :optional},
+        {:venue, [Venue], :optional}
+      ],
+      "This object contains information about a message that is being replied to, which may come from another chat or forum topic."
+    )
+
+    model(
+      ReplyParameters,
+      [
+        {:message_id, [:integer]},
+        {:chat_id, [:integer, :string], :optional},
+        {:allow_sending_without_reply, [:boolean], :optional},
+        {:quote, [:string], :optional},
+        {:quote_parse_mode, [:string], :optional},
+        {:quote_entities, [{:array, MessageEntity}], :optional},
+        {:quote_position, [:integer], :optional}
+      ],
+      "Describes reply parameters for the message that is being sent."
+    )
+
+    model(
+      MessageOrigin,
+      [{:type, [:string]}, {:date, [:integer]}, {:sender_user, [User]}],
+      "This object describes the origin of a message. It can be one of"
+    )
+
+    model(
+      MessageOriginUser,
+      [{:type, [:string]}, {:date, [:integer]}, {:sender_user, [User]}],
+      "The message was originally sent by a known user."
+    )
+
+    model(
+      MessageOriginHiddenUser,
+      [{:type, [:string]}, {:date, [:integer]}, {:sender_user_name, [:string]}],
+      "The message was originally sent by an unknown user."
+    )
+
+    model(
+      MessageOriginChat,
+      [
+        {:type, [:string]},
+        {:date, [:integer]},
+        {:sender_chat, [Chat]},
+        {:author_signature, [:string], :optional}
+      ],
+      "The message was originally sent on behalf of a chat to a group chat."
+    )
+
+    model(
+      MessageOriginChannel,
+      [
+        {:type, [:string]},
+        {:date, [:integer]},
+        {:chat, [Chat]},
+        {:message_id, [:integer]},
+        {:author_signature, [:string], :optional}
+      ],
+      "The message was originally sent to a channel chat."
     )
 
     model(
@@ -1871,9 +2044,9 @@ defmodule ExGram do
     )
 
     model(
-      UserShared,
-      [{:request_id, [:integer]}, {:user_id, [:integer]}],
-      "This object contains information about the user whose identifier was shared with the bot using a KeyboardButtonRequestUser button."
+      UsersShared,
+      [{:request_id, [:integer]}, {:user_ids, [{:array, :integer}]}],
+      "This object contains information about the users whose identifiers were shared with the bot using a KeyboardButtonRequestUsers button."
     )
 
     model(
@@ -1884,8 +2057,12 @@ defmodule ExGram do
 
     model(
       WriteAccessAllowed,
-      [{:web_app_name, [:string], :optional}],
-      "This object represents a service message about a user allowing a bot to write messages after adding the bot to the attachment menu or launching a Web App from a link."
+      [
+        {:from_request, [:boolean], :optional},
+        {:web_app_name, [:string], :optional},
+        {:from_attachment_menu, [:boolean], :optional}
+      ],
+      "This object represents a service message about a user allowing a bot to write messages after adding it to the attachment menu, launching a Web App from a link, or accepting an explicit request from a Web App sent by the method requestWriteAccess."
     )
 
     model(
@@ -1910,6 +2087,67 @@ defmodule ExGram do
       VideoChatParticipantsInvited,
       [{:users, [{:array, User}]}],
       "This object represents a service message about new members invited to a video chat."
+    )
+
+    model(
+      GiveawayCreated,
+      [],
+      "This object represents a service message about the creation of a scheduled giveaway. Currently holds no information."
+    )
+
+    model(
+      Giveaway,
+      [
+        {:chats, [{:array, Chat}]},
+        {:winners_selection_date, [:integer]},
+        {:winner_count, [:integer]},
+        {:only_new_members, [:boolean], :optional},
+        {:has_public_winners, [:boolean], :optional},
+        {:prize_description, [:string], :optional},
+        {:country_codes, [{:array, :string}], :optional},
+        {:premium_subscription_month_count, [:integer], :optional}
+      ],
+      "This object represents a message about a scheduled giveaway."
+    )
+
+    model(
+      GiveawayWinners,
+      [
+        {:chat, [Chat]},
+        {:giveaway_message_id, [:integer]},
+        {:winners_selection_date, [:integer]},
+        {:winner_count, [:integer]},
+        {:winners, [{:array, User}]},
+        {:additional_chat_count, [:integer], :optional},
+        {:premium_subscription_month_count, [:integer], :optional},
+        {:unclaimed_prize_count, [:integer], :optional},
+        {:only_new_members, [:boolean], :optional},
+        {:was_refunded, [:boolean], :optional},
+        {:prize_description, [:string], :optional}
+      ],
+      "This object represents a message about the completion of a giveaway with public winners."
+    )
+
+    model(
+      GiveawayCompleted,
+      [
+        {:winner_count, [:integer]},
+        {:unclaimed_prize_count, [:integer], :optional},
+        {:giveaway_message, [Message], :optional}
+      ],
+      "This object represents a service message about the completion of a giveaway without public winners."
+    )
+
+    model(
+      LinkPreviewOptions,
+      [
+        {:is_disabled, [:boolean], :optional},
+        {:url, [:string], :optional},
+        {:prefer_small_media, [:boolean], :optional},
+        {:prefer_large_media, [:boolean], :optional},
+        {:show_above_text, [:boolean], :optional}
+      ],
+      "Describes the options used for link preview generation."
     )
 
     model(
@@ -1948,7 +2186,7 @@ defmodule ExGram do
       KeyboardButton,
       [
         {:text, [:string]},
-        {:request_user, [KeyboardButtonRequestUser], :optional},
+        {:request_users, [KeyboardButtonRequestUsers], :optional},
         {:request_chat, [KeyboardButtonRequestChat], :optional},
         {:request_contact, [:boolean], :optional},
         {:request_location, [:boolean], :optional},
@@ -1959,13 +2197,14 @@ defmodule ExGram do
     )
 
     model(
-      KeyboardButtonRequestUser,
+      KeyboardButtonRequestUsers,
       [
         {:request_id, [:integer]},
         {:user_is_bot, [:boolean], :optional},
-        {:user_is_premium, [:boolean], :optional}
+        {:user_is_premium, [:boolean], :optional},
+        {:max_quantity, [:integer], :optional}
       ],
-      "This object defines the criteria used to request a suitable user. The identifier of the selected user will be shared with the bot when the corresponding button is pressed. More about requesting users »"
+      "This object defines the criteria used to request suitable users. The identifiers of the selected users will be shared with the bot when the corresponding button is pressed. More about requesting users »"
     )
 
     model(
@@ -2046,7 +2285,7 @@ defmodule ExGram do
       [
         {:id, [:string]},
         {:from, [User]},
-        {:message, [Message], :optional},
+        {:message, [MaybeInaccessibleMessage], :optional},
         {:inline_message_id, [:string], :optional},
         {:chat_instance, [:string]},
         {:data, [:string], :optional},
@@ -2106,9 +2345,26 @@ defmodule ExGram do
         {:can_post_messages, [:boolean], :optional},
         {:can_edit_messages, [:boolean], :optional},
         {:can_pin_messages, [:boolean], :optional},
+        {:can_post_stories, [:boolean], :optional},
+        {:can_edit_stories, [:boolean], :optional},
+        {:can_delete_stories, [:boolean], :optional},
         {:can_manage_topics, [:boolean], :optional}
       ],
       "Represents the rights of an administrator in a chat."
+    )
+
+    model(
+      ChatMemberUpdated,
+      [
+        {:chat, [Chat]},
+        {:from, [User]},
+        {:date, [:integer]},
+        {:old_chat_member, [ChatMember]},
+        {:new_chat_member, [ChatMember]},
+        {:invite_link, [ChatInviteLink], :optional},
+        {:via_chat_folder_invite_link, [:boolean], :optional}
+      ],
+      "This object represents changes in the status of a chat member."
     )
 
     model(
@@ -2139,6 +2395,9 @@ defmodule ExGram do
         {:can_post_messages, [:boolean], :optional},
         {:can_edit_messages, [:boolean], :optional},
         {:can_pin_messages, [:boolean], :optional},
+        {:can_post_stories, [:boolean], :optional},
+        {:can_edit_stories, [:boolean], :optional},
+        {:can_delete_stories, [:boolean], :optional},
         {:can_manage_topics, [:boolean], :optional},
         {:custom_title, [:string], :optional}
       ],
@@ -2189,20 +2448,6 @@ defmodule ExGram do
     )
 
     model(
-      ChatMemberUpdated,
-      [
-        {:chat, [Chat]},
-        {:from, [User]},
-        {:date, [:integer]},
-        {:old_chat_member, [ChatMember]},
-        {:new_chat_member, [ChatMember]},
-        {:invite_link, [ChatInviteLink], :optional},
-        {:via_chat_folder_invite_link, [:boolean], :optional}
-      ],
-      "This object represents changes in the status of a chat member."
-    )
-
-    model(
       ChatJoinRequest,
       [
         {:chat, [Chat]},
@@ -2240,6 +2485,55 @@ defmodule ExGram do
       ChatLocation,
       [{:location, [Location]}, {:address, [:string]}],
       "Represents a location to which a chat is connected."
+    )
+
+    model(
+      ReactionType,
+      [{:type, [:string]}, {:emoji, [:string]}],
+      "This object describes the type of a reaction. Currently, it can be one of"
+    )
+
+    model(
+      ReactionTypeEmoji,
+      [{:type, [:string]}, {:emoji, [:string]}],
+      "The reaction is based on an emoji."
+    )
+
+    model(
+      ReactionTypeCustomEmoji,
+      [{:type, [:string]}, {:custom_emoji, [:string]}],
+      "The reaction is based on a custom emoji."
+    )
+
+    model(
+      ReactionCount,
+      [{:type, [ReactionType]}, {:total_count, [:integer]}],
+      "Represents a reaction added to a message along with the number of times it was added."
+    )
+
+    model(
+      MessageReactionUpdated,
+      [
+        {:chat, [Chat]},
+        {:message_id, [:integer]},
+        {:user, [User], :optional},
+        {:actor_chat, [Chat], :optional},
+        {:date, [:integer]},
+        {:old_reaction, [{:array, ReactionType}]},
+        {:new_reaction, [{:array, ReactionType}]}
+      ],
+      "This object represents a change of a reaction on a message performed by a user."
+    )
+
+    model(
+      MessageReactionCountUpdated,
+      [
+        {:chat, [Chat]},
+        {:message_id, [:integer]},
+        {:date, [:integer]},
+        {:reactions, [{:array, ReactionCount}]}
+      ],
+      "This object represents reaction changes on a message with anonymous reactions."
     )
 
     model(
@@ -2331,6 +2625,69 @@ defmodule ExGram do
       MenuButtonDefault,
       [{:type, [:string]}],
       "Describes that no specific value for the menu button was set."
+    )
+
+    model(
+      ChatBoostSource,
+      [{:source, [:string]}, {:user, [User]}],
+      "This object describes the source of a chat boost. It can be one of"
+    )
+
+    model(
+      ChatBoostSourcePremium,
+      [{:source, [:string]}, {:user, [User]}],
+      "The boost was obtained by subscribing to Telegram Premium or by gifting a Telegram Premium subscription to another user."
+    )
+
+    model(
+      ChatBoostSourceGiftCode,
+      [{:source, [:string]}, {:user, [User]}],
+      "The boost was obtained by the creation of Telegram Premium gift codes to boost a chat. Each such code boosts the chat 4 times for the duration of the corresponding Telegram Premium subscription."
+    )
+
+    model(
+      ChatBoostSourceGiveaway,
+      [
+        {:source, [:string]},
+        {:giveaway_message_id, [:integer]},
+        {:user, [User], :optional},
+        {:is_unclaimed, [:boolean], :optional}
+      ],
+      "The boost was obtained by the creation of a Telegram Premium giveaway. This boosts the chat 4 times for the duration of the corresponding Telegram Premium subscription."
+    )
+
+    model(
+      ChatBoost,
+      [
+        {:boost_id, [:string]},
+        {:add_date, [:integer]},
+        {:expiration_date, [:integer]},
+        {:source, [ChatBoostSource]}
+      ],
+      "This object contains information about a chat boost."
+    )
+
+    model(
+      ChatBoostUpdated,
+      [{:chat, [Chat]}, {:boost, [ChatBoost]}],
+      "This object represents a boost added to a chat or changed."
+    )
+
+    model(
+      ChatBoostRemoved,
+      [
+        {:chat, [Chat]},
+        {:boost_id, [:string]},
+        {:remove_date, [:integer]},
+        {:source, [ChatBoostSource]}
+      ],
+      "This object represents a boost removed from a chat."
+    )
+
+    model(
+      UserChatBoosts,
+      [{:boosts, [{:array, ChatBoost}]}],
+      "This object represents a list of boosts added to a chat by a user."
     )
 
     model(
@@ -2855,7 +3212,7 @@ defmodule ExGram do
         {:message_text, [:string]},
         {:parse_mode, [:string], :optional},
         {:entities, [{:array, MessageEntity}], :optional},
-        {:disable_web_page_preview, [:boolean], :optional}
+        {:link_preview_options, [LinkPreviewOptions], :optional}
       ],
       "Represents the content of a text message to be sent as the result of an inline query."
     )
@@ -3179,7 +3536,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 144 models
+    # 173 models
 
     defmodule ChatMember do
       @moduledoc """
