@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Fix #131
 
 ## [0.41.0]
 - Update Telegram API to 6.8: https://core.telegram.org/bots/api#august-18-2023

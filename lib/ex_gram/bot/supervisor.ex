@@ -15,17 +15,16 @@ defmodule ExGram.Bot.Supervisor do
   end
 
   def start_link(opts, module) do
-    name = opts[:name] || module.name()
-    supervisor_name = Module.concat(module, Supervisor)
-    params = Keyword.merge(opts, name: name, module: module)
+    supervisor_name = opts[:name] || Module.concat(module, Supervisor)
+    params = Keyword.merge(opts, module: module)
     Supervisor.start_link(ExGram.Bot.Supervisor, params, name: supervisor_name)
   end
 
   def init(opts) do
     updates_method = Keyword.fetch!(opts, :method)
     token = Keyword.fetch!(opts, :token)
-    name = Keyword.fetch!(opts, :name)
     module = Keyword.fetch!(opts, :module)
+    name = module.name()
 
     {:ok, _} = Registry.register(Registry.ExGram, name, token)
 
