@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.50.0]
 - Update Telegram API to 7.0: https://core.telegram.org/bots/api#december-29-2023
 
 ## [0.41.0]
