@@ -25,7 +25,7 @@ defmodule ExGram do
     Supervisor.init(children, strategy: :one_for_one)
   end
 
-  defp reload_engine() do
+  defp reload_engine do
     engine = Application.get_env(:ex_gram, :json_engine)
     ExGram.Encoder.EngineCompiler.compile(engine)
   end
@@ -122,8 +122,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send text messages. On success, the sent Message is returned."
@@ -173,8 +172,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.MessageId,
     "Use this method to copy messages of any kind. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success."
@@ -210,8 +208,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send photos. On success, the sent Message is returned."
@@ -234,8 +231,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send audio files, if you want Telegram clients to display them in the music player. Your audio must be in the .MP3 or .M4A format. On success, the sent Message is returned. Bots can currently send audio files of up to 50 MB in size, this limit may be changed in the future."
@@ -256,8 +252,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send general files. On success, the sent Message is returned. Bots can currently send files of any type of up to 50 MB in size, this limit may be changed in the future."
@@ -282,8 +277,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send video files, Telegram clients support MPEG4 videos (other formats may be sent as Document). On success, the sent Message is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future."
@@ -307,8 +301,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound). On success, the sent Message is returned. Bots can currently send animation files of up to 50 MB in size, this limit may be changed in the future."
@@ -328,8 +321,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS (other formats may be sent as Audio or Document). On success, the sent Message is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future."
@@ -348,8 +340,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "As of v.4.0, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent Message is returned."
@@ -361,8 +352,7 @@ defmodule ExGram do
     [
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
-      {media,
-       [{:array, [InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo]}]},
+      {media, [{:array, [InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo]}]},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional}
@@ -386,8 +376,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send point on the map. On success, the sent Message is returned."
@@ -410,8 +399,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send information about a venue. On success, the sent Message is returned."
@@ -430,8 +418,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send phone contacts. On success, the sent Message is returned."
@@ -458,8 +445,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send a native poll. On success, the sent Message is returned."
@@ -475,8 +461,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send an animated emoji that will display a random value. On success, the sent Message is returned."
@@ -485,11 +470,7 @@ defmodule ExGram do
   method(
     :post,
     "sendChatAction",
-    [
-      {chat_id, [:integer, :string]},
-      {message_thread_id, [:integer], :optional},
-      {action, [:string]}
-    ],
+    [{chat_id, [:integer, :string]}, {message_thread_id, [:integer], :optional}, {action, [:string]}],
     true,
     "Use this method when you need to tell the user that something is happening on the bot's side. The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status). Returns True on success."
   )
@@ -539,11 +520,7 @@ defmodule ExGram do
   method(
     :post,
     "unbanChatMember",
-    [
-      {chat_id, [:integer, :string]},
-      {user_id, [:integer]},
-      {only_if_banned, [:boolean], :optional}
-    ],
+    [{chat_id, [:integer, :string]}, {user_id, [:integer]}, {only_if_banned, [:boolean], :optional}],
     true,
     "Use this method to unban a previously banned user in a supergroup or channel. The user will not return to the group or channel automatically, but will be able to join via link, etc. The bot must be an administrator for this to work. By default, this method guarantees that after the call the user is not a member of the chat, but will be able to join it. So if the user is a member of the chat they will also be removed from the chat. If you don't want this, use the parameter only_if_banned. Returns True on success."
   )
@@ -720,11 +697,7 @@ defmodule ExGram do
   method(
     :post,
     "pinChatMessage",
-    [
-      {chat_id, [:integer, :string]},
-      {message_id, [:integer]},
-      {disable_notification, [:boolean], :optional}
-    ],
+    [{chat_id, [:integer, :string]}, {message_id, [:integer]}, {disable_notification, [:boolean], :optional}],
     true,
     "Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True on success."
   )
@@ -945,11 +918,7 @@ defmodule ExGram do
   method(
     :post,
     "setMyCommands",
-    [
-      {commands, [{:array, BotCommand}]},
-      {scope, [BotCommandScope], :optional},
-      {language_code, [:string], :optional}
-    ],
+    [{commands, [{:array, BotCommand}]}, {scope, [BotCommandScope], :optional}, {language_code, [:string], :optional}],
     true,
     "Use this method to change the list of the bot's commands. See this manual for more details about bot commands. Returns True on success."
   )
@@ -1144,11 +1113,7 @@ defmodule ExGram do
   method(
     :post,
     "stopPoll",
-    [
-      {chat_id, [:integer, :string]},
-      {message_id, [:integer]},
-      {reply_markup, [InlineKeyboardMarkup], :optional}
-    ],
+    [{chat_id, [:integer, :string]}, {message_id, [:integer]}, {reply_markup, [InlineKeyboardMarkup], :optional}],
     ExGram.Model.Poll,
     "Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned."
   )
@@ -1180,8 +1145,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent Message is returned."
@@ -1663,11 +1627,7 @@ defmodule ExGram do
       "This object represents a message."
     )
 
-    model(
-      MessageId,
-      [{:message_id, [:integer]}],
-      "This object represents a unique message identifier."
-    )
+    model(MessageId, [{:message_id, [:integer]}], "This object represents a unique message identifier.")
 
     model(
       InaccessibleMessage,
@@ -1778,12 +1738,7 @@ defmodule ExGram do
 
     model(
       MessageOriginChat,
-      [
-        {:type, [:string]},
-        {:date, [:integer]},
-        {:sender_chat, [Chat]},
-        {:author_signature, [:string], :optional}
-      ],
+      [{:type, [:string]}, {:date, [:integer]}, {:sender_chat, [Chat]}, {:author_signature, [:string], :optional}],
       "The message was originally sent on behalf of a chat to a group chat."
     )
 
@@ -1985,11 +1940,7 @@ defmodule ExGram do
       "This object represents a venue."
     )
 
-    model(
-      WebAppData,
-      [{:data, [:string]}, {:button_text, [:string]}],
-      "Describes data sent from a Web App to the bot."
-    )
+    model(WebAppData, [{:data, [:string]}, {:button_text, [:string]}], "Describes data sent from a Web App to the bot.")
 
     model(
       ProximityAlertTriggered,
@@ -2005,11 +1956,7 @@ defmodule ExGram do
 
     model(
       ForumTopicCreated,
-      [
-        {:name, [:string]},
-        {:icon_color, [:integer]},
-        {:icon_custom_emoji_id, [:string], :optional}
-      ],
+      [{:name, [:string]}, {:icon_color, [:integer]}, {:icon_custom_emoji_id, [:string], :optional}],
       "This object represents a service message about a new forum topic created in the chat."
     )
 
@@ -2369,12 +2316,7 @@ defmodule ExGram do
 
     model(
       ChatMemberOwner,
-      [
-        {:status, [:string]},
-        {:user, [User]},
-        {:is_anonymous, [:boolean]},
-        {:custom_title, [:string], :optional}
-      ],
+      [{:status, [:string]}, {:user, [User]}, {:is_anonymous, [:boolean]}, {:custom_title, [:string], :optional}],
       "Represents a chat member that owns the chat and has all administrator privileges."
     )
 
@@ -2493,11 +2435,7 @@ defmodule ExGram do
       "This object describes the type of a reaction. Currently, it can be one of"
     )
 
-    model(
-      ReactionTypeEmoji,
-      [{:type, [:string]}, {:emoji, [:string]}],
-      "The reaction is based on an emoji."
-    )
+    model(ReactionTypeEmoji, [{:type, [:string]}, {:emoji, [:string]}], "The reaction is based on an emoji.")
 
     model(
       ReactionTypeCustomEmoji,
@@ -2527,12 +2465,7 @@ defmodule ExGram do
 
     model(
       MessageReactionCountUpdated,
-      [
-        {:chat, [Chat]},
-        {:message_id, [:integer]},
-        {:date, [:integer]},
-        {:reactions, [{:array, ReactionCount}]}
-      ],
+      [{:chat, [Chat]}, {:message_id, [:integer]}, {:date, [:integer]}, {:reactions, [{:array, ReactionCount}]}],
       "This object represents reaction changes on a message with anonymous reactions."
     )
 
@@ -2547,11 +2480,7 @@ defmodule ExGram do
       "This object represents a forum topic."
     )
 
-    model(
-      BotCommand,
-      [{:command, [:string]}, {:description, [:string]}],
-      "This object represents a bot command."
-    )
+    model(BotCommand, [{:command, [:string]}, {:description, [:string]}], "This object represents a bot command.")
 
     model(
       BotCommandScopeDefault,
@@ -2597,23 +2526,11 @@ defmodule ExGram do
 
     model(BotName, [{:name, [:string]}], "This object represents the bot's name.")
 
-    model(
-      BotDescription,
-      [{:description, [:string]}],
-      "This object represents the bot's description."
-    )
+    model(BotDescription, [{:description, [:string]}], "This object represents the bot's description.")
 
-    model(
-      BotShortDescription,
-      [{:short_description, [:string]}],
-      "This object represents the bot's short description."
-    )
+    model(BotShortDescription, [{:short_description, [:string]}], "This object represents the bot's short description.")
 
-    model(
-      MenuButtonCommands,
-      [{:type, [:string]}],
-      "Represents a menu button, which opens the bot's list of commands."
-    )
+    model(MenuButtonCommands, [{:type, [:string]}], "Represents a menu button, which opens the bot's list of commands.")
 
     model(
       MenuButtonWebApp,
@@ -2621,11 +2538,7 @@ defmodule ExGram do
       "Represents a menu button, which launches a Web App."
     )
 
-    model(
-      MenuButtonDefault,
-      [{:type, [:string]}],
-      "Describes that no specific value for the menu button was set."
-    )
+    model(MenuButtonDefault, [{:type, [:string]}], "Describes that no specific value for the menu button was set.")
 
     model(
       ChatBoostSource,
@@ -2658,12 +2571,7 @@ defmodule ExGram do
 
     model(
       ChatBoost,
-      [
-        {:boost_id, [:string]},
-        {:add_date, [:integer]},
-        {:expiration_date, [:integer]},
-        {:source, [ChatBoostSource]}
-      ],
+      [{:boost_id, [:string]}, {:add_date, [:integer]}, {:expiration_date, [:integer]}, {:source, [ChatBoostSource]}],
       "This object contains information about a chat boost."
     )
 
@@ -2675,12 +2583,7 @@ defmodule ExGram do
 
     model(
       ChatBoostRemoved,
-      [
-        {:chat, [Chat]},
-        {:boost_id, [:string]},
-        {:remove_date, [:integer]},
-        {:source, [ChatBoostSource]}
-      ],
+      [{:chat, [Chat]}, {:boost_id, [:string]}, {:remove_date, [:integer]}, {:source, [ChatBoostSource]}],
       "This object represents a boost removed from a chat."
     )
 
@@ -2842,11 +2745,7 @@ defmodule ExGram do
 
     model(
       InlineQueryResultsButton,
-      [
-        {:text, [:string]},
-        {:web_app, [WebAppInfo], :optional},
-        {:start_parameter, [:string], :optional}
-      ],
+      [{:text, [:string]}, {:web_app, [WebAppInfo], :optional}, {:start_parameter, [:string], :optional}],
       "This object represents a button to be shown above inline query results. You must use exactly one of the optional fields."
     )
 
@@ -3365,12 +3264,7 @@ defmodule ExGram do
 
     model(
       ShippingQuery,
-      [
-        {:id, [:string]},
-        {:from, [User]},
-        {:invoice_payload, [:string]},
-        {:shipping_address, [ShippingAddress]}
-      ],
+      [{:id, [:string]}, {:from, [User]}, {:invoice_payload, [:string]}, {:shipping_address, [ShippingAddress]}],
       "This object contains information about an incoming shipping query."
     )
 
@@ -3396,12 +3290,7 @@ defmodule ExGram do
 
     model(
       PassportFile,
-      [
-        {:file_id, [:string]},
-        {:file_unique_id, [:string]},
-        {:file_size, [:integer]},
-        {:file_date, [:integer]}
-      ],
+      [{:file_id, [:string]}, {:file_unique_id, [:string]}, {:file_size, [:integer]}, {:file_date, [:integer]}],
       "This object represents a file uploaded to Telegram Passport. Currently all Telegram Passport files are in JPEG format when decrypted and don't exceed 10MB."
     )
 
@@ -3466,12 +3355,7 @@ defmodule ExGram do
 
     model(
       PassportElementErrorFiles,
-      [
-        {:source, [:string]},
-        {:type, [:string]},
-        {:file_hashes, [{:array, :string}]},
-        {:message, [:string]}
-      ],
+      [{:source, [:string]}, {:type, [:string]}, {:file_hashes, [{:array, :string}]}, {:message, [:string]}],
       "Represents an issue with a list of scans. The error is considered resolved when the list of files containing the scans changes."
     )
 
@@ -3483,23 +3367,13 @@ defmodule ExGram do
 
     model(
       PassportElementErrorTranslationFiles,
-      [
-        {:source, [:string]},
-        {:type, [:string]},
-        {:file_hashes, [{:array, :string}]},
-        {:message, [:string]}
-      ],
+      [{:source, [:string]}, {:type, [:string]}, {:file_hashes, [{:array, :string}]}, {:message, [:string]}],
       "Represents an issue with the translated version of a document. The error is considered resolved when a file with the document translation change."
     )
 
     model(
       PassportElementErrorUnspecified,
-      [
-        {:source, [:string]},
-        {:type, [:string]},
-        {:element_hash, [:string]},
-        {:message, [:string]}
-      ],
+      [{:source, [:string]}, {:type, [:string]}, {:element_hash, [:string]}, {:message, [:string]}],
       "Represents an issue in an unspecified place. The error is considered resolved when new data is added."
     )
 
@@ -3627,13 +3501,7 @@ defmodule ExGram do
       def decode_as, do: %{}
 
       def subtypes do
-        [
-          InputMediaAnimation,
-          InputMediaDocument,
-          InputMediaAudio,
-          InputMediaPhoto,
-          InputMediaVideo
-        ]
+        [InputMediaAnimation, InputMediaDocument, InputMediaAudio, InputMediaPhoto, InputMediaVideo]
       end
     end
 

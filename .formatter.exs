@@ -1,4 +1,7 @@
 [
+  plugins: [
+    Styler
+  ],
   inputs: [
     "lib/**/*.{ex,exs}",
     "test/**/*.{ex,exs}",
@@ -15,5 +18,6 @@
     row: 1,
     button: 1,
     button: 2
-  ]
+  ],
+  line_length: 120
 ]

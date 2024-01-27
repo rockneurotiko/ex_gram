@@ -67,10 +67,11 @@ defmodule ExGram.Mixfile do
       # Webhook adapter
       {:plug, "~> 1.14", optional: true},
       # Development
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.23", only: :dev},
-      {:inch_ex, "~> 0.5.0", only: :docs}
+      {:inch_ex, "~> 0.5.0", only: :docs},
+      {:styler, "~> 0.10", only: :dev, runtime: false}
     ]
   end
 end
