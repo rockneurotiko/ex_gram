@@ -1,9 +1,13 @@
 if Code.ensure_loaded?(Plug) do
   defmodule ExGram.Plug do
+    @moduledoc false
+
     @behaviour Plug
 
-    alias Plug.Conn
     import Plug.Conn
+
+    alias Plug.Conn
+
     require Logger
 
     @impl true
@@ -24,7 +28,8 @@ if Code.ensure_loaded?(Plug) do
       {:ok, body, conn} = Plug.Conn.read_body(conn)
 
       {status, message} =
-        case get_req_header(conn, "x-telegram-bot-api-secret-token")
+        case conn
+             |> get_req_header("x-telegram-bot-api-secret-token")
              |> check_secret_token() do
           :ok -> handle_update(conn, ExGram.Encoder.decode(body, keys: :atoms))
           {:error, error} -> {400, %{error: error}}
@@ -39,7 +44,8 @@ if Code.ensure_loaded?(Plug) do
     defp handle_update(conn, {:ok, update}) do
       token_hash = token_hash(conn.path_info)
 
-      struct(ExGram.Model.Update, update)
+      ExGram.Model.Update
+      |> struct(update)
       |> ExGram.Updates.Webhook.update(token_hash)
 
       {200, %{ok: true}}

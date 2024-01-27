@@ -9,13 +9,7 @@ defmodule ExGram.Middleware.IgnoreUsername do
 
   alias ExGram.Cnt
 
-  def call(
-        %Cnt{
-          bot_info: %{username: username},
-          update: %{message: %{text: t} = message} = update
-        } = cnt,
-        _opts
-      )
+  def call(%Cnt{bot_info: %{username: username}, update: %{message: %{text: t} = message} = update} = cnt, _opts)
       when is_binary(username) and is_binary(t) do
     new_text = clean_command(t, username)
     new_msg = %{message | text: new_text}
@@ -34,7 +28,7 @@ defmodule ExGram.Middleware.IgnoreUsername do
         _ -> "/" <> raw_command
       end
 
-    [cmd | rest] |> Enum.join(" ")
+    Enum.join([cmd | rest], " ")
   end
 
   defp clean_command(text, _username), do: text

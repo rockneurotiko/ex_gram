@@ -64,8 +64,7 @@ defmodule ExGram.Bot.Supervisor do
     Supervisor.init(children, strategy: :one_for_one)
   end
 
-  defp get_bot_info(username, _token) when is_binary(username),
-    do: %ExGram.Model.User{username: username, is_bot: true}
+  defp get_bot_info(username, _token) when is_binary(username), do: %ExGram.Model.User{username: username, is_bot: true}
 
   defp get_bot_info(_username, token) do
     case ExGram.get_me(token: token) do

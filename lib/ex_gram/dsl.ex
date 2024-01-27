@@ -5,16 +5,13 @@ defmodule ExGram.Dsl do
 
   alias ExGram.Cnt
   alias ExGram.Responses
-
-  alias ExGram.Responses.{
-    Answer,
-    AnswerCallback,
-    AnswerInlineQuery,
-    EditInline,
-    EditMarkup,
-    DeleteMessage,
-    SendDocument
-  }
+  alias ExGram.Responses.Answer
+  alias ExGram.Responses.AnswerCallback
+  alias ExGram.Responses.AnswerInlineQuery
+  alias ExGram.Responses.DeleteMessage
+  alias ExGram.Responses.EditInline
+  alias ExGram.Responses.EditMarkup
+  alias ExGram.Responses.SendDocument
 
   def answer(cnt, text, ops \\ [])
 
@@ -91,16 +88,12 @@ defmodule ExGram.Dsl do
   end
 
   def create_inline_button(row) do
-    row
-    |> Enum.map(fn ops ->
-      Map.merge(%ExGram.Model.InlineKeyboardButton{}, Enum.into(ops, %{}))
-    end)
+    Enum.map(row, fn ops -> Map.merge(%ExGram.Model.InlineKeyboardButton{}, Map.new(ops)) end)
   end
 
   def create_inline(data \\ [[]]) do
     data =
-      data
-      |> Enum.map(&create_inline_button/1)
+      Enum.map(data, &create_inline_button/1)
 
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard: data}
   end
@@ -160,8 +153,7 @@ defmodule ExGram.Dsl do
   def extract_response_id(%{edited_message: m}) when not is_nil(m), do: extract_response_id(m)
   def extract_response_id(%{channel_message: m}) when not is_nil(m), do: extract_response_id(m)
 
-  def extract_response_id(%{edited_channel_post: m}) when not is_nil(m),
-    do: extract_response_id(m)
+  def extract_response_id(%{edited_channel_post: m}) when not is_nil(m), do: extract_response_id(m)
 
   def extract_message_id(%{message_id: id}), do: id
   def extract_message_id(%{message: m}) when not is_nil(m), do: extract_message_id(m)
@@ -205,8 +197,7 @@ defmodule ExGram.Dsl do
   def extract_message_type(%{message: m}) when not is_nil(m), do: extract_message_type(m)
   def extract_message_type(_), do: :error
 
-  def extract_inline_id_params(%{message: %{message_id: mid}} = m),
-    do: %{message_id: mid, chat_id: extract_id(m)}
+  def extract_inline_id_params(%{message: %{message_id: mid}} = m), do: %{message_id: mid, chat_id: extract_id(m)}
 
   def extract_inline_id_params(%{inline_message_id: mid}), do: %{inline_message_id: mid}
 

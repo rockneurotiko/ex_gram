@@ -12,9 +12,9 @@ defmodule ExGram.Middleware do
 
   defmacro __using__(_opts) do
     quote do
-      import ExGram.Middleware, only: [add_extra: 2, add_extra: 3, halt: 1]
-
       @behaviour ExGram.Middleware
+
+      import ExGram.Middleware, only: [add_extra: 2, add_extra: 3, halt: 1]
 
       def init(opts), do: opts
       defoverridable ExGram.Middleware

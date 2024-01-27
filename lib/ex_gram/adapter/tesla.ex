@@ -8,9 +8,9 @@ if Code.ensure_loaded?(Tesla) do
 
     use Tesla, only: ~w(get post)a
 
-    @base_url "https://api.telegram.org"
-
     require Logger
+
+    @base_url "https://api.telegram.org"
 
     plug(Tesla.Middleware.BaseUrl, ExGram.Config.get(:ex_gram, :base_url, @base_url))
     plug(Tesla.Middleware.Headers, [{"Content-Type", "application/json"}])
@@ -32,21 +32,20 @@ if Code.ensure_loaded?(Tesla) do
       verb |> do_request(path, body) |> handle_result()
     end
 
-    defp new() do
-      custom_middlewares() |> Tesla.client(http_adapter())
+    defp new do
+      Tesla.client(custom_middlewares(), http_adapter())
     end
 
     defp do_request(:get, path, body) do
       body = Enum.to_list(body)
-      new() |> get(path, query: body, opts: opts())
+      get(new(), path, query: body, opts: opts())
     end
 
     defp do_request(:post, path, body) do
-      new() |> post(path, body, opts: opts())
+      post(new(), path, body, opts: opts())
     end
 
-    defp handle_result({:ok, %{body: %{ok: true, result: body}, status: status}})
-         when status in 200..299 do
+    defp handle_result({:ok, %{body: %{ok: true, result: body}, status: status}}) when status in 200..299 do
       {:ok, body}
     end
 
@@ -59,13 +58,11 @@ if Code.ensure_loaded?(Tesla) do
     end
 
     defp encode_body(body) when is_map(body) do
-      body
-      |> Enum.map(fn {key, value} -> {key, encode(value)} end)
-      |> Enum.into(%{})
+      Map.new(body, fn {key, value} -> {key, encode(value)} end)
     end
 
     defp encode_body({:multipart, parts}) do
-      mp = Tesla.Multipart.new() |> Tesla.Multipart.add_content_type_param("charset=utf-8")
+      mp = Tesla.Multipart.add_content_type_param(Tesla.Multipart.new(), "charset=utf-8")
       Enum.reduce(parts, mp, &add_multipart_part/2)
     end
 
@@ -92,34 +89,28 @@ if Code.ensure_loaded?(Tesla) do
     defp encode(x), do: x
 
     defp filter_map(%{__struct__: _} = m) do
-      m |> Map.from_struct() |> filter_map
+      m |> Map.from_struct() |> filter_map()
     end
 
     defp filter_map(m) when is_map(m) do
       m
       |> Enum.filter(fn {_key, value} -> not is_nil(value) end)
-      |> Enum.map(fn {key, value} ->
+      |> Map.new(fn {key, value} ->
         cond do
-          is_list(value) ->
-            {key, Enum.map(value, &filter_map/1)}
-
-          is_map(value) ->
-            {key, filter_map(value)}
-
-          true ->
-            {key, value}
+          is_list(value) -> {key, Enum.map(value, &filter_map/1)}
+          is_map(value) -> {key, filter_map(value)}
+          true -> {key, value}
         end
       end)
-      |> Enum.into(%{})
     end
 
     defp filter_map(m) when is_list(m), do: Enum.map(m, &filter_map/1)
     defp filter_map(m), do: m
 
-    defp http_adapter(), do: Application.get_env(:tesla, :adapter) || Tesla.Adapter.Hackney
+    defp http_adapter, do: Application.get_env(:tesla, :adapter) || Tesla.Adapter.Hackney
 
-    defp opts(), do: [adapter: adapter_opts()]
-    defp adapter_opts(), do: [connect_timeout: 20_000, timeout: 60_000, recv_timeout: 60_000]
+    defp opts, do: [adapter: adapter_opts()]
+    defp adapter_opts, do: [connect_timeout: 20_000, timeout: 60_000, recv_timeout: 60_000]
 
     defp format_middleware({m, f, a}) do
       case apply(m, f, a) do
@@ -131,7 +122,7 @@ if Code.ensure_loaded?(Tesla) do
     defp format_middleware({_, _} = mf), do: {:ok, mf}
     defp format_middleware(_), do: :error
 
-    defp custom_middlewares() do
+    defp custom_middlewares do
       middlewares = Application.get_env(:ex_gram, __MODULE__, [])[:middlewares] || []
 
       middlewares
@@ -141,7 +132,7 @@ if Code.ensure_loaded?(Tesla) do
             [middleware | acc]
 
           :error ->
-            Logger.warn("Discarded, element is not a middleware: #{inspect(elem)}")
+            Logger.warning("Discarded, element is not a middleware: #{inspect(elem)}")
             acc
         end
       end)

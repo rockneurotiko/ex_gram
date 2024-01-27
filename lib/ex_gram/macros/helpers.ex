@@ -42,8 +42,7 @@ defmodule ExGram.Macros.Helpers do
 
   def mandatory_parameters(analyzed) do
     mandatory =
-      analyzed
-      |> Enum.filter(fn {_name, desc} -> not is_par_optional(desc) end)
+      Enum.filter(analyzed, fn {_name, desc} -> not is_par_optional(desc) end)
 
     names = Enum.map(mandatory, fn {name, _desc} -> name end)
 
@@ -77,11 +76,9 @@ defmodule ExGram.Macros.Helpers do
     end)
   end
 
-  def type_to_spec(:string),
-    do: {{:., [], [{:__aliases__, [alias: false], [:String]}, :t]}, [], []}
+  def type_to_spec(:string), do: {{:., [], [{:__aliases__, [alias: false], [:String]}, :t]}, [], []}
 
-  def type_to_spec(:enum),
-    do: {{:., [], [{:__aliases__, [alias: false], [:Enum]}, :t]}, [], []}
+  def type_to_spec(:enum), do: {{:., [], [{:__aliases__, [alias: false], [:Enum]}, :t]}, [], []}
 
   def type_to_spec(:file) do
     orT(
@@ -138,7 +135,7 @@ defmodule ExGram.Macros.Helpers do
     check_params: :boolean
   ]
   defp common_opts do
-    @common_opts |> Enum.map(fn {k, v} -> {k, type_to_spec(v)} end)
+    Enum.map(@common_opts, fn {k, v} -> {k, type_to_spec(v)} end)
   end
 
   defp parameter_type_spec(n, t) when is_atom(n), do: {:"::", [], [type_to_spec(n), t]}
@@ -191,15 +188,13 @@ defmodule ExGram.Macros.Helpers do
   def struct_type_specs([{id, t} | xs], acc) do
     act = acc ++ [{id, type_to_spec(t)}]
 
-    xs
-    |> struct_type_specs(act)
+    struct_type_specs(xs, act)
   end
 
   def struct_type_specs([{:{}, _line, [id, t, :optional]} | xs], acc) do
     act = acc ++ [{id, {:|, [], [type_to_spec(t), nil]}}]
 
-    xs
-    |> struct_type_specs(act)
+    struct_type_specs(xs, act)
   end
 
   def struct_type_specs(_x, acc) do

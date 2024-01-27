@@ -6,9 +6,9 @@ if Code.ensure_loaded?(Maxwell) do
 
     @behaviour ExGram.Adapter
 
-    @dialyzer {:nowarn_function, get!: 1, get!: 2, post!: 1, post!: 2, call_middleware: 1}
-
     use Maxwell.Builder, ~w(get post)a
+
+    @dialyzer {:nowarn_function, get!: 1, get!: 2, post!: 1, post!: 2, call_middleware: 1}
 
     @base_url "https://api.telegram.org"
 
@@ -43,7 +43,7 @@ if Code.ensure_loaded?(Maxwell) do
     end
 
     defp post_request({:ok, conn}) do
-      body = Maxwell.Conn.get_resp_body(conn) |> encode()
+      body = conn |> Maxwell.Conn.get_resp_body() |> encode()
       {:error, %ExGram.Error{code: :response_status_not_match, message: body}}
     end
 
@@ -68,9 +68,7 @@ if Code.ensure_loaded?(Maxwell) do
     defp where_body(_), do: :put_query_string
 
     defp encode_body(body) when is_map(body) do
-      body
-      |> Enum.map(fn {key, value} -> {key, encode(value)} end)
-      |> Enum.into(%{})
+      Map.new(body, fn {key, value} -> {key, encode(value)} end)
     end
 
     defp encode_body({:multipart, parts}) do
@@ -102,25 +100,19 @@ if Code.ensure_loaded?(Maxwell) do
     defp encode(x), do: x
 
     defp filter_map(%{__struct__: _} = m) do
-      m |> Map.from_struct() |> filter_map
+      m |> Map.from_struct() |> filter_map()
     end
 
     defp filter_map(m) when is_map(m) do
       m
       |> Enum.filter(fn {_key, value} -> not is_nil(value) end)
-      |> Enum.map(fn {key, value} ->
+      |> Map.new(fn {key, value} ->
         cond do
-          is_list(value) ->
-            {key, Enum.map(value, &filter_map/1)}
-
-          is_map(value) ->
-            {key, filter_map(value)}
-
-          true ->
-            {key, value}
+          is_list(value) -> {key, Enum.map(value, &filter_map/1)}
+          is_map(value) -> {key, filter_map(value)}
+          true -> {key, value}
         end
       end)
-      |> Enum.into(%{})
     end
 
     defp filter_map(m) when is_list(m), do: Enum.map(m, &filter_map/1)

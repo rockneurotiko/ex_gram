@@ -4,6 +4,7 @@ defmodule ExGram.Updates.Noup do
   """
 
   use GenServer
+
   require Logger
 
   def start_link({:bot, pid, :token, token}) do

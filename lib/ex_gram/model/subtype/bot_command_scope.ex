@@ -10,6 +10,5 @@ defimpl ExGram.Model.Subtype, for: ExGram.Model.BotCommandScope do
   def subtype(_, "chat_administrators"), do: ExGram.Model.BotCommandScopeChatAdministrators
   def subtype(_, "chat_member"), do: ExGram.Model.BotCommandScopeChatMember
 
-  def subtype(_, "all_chat_administrators"),
-    do: ExGram.Model.BotCommandScopeAllChatAdministrators
+  def subtype(_, "all_chat_administrators"), do: ExGram.Model.BotCommandScopeAllChatAdministrators
 end
