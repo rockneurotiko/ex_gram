@@ -160,7 +160,7 @@ defmodule ExGram.Macros.Helpers do
       {k, v} -> {k, v}
       {:{}, _, [k, v, :optional]} -> {k, v}
     end)
-    |> Stream.map(fn {k, v} ->
+    |> Stream.map(fn {k, [v | _]} ->
       {k, param_to_decode_as(v)}
     end)
     |> Enum.filter(fn {_k, v} -> not is_nil(v) end)
