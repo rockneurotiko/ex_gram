@@ -37,12 +37,11 @@ if Code.ensure_loaded?(Tesla) do
     end
 
     defp do_request(:get, path, body) do
-      body = Enum.to_list(body)
-      new() |> get(path, query: body, opts: opts())
+      do_request(:post, path, body)
     end
 
     defp do_request(:post, path, body) do
-      new() |> post(path, body, opts: opts())
+      post(new(), path, body, opts: opts())
     end
 
     defp handle_result({:ok, %{body: %{ok: true, result: body}, status: status}})
@@ -118,8 +117,38 @@ if Code.ensure_loaded?(Tesla) do
 
     defp http_adapter(), do: Application.get_env(:tesla, :adapter) || Tesla.Adapter.Hackney
 
-    defp opts(), do: [adapter: adapter_opts()]
-    defp adapter_opts(), do: [connect_timeout: 20_000, timeout: 60_000, recv_timeout: 60_000]
+    defp opts, do: [adapter: adapter_opts()]
+
+    defp adapter_opts do
+      adapter = http_adapter()
+      adapter_opts = Application.get_env(:ex_gram, adapter, []) || []
+
+      timeout_opts =
+        case http_adapter() do
+          Tesla.Adapter.Hackney ->
+            [connect_timeout: 20_000, timeout: 60_000, recv_timeout: 60_000]
+
+          Tesla.Adapter.Finch ->
+            [pool_timeout: 20_000, receive_timeout: 60_000]
+
+          Tesla.Adapter.Gun ->
+            [connect_timeout: 20_000, timeout: 60_000]
+
+          Tesla.Adapter.Mint ->
+            [timeout: 60_000]
+
+          Tesla.Adapter.Httpc ->
+            [connect_timeout: 20_000, timeout: 60_000]
+
+          Tesla.Adapter.Ibrowse ->
+            [connect_timeout: 20_000, timeout: 60_000]
+
+          _ ->
+            []
+        end
+
+      Keyword.merge(timeout_opts, adapter_opts)
+    end
 
     defp format_middleware({m, f, a}) do
       case apply(m, f, a) do
@@ -141,7 +170,7 @@ if Code.ensure_loaded?(Tesla) do
             [middleware | acc]
 
           :error ->
-            Logger.warn("Discarded, element is not a middleware: #{inspect(elem)}")
+            Logger.warning("Discarded, element is not a middleware: #{inspect(elem)}")
             acc
         end
       end)
