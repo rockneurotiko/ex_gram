@@ -120,34 +120,35 @@ if Code.ensure_loaded?(Tesla) do
     defp opts, do: [adapter: adapter_opts()]
 
     defp adapter_opts do
-      adapter = http_adapter()
-      adapter_opts = Application.get_env(:ex_gram, adapter, []) || []
-
-      timeout_opts =
+      adapter_module =
         case http_adapter() do
-          Tesla.Adapter.Hackney ->
-            [connect_timeout: 20_000, timeout: 60_000, recv_timeout: 60_000]
-
-          Tesla.Adapter.Finch ->
-            [pool_timeout: 20_000, receive_timeout: 60_000]
-
-          Tesla.Adapter.Gun ->
-            [connect_timeout: 20_000, timeout: 60_000]
-
-          Tesla.Adapter.Mint ->
-            [timeout: 60_000]
-
-          Tesla.Adapter.Httpc ->
-            [connect_timeout: 20_000, timeout: 60_000]
-
-          Tesla.Adapter.Ibrowse ->
-            [connect_timeout: 20_000, timeout: 60_000]
-
-          _ ->
-            []
+          module when is_atom(module) -> module
+          {module, _opts} -> module
+          _ -> nil
         end
 
-      Keyword.merge(timeout_opts, adapter_opts)
+      case adapter_module do
+        Tesla.Adapter.Hackney ->
+          [connect_timeout: 20_000, timeout: 60_000, recv_timeout: 60_000]
+
+        Tesla.Adapter.Finch ->
+          [pool_timeout: 20_000, receive_timeout: 60_000]
+
+        Tesla.Adapter.Gun ->
+          [connect_timeout: 20_000, timeout: 60_000]
+
+        Tesla.Adapter.Mint ->
+          [timeout: 60_000]
+
+        Tesla.Adapter.Httpc ->
+          [connect_timeout: 20_000, timeout: 60_000]
+
+        Tesla.Adapter.Ibrowse ->
+          [connect_timeout: 20_000, timeout: 60_000]
+
+        _ ->
+          []
+      end
     end
 
     defp format_middleware({m, f, a}) do
