@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## [0.50.1]
+- Fix timeout on different Tesla adapters
+
 ## [0.50.0]
 - Update Telegram API to 7.0: https://core.telegram.org/bots/api#december-29-2023
 
