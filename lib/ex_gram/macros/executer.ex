@@ -131,7 +131,7 @@ defmodule ExGram.Macros.Executer do
   defp clean_body(m) when is_list(m), do: Enum.map(m, &clean_body/1)
   defp clean_body(m), do: m
 
-  def process_result(result, type) do
+  defp process_result(result, type) do
     process_type(result, type)
   end
 
@@ -139,6 +139,7 @@ defmodule ExGram.Macros.Executer do
   defp process_type(elem, nil), do: elem
 
   defp process_type(list, {:array, t}), do: Enum.map(list, &process_type(&1, t))
+  defp process_type(list, [t]), do: Enum.map(list, &process_type(&1, t))
 
   defp process_type(elem, :integer), do: elem
   defp process_type(elem, :string), do: elem
@@ -158,7 +159,9 @@ defmodule ExGram.Macros.Executer do
     decoded_elem =
       t.decode_as()
       |> Map.from_struct()
-      |> Map.new(fn {k, v} -> {k, process_type(elem[k], v)} end)
+      |> Map.new(fn {k, v} ->
+        {k, process_type(elem[k], v)}
+      end)
 
     struct(t, decoded_elem)
   end

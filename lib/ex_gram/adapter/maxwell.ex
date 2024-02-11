@@ -14,7 +14,7 @@ if Code.ensure_loaded?(Maxwell) do
 
     middleware(Maxwell.Middleware.BaseUrl, ExGram.Config.get(:ex_gram, :base_url, @base_url))
     middleware(Maxwell.Middleware.Headers, %{"Content-Type" => "application/json"})
-    middleware(Maxwell.Middleware.Opts, connect_timeout: 20_000, recv_timeout: 30_000)
+    middleware(Maxwell.Middleware.Opts, connect_timeout: 20_000, recv_timeout: 60_000)
 
     middleware(
       Maxwell.Middleware.Json,
