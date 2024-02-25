@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Added options on polling and webhook methods.
+WARNING: If you use custom module for method updates, the initial parameters passed to the `start_link/1` has changed. Before: `{:bot, pid, :token, token}` Now: `%{bot: pid, token: token}` + options configured on children setup
 
 ## [0.50.1]
 - Fix timeout on different Tesla adapters
