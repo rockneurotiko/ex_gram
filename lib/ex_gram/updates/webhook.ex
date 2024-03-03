@@ -16,16 +16,18 @@ defmodule ExGram.Updates.Webhook do
     |> GenServer.cast({:update, update})
   end
 
-  def start_link({:bot, pid, :token, token}) do
+  def start_link(%{bot: pid, token: token} = opts) do
+    opts = Map.drop(opts, [:bot, :token])
+
     name =
       token_hash(token)
       |> process_name()
 
-    GenServer.start_link(__MODULE__, {:ok, pid, token}, name: name)
+    GenServer.start_link(__MODULE__, {:ok, pid, token, opts}, name: name)
   end
 
-  def init({:ok, pid, token}) do
-    set_webhook(token)
+  def init({:ok, pid, token, opts}) do
+    set_webhook(token, opts)
 
     {:ok, {pid, token}}
   end
@@ -49,8 +51,21 @@ defmodule ExGram.Updates.Webhook do
     |> Base.url_encode64(padding: true)
   end
 
-  defp set_webhook(token) do
-    config = ExGram.Config.get(:ex_gram, :webhook)
+  defp set_webhook(token, opts) do
+    opts =
+      opts
+      |> Map.take([
+        :certificate,
+        :url,
+        :max_connections,
+        :allowed_updates,
+        :secret_token,
+        :drop_pending_updates,
+        :ip_address
+      ])
+      |> Keyword.new()
+
+    config = ExGram.Config.get(:ex_gram, :webhook, []) |> Keyword.merge(opts)
     params = webhook_params(config)
 
     case config[:url] do

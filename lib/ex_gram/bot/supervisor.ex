@@ -29,26 +29,8 @@ defmodule ExGram.Bot.Supervisor do
 
     {:ok, _} = Registry.register(Registry.ExGram, name, token)
 
-    updates_worker =
-      case updates_method do
-        :webhook ->
-          ExGram.Updates.Webhook
-
-        :noup ->
-          ExGram.Updates.Noup
-
-        :polling ->
-          ExGram.Updates.Polling
-
-        :test ->
-          ExGram.Updates.Test
-
-        nil ->
-          raise "No updates method received, try with :polling or your custom module"
-
-        other ->
-          other
-      end
+    {updates_worker, updates_worker_opts} = updates_worker(updates_method)
+    updates_worker_opts = Map.merge(updates_worker_opts, %{bot: name, token: token})
 
     module.init(bot: name, token: token)
     if opts[:setup_commands], do: setup_commands(module.commands(), token)
@@ -58,11 +40,28 @@ defmodule ExGram.Bot.Supervisor do
 
     children = [
       {Dispatcher, dispatcher_opts},
-      {updates_worker, {:bot, name, :token, token}}
+      {updates_worker, updates_worker_opts}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)
   end
+
+  defp updates_worker(nil),
+    do: raise("No updates method received, try with :polling or your custom module")
+
+  defp updates_worker(name) when is_atom(name) do
+    {updates_worker_module(name), %{}}
+  end
+
+  defp updates_worker({name, options}) when is_atom(name) do
+    {updates_worker_module(name), Map.new(options)}
+  end
+
+  defp updates_worker_module(:webhook), do: ExGram.Updates.Webhook
+  defp updates_worker_module(:noup), do: ExGram.Updates.Noup
+  defp updates_worker_module(:polling), do: ExGram.Updates.Polling
+  defp updates_worker_module(:test), do: ExGram.Updates.Test
+  defp updates_worker_module(module) when is_atom(module), do: module
 
   defp get_bot_info(username, _token) when is_binary(username),
     do: %ExGram.Model.User{username: username, is_bot: true}
