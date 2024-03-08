@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Fix #131
 
 ## [0.51.0]
 - Added options on polling and webhook methods.
