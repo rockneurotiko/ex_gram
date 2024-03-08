@@ -47,11 +47,11 @@ defmodule ExGram.Token do
         token
 
       [{_, _other} | _] ->
-        Logger.warn(error_msg(:no_token, bot))
+        Logger.warning(error_msg(:no_token, bot))
         nil
 
       _ ->
-        Logger.warn(error_msg(:no_bot, bot))
+        Logger.warning(error_msg(:no_bot, bot))
         nil
     end
   end

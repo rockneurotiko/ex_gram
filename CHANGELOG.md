@@ -3,6 +3,16 @@
 ## Unreleased
 - Fix #131
 
+## [0.51.0]
+- Added options on polling and webhook methods.
+WARNING: If you use custom module for method updates, the initial parameters passed to the `start_link/1` has changed. Before: `{:bot, pid, :token, token}` Now: `%{bot: pid, token: token}` + options configured on children setup
+
+## [0.50.2]
+- Update Telegram API to 7.1: https://core.telegram.org/bots/api#february-16-2024
+
+## [0.50.1]
+- Fix timeout on different Tesla adapters
+
 ## [0.50.0]
 - Update Telegram API to 7.0: https://core.telegram.org/bots/api#december-29-2023
 

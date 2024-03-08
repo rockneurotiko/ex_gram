@@ -15,7 +15,7 @@ Add `ex_gram` as dependency in `mix.exs`
 ``` elixir
 def deps do
     [
-      {:ex_gram, "~> 0.50.0"},
+      {:ex_gram, "~> 0.51"},
       {:tesla, "~> 1.2"},
       {:hackney, "~> 1.12"},
       {:jason, ">= 1.0.0"}
@@ -96,7 +96,42 @@ children = [
 ]
 ```
 
+### Polling mode
+
+The easiest way to get your bot runnig is using the Polling mode, it will use the method `getUpdates` on the telegram API to receive the new updates. You can read more about it here: https://core.telegram.org/bots/api#getting-updates
+
+Setting this mode is as easy as defining the mode and the token in your supervisor:
+
+``` elixir
+children = [
+  # ...
+  {MyBot, [method: :polling, token: "TOKEN"]}
+]
+```
+
+Additionally, you can configure the `getUpdates` call on the children options or on the application configuration.
+
+- In children options
+
+``` elixir
+children = [
+  # ...
+  {MyBot, [method: {:polling, allowed_updates: ["message", "edited_message"]}, token: "TOKEN"]}
+]
+```
+
+- In application configuration
+
+``` elixir
+config :ex_gram, :polling, allowed_updates: ["message", "edited_message"]
+```
+
+This configuration takes priority over the ones on the configuration files, but you can combine them, for example having a default `allowed_updates` in the application configuration and in some bots where you need other updates overide it on the children options.
+
+
 ### Webhook mode
+
+If you prefer to use webhook to have more performance receiving updates, you can use the provided Webhook mode.
 
 The provided Webhook adapter uses `Plug`, you will need to have that dependency in your application, and add it to your router, with basic Plug Router it would look something like this:
 
@@ -131,6 +166,20 @@ config :ex_gram, :webhook,
   secret_token: "some_super_secret_key",      # string
   url: "bot.example.com"                      # string (only domain name)
 ```
+
+You can also configure this options when starting inside the children options, you can configure it this way to ensure fine-grained setup per bot.
+
+Example:
+
+``` elixir
+webhook_options = [allowed_updates: ["message", "poll"], certificate: "priv/...", ...] # All options described before
+children = [
+  # We use a tuple instead of the atom
+  {MyBot, [method: {:webhook, webhook_options}, token: "TOKEN"]}
+]
+```
+
+This configuration takes priority over the ones on the configuration files, but you can combine them, for example configuring the `certificate`, `ip_address` and `url` in the config file and the `allowed_updates` and `drop_pending_updates` in the children options.
 
 For more information on each parameter, refer to this documentation: https://core.telegram.org/bots/api#setwebhook
 
