@@ -24,7 +24,7 @@ defmodule ExGram.Bot.Supervisor do
     updates_method = Keyword.fetch!(opts, :method)
     token = Keyword.fetch!(opts, :token)
     module = Keyword.fetch!(opts, :module)
-    name = module.name()
+    name = Keyword.get(opts, :bot_name, module.name())
 
     {:ok, _} = Registry.register(Registry.ExGram, name, token)
 
@@ -35,12 +35,14 @@ defmodule ExGram.Bot.Supervisor do
     if opts[:setup_commands], do: setup_commands(module.commands(), token)
 
     bot_info = get_bot_info(opts[:username], token)
-    dispatcher_opts = Dispatcher.init_state(name, bot_info, module)
+    extra_info = Keyword.get(opts, :extra_info, %{})
+    dispatcher_opts = Dispatcher.init_state(name, bot_info, module, extra_info)
 
-    children = [
-      {Dispatcher, dispatcher_opts},
-      {updates_worker, updates_worker_opts}
-    ]
+    children =
+      [
+        {Dispatcher, dispatcher_opts},
+        {updates_worker, updates_worker_opts}
+      ]
 
     Supervisor.init(children, strategy: :one_for_one)
   end
