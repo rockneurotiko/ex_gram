@@ -15,54 +15,54 @@ defmodule ExGram.Bot.Supervisor do
   end
 
   def start_link(opts, module) do
-    name = opts[:name] || module.name()
-    supervisor_name = Module.concat(module, Supervisor)
-    params = Keyword.merge(opts, name: name, module: module)
+    supervisor_name = opts[:name] || Module.concat(module, Supervisor)
+    params = Keyword.merge(opts, module: module)
     Supervisor.start_link(ExGram.Bot.Supervisor, params, name: supervisor_name)
   end
 
   def init(opts) do
     updates_method = Keyword.fetch!(opts, :method)
     token = Keyword.fetch!(opts, :token)
-    name = Keyword.fetch!(opts, :name)
     module = Keyword.fetch!(opts, :module)
+    name = Keyword.get(opts, :bot_name, module.name())
 
     {:ok, _} = Registry.register(Registry.ExGram, name, token)
 
-    updates_worker =
-      case updates_method do
-        :webhook ->
-          ExGram.Updates.Webhook
-
-        :noup ->
-          ExGram.Updates.Noup
-
-        :polling ->
-          ExGram.Updates.Polling
-
-        :test ->
-          ExGram.Updates.Test
-
-        nil ->
-          raise "No updates method received, try with :polling or your custom module"
-
-        other ->
-          other
-      end
+    {updates_worker, updates_worker_opts} = updates_worker(updates_method)
+    updates_worker_opts = Map.merge(updates_worker_opts, %{bot: name, token: token})
 
     module.init(bot: name, token: token)
     if opts[:setup_commands], do: setup_commands(module.commands(), token)
 
     bot_info = get_bot_info(opts[:username], token)
-    dispatcher_opts = Dispatcher.init_state(name, bot_info, module)
+    extra_info = Keyword.get(opts, :extra_info, %{})
+    dispatcher_opts = Dispatcher.init_state(name, bot_info, module, extra_info)
 
-    children = [
-      {Dispatcher, dispatcher_opts},
-      {updates_worker, {:bot, name, :token, token}}
-    ]
+    children =
+      [
+        {Dispatcher, dispatcher_opts},
+        {updates_worker, updates_worker_opts}
+      ]
 
     Supervisor.init(children, strategy: :one_for_one)
   end
+
+  defp updates_worker(nil),
+    do: raise("No updates method received, try with :polling or your custom module")
+
+  defp updates_worker(name) when is_atom(name) do
+    {updates_worker_module(name), %{}}
+  end
+
+  defp updates_worker({name, options}) when is_atom(name) do
+    {updates_worker_module(name), Map.new(options)}
+  end
+
+  defp updates_worker_module(:webhook), do: ExGram.Updates.Webhook
+  defp updates_worker_module(:noup), do: ExGram.Updates.Noup
+  defp updates_worker_module(:polling), do: ExGram.Updates.Polling
+  defp updates_worker_module(:test), do: ExGram.Updates.Test
+  defp updates_worker_module(module) when is_atom(module), do: module
 
   defp get_bot_info(username, _token) when is_binary(username),
     do: %ExGram.Model.User{username: username, is_bot: true}

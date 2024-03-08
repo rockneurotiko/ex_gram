@@ -7,7 +7,7 @@ defmodule ExGram.Updates.Test do
 
   defstruct [:pid, :token]
 
-  def start_link({:bot, pid, :token, token}) do
+  def start_link(%{bot: pid, token: token}) do
     GenServer.start_link(__MODULE__, {:ok, pid, token})
   end
 

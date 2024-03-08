@@ -504,7 +504,7 @@ defmodule ExGram do
       {is_big, [:boolean], :optional}
     ],
     true,
-    "Use this method to change the chosen reactions on a message. Service messages can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. In albums, bots must react to the first message. Returns True on success."
+    "Use this method to change the chosen reactions on a message. Service messages can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Returns True on success."
   )
 
   method(
@@ -576,12 +576,12 @@ defmodule ExGram do
       {can_promote_members, [:boolean], :optional},
       {can_change_info, [:boolean], :optional},
       {can_invite_users, [:boolean], :optional},
-      {can_post_messages, [:boolean], :optional},
-      {can_edit_messages, [:boolean], :optional},
-      {can_pin_messages, [:boolean], :optional},
       {can_post_stories, [:boolean], :optional},
       {can_edit_stories, [:boolean], :optional},
       {can_delete_stories, [:boolean], :optional},
+      {can_post_messages, [:boolean], :optional},
+      {can_edit_messages, [:boolean], :optional},
+      {can_pin_messages, [:boolean], :optional},
       {can_manage_topics, [:boolean], :optional}
     ],
     true,
@@ -1569,6 +1569,7 @@ defmodule ExGram do
         {:pinned_message, [Message], :optional},
         {:permissions, [ChatPermissions], :optional},
         {:slow_mode_delay, [:integer], :optional},
+        {:unrestrict_boost_count, [:integer], :optional},
         {:message_auto_delete_time, [:integer], :optional},
         {:has_aggressive_anti_spam_enabled, [:boolean], :optional},
         {:has_hidden_members, [:boolean], :optional},
@@ -1576,6 +1577,7 @@ defmodule ExGram do
         {:has_visible_history, [:boolean], :optional},
         {:sticker_set_name, [:string], :optional},
         {:can_set_sticker_set, [:boolean], :optional},
+        {:custom_emoji_sticker_set_name, [:string], :optional},
         {:linked_chat_id, [:integer], :optional},
         {:location, [ChatLocation], :optional}
       ],
@@ -1589,6 +1591,7 @@ defmodule ExGram do
         {:message_thread_id, [:integer], :optional},
         {:from, [User], :optional},
         {:sender_chat, [Chat], :optional},
+        {:sender_boost_count, [:integer], :optional},
         {:date, [:integer]},
         {:chat, [Chat]},
         {:forward_origin, [MessageOrigin], :optional},
@@ -1597,6 +1600,7 @@ defmodule ExGram do
         {:reply_to_message, [Message], :optional},
         {:external_reply, [ExternalReplyInfo], :optional},
         {:quote, [TextQuote], :optional},
+        {:reply_to_story, [Story], :optional},
         {:via_bot, [User], :optional},
         {:edit_date, [:integer], :optional},
         {:has_protected_content, [:boolean], :optional},
@@ -1643,6 +1647,7 @@ defmodule ExGram do
         {:write_access_allowed, [WriteAccessAllowed], :optional},
         {:passport_data, [PassportData], :optional},
         {:proximity_alert_triggered, [ProximityAlertTriggered], :optional},
+        {:boost_added, [ChatBoostAdded], :optional},
         {:forum_topic_created, [ForumTopicCreated], :optional},
         {:forum_topic_edited, [ForumTopicEdited], :optional},
         {:forum_topic_closed, [ForumTopicClosed], :optional},
@@ -1856,11 +1861,7 @@ defmodule ExGram do
       "This object represents a general file (as opposed to photos, voice messages and audio files)."
     )
 
-    model(
-      Story,
-      [],
-      "This object represents a message about a forwarded story in the chat. Currently holds no information."
-    )
+    model(Story, [{:chat, [Chat]}, {:id, [:integer]}], "This object represents a story.")
 
     model(
       Video,
@@ -1961,8 +1962,8 @@ defmodule ExGram do
     model(
       Location,
       [
-        {:longitude, [:float]},
         {:latitude, [:float]},
+        {:longitude, [:float]},
         {:horizontal_accuracy, [:float], :optional},
         {:live_period, [:integer], :optional},
         {:heading, [:integer], :optional},
@@ -2001,6 +2002,12 @@ defmodule ExGram do
       MessageAutoDeleteTimerChanged,
       [{:message_auto_delete_time, [:integer]}],
       "This object represents a service message about a change in auto-delete timer settings."
+    )
+
+    model(
+      ChatBoostAdded,
+      [{:boost_count, [:integer]}],
+      "This object represents a service message about a user boosting a chat."
     )
 
     model(
@@ -2193,7 +2200,7 @@ defmodule ExGram do
         {:request_poll, [KeyboardButtonPollType], :optional},
         {:web_app, [WebAppInfo], :optional}
       ],
-      "This object represents one button of the reply keyboard. For simple text buttons, String can be used instead of this object to specify the button text. The optional fields web_app, request_user, request_chat, request_contact, request_location, and request_poll are mutually exclusive."
+      "This object represents one button of the reply keyboard. For simple text buttons, String can be used instead of this object to specify the button text. The optional fields web_app, request_users, request_chat, request_contact, request_location, and request_poll are mutually exclusive."
     )
 
     model(
@@ -2342,12 +2349,12 @@ defmodule ExGram do
         {:can_promote_members, [:boolean]},
         {:can_change_info, [:boolean]},
         {:can_invite_users, [:boolean]},
+        {:can_post_stories, [:boolean]},
+        {:can_edit_stories, [:boolean]},
+        {:can_delete_stories, [:boolean]},
         {:can_post_messages, [:boolean], :optional},
         {:can_edit_messages, [:boolean], :optional},
         {:can_pin_messages, [:boolean], :optional},
-        {:can_post_stories, [:boolean], :optional},
-        {:can_edit_stories, [:boolean], :optional},
-        {:can_delete_stories, [:boolean], :optional},
         {:can_manage_topics, [:boolean], :optional}
       ],
       "Represents the rights of an administrator in a chat."
@@ -2392,12 +2399,12 @@ defmodule ExGram do
         {:can_promote_members, [:boolean]},
         {:can_change_info, [:boolean]},
         {:can_invite_users, [:boolean]},
+        {:can_post_stories, [:boolean]},
+        {:can_edit_stories, [:boolean]},
+        {:can_delete_stories, [:boolean]},
         {:can_post_messages, [:boolean], :optional},
         {:can_edit_messages, [:boolean], :optional},
         {:can_pin_messages, [:boolean], :optional},
-        {:can_post_stories, [:boolean], :optional},
-        {:can_edit_stories, [:boolean], :optional},
-        {:can_delete_stories, [:boolean], :optional},
         {:can_manage_topics, [:boolean], :optional},
         {:custom_title, [:string], :optional}
       ],
@@ -2501,7 +2508,7 @@ defmodule ExGram do
 
     model(
       ReactionTypeCustomEmoji,
-      [{:type, [:string]}, {:custom_emoji, [:string]}],
+      [{:type, [:string]}, {:custom_emoji_id, [:string]}],
       "The reaction is based on a custom emoji."
     )
 
@@ -3536,7 +3543,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 173 models
+    # 174 models
 
     defmodule ChatMember do
       @moduledoc """

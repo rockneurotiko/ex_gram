@@ -26,6 +26,7 @@ defmodule ExGram.Dispatcher do
           name: atom(),
           bot_info: Model.User.t() | nil,
           dispatcher_name: atom(),
+          extra_info: map(),
           commands: %{String.t() => map()},
           regex: [Regex.t()],
           middlewares: [Bot.middleware()],
@@ -36,6 +37,7 @@ defmodule ExGram.Dispatcher do
   defstruct name: __MODULE__,
             bot_info: nil,
             dispatcher_name: __MODULE__,
+            extra_info: %{},
             commands: %{},
             regex: [],
             middlewares: [],
@@ -48,12 +50,14 @@ defmodule ExGram.Dispatcher do
   end
 
   @spec init_state(atom(), Model.User.t() | nil, module()) :: t()
-  def init_state(name, bot_info, module)
+  @spec init_state(atom(), Model.User.t() | nil, module(), map()) :: t()
+  def init_state(name, bot_info, module, extra_info \\ %{})
       when is_atom(name) and is_atom(module) do
     %__MODULE__{
       name: name,
       bot_info: bot_info,
       dispatcher_name: name,
+      extra_info: extra_info,
       commands: prepare_commands(module.commands()),
       regex: module.regexes(),
       middlewares: module.middlewares(),
@@ -95,8 +99,8 @@ defmodule ExGram.Dispatcher do
 
   def handle_call({:message, origin, msg}, from, %__MODULE__{} = state) do
     bot_message = {:bot_message, origin, msg}
-    cnt = %Cnt{default_context(state) | message: bot_message, extra: %{from: from}}
-    cnt = apply_middlewares(cnt)
+
+    cnt = build_context_with_middlewares(state, bot_message, %{from: from})
 
     if not cnt.halted do
       response = call_handler(bot_message, cnt, state)
@@ -108,8 +112,8 @@ defmodule ExGram.Dispatcher do
 
   def handle_call(msg, from, %__MODULE__{} = state) do
     message = {:call, msg}
-    cnt = %Cnt{default_context(state) | message: message, extra: %{from: from}}
-    cnt = apply_middlewares(cnt)
+
+    cnt = build_context_with_middlewares(state, message, %{from: from})
 
     if not cnt.halted do
       response = call_handler(message, cnt, state)
@@ -128,8 +132,7 @@ defmodule ExGram.Dispatcher do
   @impl GenServer
   def handle_cast(msg, %__MODULE__{} = state) do
     message = {:cast, msg}
-    cnt = %Cnt{default_context(state) | message: message}
-    cnt = apply_middlewares(cnt)
+    cnt = build_context_with_middlewares(state, message)
 
     if not cnt.halted do
       spawn(fn -> call_handler(message, cnt, state) end)
@@ -155,6 +158,7 @@ defmodule ExGram.Dispatcher do
   defp default_context(%__MODULE__{
          name: name,
          bot_info: bot_info,
+         extra_info: extra_info,
          middlewares: middlewares,
          commands: commands,
          regex: regex
@@ -165,8 +169,15 @@ defmodule ExGram.Dispatcher do
       halted: false,
       middlewares: middlewares,
       commands: commands,
-      regex: regex
+      regex: regex,
+      extra: extra_info
     }
+  end
+
+  defp build_context_with_middlewares(state, message, extra \\ %{}) do
+    %Cnt{default_context(state) | message: message}
+    |> ExGram.Middleware.add_extra(extra)
+    |> apply_middlewares()
   end
 
   @spec handle_text(String.t(), Cnt.t()) ::
