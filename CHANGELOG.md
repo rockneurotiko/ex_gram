@@ -1,7 +1,9 @@
 # Changelog
 
 ## Unreleased
-- Fix #131
+
+## [0.51.1]
+- Fix #131. Now multi bots with the same module is possible.
 
 ## [0.51.0]
 - Added options on polling and webhook methods.
