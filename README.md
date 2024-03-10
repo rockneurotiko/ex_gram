@@ -40,7 +40,7 @@ On deps:
 On deps:
 ``` elixir
 {:tesla, "~> 1.2"},
-{:gun, "~> 1.3"}
+{:gun, "~> 2.0"}
 ```
 
 On config:
