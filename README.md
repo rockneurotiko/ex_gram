@@ -164,7 +164,7 @@ config :ex_gram, :webhook,
   ip_address: "1.1.1.1",                      # string
   max_connections: 50,                        # integer
   secret_token: "some_super_secret_key",      # string
-  url: "bot.example.com"                      # string (only domain name)
+  url: "http://bot.example.com:4000"          # string (domain name with scheme and maybe port)
 ```
 
 You can also configure this options when starting inside the children options, you can configure it this way to ensure fine-grained setup per bot.
