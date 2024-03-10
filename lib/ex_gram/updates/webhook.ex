@@ -4,9 +4,11 @@ defmodule ExGram.Updates.Webhook do
   """
 
   use GenServer
+
   require Logger
 
-  @posible_updates Map.keys(%ExGram.Model.Update{})
+  @posible_updates %ExGram.Model.Update{}
+                   |> Map.keys()
                    |> List.delete(:__struct__)
                    |> List.delete(:update_id)
 
@@ -20,7 +22,8 @@ defmodule ExGram.Updates.Webhook do
     opts = Map.drop(opts, [:bot, :token])
 
     name =
-      token_hash(token)
+      token
+      |> token_hash()
       |> process_name()
 
     GenServer.start_link(__MODULE__, {:ok, pid, token, opts}, name: name)
@@ -47,7 +50,8 @@ defmodule ExGram.Updates.Webhook do
   defp process_name(token_hash), do: Module.concat(__MODULE__, token_hash)
 
   defp token_hash(token) do
-    :crypto.hash(:sha, token)
+    :sha
+    |> :crypto.hash(token)
     |> Base.url_encode64(padding: true)
   end
 
@@ -65,25 +69,27 @@ defmodule ExGram.Updates.Webhook do
       ])
       |> Keyword.new()
 
-    config = ExGram.Config.get(:ex_gram, :webhook, []) |> Keyword.merge(opts)
+    config = :ex_gram |> ExGram.Config.get(:webhook, []) |> Keyword.merge(opts)
     params = webhook_params(config)
 
-    case config[:url] do
-      webhook_url when is_binary(webhook_url) ->
-        case ExGram.set_webhook(
-               "https://#{webhook_url}/telegram/#{token_hash(token)}",
-               [{:token, token} | params]
-             ) do
-          {:ok, _} -> nil
-          {:error, error} -> Logger.error("Could not set the webhook: #{inspect(error)}")
-        end
+    case valid_url(config[:url]) do
+      {:ok, webhook_url} ->
+        ExGram.set_webhook("#{webhook_url}/telegram/#{token_hash(token)}", [{:token, token} | params])
 
-      nil ->
-        Logger.warning(
-          "The webhook_url is not set in the configuration. Please manually set the webhook using this method: https://core.telegram.org/bots/api#setwebhook"
+      {:error, error} ->
+        Logger.error(
+          "The webhook_url is wrong with reason: #{inspect(error)}. Please manually set the webhook using this method: https://core.telegram.org/bots/api#setwebhook or edit the config file!"
         )
     end
   end
+
+  defp valid_url(nil), do: {:error, :not_set}
+  defp valid_url(url), do: url |> URI.parse() |> do_valid_url()
+
+  defp do_valid_url(%URI{scheme: nil}), do: {:error, :scheme_not_set}
+  defp do_valid_url(%URI{scheme: scheme}) when scheme not in ["http", "https"], do: {:error, :scheme_is_wrong}
+  defp do_valid_url(%URI{host: nil}), do: {:error, :host_not_set}
+  defp do_valid_url(%URI{scheme: scheme, host: host, port: port}), do: {:ok, "#{scheme}://#{host}:#{port}"}
 
   defp webhook_params(_, params \\ [])
   defp webhook_params([], params), do: params
@@ -102,8 +108,7 @@ defmodule ExGram.Updates.Webhook do
 
   defp webhook_params([{:url, _} | tl], params), do: webhook_params(tl, params)
 
-  defp webhook_params([{:max_connections, max_connections} | tl], params)
-       when is_integer(max_connections) do
+  defp webhook_params([{:max_connections, max_connections} | tl], params) when is_integer(max_connections) do
     webhook_params(tl, [{:max_connections, max_connections} | params])
   end
 
@@ -111,10 +116,10 @@ defmodule ExGram.Updates.Webhook do
     webhook_params(tl, [{:max_connections, String.to_integer(max_connections)} | params])
   end
 
-  defp webhook_params([{:allowed_updates, allowed_updates} | tl], params)
-       when is_list(allowed_updates) do
+  defp webhook_params([{:allowed_updates, allowed_updates} | tl], params) when is_list(allowed_updates) do
     allowed_updates =
-      Enum.map(allowed_updates, fn update ->
+      allowed_updates
+      |> Enum.map(fn update ->
         if String.to_atom(update) in @posible_updates do
           update
         else
@@ -144,6 +149,5 @@ defmodule ExGram.Updates.Webhook do
     end
   end
 
-  defp webhook_params([{key, value} | tl], params),
-    do: webhook_params(tl, [{key, value} | params])
+  defp webhook_params([{key, value} | tl], params), do: webhook_params(tl, [{key, value} | params])
 end
