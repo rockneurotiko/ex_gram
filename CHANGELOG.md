@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Remove inch_ex
 
 ## [0.51.1]
 - Fix #131. Now multi bots with the same module is possible.
