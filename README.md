@@ -26,7 +26,7 @@ See the next sections to select a different HTTP adapter or JSON engine.
 
 ### HTTP Adapter
 
-You should add Tesla or Maxwell HTTP adapter, by default it will try to use the Tesla adapter, these are the defaults:
+You should add Tesla or custom HTTP adapter, by default it will try to use the Tesla adapter, these are the defaults:
 
 On deps:
 ``` elixir
@@ -47,19 +47,14 @@ On config:
 config :tesla, adapter: Tesla.Adapter.Gun
 ```
 
-- If you prefer Maxwell instead of Tesla:
+- If you prefer your custom adapter instead of Tesla:
 
-On deps:
-``` elixir
-{:maxwell, "~> 2.3.1"},
-{:hackney, "~> 1.12"},
-```
+It must implement the behaviour `ExGram.Adapter`
 
 On config:
 
 ``` elixir
-config :ex_gram, adapter: ExGram.Adapter.Maxwell
-config :maxwell, default_adapter: Maxwell.Adapter.Hackney
+config :ex_gram, adapter: YourCustomAdapter
 ```
 
 ### JSON Engine

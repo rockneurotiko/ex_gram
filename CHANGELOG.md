@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Remove maxwell
 - Remove inch_ex
 
 ## [0.51.1]

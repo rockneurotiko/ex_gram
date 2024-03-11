@@ -17,7 +17,7 @@ defmodule ExGram.Mixfile do
       deps: deps(),
       dialyzer: [
         plt_add_deps: :app_tree,
-        plt_add_apps: [:tesla, :maxwell, :mix, :eex]
+        plt_add_apps: [:tesla, :mix, :eex]
       ],
       xref: [exclude: [EEx]],
       docs: [
@@ -57,10 +57,7 @@ defmodule ExGram.Mixfile do
       # Tesla adapter
       {:tesla, "~> 1.2", optional: true},
       {:gun, "~> 1.3", optional: true},
-      # Maxwell or Tesla
       {:hackney, "~> 1.20", optional: true},
-      # Maxwell adapter
-      {:maxwell, "~> 2.3.1", optional: true},
       # JSON encoders/decoders
       {:jason, ">= 1.0.0", optional: true},
       {:poison, ">= 1.0.0", optional: true},
