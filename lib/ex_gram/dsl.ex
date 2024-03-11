@@ -3,9 +3,10 @@ defmodule ExGram.Dsl do
   Mini DSL to build answers based on the context easily.
   """
 
+  require Logger
+
   alias ExGram.Cnt
   alias ExGram.Responses
-
   alias ExGram.Responses.Answer
   alias ExGram.Responses.AnswerCallback
   alias ExGram.Responses.AnswerInlineQuery
@@ -134,6 +135,12 @@ defmodule ExGram.Dsl do
   def extract_user(%{chat_member: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{chat_join_request: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(_), do: :error
+
+  @spec extract_group(ExGram.Model.Update.t()) :: {:ok, ExGram.Model.Chat.t()} | :error
+  def extract_group(update) do
+    Logger.warning("extract_group/1 is deprecated, use extract_chat/1 instead")
+    extract_chat(update)
+  end
 
   @spec extract_chat(ExGram.Model.Update.t()) :: {:ok, ExGram.Model.Chat.t()} | :error
   def extract_chat(%{chat: c}) when not is_nil(c), do: {:ok, c}
