@@ -87,7 +87,7 @@ defmodule ExGram.Updates.Webhook do
   # TODO: Remove it in the future!
   defp do_valid_url(%URI{scheme: nil, host: nil, path: path}) when is_binary(path) do
     Logger.warning(
-      "This is a deprecated way to set the webhook url. Please use the new way! More in README.md"
+      "Webhook URL only with the host is deprecated. Add the protocol and the port if needed. Example: https://#{path} Check the README.md for more information"
     )
 
     {:ok, "https://#{path}"}
