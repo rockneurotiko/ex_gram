@@ -68,22 +68,40 @@ defmodule ExGram.Updates.Webhook do
     config = ExGram.Config.get(:ex_gram, :webhook, []) |> Keyword.merge(opts)
     params = webhook_params(config)
 
-    case config[:url] do
-      webhook_url when is_binary(webhook_url) ->
-        case ExGram.set_webhook(
-               "https://#{webhook_url}/telegram/#{token_hash(token)}",
-               [{:token, token} | params]
-             ) do
-          {:ok, _} -> nil
-          {:error, error} -> Logger.error("Could not set the webhook: #{inspect(error)}")
-        end
+    case valid_url(config[:url]) do
+      {:ok, webhook_url} ->
+        ExGram.set_webhook("#{webhook_url}/telegram/#{token_hash(token)}", [
+          {:token, token} | params
+        ])
 
-      nil ->
-        Logger.warning(
-          "The webhook_url is not set in the configuration. Please manually set the webhook using this method: https://core.telegram.org/bots/api#setwebhook"
+      {:error, error} ->
+        Logger.error(
+          "The webhook_url is wrong with reason: #{inspect(error)}. Please manually set the webhook using this method: https://core.telegram.org/bots/api#setwebhook or edit the config file!"
         )
     end
   end
+
+  defp valid_url(nil), do: {:error, :not_set}
+  defp valid_url(url), do: url |> URI.parse() |> do_valid_url()
+
+  # TODO: Remove it in the future!
+  defp do_valid_url(%URI{scheme: nil, host: nil, path: path}) when is_binary(path) do
+    Logger.warning(
+      "This is a deprecated way to set the webhook url. Please use the new way! More in README.md"
+    )
+
+    {:ok, "https://#{path}"}
+  end
+
+  defp do_valid_url(%URI{scheme: nil}), do: {:error, :scheme_not_set}
+
+  defp do_valid_url(%URI{scheme: scheme}) when scheme not in ["http", "https"],
+    do: {:error, :scheme_is_wrong}
+
+  defp do_valid_url(%URI{host: nil}), do: {:error, :host_not_set}
+
+  defp do_valid_url(%URI{scheme: scheme, host: host, port: port}),
+    do: {:ok, "#{scheme}://#{host}:#{port}"}
 
   defp webhook_params(_, params \\ [])
   defp webhook_params([], params), do: params
