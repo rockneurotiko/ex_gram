@@ -84,6 +84,15 @@ defmodule ExGram.Updates.Webhook do
   defp valid_url(nil), do: {:error, :not_set}
   defp valid_url(url), do: url |> URI.parse() |> do_valid_url()
 
+  # TODO: Remove it in the future!
+  defp do_valid_url(%URI{scheme: nil, host: nil, path: path}) when is_binary(path) do
+    Logger.warning(
+      "This is a deprecated way to set the webhook url. Please use the new way! More in README.md"
+    )
+
+    {:ok, "https://#{path}"}
+  end
+
   defp do_valid_url(%URI{scheme: nil}), do: {:error, :scheme_not_set}
 
   defp do_valid_url(%URI{scheme: scheme}) when scheme not in ["http", "https"],
