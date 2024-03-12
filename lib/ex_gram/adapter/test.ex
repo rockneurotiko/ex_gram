@@ -73,8 +73,7 @@ defmodule ExGram.Adapter.Test do
     end
   end
 
-  defp clean_path("/bot" <> _ = path),
-    do: "/" <> (path |> String.split("/") |> Enum.drop(2) |> Enum.join("/"))
+  defp clean_path("/bot" <> _ = path), do: "/" <> (path |> String.split("/") |> Enum.drop(2) |> Enum.join("/"))
 
   defp clean_path(path), do: path
 end

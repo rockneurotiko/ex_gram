@@ -33,9 +33,10 @@ defmodule ExGram.Macros.Checker do
   end
 
   defp check_any_type([value, types]) do
-    case Enum.any?(types, &check_type(&1, value)) do
-      true -> :ok
-      _ -> {value, types}
+    if Enum.any?(types, &check_type(&1, value)) do
+      :ok
+    else
+      {value, types}
     end
   end
 

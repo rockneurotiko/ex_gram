@@ -33,6 +33,6 @@ defmodule ExGram.Cnt do
             extra: %{}
 
   def new(extra \\ %{}) do
-    %__MODULE__{} |> Map.merge(extra)
+    Map.merge(%__MODULE__{}, extra)
   end
 end

@@ -51,8 +51,7 @@ defmodule ExGram.Dispatcher do
 
   @spec init_state(atom(), Model.User.t() | nil, module()) :: t()
   @spec init_state(atom(), Model.User.t() | nil, module(), map()) :: t()
-  def init_state(name, bot_info, module, extra_info \\ %{})
-      when is_atom(name) and is_atom(module) do
+  def init_state(name, bot_info, module, extra_info \\ %{}) when is_atom(name) and is_atom(module) do
     %__MODULE__{
       name: name,
       bot_info: bot_info,
@@ -89,7 +88,7 @@ defmodule ExGram.Dispatcher do
     cnt = %Cnt{default_context(state) | update: update}
     cnt = apply_middlewares(cnt)
 
-    if not cnt.halted do
+    unless cnt.halted do
       info = extract_info(cnt)
       spawn(fn -> call_handler(info, cnt, state) end)
     end
@@ -102,11 +101,11 @@ defmodule ExGram.Dispatcher do
 
     cnt = build_context_with_middlewares(state, bot_message, %{from: from})
 
-    if not cnt.halted do
+    if cnt.halted do
+      {:reply, :halted, state}
+    else
       response = call_handler(bot_message, cnt, state)
       {:reply, response, state}
-    else
-      {:reply, :halted, state}
     end
   end
 
@@ -115,11 +114,11 @@ defmodule ExGram.Dispatcher do
 
     cnt = build_context_with_middlewares(state, message, %{from: from})
 
-    if not cnt.halted do
+    if cnt.halted do
+      {:reply, :halted, state}
+    else
       response = call_handler(message, cnt, state)
       {:reply, response, state}
-    else
-      {:reply, :halted, state}
     end
   end
 
@@ -134,7 +133,7 @@ defmodule ExGram.Dispatcher do
     message = {:cast, msg}
     cnt = build_context_with_middlewares(state, message)
 
-    if not cnt.halted do
+    unless cnt.halted do
       spawn(fn -> call_handler(message, cnt, state) end)
     end
 
@@ -147,7 +146,7 @@ defmodule ExGram.Dispatcher do
     cnt = %Cnt{default_context(state) | message: message}
     cnt = apply_middlewares(cnt)
 
-    if not cnt.halted do
+    unless cnt.halted do
       call_handler(message, cnt, state)
     end
 
@@ -209,8 +208,7 @@ defmodule ExGram.Dispatcher do
   end
 
   @spec extract_info(Cnt.t()) :: parsed_message()
-  defp extract_info(%Cnt{update: %{message: %{text: text} = message}} = cnt)
-       when is_binary(text) do
+  defp extract_info(%Cnt{update: %{message: %{text: text} = message}} = cnt) when is_binary(text) do
     case handle_text(text, cnt) do
       {:command, key, text} -> {:command, key, %{message | text: text}}
       {:text, text} -> {:text, text, %{message | text: text}}
@@ -251,8 +249,7 @@ defmodule ExGram.Dispatcher do
   defp apply_middlewares(%Cnt{halted: true} = cnt), do: cnt
   defp apply_middlewares(%Cnt{middleware_halted: true} = cnt), do: cnt
 
-  defp apply_middlewares(%Cnt{middlewares: [{fun, opts} | rest]} = cnt)
-       when is_function(fun, 2) do
+  defp apply_middlewares(%Cnt{middlewares: [{fun, opts} | rest]} = cnt) when is_function(fun, 2) do
     %Cnt{cnt | middlewares: rest}
     |> fun.(opts)
     |> apply_middlewares()

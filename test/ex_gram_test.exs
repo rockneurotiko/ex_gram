@@ -1,9 +1,11 @@
 defmodule ExGramTest do
   use ExUnit.Case, async: false
-  doctest ExGram
+
+  import Test.Support.StringGenerator
 
   alias ExGram.Model.User
-  import Test.Support.StringGenerator
+
+  doctest ExGram
 
   test "the truth" do
     assert 1 + 1 == 2
@@ -11,7 +13,7 @@ defmodule ExGramTest do
 
   describe "a" do
     setup do
-      name = string_of_length(10) |> String.to_atom()
+      name = 10 |> string_of_length() |> String.to_atom()
       {:ok, _} = ExGram.Adapter.Test.start_link(name: name)
       ExGram.Adapter.Test.start_link([])
 

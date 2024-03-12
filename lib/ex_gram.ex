@@ -25,7 +25,7 @@ defmodule ExGram do
     Supervisor.init(children, strategy: :one_for_one)
   end
 
-  defp reload_engine() do
+  defp reload_engine do
     engine = Application.get_env(:ex_gram, :json_engine)
     ExGram.Encoder.EngineCompiler.compile(engine)
   end
@@ -122,8 +122,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send text messages. On success, the sent Message is returned."
@@ -173,8 +172,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.MessageId,
     "Use this method to copy messages of any kind. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success."
@@ -210,8 +208,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send photos. On success, the sent Message is returned."
@@ -234,8 +231,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send audio files, if you want Telegram clients to display them in the music player. Your audio must be in the .MP3 or .M4A format. On success, the sent Message is returned. Bots can currently send audio files of up to 50 MB in size, this limit may be changed in the future."
@@ -256,8 +252,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send general files. On success, the sent Message is returned. Bots can currently send files of any type of up to 50 MB in size, this limit may be changed in the future."
@@ -282,8 +277,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send video files, Telegram clients support MPEG4 videos (other formats may be sent as Document). On success, the sent Message is returned. Bots can currently send video files of up to 50 MB in size, this limit may be changed in the future."
@@ -307,8 +301,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send animation files (GIF or H.264/MPEG-4 AVC video without sound). On success, the sent Message is returned. Bots can currently send animation files of up to 50 MB in size, this limit may be changed in the future."
@@ -328,8 +321,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS (other formats may be sent as Audio or Document). On success, the sent Message is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future."
@@ -348,8 +340,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "As of v.4.0, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent Message is returned."
@@ -361,8 +352,7 @@ defmodule ExGram do
     [
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
-      {media,
-       [{:array, [InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo]}]},
+      {media, [{:array, [InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo]}]},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional}
@@ -386,8 +376,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send point on the map. On success, the sent Message is returned."
@@ -410,8 +399,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send information about a venue. On success, the sent Message is returned."
@@ -430,8 +418,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send phone contacts. On success, the sent Message is returned."
@@ -458,8 +445,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send a native poll. On success, the sent Message is returned."
@@ -475,8 +461,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send an animated emoji that will display a random value. On success, the sent Message is returned."
@@ -1180,8 +1165,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
-      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
-       :optional}
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send static .WEBP, animated .TGS, or video .WEBM stickers. On success, the sent Message is returned."

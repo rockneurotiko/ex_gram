@@ -3,10 +3,11 @@ defmodule Test.Support.StringGenerator do
   Test helper to generate random strings
   """
 
-  @chars "ABCDEFGHIJKLMNOPQRSTUVWXYZ" |> String.codepoints()
+  @chars String.codepoints("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
   def string_of_length(length) do
-    Enum.reduce(1..length, [], fn _i, acc ->
+    1..length
+    |> Enum.reduce([], fn _i, acc ->
       [Enum.random(@chars) | acc]
     end)
     |> Enum.join("")

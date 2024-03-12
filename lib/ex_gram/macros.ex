@@ -9,8 +9,7 @@ defmodule ExGram.Macros do
     tps = struct_type_specs(params)
 
     initials =
-      tps
-      |> Enum.map(fn {id, _t} -> {id, nil} end)
+      Enum.map(tps, fn {id, _t} -> {id, nil} end)
 
     dca = params_to_decode_as(params)
 
@@ -24,7 +23,7 @@ defmodule ExGram.Macros do
         defstruct unquote(initials)
         @type t :: %unquote(name){unquote_splicing(tps)}
 
-        def decode_as() do
+        def decode_as do
           %unquote(name){unquote_splicing(dca)}
         end
       end
@@ -33,7 +32,8 @@ defmodule ExGram.Macros do
 
   defmacro method(verb, name, params, returned, description) do
     fname =
-      Macro.underscore(name)
+      name
+      |> Macro.underscore()
       |> String.to_atom()
 
     # fnametest =
@@ -41,10 +41,9 @@ defmodule ExGram.Macros do
     #   |> String.to_atom
 
     fname_exception =
-      "#{Macro.underscore(name)}!"
-      |> String.to_atom()
+      String.to_atom("#{Macro.underscore(name)}!")
 
-    analyzed = params |> Enum.map(&analyze_param/1)
+    analyzed = Enum.map(params, &analyze_param/1)
 
     types_mand_value = mandatory_value_type(analyzed)
     types_mand_spec = mandatory_type_specs(analyzed)

@@ -45,13 +45,13 @@ defmodule ExGram.Bot do
     module_opts = Keyword.take(opts, [:username, :setup_commands])
 
     quote location: :keep do
+      @behaviour ExGram.Handler
+
       use ExGram.Middleware.Builder
 
       import ExGram.Dsl
 
-      @behaviour ExGram.Handler
-
-      def name(), do: unquote(name)
+      def name, do: unquote(name)
 
       def child_spec(opts) do
         opts = Keyword.merge(opts, unquote(module_opts))

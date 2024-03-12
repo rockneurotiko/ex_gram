@@ -6,17 +6,7 @@ defmodule ExGram.Macros.Executer do
   require Logger
 
   # credo:disable-for-next-line
-  def execute_method(
-        name,
-        verb,
-        body,
-        file_parameters,
-        returned_type,
-        ops,
-        method_ops,
-        mandatory_types,
-        optional_types
-      ) do
+  def execute_method(name, verb, body, file_parameters, returned_type, ops, method_ops, mandatory_types, optional_types) do
     adapter =
       Keyword.get_lazy(ops, :adapter, fn ->
         ExGram.Config.get(:ex_gram, :adapter, ExGram.Adapter.Tesla)
@@ -39,7 +29,7 @@ defmodule ExGram.Macros.Executer do
       body =
         body
         |> Keyword.merge(method_ops)
-        |> Enum.into(%{})
+        |> Map.new()
         |> clean_body()
         |> body_with_files(file_parameters)
 
@@ -72,12 +62,14 @@ defmodule ExGram.Macros.Executer do
   defp build_path(token, name) do
     token_part = "/bot#{token}"
 
-    if ExGram.test_environment?() do
-      [token_part, "test", name]
-    else
-      [token_part, name]
-    end
-    |> Path.join()
+    if_result =
+      if ExGram.test_environment?() do
+        [token_part, "test", name]
+      else
+        [token_part, name]
+      end
+
+    Path.join(if_result)
   end
 
   defp body_with_files(body, file_parts) do
@@ -181,7 +173,7 @@ defmodule ExGram.Macros.Executer do
   defp create_multipart(body, []), do: body
 
   defp create_multipart(body, fileparts) do
-    filepart_names = Enum.map(fileparts, &elem(&1, 1)) |> Enum.map(&String.to_atom/1)
+    filepart_names = fileparts |> Enum.map(&elem(&1, 1)) |> Enum.map(&String.to_atom/1)
 
     restparts =
       body
@@ -222,10 +214,7 @@ defmodule ExGram.Macros.Executer do
 
   defp mandatory_errors({:error, errors}) do
     msg =
-      Enum.map(errors, fn {{value, types}, index} ->
-        expected_type_msg(index, types, value)
-      end)
-      |> Enum.join(", ")
+      Enum.map_join(errors, ", ", fn {{value, types}, index} -> expected_type_msg(index, types, value) end)
 
     "Mandatory parameter types don't match: #{msg}"
   end
@@ -234,11 +223,10 @@ defmodule ExGram.Macros.Executer do
 
   defp optional_errors({:error, errors}, optional) do
     msg =
-      Enum.map(errors, fn {{value, types}, index} ->
+      Enum.map_join(errors, ", ", fn {{value, types}, index} ->
         {_, _, name} = Enum.at(optional, index)
         expected_type_msg(name, types, value)
       end)
-      |> Enum.join(", ")
 
     "Optional parameter types don't match: #{msg}"
   end
