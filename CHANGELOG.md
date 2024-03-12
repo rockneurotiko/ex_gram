@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.52.0]
 - DSL public method changes:
   - Deprecated `extract_group`, now it's called `extract_chat`
   - `extract_update_type` now returns `{:ok, type} | :error` instead of `type | :error`
