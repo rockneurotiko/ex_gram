@@ -3,8 +3,6 @@ defmodule ExGram.Dsl do
   Mini DSL to build answers based on the context easily.
   """
 
-  require Logger
-
   alias ExGram.Cnt
   alias ExGram.Responses
   alias ExGram.Responses.Answer
@@ -14,6 +12,8 @@ defmodule ExGram.Dsl do
   alias ExGram.Responses.EditInline
   alias ExGram.Responses.EditMarkup
   alias ExGram.Responses.SendDocument
+
+  require Logger
 
   def answer(cnt, text, ops \\ [])
 
@@ -90,16 +90,12 @@ defmodule ExGram.Dsl do
   end
 
   def create_inline_button(row) do
-    row
-    |> Enum.map(fn ops ->
-      Map.merge(%ExGram.Model.InlineKeyboardButton{}, Enum.into(ops, %{}))
-    end)
+    Enum.map(row, fn ops -> Map.merge(%ExGram.Model.InlineKeyboardButton{}, Map.new(ops)) end)
   end
 
   def create_inline(data \\ [[]]) do
     data =
-      data
-      |> Enum.map(&create_inline_button/1)
+      Enum.map(data, &create_inline_button/1)
 
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard: data}
   end
@@ -171,8 +167,7 @@ defmodule ExGram.Dsl do
   def extract_response_id(%{edited_message: m}) when not is_nil(m), do: extract_response_id(m)
   def extract_response_id(%{channel_message: m}) when not is_nil(m), do: extract_response_id(m)
 
-  def extract_response_id(%{edited_channel_post: m}) when not is_nil(m),
-    do: extract_response_id(m)
+  def extract_response_id(%{edited_channel_post: m}) when not is_nil(m), do: extract_response_id(m)
 
   def extract_message_id(%{message_id: id}), do: id
   def extract_message_id(%{message: m}) when not is_nil(m), do: extract_message_id(m)
@@ -205,37 +200,31 @@ defmodule ExGram.Dsl do
   def extract_update_type(%{edited_message: m}) when not is_nil(m), do: {:ok, :edited_message}
   def extract_update_type(%{channel_post: m}) when not is_nil(m), do: {:ok, :channel_post}
 
-  def extract_update_type(%{edited_channel_post: m}) when not is_nil(m),
-    do: {:ok, :edited_channel_post}
+  def extract_update_type(%{edited_channel_post: m}) when not is_nil(m), do: {:ok, :edited_channel_post}
 
   def extract_update_type(%{message_reaction: m}) when not is_nil(m), do: {:ok, :message_reaction}
 
-  def extract_update_type(%{message_reaction_count: m}) when not is_nil(m),
-    do: {:ok, :message_reaction_count}
+  def extract_update_type(%{message_reaction_count: m}) when not is_nil(m), do: {:ok, :message_reaction_count}
 
   def extract_update_type(%{inline_query: m}) when not is_nil(m), do: {:ok, :inline_query}
 
-  def extract_update_type(%{chosen_inline_result: m}) when not is_nil(m),
-    do: {:ok, :chosen_inline_result}
+  def extract_update_type(%{chosen_inline_result: m}) when not is_nil(m), do: {:ok, :chosen_inline_result}
 
   def extract_update_type(%{callback_query: m}) when not is_nil(m), do: {:ok, :callback_query}
   def extract_update_type(%{shipping_query: m}) when not is_nil(m), do: {:ok, :shipping_query}
 
-  def extract_update_type(%{pre_checkout_query: m}) when not is_nil(m),
-    do: {:ok, :pre_checkout_query}
+  def extract_update_type(%{pre_checkout_query: m}) when not is_nil(m), do: {:ok, :pre_checkout_query}
 
   def extract_update_type(%{poll: m}) when not is_nil(m), do: {:ok, :poll}
   def extract_update_type(%{poll_answer: m}) when not is_nil(m), do: {:ok, :poll_answer}
   def extract_update_type(%{my_chat_member: m}) when not is_nil(m), do: {:ok, :my_chat_member}
   def extract_update_type(%{chat_member: m}) when not is_nil(m), do: {:ok, :chat_member}
 
-  def extract_update_type(%{chat_join_request: m}) when not is_nil(m),
-    do: {:ok, :chat_join_request}
+  def extract_update_type(%{chat_join_request: m}) when not is_nil(m), do: {:ok, :chat_join_request}
 
   def extract_update_type(%{chat_boost: m}) when not is_nil(m), do: {:ok, :chat_boost}
 
-  def extract_update_type(%{removed_chat_boost: m}) when not is_nil(m),
-    do: {:ok, :removed_chat_boost}
+  def extract_update_type(%{removed_chat_boost: m}) when not is_nil(m), do: {:ok, :removed_chat_boost}
 
   def extract_update_type(_), do: :error
 
@@ -278,14 +267,12 @@ defmodule ExGram.Dsl do
   def extract_message_type(%{location: m}) when not is_nil(m), do: {:ok, :location}
   def extract_message_type(%{invoice: m}) when not is_nil(m), do: {:ok, :invoice}
 
-  def extract_message_type(%{successful_payment: m}) when not is_nil(m),
-    do: {:ok, :successful_payment}
+  def extract_message_type(%{successful_payment: m}) when not is_nil(m), do: {:ok, :successful_payment}
 
   def extract_message_type(%{giveaway: m}) when not is_nil(m), do: {:ok, :giveaway}
   def extract_message_type(_), do: :error
 
-  def extract_inline_id_params(%{message: %{message_id: mid}} = m),
-    do: %{message_id: mid, chat_id: extract_id(m)}
+  def extract_inline_id_params(%{message: %{message_id: mid}} = m), do: %{message_id: mid, chat_id: extract_id(m)}
 
   def extract_inline_id_params(%{inline_message_id: mid}), do: %{inline_message_id: mid}
 

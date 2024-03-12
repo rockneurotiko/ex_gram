@@ -3,15 +3,15 @@ defmodule ExGram.Encoder do
   Helper module to encode/decode json
   """
 
+  alias __MODULE__.Engine
+
   defmodule Engine do
     @moduledoc """
     By default we will return nil, which will cause to use the default engine
     """
 
-    def engine(), do: nil
+    def engine, do: nil
   end
-
-  alias __MODULE__.Engine
 
   defmodule EngineCompiler do
     @moduledoc """
@@ -24,18 +24,19 @@ defmodule ExGram.Encoder do
     def compile(engine) do
       Code.compiler_options(ignore_module_conflict: true)
 
-      quote bind_quoted: [engine: engine], location: :keep do
-        defmodule Elixir.ExGram.Encoder.Engine do
-          @moduledoc """
-          Compiled encoder engine
-          """
-          def engine() do
-            unquote(engine)
+      quote_result =
+        quote bind_quoted: [engine: engine], location: :keep do
+          defmodule Elixir.ExGram.Encoder.Engine do
+            @moduledoc """
+            Compiled encoder engine
+            """
+            def engine do
+              unquote(engine)
+            end
           end
         end
-      end
-      |> Code.eval_quoted([], __ENV__)
 
+      Code.eval_quoted(quote_result, [], __ENV__)
       Code.compiler_options(ignore_module_conflict: false)
       :ok
     end
@@ -59,7 +60,7 @@ defmodule ExGram.Encoder do
     engine().decode!(data, opts)
   end
 
-  defp engine() do
+  defp engine do
     Engine.engine() || @default_engine
   end
 end

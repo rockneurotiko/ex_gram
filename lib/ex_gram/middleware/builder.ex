@@ -5,14 +5,14 @@ defmodule ExGram.Middleware.Builder do
 
   defmacro __using__(_opts) do
     quote do
+      @before_compile ExGram.Middleware.Builder
+
       import ExGram.Middleware.Builder,
         only: [middleware: 1, middleware: 2, command: 1, command: 2, regex: 2, regex: 3]
 
       Module.register_attribute(__MODULE__, :middlewares, accumulate: true)
       Module.register_attribute(__MODULE__, :commands, accumulate: true)
       Module.register_attribute(__MODULE__, :regexes, accumulate: true)
-
-      @before_compile ExGram.Middleware.Builder
     end
   end
 
@@ -50,15 +50,15 @@ defmodule ExGram.Middleware.Builder do
   @doc false
   defmacro __before_compile__(env) do
     middlewares =
-      Module.get_attribute(env.module, :middlewares) |> Enum.reverse() |> Macro.escape()
+      env.module |> Module.get_attribute(:middlewares) |> Enum.reverse() |> Macro.escape()
 
-    commands = Module.get_attribute(env.module, :commands) |> Enum.reverse() |> Macro.escape()
-    regexes = Module.get_attribute(env.module, :regexes) |> Enum.reverse() |> Macro.escape()
+    commands = env.module |> Module.get_attribute(:commands) |> Enum.reverse() |> Macro.escape()
+    regexes = env.module |> Module.get_attribute(:regexes) |> Enum.reverse() |> Macro.escape()
 
     quote do
-      def middlewares(), do: unquote(middlewares)
-      def commands(), do: unquote(commands)
-      def regexes(), do: unquote(regexes)
+      def middlewares, do: unquote(middlewares)
+      def commands, do: unquote(commands)
+      def regexes, do: unquote(regexes)
 
       # Do it like plug and decompile all the core with the middlewares here?
     end

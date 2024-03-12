@@ -16,7 +16,7 @@ defmodule ExGram.Bot.Supervisor do
 
   def start_link(opts, module) do
     supervisor_name = opts[:name] || Module.concat(module, Supervisor)
-    params = Keyword.merge(opts, module: module)
+    params = Keyword.put(opts, :module, module)
     Supervisor.start_link(ExGram.Bot.Supervisor, params, name: supervisor_name)
   end
 
@@ -47,8 +47,7 @@ defmodule ExGram.Bot.Supervisor do
     Supervisor.init(children, strategy: :one_for_one)
   end
 
-  defp updates_worker(nil),
-    do: raise("No updates method received, try with :polling or your custom module")
+  defp updates_worker(nil), do: raise("No updates method received, try with :polling or your custom module")
 
   defp updates_worker(name) when is_atom(name) do
     {updates_worker_module(name), %{}}
@@ -64,8 +63,7 @@ defmodule ExGram.Bot.Supervisor do
   defp updates_worker_module(:test), do: ExGram.Updates.Test
   defp updates_worker_module(module) when is_atom(module), do: module
 
-  defp get_bot_info(username, _token) when is_binary(username),
-    do: %ExGram.Model.User{username: username, is_bot: true}
+  defp get_bot_info(username, _token) when is_binary(username), do: %ExGram.Model.User{username: username, is_bot: true}
 
   defp get_bot_info(_username, token) do
     case ExGram.get_me(token: token) do

@@ -4,6 +4,7 @@ defmodule ExGram.Updates.Polling do
   """
 
   use GenServer
+
   require Logger
 
   @polling_timeout 100
@@ -15,7 +16,7 @@ defmodule ExGram.Updates.Polling do
   end
 
   def init({:ok, pid, token, opts}) do
-    opts = ExGram.Config.get(:ex_gram, :polling, []) |> Keyword.merge(Keyword.new(opts))
+    opts = :ex_gram |> ExGram.Config.get(:polling, []) |> Keyword.merge(Keyword.new(opts))
 
     # Clean webhook
     ExGram.delete_webhook(token: token)
