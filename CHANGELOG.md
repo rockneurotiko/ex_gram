@@ -6,6 +6,7 @@
   - `extract_update_type` now returns `{:ok, type} | :error` instead of `type | :error`
   - `extract_message_type` now returns `{:ok, type} | :error` instead of `type | :error`
 
+- Fix decoding inner structs on messages
 - Remove maxwell
 - Remove inch_ex
 - Webhook url supports protocol and port
