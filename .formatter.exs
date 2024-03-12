@@ -15,5 +15,9 @@
     row: 1,
     button: 1,
     button: 2
-  ]
+  ],
+  plugins: [
+    Styler
+  ],
+  line_length: 120
 ]
