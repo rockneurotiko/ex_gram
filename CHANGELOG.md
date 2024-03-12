@@ -1,6 +1,14 @@
 # Changelog
 
 ## Unreleased
+- DSL public method changes:
+  - Deprecated `extract_group`, now it's called `extract_chat`
+  - `extract_update_type` now returns `{:ok, type} | :error` instead of `type | :error`
+  - `extract_message_type` now returns `{:ok, type} | :error` instead of `type | :error`
+
+- Remove maxwell
+- Remove inch_ex
+- Webhook url supports protocol and port
 
 ## [0.51.1]
 - Fix #131. Now multi bots with the same module is possible.

@@ -3,7 +3,6 @@
 [![Hex.pm](https://img.shields.io/hexpm/v/ex_gram.svg)](http://hex.pm/packages/ex_gram)
 [![Hex.pm](https://img.shields.io/hexpm/dt/ex_gram.svg)](https://hex.pm/packages/ex_gram)
 [![Hex.pm](https://img.shields.io/hexpm/dw/ex_gram.svg)](https://hex.pm/packages/ex_gram)
-[![Inline docs](http://inch-ci.org/github/rockneurotiko/ex_gram.svg)](http://inch-ci.org/github/rockneurotiko/ex_gram)
 [![Build Status](https://travis-ci.com/rockneurotiko/ex_gram.svg?branch=master)](https://travis-ci.com/rockneurotiko/ex_gram)
 
 ExGram is a library to build Telegram Bots, you can use the low-level methods and models, or use the really opinionated framework included.
@@ -27,7 +26,7 @@ See the next sections to select a different HTTP adapter or JSON engine.
 
 ### HTTP Adapter
 
-You should add Tesla or Maxwell HTTP adapter, by default it will try to use the Tesla adapter, these are the defaults:
+You should add Tesla or custom HTTP adapter, by default it will try to use the Tesla adapter, these are the defaults:
 
 On deps:
 ``` elixir
@@ -48,19 +47,14 @@ On config:
 config :tesla, adapter: Tesla.Adapter.Gun
 ```
 
-- If you prefer Maxwell instead of Tesla:
+- If you prefer your custom adapter instead of Tesla:
 
-On deps:
-``` elixir
-{:maxwell, "~> 2.3.1"},
-{:hackney, "~> 1.12"},
-```
+It must implement the behaviour `ExGram.Adapter`
 
 On config:
 
 ``` elixir
-config :ex_gram, adapter: ExGram.Adapter.Maxwell
-config :maxwell, default_adapter: Maxwell.Adapter.Hackney
+config :ex_gram, adapter: YourCustomAdapter
 ```
 
 ### JSON Engine
@@ -164,7 +158,7 @@ config :ex_gram, :webhook,
   ip_address: "1.1.1.1",                      # string
   max_connections: 50,                        # integer
   secret_token: "some_super_secret_key",      # string
-  url: "bot.example.com"                      # string (only domain name)
+  url: "http://bot.example.com:4000"          # string (domain name with scheme and maybe port)
 ```
 
 You can also configure this options when starting inside the children options, you can configure it this way to ensure fine-grained setup per bot.
