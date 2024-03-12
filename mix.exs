@@ -1,6 +1,7 @@
 defmodule ExGram.Mixfile do
   use Mix.Project
 
+  @source_url "https://github.com/rockneurotiko/ex_gram"
   @version "0.52.0"
 
   def project do
@@ -20,10 +21,7 @@ defmodule ExGram.Mixfile do
         plt_add_apps: [:tesla, :mix, :eex]
       ],
       xref: [exclude: [EEx]],
-      docs: [
-        main: "readme",
-        extras: ["README.md"]
-      ]
+      docs: docs()
     ]
   end
 
@@ -68,6 +66,26 @@ defmodule ExGram.Mixfile do
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.23", only: :dev},
       {:styler, "~> 0.11", only: [:dev, :test], runtime: false}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      source_ref: "v#{@version}",
+      source_url: @source_url,
+      skip_undefined_reference_warnings_on: ["CHANGELOG.md"],
+      extras: ["README.md", "CHANGELOG.md"],
+      groups_for_modules: [
+        Updates: ~r/ExGram\.Updates.*/,
+        Adapters: ~r/ExGram\.Adapter.*/,
+        DSL: ~r/ExGram\.Dsl.*/,
+        Middlewares: ~r/ExGram\.Middleware.*/,
+        Responses: ~r/ExGram\.Responses.*/,
+        Encoder: ~r/ExGram\.Encoder.*/,
+        Macros: ~r/ExGram\.Macros.*/,
+        Models: ~r/ExGram\.Model.*/
+      ]
     ]
   end
 end
