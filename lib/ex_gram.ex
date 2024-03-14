@@ -470,11 +470,7 @@ defmodule ExGram do
   method(
     :post,
     "sendChatAction",
-    [
-      {chat_id, [:integer, :string]},
-      {message_thread_id, [:integer], :optional},
-      {action, [:string]}
-    ],
+    [{chat_id, [:integer, :string]}, {message_thread_id, [:integer], :optional}, {action, [:string]}],
     true,
     "Use this method when you need to tell the user that something is happening on the bot's side. The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status). Returns True on success."
   )
@@ -524,11 +520,7 @@ defmodule ExGram do
   method(
     :post,
     "unbanChatMember",
-    [
-      {chat_id, [:integer, :string]},
-      {user_id, [:integer]},
-      {only_if_banned, [:boolean], :optional}
-    ],
+    [{chat_id, [:integer, :string]}, {user_id, [:integer]}, {only_if_banned, [:boolean], :optional}],
     true,
     "Use this method to unban a previously banned user in a supergroup or channel. The user will not return to the group or channel automatically, but will be able to join via link, etc. The bot must be an administrator for this to work. By default, this method guarantees that after the call the user is not a member of the chat, but will be able to join it. So if the user is a member of the chat they will also be removed from the chat. If you don't want this, use the parameter only_if_banned. Returns True on success."
   )
@@ -705,11 +697,7 @@ defmodule ExGram do
   method(
     :post,
     "pinChatMessage",
-    [
-      {chat_id, [:integer, :string]},
-      {message_id, [:integer]},
-      {disable_notification, [:boolean], :optional}
-    ],
+    [{chat_id, [:integer, :string]}, {message_id, [:integer]}, {disable_notification, [:boolean], :optional}],
     true,
     "Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True on success."
   )
@@ -930,11 +918,7 @@ defmodule ExGram do
   method(
     :post,
     "setMyCommands",
-    [
-      {commands, [{:array, BotCommand}]},
-      {scope, [BotCommandScope], :optional},
-      {language_code, [:string], :optional}
-    ],
+    [{commands, [{:array, BotCommand}]}, {scope, [BotCommandScope], :optional}, {language_code, [:string], :optional}],
     true,
     "Use this method to change the list of the bot's commands. See this manual for more details about bot commands. Returns True on success."
   )
@@ -1129,11 +1113,7 @@ defmodule ExGram do
   method(
     :post,
     "stopPoll",
-    [
-      {chat_id, [:integer, :string]},
-      {message_id, [:integer]},
-      {reply_markup, [InlineKeyboardMarkup], :optional}
-    ],
+    [{chat_id, [:integer, :string]}, {message_id, [:integer]}, {reply_markup, [InlineKeyboardMarkup], :optional}],
     ExGram.Model.Poll,
     "Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned."
   )
@@ -1652,30 +1632,12 @@ defmodule ExGram do
       "This object represents a message."
     )
 
-    model(
-      MessageId,
-      [{:message_id, [:integer]}],
-      "This object represents a unique message identifier."
-    )
+    model(MessageId, [{:message_id, [:integer]}], "This object represents a unique message identifier.")
 
     model(
       InaccessibleMessage,
       [{:chat, [Chat]}, {:message_id, [:integer]}, {:date, [:integer]}],
       "This object describes a message that was deleted or is otherwise inaccessible to the bot."
-    )
-
-    model(
-      MaybeInaccessibleMessage,
-      [
-        {:type, [:string]},
-        {:offset, [:integer]},
-        {:length, [:integer]},
-        {:url, [:string], :optional},
-        {:user, [User], :optional},
-        {:language, [:string], :optional},
-        {:custom_emoji_id, [:string], :optional}
-      ],
-      "This object describes a message that can be inaccessible to the bot. It can be one of"
     )
 
     model(
@@ -1748,12 +1710,6 @@ defmodule ExGram do
     )
 
     model(
-      MessageOrigin,
-      [{:type, [:string]}, {:date, [:integer]}, {:sender_user, [User]}],
-      "This object describes the origin of a message. It can be one of"
-    )
-
-    model(
       MessageOriginUser,
       [{:type, [:string]}, {:date, [:integer]}, {:sender_user, [User]}],
       "The message was originally sent by a known user."
@@ -1767,12 +1723,7 @@ defmodule ExGram do
 
     model(
       MessageOriginChat,
-      [
-        {:type, [:string]},
-        {:date, [:integer]},
-        {:sender_chat, [Chat]},
-        {:author_signature, [:string], :optional}
-      ],
+      [{:type, [:string]}, {:date, [:integer]}, {:sender_chat, [Chat]}, {:author_signature, [:string], :optional}],
       "The message was originally sent on behalf of a chat to a group chat."
     )
 
@@ -1970,11 +1921,7 @@ defmodule ExGram do
       "This object represents a venue."
     )
 
-    model(
-      WebAppData,
-      [{:data, [:string]}, {:button_text, [:string]}],
-      "Describes data sent from a Web App to the bot."
-    )
+    model(WebAppData, [{:data, [:string]}, {:button_text, [:string]}], "Describes data sent from a Web App to the bot.")
 
     model(
       ProximityAlertTriggered,
@@ -1996,11 +1943,7 @@ defmodule ExGram do
 
     model(
       ForumTopicCreated,
-      [
-        {:name, [:string]},
-        {:icon_color, [:integer]},
-        {:icon_custom_emoji_id, [:string], :optional}
-      ],
+      [{:name, [:string]}, {:icon_color, [:integer]}, {:icon_custom_emoji_id, [:string], :optional}],
       "This object represents a service message about a new forum topic created in the chat."
     )
 
@@ -2360,12 +2303,7 @@ defmodule ExGram do
 
     model(
       ChatMemberOwner,
-      [
-        {:status, [:string]},
-        {:user, [User]},
-        {:is_anonymous, [:boolean]},
-        {:custom_title, [:string], :optional}
-      ],
+      [{:status, [:string]}, {:user, [User]}, {:is_anonymous, [:boolean]}, {:custom_title, [:string], :optional}],
       "Represents a chat member that owns the chat and has all administrator privileges."
     )
 
@@ -2478,17 +2416,7 @@ defmodule ExGram do
       "Represents a location to which a chat is connected."
     )
 
-    model(
-      ReactionType,
-      [{:type, [:string]}, {:emoji, [:string]}],
-      "This object describes the type of a reaction. Currently, it can be one of"
-    )
-
-    model(
-      ReactionTypeEmoji,
-      [{:type, [:string]}, {:emoji, [:string]}],
-      "The reaction is based on an emoji."
-    )
+    model(ReactionTypeEmoji, [{:type, [:string]}, {:emoji, [:string]}], "The reaction is based on an emoji.")
 
     model(
       ReactionTypeCustomEmoji,
@@ -2518,12 +2446,7 @@ defmodule ExGram do
 
     model(
       MessageReactionCountUpdated,
-      [
-        {:chat, [Chat]},
-        {:message_id, [:integer]},
-        {:date, [:integer]},
-        {:reactions, [{:array, ReactionCount}]}
-      ],
+      [{:chat, [Chat]}, {:message_id, [:integer]}, {:date, [:integer]}, {:reactions, [{:array, ReactionCount}]}],
       "This object represents reaction changes on a message with anonymous reactions."
     )
 
@@ -2538,11 +2461,7 @@ defmodule ExGram do
       "This object represents a forum topic."
     )
 
-    model(
-      BotCommand,
-      [{:command, [:string]}, {:description, [:string]}],
-      "This object represents a bot command."
-    )
+    model(BotCommand, [{:command, [:string]}, {:description, [:string]}], "This object represents a bot command.")
 
     model(
       BotCommandScopeDefault,
@@ -2588,23 +2507,11 @@ defmodule ExGram do
 
     model(BotName, [{:name, [:string]}], "This object represents the bot's name.")
 
-    model(
-      BotDescription,
-      [{:description, [:string]}],
-      "This object represents the bot's description."
-    )
+    model(BotDescription, [{:description, [:string]}], "This object represents the bot's description.")
 
-    model(
-      BotShortDescription,
-      [{:short_description, [:string]}],
-      "This object represents the bot's short description."
-    )
+    model(BotShortDescription, [{:short_description, [:string]}], "This object represents the bot's short description.")
 
-    model(
-      MenuButtonCommands,
-      [{:type, [:string]}],
-      "Represents a menu button, which opens the bot's list of commands."
-    )
+    model(MenuButtonCommands, [{:type, [:string]}], "Represents a menu button, which opens the bot's list of commands.")
 
     model(
       MenuButtonWebApp,
@@ -2612,17 +2519,7 @@ defmodule ExGram do
       "Represents a menu button, which launches a Web App."
     )
 
-    model(
-      MenuButtonDefault,
-      [{:type, [:string]}],
-      "Describes that no specific value for the menu button was set."
-    )
-
-    model(
-      ChatBoostSource,
-      [{:source, [:string]}, {:user, [User]}],
-      "This object describes the source of a chat boost. It can be one of"
-    )
+    model(MenuButtonDefault, [{:type, [:string]}], "Describes that no specific value for the menu button was set.")
 
     model(
       ChatBoostSourcePremium,
@@ -2649,12 +2546,7 @@ defmodule ExGram do
 
     model(
       ChatBoost,
-      [
-        {:boost_id, [:string]},
-        {:add_date, [:integer]},
-        {:expiration_date, [:integer]},
-        {:source, [ChatBoostSource]}
-      ],
+      [{:boost_id, [:string]}, {:add_date, [:integer]}, {:expiration_date, [:integer]}, {:source, [ChatBoostSource]}],
       "This object contains information about a chat boost."
     )
 
@@ -2666,12 +2558,7 @@ defmodule ExGram do
 
     model(
       ChatBoostRemoved,
-      [
-        {:chat, [Chat]},
-        {:boost_id, [:string]},
-        {:remove_date, [:integer]},
-        {:source, [ChatBoostSource]}
-      ],
+      [{:chat, [Chat]}, {:boost_id, [:string]}, {:remove_date, [:integer]}, {:source, [ChatBoostSource]}],
       "This object represents a boost removed from a chat."
     )
 
@@ -2833,11 +2720,7 @@ defmodule ExGram do
 
     model(
       InlineQueryResultsButton,
-      [
-        {:text, [:string]},
-        {:web_app, [WebAppInfo], :optional},
-        {:start_parameter, [:string], :optional}
-      ],
+      [{:text, [:string]}, {:web_app, [WebAppInfo], :optional}, {:start_parameter, [:string], :optional}],
       "This object represents a button to be shown above inline query results. You must use exactly one of the optional fields."
     )
 
@@ -3356,12 +3239,7 @@ defmodule ExGram do
 
     model(
       ShippingQuery,
-      [
-        {:id, [:string]},
-        {:from, [User]},
-        {:invoice_payload, [:string]},
-        {:shipping_address, [ShippingAddress]}
-      ],
+      [{:id, [:string]}, {:from, [User]}, {:invoice_payload, [:string]}, {:shipping_address, [ShippingAddress]}],
       "This object contains information about an incoming shipping query."
     )
 
@@ -3387,12 +3265,7 @@ defmodule ExGram do
 
     model(
       PassportFile,
-      [
-        {:file_id, [:string]},
-        {:file_unique_id, [:string]},
-        {:file_size, [:integer]},
-        {:file_date, [:integer]}
-      ],
+      [{:file_id, [:string]}, {:file_unique_id, [:string]}, {:file_size, [:integer]}, {:file_date, [:integer]}],
       "This object represents a file uploaded to Telegram Passport. Currently all Telegram Passport files are in JPEG format when decrypted and don't exceed 10MB."
     )
 
@@ -3457,12 +3330,7 @@ defmodule ExGram do
 
     model(
       PassportElementErrorFiles,
-      [
-        {:source, [:string]},
-        {:type, [:string]},
-        {:file_hashes, [{:array, :string}]},
-        {:message, [:string]}
-      ],
+      [{:source, [:string]}, {:type, [:string]}, {:file_hashes, [{:array, :string}]}, {:message, [:string]}],
       "Represents an issue with a list of scans. The error is considered resolved when the list of files containing the scans changes."
     )
 
@@ -3474,23 +3342,13 @@ defmodule ExGram do
 
     model(
       PassportElementErrorTranslationFiles,
-      [
-        {:source, [:string]},
-        {:type, [:string]},
-        {:file_hashes, [{:array, :string}]},
-        {:message, [:string]}
-      ],
+      [{:source, [:string]}, {:type, [:string]}, {:file_hashes, [{:array, :string}]}, {:message, [:string]}],
       "Represents an issue with the translated version of a document. The error is considered resolved when a file with the document translation change."
     )
 
     model(
       PassportElementErrorUnspecified,
-      [
-        {:source, [:string]},
-        {:type, [:string]},
-        {:element_hash, [:string]},
-        {:message, [:string]}
-      ],
+      [{:source, [:string]}, {:type, [:string]}, {:element_hash, [:string]}, {:message, [:string]}],
       "Represents an issue in an unspecified place. The error is considered resolved when new data is added."
     )
 
@@ -3527,7 +3385,37 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 174 models
+    # 170 models
+
+    defmodule MaybeInaccessibleMessage do
+      @moduledoc """
+      MaybeInaccessibleMessage model. Valid subtypes: Message, InaccessibleMessage
+      """
+      @type t :: Message.t() | InaccessibleMessage.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [Message, InaccessibleMessage]
+      end
+    end
+
+    defmodule MessageOrigin do
+      @moduledoc """
+      MessageOrigin model. Valid subtypes: MessageOriginUser, MessageOriginHiddenUser, MessageOriginChat, MessageOriginChannel
+      """
+      @type t :: MessageOriginUser.t() | MessageOriginHiddenUser.t() | MessageOriginChat.t() | MessageOriginChannel.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [MessageOriginUser, MessageOriginHiddenUser, MessageOriginChat, MessageOriginChannel]
+      end
+    end
 
     defmodule ChatMember do
       @moduledoc """
@@ -3554,6 +3442,21 @@ defmodule ExGram do
           ChatMemberLeft,
           ChatMemberBanned
         ]
+      end
+    end
+
+    defmodule ReactionType do
+      @moduledoc """
+      ReactionType model. Valid subtypes: ReactionTypeEmoji, ReactionTypeCustomEmoji
+      """
+      @type t :: ReactionTypeEmoji.t() | ReactionTypeCustomEmoji.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [ReactionTypeEmoji, ReactionTypeCustomEmoji]
       end
     end
 
@@ -3602,6 +3505,21 @@ defmodule ExGram do
       end
     end
 
+    defmodule ChatBoostSource do
+      @moduledoc """
+      ChatBoostSource model. Valid subtypes: ChatBoostSourcePremium, ChatBoostSourceGiftCode, ChatBoostSourceGiveaway
+      """
+      @type t :: ChatBoostSourcePremium.t() | ChatBoostSourceGiftCode.t() | ChatBoostSourceGiveaway.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [ChatBoostSourcePremium, ChatBoostSourceGiftCode, ChatBoostSourceGiveaway]
+      end
+    end
+
     defmodule InputMedia do
       @moduledoc """
       InputMedia model. Valid subtypes: InputMediaAnimation, InputMediaDocument, InputMediaAudio, InputMediaPhoto, InputMediaVideo
@@ -3618,13 +3536,7 @@ defmodule ExGram do
       def decode_as, do: %{}
 
       def subtypes do
-        [
-          InputMediaAnimation,
-          InputMediaDocument,
-          InputMediaAudio,
-          InputMediaPhoto,
-          InputMediaVideo
-        ]
+        [InputMediaAnimation, InputMediaDocument, InputMediaAudio, InputMediaPhoto, InputMediaVideo]
       end
     end
 
@@ -3744,7 +3656,7 @@ defmodule ExGram do
       end
     end
 
-    # 7 generics
+    # 11 generics
   end
 
   # END AUTO GENERATED
