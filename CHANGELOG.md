@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## [0.52.1]
+- Fix ChatBoostSource, MaybeInaccessibleMessage, MessageOrigin and ReactionType subtypes for decoding
+
 ## [0.52.0]
 - DSL public method changes:
   - Deprecated `extract_group`, now it's called `extract_chat`
