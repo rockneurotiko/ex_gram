@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.52.2]
 - Update Telegram API to 7.2: https://core.telegram.org/bots/api#march-31-2024
 
 ## [0.52.1]
