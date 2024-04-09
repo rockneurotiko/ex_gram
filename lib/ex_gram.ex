@@ -113,6 +113,7 @@ defmodule ExGram do
     :post,
     "sendMessage",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {text, [:string]},
@@ -198,6 +199,7 @@ defmodule ExGram do
     :post,
     "sendPhoto",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {photo, [:file, :string]},
@@ -218,6 +220,7 @@ defmodule ExGram do
     :post,
     "sendAudio",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {audio, [:file, :string]},
@@ -241,6 +244,7 @@ defmodule ExGram do
     :post,
     "sendDocument",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {document, [:file, :string]},
@@ -262,6 +266,7 @@ defmodule ExGram do
     :post,
     "sendVideo",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {video, [:file, :string]},
@@ -287,6 +292,7 @@ defmodule ExGram do
     :post,
     "sendAnimation",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {animation, [:file, :string]},
@@ -311,6 +317,7 @@ defmodule ExGram do
     :post,
     "sendVoice",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {voice, [:file, :string]},
@@ -331,6 +338,7 @@ defmodule ExGram do
     :post,
     "sendVideoNote",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {video_note, [:file, :string]},
@@ -350,6 +358,7 @@ defmodule ExGram do
     :post,
     "sendMediaGroup",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {media, [{:array, [InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo]}]},
@@ -365,6 +374,7 @@ defmodule ExGram do
     :post,
     "sendLocation",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {latitude, [:float]},
@@ -386,6 +396,7 @@ defmodule ExGram do
     :post,
     "sendVenue",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {latitude, [:float]},
@@ -409,6 +420,7 @@ defmodule ExGram do
     :post,
     "sendContact",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {phone_number, [:string]},
@@ -428,6 +440,7 @@ defmodule ExGram do
     :post,
     "sendPoll",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {question, [:string]},
@@ -455,6 +468,7 @@ defmodule ExGram do
     :post,
     "sendDice",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {emoji, [:string], :optional},
@@ -470,7 +484,12 @@ defmodule ExGram do
   method(
     :post,
     "sendChatAction",
-    [{chat_id, [:integer, :string]}, {message_thread_id, [:integer], :optional}, {action, [:string]}],
+    [
+      {business_connection_id, [:string], :optional},
+      {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
+      {action, [:string]}
+    ],
     true,
     "Use this method when you need to tell the user that something is happening on the bot's side. The status is set for 5 seconds or less (when a message arrives from your bot, Telegram clients clear its typing status). Returns True on success."
   )
@@ -916,6 +935,14 @@ defmodule ExGram do
   )
 
   method(
+    :get,
+    "getBusinessConnection",
+    [{business_connection_id, [:string]}],
+    ExGram.Model.BusinessConnection,
+    "Use this method to get information about the connection of the bot with a business account. Returns a BusinessConnection object on success."
+  )
+
+  method(
     :post,
     "setMyCommands",
     [{commands, [{:array, BotCommand}]}, {scope, [BotCommandScope], :optional}, {language_code, [:string], :optional}],
@@ -1138,6 +1165,7 @@ defmodule ExGram do
     :post,
     "sendSticker",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {sticker, [:file, :string]},
@@ -1172,7 +1200,7 @@ defmodule ExGram do
     "uploadStickerFile",
     [{user_id, [:integer]}, {sticker, [:file]}, {sticker_format, [:string]}],
     ExGram.Model.File,
-    "Use this method to upload a file with a sticker for later use in the createNewStickerSet and addStickerToSet methods (the file can be used multiple times). Returns the uploaded File on success."
+    "Use this method to upload a file with a sticker for later use in the createNewStickerSet, addStickerToSet, or replaceStickerInSet methods (the file can be used multiple times). Returns the uploaded File on success."
   )
 
   method(
@@ -1183,7 +1211,6 @@ defmodule ExGram do
       {name, [:string]},
       {title, [:string]},
       {stickers, [{:array, InputSticker}]},
-      {sticker_format, [:string]},
       {sticker_type, [:string], :optional},
       {needs_repainting, [:boolean], :optional}
     ],
@@ -1196,7 +1223,7 @@ defmodule ExGram do
     "addStickerToSet",
     [{user_id, [:integer]}, {name, [:string]}, {sticker, [InputSticker]}],
     true,
-    "Use this method to add a new sticker to a set created by the bot. The format of the added sticker must match the format of the other stickers in the set. Emoji sticker sets can have up to 200 stickers. Animated and video sticker sets can have up to 50 stickers. Static sticker sets can have up to 120 stickers. Returns True on success."
+    "Use this method to add a new sticker to a set created by the bot. Emoji sticker sets can have up to 200 stickers. Other sticker sets can have up to 120 stickers. Returns True on success."
   )
 
   method(
@@ -1213,6 +1240,14 @@ defmodule ExGram do
     [{sticker, [:string]}],
     true,
     "Use this method to delete a sticker from a set created by the bot. Returns True on success."
+  )
+
+  method(
+    :post,
+    "replaceStickerInSet",
+    [{user_id, [:integer]}, {name, [:string]}, {old_sticker, [:string]}, {sticker, [InputSticker]}],
+    true,
+    "Use this method to replace an existing sticker in a sticker set with a new one. The method is equivalent to calling deleteStickerFromSet, then addStickerToSet, then setStickerPositionInSet. Returns True on success."
   )
 
   method(
@@ -1250,7 +1285,7 @@ defmodule ExGram do
   method(
     :post,
     "setStickerSetThumbnail",
-    [{name, [:string]}, {user_id, [:integer]}, {thumbnail, [:file, :string], :optional}],
+    [{name, [:string]}, {user_id, [:integer]}, {thumbnail, [:file, :string], :optional}, {format, [:string]}],
     true,
     "Use this method to set the thumbnail of a regular or mask sticker set. The format of the thumbnail file must match the format of the stickers in the set. Returns True on success."
   )
@@ -1392,6 +1427,7 @@ defmodule ExGram do
     :post,
     "sendGame",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer]},
       {message_thread_id, [:integer], :optional},
       {game_short_name, [:string]},
@@ -1433,7 +1469,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 119 methods
+  # 121 methods
 
   # ----------MODELS-----------
 
@@ -1452,6 +1488,10 @@ defmodule ExGram do
         {:edited_message, [Message], :optional},
         {:channel_post, [Message], :optional},
         {:edited_channel_post, [Message], :optional},
+        {:business_connection, [BusinessConnection], :optional},
+        {:business_message, [Message], :optional},
+        {:edited_business_message, [Message], :optional},
+        {:deleted_business_messages, [BusinessMessagesDeleted], :optional},
         {:message_reaction, [MessageReactionUpdated], :optional},
         {:message_reaction_count, [MessageReactionCountUpdated], :optional},
         {:inline_query, [InlineQuery], :optional},
@@ -1499,7 +1539,8 @@ defmodule ExGram do
         {:added_to_attachment_menu, [:boolean], :optional},
         {:can_join_groups, [:boolean], :optional},
         {:can_read_all_group_messages, [:boolean], :optional},
-        {:supports_inline_queries, [:boolean], :optional}
+        {:supports_inline_queries, [:boolean], :optional},
+        {:can_connect_to_business, [:boolean], :optional}
       ],
       "This object represents a Telegram user or bot."
     )
@@ -1516,6 +1557,11 @@ defmodule ExGram do
         {:is_forum, [:boolean], :optional},
         {:photo, [ChatPhoto], :optional},
         {:active_usernames, [{:array, :string}], :optional},
+        {:birthdate, [Birthdate], :optional},
+        {:business_intro, [BusinessIntro], :optional},
+        {:business_location, [BusinessLocation], :optional},
+        {:business_opening_hours, [BusinessOpeningHours], :optional},
+        {:personal_chat, [Chat], :optional},
         {:available_reactions, [{:array, ReactionType}], :optional},
         {:accent_color_id, [:integer], :optional},
         {:background_custom_emoji_id, [:string], :optional},
@@ -1556,7 +1602,9 @@ defmodule ExGram do
         {:from, [User], :optional},
         {:sender_chat, [Chat], :optional},
         {:sender_boost_count, [:integer], :optional},
+        {:sender_business_bot, [User], :optional},
         {:date, [:integer]},
+        {:business_connection_id, [:string], :optional},
         {:chat, [Chat]},
         {:forward_origin, [MessageOrigin], :optional},
         {:is_topic_message, [:boolean], :optional},
@@ -1568,6 +1616,7 @@ defmodule ExGram do
         {:via_bot, [User], :optional},
         {:edit_date, [:integer], :optional},
         {:has_protected_content, [:boolean], :optional},
+        {:is_from_offline, [:boolean], :optional},
         {:media_group_id, [:string], :optional},
         {:author_signature, [:string], :optional},
         {:text, [:string], :optional},
@@ -1978,15 +2027,33 @@ defmodule ExGram do
     )
 
     model(
+      SharedUser,
+      [
+        {:user_id, [:integer]},
+        {:first_name, [:string], :optional},
+        {:last_name, [:string], :optional},
+        {:username, [:string], :optional},
+        {:photo, [{:array, PhotoSize}], :optional}
+      ],
+      "This object contains information about a user that was shared with the bot using a KeyboardButtonRequestUser button."
+    )
+
+    model(
       UsersShared,
-      [{:request_id, [:integer]}, {:user_ids, [{:array, :integer}]}],
+      [{:request_id, [:integer]}, {:users, [{:array, SharedUser}]}],
       "This object contains information about the users whose identifiers were shared with the bot using a KeyboardButtonRequestUsers button."
     )
 
     model(
       ChatShared,
-      [{:request_id, [:integer]}, {:chat_id, [:integer]}],
-      "This object contains information about the chat whose identifier was shared with the bot using a KeyboardButtonRequestChat button."
+      [
+        {:request_id, [:integer]},
+        {:chat_id, [:integer]},
+        {:title, [:string], :optional},
+        {:username, [:string], :optional},
+        {:photo, [{:array, PhotoSize}], :optional}
+      ],
+      "This object contains information about a chat that was shared with the bot using a KeyboardButtonRequestChat button."
     )
 
     model(
@@ -2136,9 +2203,12 @@ defmodule ExGram do
         {:request_id, [:integer]},
         {:user_is_bot, [:boolean], :optional},
         {:user_is_premium, [:boolean], :optional},
-        {:max_quantity, [:integer], :optional}
+        {:max_quantity, [:integer], :optional},
+        {:request_name, [:boolean], :optional},
+        {:request_username, [:boolean], :optional},
+        {:request_photo, [:boolean], :optional}
       ],
-      "This object defines the criteria used to request suitable users. The identifiers of the selected users will be shared with the bot when the corresponding button is pressed. More about requesting users »"
+      "This object defines the criteria used to request suitable users. Information about the selected users will be shared with the bot when the corresponding button is pressed. More about requesting users »"
     )
 
     model(
@@ -2151,9 +2221,12 @@ defmodule ExGram do
         {:chat_is_created, [:boolean], :optional},
         {:user_administrator_rights, [ChatAdministratorRights], :optional},
         {:bot_administrator_rights, [ChatAdministratorRights], :optional},
-        {:bot_is_member, [:boolean], :optional}
+        {:bot_is_member, [:boolean], :optional},
+        {:request_title, [:boolean], :optional},
+        {:request_username, [:boolean], :optional},
+        {:request_photo, [:boolean], :optional}
       ],
-      "This object defines the criteria used to request a suitable chat. The identifier of the selected chat will be shared with the bot when the corresponding button is pressed. More about requesting chats »"
+      "This object defines the criteria used to request a suitable chat. Information about the selected chat will be shared with the bot when the corresponding button is pressed. The bot will be granted requested rights in the сhat if appropriate More about requesting chats »"
     )
 
     model(
@@ -2411,6 +2484,32 @@ defmodule ExGram do
     )
 
     model(
+      Birthdate,
+      [{:day, [:integer]}, {:month, [:integer]}, {:year, [:integer], :optional}],
+      "No description available."
+    )
+
+    model(
+      BusinessIntro,
+      [{:title, [:string], :optional}, {:message, [:string], :optional}, {:sticker, [Sticker], :optional}],
+      "No description available."
+    )
+
+    model(BusinessLocation, [{:address, [:string]}, {:location, [Location], :optional}], "No description available.")
+
+    model(
+      BusinessOpeningHoursInterval,
+      [{:opening_minute, [:integer]}, {:closing_minute, [:integer]}],
+      "No description available."
+    )
+
+    model(
+      BusinessOpeningHours,
+      [{:time_zone_name, [:string]}, {:opening_hours, [{:array, BusinessOpeningHoursInterval}]}],
+      "No description available."
+    )
+
+    model(
       ChatLocation,
       [{:location, [Location]}, {:address, [:string]}],
       "Represents a location to which a chat is connected."
@@ -2569,6 +2668,25 @@ defmodule ExGram do
     )
 
     model(
+      BusinessConnection,
+      [
+        {:id, [:string]},
+        {:user, [User]},
+        {:user_chat_id, [:integer]},
+        {:date, [:integer]},
+        {:can_reply, [:boolean]},
+        {:is_enabled, [:boolean]}
+      ],
+      "Describes the connection of the bot with a business account."
+    )
+
+    model(
+      BusinessMessagesDeleted,
+      [{:business_connection_id, [:string]}, {:chat, [Chat]}, {:message_ids, [{:array, :integer}]}],
+      "This object is received when messages are deleted from a connected business account."
+    )
+
+    model(
       ResponseParameters,
       [{:migrate_to_chat_id, [:integer], :optional}, {:retry_after, [:integer], :optional}],
       "Describes why a request was unsuccessful."
@@ -2680,8 +2798,6 @@ defmodule ExGram do
         {:name, [:string]},
         {:title, [:string]},
         {:sticker_type, [:string]},
-        {:is_animated, [:boolean]},
-        {:is_video, [:boolean]},
         {:stickers, [{:array, Sticker}]},
         {:thumbnail, [PhotoSize], :optional}
       ],
@@ -2698,6 +2814,7 @@ defmodule ExGram do
       InputSticker,
       [
         {:sticker, [:file, :string]},
+        {:format, [:string]},
         {:emoji_list, [{:array, :string}]},
         {:mask_position, [MaskPosition], :optional},
         {:keywords, [{:array, :string}], :optional}
@@ -3385,7 +3502,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 170 models
+    # 178 models
 
     defmodule MaybeInaccessibleMessage do
       @moduledoc """
