@@ -120,6 +120,14 @@ children = [
 config :ex_gram, :polling, allowed_updates: ["message", "edited_message"]
 ```
 
+Webhooks might cause some issues if you are doing polling but if you never have used webhooks you can configure to not delete it.
+
+```elixir
+# This will not delete the webhook because it is never created.
+# by default :delete_webhook is true
+config :ex_gram, :polling, allowed_updates: ["message", "edited_message"], delete_webhook: false
+```
+
 This configuration takes priority over the ones on the configuration files, but you can combine them, for example having a default `allowed_updates` in the application configuration and in some bots where you need other updates overide it on the children options.
 
 
