@@ -120,7 +120,7 @@ children = [
 config :ex_gram, :polling, allowed_updates: ["message", "edited_message"]
 ```
 
-Webhooks might cause some issues if you are doing polling but if you never have used webhooks you can configure to not delete it.
+Webhooks might cause some issues if you are doing polling but if you have never used webhooks you can configure to not delete it.
 
 ```elixir
 # This will not delete the webhook because it is never created.
