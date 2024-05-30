@@ -18,7 +18,7 @@ defmodule ExGram.Updates.Polling do
   def init({:ok, pid, token, opts}) do
     opts = :ex_gram |> ExGram.Config.get(:polling, []) |> Keyword.merge(Keyword.new(opts))
 
-    if opts[:delete_webhook] do
+    if Keyword.get(opts, :delete_webhook, true) do
       # Clean webhook
       ExGram.delete_webhook(token: token)
     end
