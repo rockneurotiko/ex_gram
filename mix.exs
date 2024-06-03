@@ -74,8 +74,10 @@ defmodule ExGram.Mixfile do
       main: "readme",
       source_ref: "v#{@version}",
       source_url: @source_url,
+      extra_section: "GUIDES",
       skip_undefined_reference_warnings_on: ["CHANGELOG.md"],
-      extras: ["README.md", "CHANGELOG.md"],
+      extras: extras(),
+      groups_for_extras: groups_for_extras(),
       groups_for_modules: [
         Updates: ~r/ExGram\.Updates.*/,
         Adapters: ~r/ExGram\.Adapter.*/,
@@ -86,6 +88,21 @@ defmodule ExGram.Mixfile do
         Macros: ~r/ExGram\.Macros.*/,
         Models: ~r/ExGram\.Model.*/
       ]
+    ]
+  end
+
+  defp extras do
+    [
+      "README.md",
+      "guides/multiple_bots.md",
+      "guides/flyio.md",
+      "CHANGELOG.md"
+    ]
+  end
+
+  defp groups_for_extras do
+    [
+      "How-To's": ~r/guides\/.?/
     ]
   end
 end
