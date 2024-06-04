@@ -1087,6 +1087,7 @@ defmodule ExGram do
       {message_id, [:integer], :optional},
       {inline_message_id, [:string], :optional},
       {media, [InputMedia]},
+      {file, [:file], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
     ExGram.Model.Message,
