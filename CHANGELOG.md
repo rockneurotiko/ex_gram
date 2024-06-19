@@ -1,6 +1,12 @@
 # Changelog
 
 ## Unreleased
+- Update Telegram API to 7.5: https://core.telegram.org/bots/api#june-18-2024
+
+- Breaking changes from the API:
+  - `ExGram.get_chat` now returns the new `ExGram.Model.ChatFullInfo` instead of `ExGram.Model.Chat`
+  - `ExGram.send_invoice`, `ExGram.create_invoice_link` and  now have 1 less mandatory param, `provider_token` now is optional. If `nil` it will use telegram stars
+  - `ExGram.Model.Chat` now have less fields, to get the full chat you need to use `ExGram.get_chat`
 
 ## [0.52.2]
 - Update Telegram API to 7.2: https://core.telegram.org/bots/api#march-31-2024
