@@ -122,6 +122,7 @@ defmodule ExGram do
       {link_preview_options, [LinkPreviewOptions], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -170,6 +171,7 @@ defmodule ExGram do
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
       {caption_entities, [{:array, MessageEntity}], :optional},
+      {show_caption_above_media, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
@@ -206,9 +208,11 @@ defmodule ExGram do
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
       {caption_entities, [{:array, MessageEntity}], :optional},
+      {show_caption_above_media, [:boolean], :optional},
       {has_spoiler, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -233,6 +237,7 @@ defmodule ExGram do
       {thumbnail, [:file, :string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -255,6 +260,7 @@ defmodule ExGram do
       {disable_content_type_detection, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -277,10 +283,12 @@ defmodule ExGram do
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
       {caption_entities, [{:array, MessageEntity}], :optional},
+      {show_caption_above_media, [:boolean], :optional},
       {has_spoiler, [:boolean], :optional},
       {supports_streaming, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -303,9 +311,11 @@ defmodule ExGram do
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
       {caption_entities, [{:array, MessageEntity}], :optional},
+      {show_caption_above_media, [:boolean], :optional},
       {has_spoiler, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -327,11 +337,12 @@ defmodule ExGram do
       {duration, [:integer], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
-    "Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS (other formats may be sent as Audio or Document). On success, the sent Message is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future."
+    "Use this method to send audio files, if you want Telegram clients to display the file as a playable voice message. For this to work, your audio must be in an .OGG file encoded with OPUS, or in .MP3 format, or in .M4A format (other formats may be sent as Audio or Document). On success, the sent Message is returned. Bots can currently send voice messages of up to 50 MB in size, this limit may be changed in the future."
   )
 
   method(
@@ -347,6 +358,7 @@ defmodule ExGram do
       {thumbnail, [:file, :string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -364,6 +376,7 @@ defmodule ExGram do
       {media, [{:array, [InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo]}]},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional}
     ],
     {:array, ExGram.Model.Message},
@@ -385,6 +398,7 @@ defmodule ExGram do
       {proximity_alert_radius, [:integer], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -409,6 +423,7 @@ defmodule ExGram do
       {google_place_type, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -429,6 +444,7 @@ defmodule ExGram do
       {vcard, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -444,7 +460,9 @@ defmodule ExGram do
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
       {question, [:string]},
-      {options, [{:array, :string}]},
+      {question_parse_mode, [:string], :optional},
+      {question_entities, [{:array, MessageEntity}], :optional},
+      {options, [{:array, InputPollOption}]},
       {is_anonymous, [:boolean], :optional},
       {type, [:string], :optional},
       {allows_multiple_answers, [:boolean], :optional},
@@ -457,6 +475,7 @@ defmodule ExGram do
       {is_closed, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -474,6 +493,7 @@ defmodule ExGram do
       {emoji, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -749,8 +769,8 @@ defmodule ExGram do
     :get,
     "getChat",
     [{chat_id, [:integer, :string]}],
-    ExGram.Model.Chat,
-    "Use this method to get up to date information about the chat. Returns a Chat object on success."
+    ExGram.Model.ChatFullInfo,
+    "Use this method to get up-to-date information about the chat. Returns a ChatFullInfo object on success."
   )
 
   method(
@@ -1050,6 +1070,7 @@ defmodule ExGram do
     :post,
     "editMessageText",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string], :optional},
       {message_id, [:integer], :optional},
       {inline_message_id, [:string], :optional},
@@ -1060,29 +1081,32 @@ defmodule ExGram do
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
     ExGram.Model.Message,
-    "Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned."
+    "Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
   )
 
   method(
     :post,
     "editMessageCaption",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string], :optional},
       {message_id, [:integer], :optional},
       {inline_message_id, [:string], :optional},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
       {caption_entities, [{:array, MessageEntity}], :optional},
+      {show_caption_above_media, [:boolean], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
     ExGram.Model.Message,
-    "Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned."
+    "Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
   )
 
   method(
     :post,
     "editMessageMedia",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string], :optional},
       {message_id, [:integer], :optional},
       {inline_message_id, [:string], :optional},
@@ -1090,18 +1114,20 @@ defmodule ExGram do
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
     ExGram.Model.Message,
-    "Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned."
+    "Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
   )
 
   method(
     :post,
     "editMessageLiveLocation",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string], :optional},
       {message_id, [:integer], :optional},
       {inline_message_id, [:string], :optional},
       {latitude, [:float]},
       {longitude, [:float]},
+      {live_period, [:integer], :optional},
       {horizontal_accuracy, [:float], :optional},
       {heading, [:integer], :optional},
       {proximity_alert_radius, [:integer], :optional},
@@ -1115,6 +1141,7 @@ defmodule ExGram do
     :post,
     "stopMessageLiveLocation",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string], :optional},
       {message_id, [:integer], :optional},
       {inline_message_id, [:string], :optional},
@@ -1128,19 +1155,25 @@ defmodule ExGram do
     :post,
     "editMessageReplyMarkup",
     [
+      {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string], :optional},
       {message_id, [:integer], :optional},
       {inline_message_id, [:string], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
     ExGram.Model.Message,
-    "Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned."
+    "Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
   )
 
   method(
     :post,
     "stopPoll",
-    [{chat_id, [:integer, :string]}, {message_id, [:integer]}, {reply_markup, [InlineKeyboardMarkup], :optional}],
+    [
+      {business_connection_id, [:string], :optional},
+      {chat_id, [:integer, :string]},
+      {message_id, [:integer]},
+      {reply_markup, [InlineKeyboardMarkup], :optional}
+    ],
     ExGram.Model.Poll,
     "Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned."
   )
@@ -1172,6 +1205,7 @@ defmodule ExGram do
       {emoji, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -1338,7 +1372,7 @@ defmodule ExGram do
       {title, [:string]},
       {description, [:string]},
       {payload, [:string]},
-      {provider_token, [:string]},
+      {provider_token, [:string], :optional},
       {currency, [:string]},
       {prices, [{:array, LabeledPrice}]},
       {max_tip_amount, [:integer], :optional},
@@ -1358,6 +1392,7 @@ defmodule ExGram do
       {is_flexible, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
@@ -1372,7 +1407,7 @@ defmodule ExGram do
       {title, [:string]},
       {description, [:string]},
       {payload, [:string]},
-      {provider_token, [:string]},
+      {provider_token, [:string], :optional},
       {currency, [:string]},
       {prices, [{:array, LabeledPrice}]},
       {max_tip_amount, [:integer], :optional},
@@ -1416,6 +1451,22 @@ defmodule ExGram do
   )
 
   method(
+    :get,
+    "getStarTransactions",
+    [{offset, [:integer], :optional}, {limit, [:integer], :optional}],
+    ExGram.Model.StarTransactions,
+    "Returns the bot's Telegram Star transactions in chronological order. On success, returns a StarTransactions object."
+  )
+
+  method(
+    :post,
+    "refundStarPayment",
+    [{user_id, [:integer]}, {telegram_payment_charge_id, [:string]}],
+    true,
+    "Refunds a successful payment in Telegram Stars. Returns True on success."
+  )
+
+  method(
     :post,
     "setPassportDataErrors",
     [{user_id, [:integer]}, {errors, [{:array, PassportElementError}]}],
@@ -1433,6 +1484,7 @@ defmodule ExGram do
       {game_short_name, [:string]},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
@@ -1469,7 +1521,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 121 methods
+  # 123 methods
 
   # ----------MODELS-----------
 
@@ -1554,7 +1606,23 @@ defmodule ExGram do
         {:username, [:string], :optional},
         {:first_name, [:string], :optional},
         {:last_name, [:string], :optional},
+        {:is_forum, [:boolean], :optional}
+      ],
+      "This object represents a chat."
+    )
+
+    model(
+      ChatFullInfo,
+      [
+        {:id, [:integer]},
+        {:type, [:string]},
+        {:title, [:string], :optional},
+        {:username, [:string], :optional},
+        {:first_name, [:string], :optional},
+        {:last_name, [:string], :optional},
         {:is_forum, [:boolean], :optional},
+        {:accent_color_id, [:integer]},
+        {:max_reaction_count, [:integer]},
         {:photo, [ChatPhoto], :optional},
         {:active_usernames, [{:array, :string}], :optional},
         {:birthdate, [Birthdate], :optional},
@@ -1563,7 +1631,6 @@ defmodule ExGram do
         {:business_opening_hours, [BusinessOpeningHours], :optional},
         {:personal_chat, [Chat], :optional},
         {:available_reactions, [{:array, ReactionType}], :optional},
-        {:accent_color_id, [:integer], :optional},
         {:background_custom_emoji_id, [:string], :optional},
         {:profile_accent_color_id, [:integer], :optional},
         {:profile_background_custom_emoji_id, [:string], :optional},
@@ -1591,7 +1658,7 @@ defmodule ExGram do
         {:linked_chat_id, [:integer], :optional},
         {:location, [ChatLocation], :optional}
       ],
-      "This object represents a chat."
+      "This object contains full information about a chat."
     )
 
     model(
@@ -1622,6 +1689,7 @@ defmodule ExGram do
         {:text, [:string], :optional},
         {:entities, [{:array, MessageEntity}], :optional},
         {:link_preview_options, [LinkPreviewOptions], :optional},
+        {:effect_id, [:string], :optional},
         {:animation, [Animation], :optional},
         {:audio, [Audio], :optional},
         {:document, [Document], :optional},
@@ -1633,6 +1701,7 @@ defmodule ExGram do
         {:voice, [Voice], :optional},
         {:caption, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:show_caption_above_media, [:boolean], :optional},
         {:has_media_spoiler, [:boolean], :optional},
         {:contact, [Contact], :optional},
         {:dice, [Dice], :optional},
@@ -1661,6 +1730,7 @@ defmodule ExGram do
         {:passport_data, [PassportData], :optional},
         {:proximity_alert_triggered, [ProximityAlertTriggered], :optional},
         {:boost_added, [ChatBoostAdded], :optional},
+        {:chat_background_set, [ChatBackground], :optional},
         {:forum_topic_created, [ForumTopicCreated], :optional},
         {:forum_topic_edited, [ForumTopicEdited], :optional},
         {:forum_topic_closed, [ForumTopicClosed], :optional},
@@ -1908,8 +1978,18 @@ defmodule ExGram do
 
     model(
       PollOption,
-      [{:text, [:string]}, {:voter_count, [:integer]}],
+      [{:text, [:string]}, {:text_entities, [{:array, MessageEntity}], :optional}, {:voter_count, [:integer]}],
       "This object contains information about one answer option in a poll."
+    )
+
+    model(
+      InputPollOption,
+      [
+        {:text, [:string]},
+        {:text_parse_mode, [:string], :optional},
+        {:text_entities, [{:array, MessageEntity}], :optional}
+      ],
+      "This object contains information about one answer option in a poll to send."
     )
 
     model(
@@ -1928,6 +2008,7 @@ defmodule ExGram do
       [
         {:id, [:string]},
         {:question, [:string]},
+        {:question_entities, [{:array, MessageEntity}], :optional},
         {:options, [{:array, PollOption}]},
         {:total_voter_count, [:integer]},
         {:is_closed, [:boolean]},
@@ -1991,6 +2072,75 @@ defmodule ExGram do
     )
 
     model(
+      BackgroundFill,
+      [{:type, [:string]}, {:color, [:integer]}],
+      "This object describes the way a background is filled based on the selected colors. Currently, it can be one of"
+    )
+
+    model(
+      BackgroundFillSolid,
+      [{:type, [:string]}, {:color, [:integer]}],
+      "The background is filled using the selected color."
+    )
+
+    model(
+      BackgroundFillGradient,
+      [{:type, [:string]}, {:top_color, [:integer]}, {:bottom_color, [:integer]}, {:rotation_angle, [:integer]}],
+      "The background is a gradient fill."
+    )
+
+    model(
+      BackgroundFillFreeformGradient,
+      [{:type, [:string]}, {:colors, [{:array, :integer}]}],
+      "The background is a freeform gradient that rotates after every message in the chat."
+    )
+
+    model(
+      BackgroundType,
+      [{:type, [:string]}, {:fill, [BackgroundFill]}, {:dark_theme_dimming, [:integer]}],
+      "This object describes the type of a background. Currently, it can be one of"
+    )
+
+    model(
+      BackgroundTypeFill,
+      [{:type, [:string]}, {:fill, [BackgroundFill]}, {:dark_theme_dimming, [:integer]}],
+      "The background is automatically filled based on the selected colors."
+    )
+
+    model(
+      BackgroundTypeWallpaper,
+      [
+        {:type, [:string]},
+        {:document, [Document]},
+        {:dark_theme_dimming, [:integer]},
+        {:is_blurred, [:boolean], :optional},
+        {:is_moving, [:boolean], :optional}
+      ],
+      "The background is a wallpaper in the JPEG format."
+    )
+
+    model(
+      BackgroundTypePattern,
+      [
+        {:type, [:string]},
+        {:document, [Document]},
+        {:fill, [BackgroundFill]},
+        {:intensity, [:integer]},
+        {:is_inverted, [:boolean], :optional},
+        {:is_moving, [:boolean], :optional}
+      ],
+      "The background is a PNG or TGV (gzipped subset of SVG with MIME type “application/x-tgwallpattern”) pattern to be combined with the background fill chosen by the user."
+    )
+
+    model(
+      BackgroundTypeChatTheme,
+      [{:type, [:string]}, {:theme_name, [:string]}],
+      "The background is taken directly from a built-in chat theme."
+    )
+
+    model(ChatBackground, [{:type, [BackgroundType]}], "This object represents a chat background.")
+
+    model(
       ForumTopicCreated,
       [{:name, [:string]}, {:icon_color, [:integer]}, {:icon_custom_emoji_id, [:string], :optional}],
       "This object represents a service message about a new forum topic created in the chat."
@@ -2035,7 +2185,7 @@ defmodule ExGram do
         {:username, [:string], :optional},
         {:photo, [{:array, PhotoSize}], :optional}
       ],
-      "This object contains information about a user that was shared with the bot using a KeyboardButtonRequestUser button."
+      "This object contains information about a user that was shared with the bot using a KeyboardButtonRequestUsers button."
     )
 
     model(
@@ -2180,7 +2330,7 @@ defmodule ExGram do
         {:input_field_placeholder, [:string], :optional},
         {:selective, [:boolean], :optional}
       ],
-      "This object represents a custom keyboard with reply options (see Introduction to bots for details and examples)."
+      "This object represents a custom keyboard with reply options (see Introduction to bots for details and examples). Not supported in channels and for messages sent on behalf of a Telegram Business account."
     )
 
     model(
@@ -2194,7 +2344,7 @@ defmodule ExGram do
         {:request_poll, [KeyboardButtonPollType], :optional},
         {:web_app, [WebAppInfo], :optional}
       ],
-      "This object represents one button of the reply keyboard. For simple text buttons, String can be used instead of this object to specify the button text. The optional fields web_app, request_users, request_chat, request_contact, request_location, and request_poll are mutually exclusive."
+      "This object represents one button of the reply keyboard. At most one of the optional fields must be used to specify type of the button. For simple text buttons, String can be used instead of this object to specify the button text."
     )
 
     model(
@@ -2226,7 +2376,7 @@ defmodule ExGram do
         {:request_username, [:boolean], :optional},
         {:request_photo, [:boolean], :optional}
       ],
-      "This object defines the criteria used to request a suitable chat. Information about the selected chat will be shared with the bot when the corresponding button is pressed. The bot will be granted requested rights in the сhat if appropriate More about requesting chats »"
+      "This object defines the criteria used to request a suitable chat. Information about the selected chat will be shared with the bot when the corresponding button is pressed. The bot will be granted requested rights in the chat if appropriate. More about requesting chats »."
     )
 
     model(
@@ -2238,7 +2388,7 @@ defmodule ExGram do
     model(
       ReplyKeyboardRemove,
       [{:remove_keyboard, [:boolean]}, {:selective, [:boolean], :optional}],
-      "Upon receiving a message with this object, Telegram clients will remove the current custom keyboard and display the default letter-keyboard. By default, custom keyboards are displayed until a new keyboard is sent by a bot. An exception is made for one-time keyboards that are hidden immediately after the user presses a button (see ReplyKeyboardMarkup)."
+      "Upon receiving a message with this object, Telegram clients will remove the current custom keyboard and display the default letter-keyboard. By default, custom keyboards are displayed until a new keyboard is sent by a bot. An exception is made for one-time keyboards that are hidden immediately after the user presses a button (see ReplyKeyboardMarkup). Not supported in channels and for messages sent on behalf of a Telegram Business account."
     )
 
     model(
@@ -2261,7 +2411,7 @@ defmodule ExGram do
         {:callback_game, [CallbackGame], :optional},
         {:pay, [:boolean], :optional}
       ],
-      "This object represents one button of an inline keyboard. You must use exactly one of the optional fields."
+      "This object represents one button of an inline keyboard. Exactly one of the optional fields must be used to specify type of the button."
     )
 
     model(
@@ -2308,7 +2458,7 @@ defmodule ExGram do
         {:input_field_placeholder, [:string], :optional},
         {:selective, [:boolean], :optional}
       ],
-      "Upon receiving a message with this object, Telegram clients will display a reply interface to the user (act as if the user has selected the bot's message and tapped 'Reply'). This can be extremely useful if you want to create user-friendly step-by-step interfaces without having to sacrifice privacy mode."
+      "Upon receiving a message with this object, Telegram clients will display a reply interface to the user (act as if the user has selected the bot's message and tapped 'Reply'). This can be extremely useful if you want to create user-friendly step-by-step interfaces without having to sacrifice privacy mode. Not supported in channels and for messages sent on behalf of a Telegram Business account."
     )
 
     model(
@@ -2369,6 +2519,7 @@ defmodule ExGram do
         {:old_chat_member, [ChatMember]},
         {:new_chat_member, [ChatMember]},
         {:invite_link, [ChatInviteLink], :optional},
+        {:via_join_request, [:boolean], :optional},
         {:via_chat_folder_invite_link, [:boolean], :optional}
       ],
       "This object represents changes in the status of a chat member."
@@ -2486,27 +2637,31 @@ defmodule ExGram do
     model(
       Birthdate,
       [{:day, [:integer]}, {:month, [:integer]}, {:year, [:integer], :optional}],
-      "No description available."
+      "Describes the birthdate of a user."
     )
 
     model(
       BusinessIntro,
       [{:title, [:string], :optional}, {:message, [:string], :optional}, {:sticker, [Sticker], :optional}],
-      "No description available."
+      "Contains information about the start page settings of a Telegram Business account."
     )
 
-    model(BusinessLocation, [{:address, [:string]}, {:location, [Location], :optional}], "No description available.")
+    model(
+      BusinessLocation,
+      [{:address, [:string]}, {:location, [Location], :optional}],
+      "Contains information about the location of a Telegram Business account."
+    )
 
     model(
       BusinessOpeningHoursInterval,
       [{:opening_minute, [:integer]}, {:closing_minute, [:integer]}],
-      "No description available."
+      "Describes an interval of time during which a business is open."
     )
 
     model(
       BusinessOpeningHours,
       [{:time_zone_name, [:string]}, {:opening_hours, [{:array, BusinessOpeningHoursInterval}]}],
-      "No description available."
+      "Describes the opening hours of a business."
     )
 
     model(
@@ -2700,6 +2855,7 @@ defmodule ExGram do
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:show_caption_above_media, [:boolean], :optional},
         {:has_spoiler, [:boolean], :optional}
       ],
       "Represents a photo to be sent."
@@ -2714,6 +2870,7 @@ defmodule ExGram do
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:show_caption_above_media, [:boolean], :optional},
         {:width, [:integer], :optional},
         {:height, [:integer], :optional},
         {:duration, [:integer], :optional},
@@ -2732,6 +2889,7 @@ defmodule ExGram do
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:show_caption_above_media, [:boolean], :optional},
         {:width, [:integer], :optional},
         {:height, [:integer], :optional},
         {:duration, [:integer], :optional},
@@ -2873,6 +3031,7 @@ defmodule ExGram do
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:show_caption_above_media, [:boolean], :optional},
         {:reply_markup, [InlineKeyboardMarkup], :optional},
         {:input_message_content, [InputMessageContent], :optional}
       ],
@@ -2894,6 +3053,7 @@ defmodule ExGram do
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:show_caption_above_media, [:boolean], :optional},
         {:reply_markup, [InlineKeyboardMarkup], :optional},
         {:input_message_content, [InputMessageContent], :optional}
       ],
@@ -2915,6 +3075,7 @@ defmodule ExGram do
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:show_caption_above_media, [:boolean], :optional},
         {:reply_markup, [InlineKeyboardMarkup], :optional},
         {:input_message_content, [InputMessageContent], :optional}
       ],
@@ -2933,6 +3094,7 @@ defmodule ExGram do
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:show_caption_above_media, [:boolean], :optional},
         {:video_width, [:integer], :optional},
         {:video_height, [:integer], :optional},
         {:video_duration, [:integer], :optional},
@@ -3082,6 +3244,7 @@ defmodule ExGram do
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:show_caption_above_media, [:boolean], :optional},
         {:reply_markup, [InlineKeyboardMarkup], :optional},
         {:input_message_content, [InputMessageContent], :optional}
       ],
@@ -3098,6 +3261,7 @@ defmodule ExGram do
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:show_caption_above_media, [:boolean], :optional},
         {:reply_markup, [InlineKeyboardMarkup], :optional},
         {:input_message_content, [InputMessageContent], :optional}
       ],
@@ -3114,6 +3278,7 @@ defmodule ExGram do
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:show_caption_above_media, [:boolean], :optional},
         {:reply_markup, [InlineKeyboardMarkup], :optional},
         {:input_message_content, [InputMessageContent], :optional}
       ],
@@ -3160,6 +3325,7 @@ defmodule ExGram do
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
+        {:show_caption_above_media, [:boolean], :optional},
         {:reply_markup, [InlineKeyboardMarkup], :optional},
         {:input_message_content, [InputMessageContent], :optional}
       ],
@@ -3253,7 +3419,7 @@ defmodule ExGram do
         {:title, [:string]},
         {:description, [:string]},
         {:payload, [:string]},
-        {:provider_token, [:string]},
+        {:provider_token, [:string], :optional},
         {:currency, [:string]},
         {:prices, [{:array, LabeledPrice}]},
         {:max_tip_amount, [:integer], :optional},
@@ -3372,6 +3538,56 @@ defmodule ExGram do
         {:order_info, [OrderInfo], :optional}
       ],
       "This object contains information about an incoming pre-checkout query."
+    )
+
+    model(
+      RevenueWithdrawalState,
+      [{:type, [:string]}],
+      "This object describes the state of a revenue withdrawal operation. Currently, it can be one of"
+    )
+
+    model(RevenueWithdrawalStatePending, [{:type, [:string]}], "The withdrawal is in progress.")
+
+    model(
+      RevenueWithdrawalStateSucceeded,
+      [{:type, [:string]}, {:date, [:integer]}, {:url, [:string]}],
+      "The withdrawal succeeded."
+    )
+
+    model(RevenueWithdrawalStateFailed, [{:type, [:string]}], "The withdrawal failed and the transaction was refunded.")
+
+    model(
+      TransactionPartner,
+      [{:type, [:string]}, {:withdrawal_state, [RevenueWithdrawalState], :optional}],
+      "This object describes the source of a transaction, or its recipient for outgoing transactions. Currently, it can be one of"
+    )
+
+    model(
+      TransactionPartnerFragment,
+      [{:type, [:string]}, {:withdrawal_state, [RevenueWithdrawalState], :optional}],
+      "Describes a withdrawal transaction with Fragment."
+    )
+
+    model(TransactionPartnerUser, [{:type, [:string]}, {:user, [User]}], "Describes a transaction with a user.")
+
+    model(TransactionPartnerOther, [{:type, [:string]}], "Describes a transaction with an unknown source or recipient.")
+
+    model(
+      StarTransaction,
+      [
+        {:id, [:string]},
+        {:amount, [:integer]},
+        {:date, [:integer]},
+        {:source, [TransactionPartner], :optional},
+        {:receiver, [TransactionPartner], :optional}
+      ],
+      "Describes a Telegram Star transaction."
+    )
+
+    model(
+      StarTransactions,
+      [{:transactions, [{:array, StarTransaction}]}],
+      "Contains a list of Telegram Star transactions."
     )
 
     model(
@@ -3502,7 +3718,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 178 models
+    # 200 models
 
     defmodule MaybeInaccessibleMessage do
       @moduledoc """

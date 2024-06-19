@@ -1,9 +1,7 @@
 defmodule Examples.Simple do
   @moduledoc false
 
-  @bot :simple_bot
-
-  use ExGram.Bot, name: @bot, setup_commands: true
+  use ExGram.Bot, name: :simple_bot, setup_commands: true
 
   require Logger
 
