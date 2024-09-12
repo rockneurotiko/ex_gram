@@ -124,50 +124,7 @@ defmodule ExGram.Macros.Executer do
   defp clean_body(m), do: m
 
   defp process_result(result, type) do
-    process_type(result, type)
-  end
-
-  defp process_type(nil, _), do: nil
-  defp process_type(elem, nil), do: elem
-
-  defp process_type(list, {:array, t}), do: Enum.map(list, &process_type(&1, t))
-  defp process_type(list, [t]), do: Enum.map(list, &process_type(&1, t))
-
-  defp process_type(elem, :integer), do: elem
-  defp process_type(elem, :string), do: elem
-  defp process_type(elem, true), do: elem
-
-  defp process_type(elem, t) when is_atom(t) do
-    if is_subtype?(t) do
-      apply_subtype(t, elem)
-    else
-      process_struct(t, elem)
-    end
-  end
-
-  defp process_type(elem, _t), do: elem
-
-  defp process_struct(t, elem) do
-    decoded_elem =
-      t.decode_as()
-      |> Map.from_struct()
-      |> Map.new(fn {k, v} ->
-        {k, process_type(elem[k], v)}
-      end)
-
-    struct(t, decoded_elem)
-  end
-
-  defp is_subtype?(t) do
-    ExGram.Model.Subtype.impl_for(struct(t, %{}))
-  end
-
-  defp apply_subtype(t, params) do
-    base = struct(t, %{})
-    selector = ExGram.Model.Subtype.selector_value(base, params)
-    subtype = ExGram.Model.Subtype.subtype(base, selector)
-
-    process_struct(subtype, params)
+    ExGram.Cast.cast(result, type)
   end
 
   defp create_multipart(body, []), do: body

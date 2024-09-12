@@ -43,8 +43,8 @@ if Code.ensure_loaded?(Plug) do
     defp handle_update(conn, {:ok, update}) do
       token_hash = token_hash(conn.path_info)
 
-      ExGram.Model.Update
-      |> struct(update)
+      update
+      |> ExGram.Cast.cast(ExGram.Model.Update)
       |> ExGram.Updates.Webhook.update(token_hash)
 
       {200, %{ok: true}}
