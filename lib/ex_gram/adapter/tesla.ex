@@ -14,7 +14,7 @@ if Code.ensure_loaded?(Tesla) do
 
     plug(Tesla.Middleware.BaseUrl, ExGram.Config.get(:ex_gram, :base_url, @base_url))
     plug(Tesla.Middleware.Headers, [{"Content-Type", "application/json"}])
-    plug(Tesla.Middleware.Logger, log_level: :info)
+    plug(Tesla.Middleware.Logger, ExGram.Config.get(:ex_gram, Tesla.Middleware.Logger, log_level: :info))
 
     plug(
       Tesla.Middleware.JSON,
