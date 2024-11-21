@@ -122,6 +122,7 @@ defmodule ExGram do
       {link_preview_options, [LinkPreviewOptions], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
@@ -174,11 +175,12 @@ defmodule ExGram do
       {show_caption_above_media, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.MessageId,
-    "Use this method to copy messages of any kind. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success."
+    "Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success."
   )
 
   method(
@@ -194,7 +196,7 @@ defmodule ExGram do
       {remove_caption, [:boolean], :optional}
     ],
     :any,
-    "Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of MessageId of the sent messages is returned."
+    "Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_id is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an array of MessageId of the sent messages is returned."
   )
 
   method(
@@ -212,6 +214,7 @@ defmodule ExGram do
       {has_spoiler, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
@@ -237,6 +240,7 @@ defmodule ExGram do
       {thumbnail, [:file, :string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
@@ -260,6 +264,7 @@ defmodule ExGram do
       {disable_content_type_detection, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
@@ -288,6 +293,7 @@ defmodule ExGram do
       {supports_streaming, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
@@ -315,6 +321,7 @@ defmodule ExGram do
       {has_spoiler, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
@@ -337,6 +344,7 @@ defmodule ExGram do
       {duration, [:integer], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
@@ -358,12 +366,36 @@ defmodule ExGram do
       {thumbnail, [:file, :string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "As of v.4.0, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent Message is returned."
+  )
+
+  method(
+    :post,
+    "sendPaidMedia",
+    [
+      {business_connection_id, [:string], :optional},
+      {chat_id, [:integer, :string]},
+      {star_count, [:integer]},
+      {media, [{:array, InputPaidMedia}]},
+      {payload, [:string], :optional},
+      {caption, [:string], :optional},
+      {parse_mode, [:string], :optional},
+      {caption_entities, [{:array, MessageEntity}], :optional},
+      {show_caption_above_media, [:boolean], :optional},
+      {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
+    ],
+    ExGram.Model.Message,
+    "Use this method to send paid media. On success, the sent Message is returned."
   )
 
   method(
@@ -376,6 +408,7 @@ defmodule ExGram do
       {media, [{:array, [InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo]}]},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional}
     ],
@@ -398,6 +431,7 @@ defmodule ExGram do
       {proximity_alert_radius, [:integer], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
@@ -423,6 +457,7 @@ defmodule ExGram do
       {google_place_type, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
@@ -444,6 +479,7 @@ defmodule ExGram do
       {vcard, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
@@ -475,6 +511,7 @@ defmodule ExGram do
       {is_closed, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
@@ -493,6 +530,7 @@ defmodule ExGram do
       {emoji, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
@@ -524,7 +562,7 @@ defmodule ExGram do
       {is_big, [:boolean], :optional}
     ],
     true,
-    "Use this method to change the chosen reactions on a message. Service messages can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Returns True on success."
+    "Use this method to change the chosen reactions on a message. Service messages can't be reacted to. Automatically forwarded messages from a channel to its discussion group have the same available reactions as messages in the channel. Bots can't use paid reactions. Returns True on success."
   )
 
   method(
@@ -533,6 +571,18 @@ defmodule ExGram do
     [{user_id, [:integer]}, {offset, [:integer], :optional}, {limit, [:integer], :optional}],
     ExGram.Model.UserProfilePhotos,
     "Use this method to get a list of profile pictures for a user. Returns a UserProfilePhotos object."
+  )
+
+  method(
+    :post,
+    "setUserEmojiStatus",
+    [
+      {user_id, [:integer]},
+      {emoji_status_custom_emoji_id, [:string], :optional},
+      {emoji_status_expiration_date, [:integer], :optional}
+    ],
+    true,
+    "Changes the emoji status for a given user that previously allowed the bot to manage their emoji status via the Mini App method requestEmojiStatusAccess. Returns True on success."
   )
 
   method(
@@ -679,6 +729,27 @@ defmodule ExGram do
 
   method(
     :post,
+    "createChatSubscriptionInviteLink",
+    [
+      {chat_id, [:integer, :string]},
+      {name, [:string], :optional},
+      {subscription_period, [:integer]},
+      {subscription_price, [:integer]}
+    ],
+    ExGram.Model.ChatInviteLink,
+    "Use this method to create a subscription invite link for a channel chat. The bot must have the can_invite_users administrator rights. The link can be edited using the method editChatSubscriptionInviteLink or revoked using the method revokeChatInviteLink. Returns the new invite link as a ChatInviteLink object."
+  )
+
+  method(
+    :post,
+    "editChatSubscriptionInviteLink",
+    [{chat_id, [:integer, :string]}, {invite_link, [:string]}, {name, [:string], :optional}],
+    ExGram.Model.ChatInviteLink,
+    "Use this method to edit a subscription invite link created by the bot. The bot must have the can_invite_users administrator rights. Returns the edited invite link as a ChatInviteLink object."
+  )
+
+  method(
+    :post,
     "revokeChatInviteLink",
     [{chat_id, [:integer, :string]}, {invite_link, [:string]}],
     ExGram.Model.ChatInviteLink,
@@ -736,7 +807,12 @@ defmodule ExGram do
   method(
     :post,
     "pinChatMessage",
-    [{chat_id, [:integer, :string]}, {message_id, [:integer]}, {disable_notification, [:boolean], :optional}],
+    [
+      {business_connection_id, [:string], :optional},
+      {chat_id, [:integer, :string]},
+      {message_id, [:integer]},
+      {disable_notification, [:boolean], :optional}
+    ],
     true,
     "Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True on success."
   )
@@ -744,7 +820,11 @@ defmodule ExGram do
   method(
     :post,
     "unpinChatMessage",
-    [{chat_id, [:integer, :string]}, {message_id, [:integer], :optional}],
+    [
+      {business_connection_id, [:string], :optional},
+      {chat_id, [:integer, :string]},
+      {message_id, [:integer], :optional}
+    ],
     true,
     "Use this method to remove a message from the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True on success."
   )
@@ -849,7 +929,7 @@ defmodule ExGram do
       {icon_custom_emoji_id, [:string], :optional}
     ],
     true,
-    "Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success."
+    "Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success."
   )
 
   method(
@@ -889,7 +969,7 @@ defmodule ExGram do
     "editGeneralForumTopic",
     [{chat_id, [:integer, :string]}, {name, [:string]}],
     true,
-    "Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have can_manage_topics administrator rights. Returns True on success."
+    "Use this method to edit the name of the 'General' topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns True on success."
   )
 
   method(
@@ -1114,7 +1194,7 @@ defmodule ExGram do
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
     ExGram.Model.Message,
-    "Use this method to edit animation, audio, document, photo, or video messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
+    "Use this method to edit animation, audio, document, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
   )
 
   method(
@@ -1205,6 +1285,7 @@ defmodule ExGram do
       {emoji, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
@@ -1341,6 +1422,34 @@ defmodule ExGram do
   )
 
   method(
+    :get,
+    "getAvailableGifts",
+    [
+      {user_id, [:integer]},
+      {gift_id, [:string]},
+      {text, [:string], :optional},
+      {text_parse_mode, [:string], :optional},
+      {text_entities, [{:array, MessageEntity}], :optional}
+    ],
+    ExGram.Model.Gifts,
+    "Returns the list of gifts that can be sent by the bot to users. Requires no parameters. Returns a Gifts object."
+  )
+
+  method(
+    :post,
+    "sendGift",
+    [
+      {user_id, [:integer]},
+      {gift_id, [:string]},
+      {text, [:string], :optional},
+      {text_parse_mode, [:string], :optional},
+      {text_entities, [{:array, MessageEntity}], :optional}
+    ],
+    true,
+    "Sends a gift to the given user. The gift can't be converted to Telegram Stars by the user. Returns True on success."
+  )
+
+  method(
     :post,
     "answerInlineQuery",
     [
@@ -1361,6 +1470,21 @@ defmodule ExGram do
     [{web_app_query_id, [:string]}, {result, [InlineQueryResult]}],
     ExGram.Model.SentWebAppMessage,
     "Use this method to set the result of an interaction with a Web App and send a corresponding message on behalf of the user to the chat from which the query originated. On success, a SentWebAppMessage object is returned."
+  )
+
+  method(
+    :post,
+    "savePreparedInlineMessage",
+    [
+      {user_id, [:integer]},
+      {result, [InlineQueryResult]},
+      {allow_user_chats, [:boolean], :optional},
+      {allow_bot_chats, [:boolean], :optional},
+      {allow_group_chats, [:boolean], :optional},
+      {allow_channel_chats, [:boolean], :optional}
+    ],
+    ExGram.Model.PreparedInlineMessage,
+    "Stores a message that can be sent by a user of a Mini App. Returns a PreparedInlineMessage object."
   )
 
   method(
@@ -1392,6 +1516,7 @@ defmodule ExGram do
       {is_flexible, [:boolean], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
@@ -1404,12 +1529,14 @@ defmodule ExGram do
     :post,
     "createInvoiceLink",
     [
+      {business_connection_id, [:string], :optional},
       {title, [:string]},
       {description, [:string]},
       {payload, [:string]},
       {provider_token, [:string], :optional},
       {currency, [:string]},
       {prices, [{:array, LabeledPrice}]},
+      {subscription_period, [:integer], :optional},
       {max_tip_amount, [:integer], :optional},
       {suggested_tip_amounts, [{:array, :integer}], :optional},
       {provider_data, [:string], :optional},
@@ -1468,6 +1595,14 @@ defmodule ExGram do
 
   method(
     :post,
+    "editUserStarSubscription",
+    [{user_id, [:integer]}, {telegram_payment_charge_id, [:string]}, {is_canceled, [:boolean]}],
+    true,
+    "Allows the bot to cancel or re-enable extension of a subscription paid in Telegram Stars. Returns True on success."
+  )
+
+  method(
+    :post,
     "setPassportDataErrors",
     [{user_id, [:integer]}, {errors, [{:array, PassportElementError}]}],
     true,
@@ -1484,6 +1619,7 @@ defmodule ExGram do
       {game_short_name, [:string]},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
@@ -1521,7 +1657,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 123 methods
+  # 131 methods
 
   # ----------MODELS-----------
 
@@ -1551,6 +1687,7 @@ defmodule ExGram do
         {:callback_query, [CallbackQuery], :optional},
         {:shipping_query, [ShippingQuery], :optional},
         {:pre_checkout_query, [PreCheckoutQuery], :optional},
+        {:purchased_paid_media, [PaidMediaPurchased], :optional},
         {:poll, [Poll], :optional},
         {:poll_answer, [PollAnswer], :optional},
         {:my_chat_member, [ChatMemberUpdated], :optional},
@@ -1592,7 +1729,8 @@ defmodule ExGram do
         {:can_join_groups, [:boolean], :optional},
         {:can_read_all_group_messages, [:boolean], :optional},
         {:supports_inline_queries, [:boolean], :optional},
-        {:can_connect_to_business, [:boolean], :optional}
+        {:can_connect_to_business, [:boolean], :optional},
+        {:has_main_web_app, [:boolean], :optional}
       ],
       "This object represents a Telegram user or bot."
     )
@@ -1645,6 +1783,7 @@ defmodule ExGram do
         {:invite_link, [:string], :optional},
         {:pinned_message, [Message], :optional},
         {:permissions, [ChatPermissions], :optional},
+        {:can_send_paid_media, [:boolean], :optional},
         {:slow_mode_delay, [:integer], :optional},
         {:unrestrict_boost_count, [:integer], :optional},
         {:message_auto_delete_time, [:integer], :optional},
@@ -1693,6 +1832,7 @@ defmodule ExGram do
         {:animation, [Animation], :optional},
         {:audio, [Audio], :optional},
         {:document, [Document], :optional},
+        {:paid_media, [PaidMediaInfo], :optional},
         {:photo, [{:array, PhotoSize}], :optional},
         {:sticker, [Sticker], :optional},
         {:story, [Story], :optional},
@@ -1723,6 +1863,7 @@ defmodule ExGram do
         {:pinned_message, [MaybeInaccessibleMessage], :optional},
         {:invoice, [Invoice], :optional},
         {:successful_payment, [SuccessfulPayment], :optional},
+        {:refunded_payment, [RefundedPayment], :optional},
         {:users_shared, [UsersShared], :optional},
         {:chat_shared, [ChatShared], :optional},
         {:connected_website, [:string], :optional},
@@ -1794,6 +1935,7 @@ defmodule ExGram do
         {:animation, [Animation], :optional},
         {:audio, [Audio], :optional},
         {:document, [Document], :optional},
+        {:paid_media, [PaidMediaInfo], :optional},
         {:photo, [{:array, PhotoSize}], :optional},
         {:sticker, [Sticker], :optional},
         {:story, [Story], :optional},
@@ -1959,6 +2101,27 @@ defmodule ExGram do
     )
 
     model(
+      PaidMediaInfo,
+      [{:star_count, [:integer]}, {:paid_media, [{:array, PaidMedia}]}],
+      "Describes the paid media added to a message."
+    )
+
+    model(
+      PaidMediaPreview,
+      [
+        {:type, [:string]},
+        {:width, [:integer], :optional},
+        {:height, [:integer], :optional},
+        {:duration, [:integer], :optional}
+      ],
+      "The paid media isn't available before the payment."
+    )
+
+    model(PaidMediaPhoto, [{:type, [:string]}, {:photo, [{:array, PhotoSize}]}], "The paid media is a photo.")
+
+    model(PaidMediaVideo, [{:type, [:string]}, {:video, [Video]}], "The paid media is a video.")
+
+    model(
       Contact,
       [
         {:phone_number, [:string]},
@@ -1989,7 +2152,7 @@ defmodule ExGram do
         {:text_parse_mode, [:string], :optional},
         {:text_entities, [{:array, MessageEntity}], :optional}
       ],
-      "This object contains information about one answer option in a poll to send."
+      "This object contains information about one answer option in a poll to be sent."
     )
 
     model(
@@ -2072,12 +2235,6 @@ defmodule ExGram do
     )
 
     model(
-      BackgroundFill,
-      [{:type, [:string]}, {:color, [:integer]}],
-      "This object describes the way a background is filled based on the selected colors. Currently, it can be one of"
-    )
-
-    model(
       BackgroundFillSolid,
       [{:type, [:string]}, {:color, [:integer]}],
       "The background is filled using the selected color."
@@ -2093,12 +2250,6 @@ defmodule ExGram do
       BackgroundFillFreeformGradient,
       [{:type, [:string]}, {:colors, [{:array, :integer}]}],
       "The background is a freeform gradient that rotates after every message in the chat."
-    )
-
-    model(
-      BackgroundType,
-      [{:type, [:string]}, {:fill, [BackgroundFill]}, {:dark_theme_dimming, [:integer]}],
-      "This object describes the type of a background. Currently, it can be one of"
     )
 
     model(
@@ -2242,8 +2393,8 @@ defmodule ExGram do
 
     model(
       GiveawayCreated,
-      [],
-      "This object represents a service message about the creation of a scheduled giveaway. Currently holds no information."
+      [{:prize_star_count, [:integer], :optional}],
+      "This object represents a service message about the creation of a scheduled giveaway."
     )
 
     model(
@@ -2256,6 +2407,7 @@ defmodule ExGram do
         {:has_public_winners, [:boolean], :optional},
         {:prize_description, [:string], :optional},
         {:country_codes, [{:array, :string}], :optional},
+        {:prize_star_count, [:integer], :optional},
         {:premium_subscription_month_count, [:integer], :optional}
       ],
       "This object represents a message about a scheduled giveaway."
@@ -2270,6 +2422,7 @@ defmodule ExGram do
         {:winner_count, [:integer]},
         {:winners, [{:array, User}]},
         {:additional_chat_count, [:integer], :optional},
+        {:prize_star_count, [:integer], :optional},
         {:premium_subscription_month_count, [:integer], :optional},
         {:unclaimed_prize_count, [:integer], :optional},
         {:only_new_members, [:boolean], :optional},
@@ -2284,7 +2437,8 @@ defmodule ExGram do
       [
         {:winner_count, [:integer]},
         {:unclaimed_prize_count, [:integer], :optional},
-        {:giveaway_message, [Message], :optional}
+        {:giveaway_message, [Message], :optional},
+        {:is_star_giveaway, [:boolean], :optional}
       ],
       "This object represents a service message about the completion of a giveaway without public winners."
     )
@@ -2408,6 +2562,7 @@ defmodule ExGram do
         {:switch_inline_query, [:string], :optional},
         {:switch_inline_query_current_chat, [:string], :optional},
         {:switch_inline_query_chosen_chat, [SwitchInlineQueryChosenChat], :optional},
+        {:copy_text, [CopyTextButton], :optional},
         {:callback_game, [CallbackGame], :optional},
         {:pay, [:boolean], :optional}
       ],
@@ -2435,6 +2590,12 @@ defmodule ExGram do
         {:allow_channel_chats, [:boolean], :optional}
       ],
       "This object represents an inline button that switches the current user to inline mode in a chosen chat, with an optional default inline query."
+    )
+
+    model(
+      CopyTextButton,
+      [{:text, [:string]}],
+      "This object represents an inline keyboard button that copies specified text to the clipboard."
     )
 
     model(
@@ -2483,7 +2644,9 @@ defmodule ExGram do
         {:name, [:string], :optional},
         {:expire_date, [:integer], :optional},
         {:member_limit, [:integer], :optional},
-        {:pending_join_request_count, [:integer], :optional}
+        {:pending_join_request_count, [:integer], :optional},
+        {:subscription_period, [:integer], :optional},
+        {:subscription_price, [:integer], :optional}
       ],
       "Represents an invite link for a chat."
     )
@@ -2559,7 +2722,7 @@ defmodule ExGram do
 
     model(
       ChatMemberMember,
-      [{:status, [:string]}, {:user, [User]}],
+      [{:status, [:string]}, {:user, [User]}, {:until_date, [:integer], :optional}],
       "Represents a chat member that has no additional privileges or restrictions."
     )
 
@@ -2678,6 +2841,8 @@ defmodule ExGram do
       "The reaction is based on a custom emoji."
     )
 
+    model(ReactionTypePaid, [{:type, [:string]}], "The reaction is paid.")
+
     model(
       ReactionCount,
       [{:type, [ReactionType]}, {:total_count, [:integer]}],
@@ -2793,9 +2958,10 @@ defmodule ExGram do
         {:source, [:string]},
         {:giveaway_message_id, [:integer]},
         {:user, [User], :optional},
+        {:prize_star_count, [:integer], :optional},
         {:is_unclaimed, [:boolean], :optional}
       ],
-      "The boost was obtained by the creation of a Telegram Premium giveaway. This boosts the chat 4 times for the duration of the corresponding Telegram Premium subscription."
+      "The boost was obtained by the creation of a Telegram Premium or a Telegram Star giveaway. This boosts the chat 4 times for the duration of the corresponding Telegram Premium subscription for Telegram Premium giveaways and prize_star_count / 500 times for one year for Telegram Star giveaways."
     )
 
     model(
@@ -2928,6 +3094,22 @@ defmodule ExGram do
       "Represents a general file to be sent."
     )
 
+    model(InputPaidMediaPhoto, [{:type, [:string]}, {:media, [:string]}], "The paid media to send is a photo.")
+
+    model(
+      InputPaidMediaVideo,
+      [
+        {:type, [:string]},
+        {:media, [:string]},
+        {:thumbnail, [:file, :string], :optional},
+        {:width, [:integer], :optional},
+        {:height, [:integer], :optional},
+        {:duration, [:integer], :optional},
+        {:supports_streaming, [:boolean], :optional}
+      ],
+      "The paid media to send is a video."
+    )
+
     model(
       Sticker,
       [
@@ -2979,6 +3161,20 @@ defmodule ExGram do
       ],
       "This object describes a sticker to be added to a sticker set."
     )
+
+    model(
+      Gift,
+      [
+        {:id, [:string]},
+        {:sticker, [Sticker]},
+        {:star_count, [:integer]},
+        {:total_count, [:integer], :optional},
+        {:remaining_count, [:integer], :optional}
+      ],
+      "This object represents a gift that can be sent by the bot."
+    )
+
+    model(Gifts, [{:gifts, [{:array, Gift}]}], "This object represent a list of gifts.")
 
     model(
       InlineQuery,
@@ -3459,6 +3655,12 @@ defmodule ExGram do
     )
 
     model(
+      PreparedInlineMessage,
+      [{:id, [:string]}, {:expiration_date, [:integer]}],
+      "Describes an inline message to be sent by a user of a Mini App."
+    )
+
+    model(
       LabeledPrice,
       [{:label, [:string]}, {:amount, [:integer]}],
       "This object represents a portion of the price for goods or services."
@@ -3512,12 +3714,27 @@ defmodule ExGram do
         {:currency, [:string]},
         {:total_amount, [:integer]},
         {:invoice_payload, [:string]},
+        {:subscription_expiration_date, [:integer], :optional},
+        {:is_recurring, [:boolean], :optional},
+        {:is_first_recurring, [:boolean], :optional},
         {:shipping_option_id, [:string], :optional},
         {:order_info, [OrderInfo], :optional},
         {:telegram_payment_charge_id, [:string]},
         {:provider_payment_charge_id, [:string]}
       ],
       "This object contains basic information about a successful payment."
+    )
+
+    model(
+      RefundedPayment,
+      [
+        {:currency, [:string]},
+        {:total_amount, [:integer]},
+        {:invoice_payload, [:string]},
+        {:telegram_payment_charge_id, [:string]},
+        {:provider_payment_charge_id, [:string], :optional}
+      ],
+      "This object contains basic information about a refunded payment."
     )
 
     model(
@@ -3541,9 +3758,9 @@ defmodule ExGram do
     )
 
     model(
-      RevenueWithdrawalState,
-      [{:type, [:string]}],
-      "This object describes the state of a revenue withdrawal operation. Currently, it can be one of"
+      PaidMediaPurchased,
+      [{:from, [User]}, {:paid_media_payload, [:string]}],
+      "This object contains information about a paid media purchase."
     )
 
     model(RevenueWithdrawalStatePending, [{:type, [:string]}], "The withdrawal is in progress.")
@@ -3557,9 +3774,17 @@ defmodule ExGram do
     model(RevenueWithdrawalStateFailed, [{:type, [:string]}], "The withdrawal failed and the transaction was refunded.")
 
     model(
-      TransactionPartner,
-      [{:type, [:string]}, {:withdrawal_state, [RevenueWithdrawalState], :optional}],
-      "This object describes the source of a transaction, or its recipient for outgoing transactions. Currently, it can be one of"
+      TransactionPartnerUser,
+      [
+        {:type, [:string]},
+        {:user, [User]},
+        {:invoice_payload, [:string], :optional},
+        {:subscription_period, [:integer], :optional},
+        {:paid_media, [{:array, PaidMedia}], :optional},
+        {:paid_media_payload, [:string], :optional},
+        {:gift, [:string], :optional}
+      ],
+      "Describes a transaction with a user."
     )
 
     model(
@@ -3568,7 +3793,17 @@ defmodule ExGram do
       "Describes a withdrawal transaction with Fragment."
     )
 
-    model(TransactionPartnerUser, [{:type, [:string]}, {:user, [User]}], "Describes a transaction with a user.")
+    model(
+      TransactionPartnerTelegramAds,
+      [{:type, [:string]}],
+      "Describes a withdrawal transaction to the Telegram Ads platform."
+    )
+
+    model(
+      TransactionPartnerTelegramApi,
+      [{:type, [:string]}, {:request_count, [:integer]}],
+      "Describes a transaction with payment for paid broadcasting."
+    )
 
     model(TransactionPartnerOther, [{:type, [:string]}], "Describes a transaction with an unknown source or recipient.")
 
@@ -3718,7 +3953,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 200 models
+    # 211 models
 
     defmodule MaybeInaccessibleMessage do
       @moduledoc """
@@ -3747,6 +3982,55 @@ defmodule ExGram do
 
       def subtypes do
         [MessageOriginUser, MessageOriginHiddenUser, MessageOriginChat, MessageOriginChannel]
+      end
+    end
+
+    defmodule PaidMedia do
+      @moduledoc """
+      PaidMedia model. Valid subtypes: PaidMediaPreview, PaidMediaPhoto, PaidMediaVideo
+      """
+      @type t :: PaidMediaPreview.t() | PaidMediaPhoto.t() | PaidMediaVideo.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [PaidMediaPreview, PaidMediaPhoto, PaidMediaVideo]
+      end
+    end
+
+    defmodule BackgroundFill do
+      @moduledoc """
+      BackgroundFill model. Valid subtypes: BackgroundFillSolid, BackgroundFillGradient, BackgroundFillFreeformGradient
+      """
+      @type t :: BackgroundFillSolid.t() | BackgroundFillGradient.t() | BackgroundFillFreeformGradient.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [BackgroundFillSolid, BackgroundFillGradient, BackgroundFillFreeformGradient]
+      end
+    end
+
+    defmodule BackgroundType do
+      @moduledoc """
+      BackgroundType model. Valid subtypes: BackgroundTypeFill, BackgroundTypeWallpaper, BackgroundTypePattern, BackgroundTypeChatTheme
+      """
+      @type t ::
+              BackgroundTypeFill.t()
+              | BackgroundTypeWallpaper.t()
+              | BackgroundTypePattern.t()
+              | BackgroundTypeChatTheme.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [BackgroundTypeFill, BackgroundTypeWallpaper, BackgroundTypePattern, BackgroundTypeChatTheme]
       end
     end
 
@@ -3780,16 +4064,16 @@ defmodule ExGram do
 
     defmodule ReactionType do
       @moduledoc """
-      ReactionType model. Valid subtypes: ReactionTypeEmoji, ReactionTypeCustomEmoji
+      ReactionType model. Valid subtypes: ReactionTypeEmoji, ReactionTypeCustomEmoji, ReactionTypePaid
       """
-      @type t :: ReactionTypeEmoji.t() | ReactionTypeCustomEmoji.t()
+      @type t :: ReactionTypeEmoji.t() | ReactionTypeCustomEmoji.t() | ReactionTypePaid.t()
 
       defstruct []
 
       def decode_as, do: %{}
 
       def subtypes do
-        [ReactionTypeEmoji, ReactionTypeCustomEmoji]
+        [ReactionTypeEmoji, ReactionTypeCustomEmoji, ReactionTypePaid]
       end
     end
 
@@ -3870,6 +4154,21 @@ defmodule ExGram do
 
       def subtypes do
         [InputMediaAnimation, InputMediaDocument, InputMediaAudio, InputMediaPhoto, InputMediaVideo]
+      end
+    end
+
+    defmodule InputPaidMedia do
+      @moduledoc """
+      InputPaidMedia model. Valid subtypes: InputPaidMediaPhoto, InputPaidMediaVideo
+      """
+      @type t :: InputPaidMediaPhoto.t() | InputPaidMediaVideo.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [InputPaidMediaPhoto, InputPaidMediaVideo]
       end
     end
 
@@ -3955,6 +4254,48 @@ defmodule ExGram do
       end
     end
 
+    defmodule RevenueWithdrawalState do
+      @moduledoc """
+      RevenueWithdrawalState model. Valid subtypes: RevenueWithdrawalStatePending, RevenueWithdrawalStateSucceeded, RevenueWithdrawalStateFailed
+      """
+      @type t ::
+              RevenueWithdrawalStatePending.t() | RevenueWithdrawalStateSucceeded.t() | RevenueWithdrawalStateFailed.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [RevenueWithdrawalStatePending, RevenueWithdrawalStateSucceeded, RevenueWithdrawalStateFailed]
+      end
+    end
+
+    defmodule TransactionPartner do
+      @moduledoc """
+      TransactionPartner model. Valid subtypes: TransactionPartnerUser, TransactionPartnerFragment, TransactionPartnerTelegramAds, TransactionPartnerTelegramApi, TransactionPartnerOther
+      """
+      @type t ::
+              TransactionPartnerUser.t()
+              | TransactionPartnerFragment.t()
+              | TransactionPartnerTelegramAds.t()
+              | TransactionPartnerTelegramApi.t()
+              | TransactionPartnerOther.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [
+          TransactionPartnerUser,
+          TransactionPartnerFragment,
+          TransactionPartnerTelegramAds,
+          TransactionPartnerTelegramApi,
+          TransactionPartnerOther
+        ]
+      end
+    end
+
     defmodule PassportElementError do
       @moduledoc """
       PassportElementError model. Valid subtypes: PassportElementErrorDataField, PassportElementErrorFrontSide, PassportElementErrorReverseSide, PassportElementErrorSelfie, PassportElementErrorFile, PassportElementErrorFiles, PassportElementErrorTranslationFile, PassportElementErrorTranslationFiles, PassportElementErrorUnspecified
@@ -3989,7 +4330,7 @@ defmodule ExGram do
       end
     end
 
-    # 11 generics
+    # 17 generics
   end
 
   # END AUTO GENERATED
