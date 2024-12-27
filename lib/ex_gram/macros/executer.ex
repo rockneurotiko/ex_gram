@@ -100,6 +100,7 @@ defmodule ExGram.Macros.Executer do
   defp to_size_string(x) when is_integer(x), do: Integer.to_string(x)
   # This is useful to encode automatically
   defp to_size_string(x) when is_map(x), do: encode(x)
+  defp to_size_string(x) when is_list(x), do: encode(x)
   defp to_size_string(_), do: raise("Not sizable!")
 
   defp encode(%{__struct__: _} = x) do
@@ -130,7 +131,7 @@ defmodule ExGram.Macros.Executer do
   defp create_multipart(body, []), do: body
 
   defp create_multipart(body, fileparts) do
-    filepart_names = fileparts |> Enum.map(&elem(&1, 1)) |> Enum.map(&String.to_atom/1)
+    filepart_names = fileparts |> Enum.map(&elem(&1, 1)) |> Enum.map(&String.to_existing_atom/1)
 
     restparts =
       body

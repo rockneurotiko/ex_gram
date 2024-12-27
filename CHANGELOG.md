@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Fix webhook options allowed_updates when sending a multipart
 
 ## [0.53.0]
 - Update Telegram API to 7.5: https://core.telegram.org/bots/api#june-18-2024
