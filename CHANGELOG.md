@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+
+## [0.54.0]
+- Add ExGram.Cast to convert responses to models
+- Fix webhook response casting, now all should be models
 - Fix webhook options allowed_updates when sending a multipart
 
 ## [0.53.0]
