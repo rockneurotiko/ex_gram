@@ -74,9 +74,9 @@ defmodule ExGram.Updates.Webhook do
 
     case valid_url(config[:url]) do
       {:ok, webhook_url} ->
-        ExGram.set_webhook("#{webhook_url}/telegram/#{token_hash(token)}", [
-          {:token, token} | params
-        ])
+        params = Keyword.put(params, :token, token)
+        url = "#{webhook_url}/telegram/#{token_hash(token)}"
+        {:ok, true} = ExGram.set_webhook(url, params)
 
       {:error, error} ->
         Logger.error(
