@@ -14,7 +14,7 @@ if Code.ensure_loaded?(Plug) do
 
     @impl true
     def call(%Conn{method: "POST"} = conn, _) do
-      if "telegram" in conn.path_info do
+      if webhook_path_match?(conn) do
         handle_update(conn)
       else
         conn
@@ -81,6 +81,11 @@ if Code.ensure_loaded?(Plug) do
         {secret_token, config_token} when secret_token == config_token ->
           :ok
       end
+    end
+
+    defp webhook_path_match?(conn) do
+      webhook_path = ExGram.Config.get(:ex_gram, :webhook)[:webhook_path] || "telegram"
+      length(conn.path_info) == 2 && Enum.at(conn.path_info, 0) == webhook_path
     end
 
     defp token_hash([path]) when is_binary(path), do: path
