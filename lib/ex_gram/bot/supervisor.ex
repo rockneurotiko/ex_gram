@@ -15,7 +15,15 @@ defmodule ExGram.Bot.Supervisor do
   end
 
   def start_link(opts, module) do
-    supervisor_name = opts[:name] || Module.concat(module, Supervisor)
+    supervisor_name =
+      if opts[:name] do
+        String.to_atom(
+          Atom.to_string(opts[:name]) <> "_supervisor"
+        )
+      else
+        Module.concat(module, Supervisor)
+      end
+
     params = Keyword.put(opts, :module, module)
     Supervisor.start_link(ExGram.Bot.Supervisor, params, name: supervisor_name)
   end
