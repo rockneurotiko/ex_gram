@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Update Telegram API to 8.3: https://core.telegram.org/bots/api#february-12-2025
 
 ## [0.54.0]
 - Add ExGram.Cast to convert responses to models
