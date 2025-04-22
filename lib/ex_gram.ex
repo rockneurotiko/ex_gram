@@ -1279,6 +1279,251 @@ defmodule ExGram do
   )
 
   method(
+    :get,
+    "getAvailableGifts",
+    [],
+    ExGram.Model.Gifts,
+    "Returns the list of gifts that can be sent by the bot to users and channel chats. Requires no parameters. Returns a Gifts object."
+  )
+
+  method(
+    :post,
+    "sendGift",
+    [
+      {user_id, [:integer], :optional},
+      {chat_id, [:integer, :string], :optional},
+      {gift_id, [:string]},
+      {pay_for_upgrade, [:boolean], :optional},
+      {text, [:string], :optional},
+      {text_parse_mode, [:string], :optional},
+      {text_entities, [{:array, MessageEntity}], :optional}
+    ],
+    true,
+    "Sends a gift to the given user or channel chat. The gift can't be converted to Telegram Stars by the receiver. Returns True on success."
+  )
+
+  method(
+    :post,
+    "giftPremiumSubscription",
+    [
+      {user_id, [:integer]},
+      {month_count, [:integer]},
+      {star_count, [:integer]},
+      {text, [:string], :optional},
+      {text_parse_mode, [:string], :optional},
+      {text_entities, [{:array, MessageEntity}], :optional}
+    ],
+    true,
+    "Gifts a Telegram Premium subscription to the given user. Returns True on success."
+  )
+
+  method(
+    :post,
+    "verifyUser",
+    [{user_id, [:integer]}, {custom_description, [:string], :optional}],
+    true,
+    "Verifies a user on behalf of the organization which is represented by the bot. Returns True on success."
+  )
+
+  method(
+    :post,
+    "verifyChat",
+    [{chat_id, [:integer, :string]}, {custom_description, [:string], :optional}],
+    true,
+    "Verifies a chat on behalf of the organization which is represented by the bot. Returns True on success."
+  )
+
+  method(
+    :post,
+    "removeUserVerification",
+    [{user_id, [:integer]}],
+    true,
+    "Removes verification from a user who is currently verified on behalf of the organization represented by the bot. Returns True on success."
+  )
+
+  method(
+    :post,
+    "removeChatVerification",
+    [{chat_id, [:integer, :string]}],
+    true,
+    "Removes verification from a chat that is currently verified on behalf of the organization represented by the bot. Returns True on success."
+  )
+
+  method(
+    :post,
+    "readBusinessMessage",
+    [{business_connection_id, [:string]}, {chat_id, [:integer]}, {message_id, [:integer]}],
+    true,
+    "Marks incoming message as read on behalf of a business account. Requires the can_read_messages business bot right. Returns True on success."
+  )
+
+  method(
+    :post,
+    "deleteBusinessMessages",
+    [{business_connection_id, [:string]}, {message_ids, [{:array, :integer}]}],
+    true,
+    "Delete messages on behalf of a business account. Requires the can_delete_sent_messages business bot right to delete messages sent by the bot itself, or the can_delete_all_messages business bot right to delete any message. Returns True on success."
+  )
+
+  method(
+    :post,
+    "setBusinessAccountName",
+    [{business_connection_id, [:string]}, {first_name, [:string]}, {last_name, [:string], :optional}],
+    true,
+    "Changes the first and last name of a managed business account. Requires the can_change_name business bot right. Returns True on success."
+  )
+
+  method(
+    :post,
+    "setBusinessAccountUsername",
+    [{business_connection_id, [:string]}, {username, [:string], :optional}],
+    true,
+    "Changes the username of a managed business account. Requires the can_change_username business bot right. Returns True on success."
+  )
+
+  method(
+    :post,
+    "setBusinessAccountBio",
+    [{business_connection_id, [:string]}, {bio, [:string], :optional}],
+    true,
+    "Changes the bio of a managed business account. Requires the can_change_bio business bot right. Returns True on success."
+  )
+
+  method(
+    :post,
+    "setBusinessAccountProfilePhoto",
+    [{business_connection_id, [:string]}, {photo, [InputProfilePhoto]}, {is_public, [:boolean], :optional}],
+    true,
+    "Changes the profile photo of a managed business account. Requires the can_edit_profile_photo business bot right. Returns True on success."
+  )
+
+  method(
+    :post,
+    "removeBusinessAccountProfilePhoto",
+    [{business_connection_id, [:string]}, {is_public, [:boolean], :optional}],
+    true,
+    "Removes the current profile photo of a managed business account. Requires the can_edit_profile_photo business bot right. Returns True on success."
+  )
+
+  method(
+    :post,
+    "setBusinessAccountGiftSettings",
+    [{business_connection_id, [:string]}, {show_gift_button, [:boolean]}, {accepted_gift_types, [AcceptedGiftTypes]}],
+    true,
+    "Changes the privacy settings pertaining to incoming gifts in a managed business account. Requires the can_change_gift_settings business bot right. Returns True on success."
+  )
+
+  method(
+    :get,
+    "getBusinessAccountStarBalance",
+    [{business_connection_id, [:string]}],
+    ExGram.Model.StarAmount,
+    "Returns the amount of Telegram Stars owned by a managed business account. Requires the can_view_gifts_and_stars business bot right. Returns StarAmount on success."
+  )
+
+  method(
+    :post,
+    "transferBusinessAccountStars",
+    [{business_connection_id, [:string]}, {star_count, [:integer]}],
+    true,
+    "Transfers Telegram Stars from the business account balance to the bot's balance. Requires the can_transfer_stars business bot right. Returns True on success."
+  )
+
+  method(
+    :get,
+    "getBusinessAccountGifts",
+    [
+      {business_connection_id, [:string]},
+      {exclude_unsaved, [:boolean], :optional},
+      {exclude_saved, [:boolean], :optional},
+      {exclude_unlimited, [:boolean], :optional},
+      {exclude_limited, [:boolean], :optional},
+      {exclude_unique, [:boolean], :optional},
+      {sort_by_price, [:boolean], :optional},
+      {offset, [:string], :optional},
+      {limit, [:integer], :optional}
+    ],
+    ExGram.Model.OwnedGifts,
+    "Returns the gifts received and owned by a managed business account. Requires the can_view_gifts_and_stars business bot right. Returns OwnedGifts on success."
+  )
+
+  method(
+    :post,
+    "convertGiftToStars",
+    [{business_connection_id, [:string]}, {owned_gift_id, [:string]}],
+    true,
+    "Converts a given regular gift to Telegram Stars. Requires the can_convert_gifts_to_stars business bot right. Returns True on success."
+  )
+
+  method(
+    :post,
+    "upgradeGift",
+    [
+      {business_connection_id, [:string]},
+      {owned_gift_id, [:string]},
+      {keep_original_details, [:boolean], :optional},
+      {star_count, [:integer], :optional}
+    ],
+    true,
+    "Upgrades a given regular gift to a unique gift. Requires the can_transfer_and_upgrade_gifts business bot right. Additionally requires the can_transfer_stars business bot right if the upgrade is paid. Returns True on success."
+  )
+
+  method(
+    :post,
+    "transferGift",
+    [
+      {business_connection_id, [:string]},
+      {owned_gift_id, [:string]},
+      {new_owner_chat_id, [:integer]},
+      {star_count, [:integer], :optional}
+    ],
+    true,
+    "Transfers an owned unique gift to another user. Requires the can_transfer_and_upgrade_gifts business bot right. Requires can_transfer_stars business bot right if the transfer is paid. Returns True on success."
+  )
+
+  method(
+    :post,
+    "postStory",
+    [
+      {business_connection_id, [:string]},
+      {content, [InputStoryContent]},
+      {active_period, [:integer]},
+      {caption, [:string], :optional},
+      {parse_mode, [:string], :optional},
+      {caption_entities, [{:array, MessageEntity}], :optional},
+      {areas, [{:array, StoryArea}], :optional},
+      {post_to_chat_page, [:boolean], :optional},
+      {protect_content, [:boolean], :optional}
+    ],
+    ExGram.Model.Story,
+    "Posts a story on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success."
+  )
+
+  method(
+    :post,
+    "editStory",
+    [
+      {business_connection_id, [:string]},
+      {story_id, [:integer]},
+      {content, [InputStoryContent]},
+      {caption, [:string], :optional},
+      {parse_mode, [:string], :optional},
+      {caption_entities, [{:array, MessageEntity}], :optional},
+      {areas, [{:array, StoryArea}], :optional}
+    ],
+    ExGram.Model.Story,
+    "Edits a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns Story on success."
+  )
+
+  method(
+    :post,
+    "deleteStory",
+    [{business_connection_id, [:string]}, {story_id, [:integer]}],
+    true,
+    "Deletes a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns True on success."
+  )
+
+  method(
     :post,
     "sendSticker",
     [
@@ -1423,62 +1668,6 @@ defmodule ExGram do
     [{name, [:string]}],
     true,
     "Use this method to delete a sticker set that was created by the bot. Returns True on success."
-  )
-
-  method(
-    :get,
-    "getAvailableGifts",
-    [],
-    ExGram.Model.Gifts,
-    "Returns the list of gifts that can be sent by the bot to users and channel chats. Requires no parameters. Returns a Gifts object."
-  )
-
-  method(
-    :post,
-    "sendGift",
-    [
-      {user_id, [:integer], :optional},
-      {chat_id, [:integer, :string], :optional},
-      {gift_id, [:string]},
-      {pay_for_upgrade, [:boolean], :optional},
-      {text, [:string], :optional},
-      {text_parse_mode, [:string], :optional},
-      {text_entities, [{:array, MessageEntity}], :optional}
-    ],
-    true,
-    "Sends a gift to the given user or channel chat. The gift can't be converted to Telegram Stars by the receiver. Returns True on success."
-  )
-
-  method(
-    :post,
-    "verifyUser",
-    [{user_id, [:integer]}, {custom_description, [:string], :optional}],
-    true,
-    "Verifies a user on behalf of the organization which is represented by the bot. Returns True on success."
-  )
-
-  method(
-    :post,
-    "verifyChat",
-    [{chat_id, [:integer, :string]}, {custom_description, [:string], :optional}],
-    true,
-    "Verifies a chat on behalf of the organization which is represented by the bot. Returns True on success."
-  )
-
-  method(
-    :post,
-    "removeUserVerification",
-    [{user_id, [:integer]}],
-    true,
-    "Removes verification from a user who is currently verified on behalf of the organization represented by the bot. Returns True on success."
-  )
-
-  method(
-    :post,
-    "removeChatVerification",
-    [{chat_id, [:integer, :string]}],
-    true,
-    "Removes verification from a chat that is currently verified on behalf of the organization represented by the bot. Returns True on success."
   )
 
   method(
@@ -1689,7 +1878,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 135 methods
+  # 153 methods
 
   # ----------MODELS-----------
 
@@ -1815,7 +2004,7 @@ defmodule ExGram do
         {:invite_link, [:string], :optional},
         {:pinned_message, [Message], :optional},
         {:permissions, [ChatPermissions], :optional},
-        {:can_send_gift, [:boolean], :optional},
+        {:accepted_gift_types, [AcceptedGiftTypes]},
         {:can_send_paid_media, [:boolean], :optional},
         {:slow_mode_delay, [:integer], :optional},
         {:unrestrict_boost_count, [:integer], :optional},
@@ -1858,6 +2047,7 @@ defmodule ExGram do
         {:is_from_offline, [:boolean], :optional},
         {:media_group_id, [:string], :optional},
         {:author_signature, [:string], :optional},
+        {:paid_star_count, [:integer], :optional},
         {:text, [:string], :optional},
         {:entities, [{:array, MessageEntity}], :optional},
         {:link_preview_options, [LinkPreviewOptions], :optional},
@@ -1899,6 +2089,8 @@ defmodule ExGram do
         {:refunded_payment, [RefundedPayment], :optional},
         {:users_shared, [UsersShared], :optional},
         {:chat_shared, [ChatShared], :optional},
+        {:gift, [GiftInfo], :optional},
+        {:unique_gift, [UniqueGiftInfo], :optional},
         {:connected_website, [:string], :optional},
         {:write_access_allowed, [WriteAccessAllowed], :optional},
         {:passport_data, [PassportData], :optional},
@@ -1915,6 +2107,7 @@ defmodule ExGram do
         {:giveaway, [Giveaway], :optional},
         {:giveaway_winners, [GiveawayWinners], :optional},
         {:giveaway_completed, [GiveawayCompleted], :optional},
+        {:paid_message_price_changed, [PaidMessagePriceChanged], :optional},
         {:video_chat_scheduled, [VideoChatScheduled], :optional},
         {:video_chat_started, [VideoChatStarted], :optional},
         {:video_chat_ended, [VideoChatEnded], :optional},
@@ -2427,6 +2620,12 @@ defmodule ExGram do
     )
 
     model(
+      PaidMessagePriceChanged,
+      [{:paid_message_star_count, [:integer]}],
+      "Describes a service message about a change in the price of paid messages within a chat."
+    )
+
+    model(
       GiveawayCreated,
       [{:prize_star_count, [:integer], :optional}],
       "This object represents a service message about the creation of a scheduled giveaway."
@@ -2863,6 +3062,77 @@ defmodule ExGram do
     )
 
     model(
+      StoryAreaPosition,
+      [
+        {:x_percentage, [:float]},
+        {:y_percentage, [:float]},
+        {:width_percentage, [:float]},
+        {:height_percentage, [:float]},
+        {:rotation_angle, [:float]},
+        {:corner_radius_percentage, [:float]}
+      ],
+      "Describes the position of a clickable area within a story."
+    )
+
+    model(
+      LocationAddress,
+      [
+        {:country_code, [:string]},
+        {:state, [:string], :optional},
+        {:city, [:string], :optional},
+        {:street, [:string], :optional}
+      ],
+      "Describes the physical address of a location."
+    )
+
+    model(
+      StoryAreaType,
+      [{:type, [:string]}, {:latitude, [:float]}, {:longitude, [:float]}, {:address, [LocationAddress], :optional}],
+      "Describes the type of a clickable area on a story. Currently, it can be one of"
+    )
+
+    model(
+      StoryAreaTypeLocation,
+      [{:type, [:string]}, {:latitude, [:float]}, {:longitude, [:float]}, {:address, [LocationAddress], :optional}],
+      "Describes a story area pointing to a location. Currently, a story can have up to 10 location areas."
+    )
+
+    model(
+      StoryAreaTypeSuggestedReaction,
+      [
+        {:type, [:string]},
+        {:reaction_type, [ReactionType]},
+        {:is_dark, [:boolean], :optional},
+        {:is_flipped, [:boolean], :optional}
+      ],
+      "Describes a story area pointing to a suggested reaction. Currently, a story can have up to 5 suggested reaction areas."
+    )
+
+    model(
+      StoryAreaTypeLink,
+      [{:type, [:string]}, {:url, [:string]}],
+      "Describes a story area pointing to an HTTP or tg:// link. Currently, a story can have up to 3 link areas."
+    )
+
+    model(
+      StoryAreaTypeWeather,
+      [{:type, [:string]}, {:temperature, [:float]}, {:emoji, [:string]}, {:background_color, [:integer]}],
+      "Describes a story area containing weather information. Currently, a story can have up to 3 weather areas."
+    )
+
+    model(
+      StoryAreaTypeUniqueGift,
+      [{:type, [:string]}, {:name, [:string]}],
+      "Describes a story area pointing to a unique gift. Currently, a story can have at most 1 unique gift area."
+    )
+
+    model(
+      StoryArea,
+      [{:position, [StoryAreaPosition]}, {:type, [StoryAreaType]}],
+      "Describes a clickable area on a story media."
+    )
+
+    model(
       ChatLocation,
       [{:location, [Location]}, {:address, [:string]}],
       "Represents a location to which a chat is connected."
@@ -2913,6 +3183,162 @@ defmodule ExGram do
         {:icon_custom_emoji_id, [:string], :optional}
       ],
       "This object represents a forum topic."
+    )
+
+    model(
+      Gift,
+      [
+        {:id, [:string]},
+        {:sticker, [Sticker]},
+        {:star_count, [:integer]},
+        {:upgrade_star_count, [:integer], :optional},
+        {:total_count, [:integer], :optional},
+        {:remaining_count, [:integer], :optional}
+      ],
+      "This object represents a gift that can be sent by the bot."
+    )
+
+    model(Gifts, [{:gifts, [{:array, Gift}]}], "This object represent a list of gifts.")
+
+    model(
+      UniqueGiftModel,
+      [{:name, [:string]}, {:sticker, [Sticker]}, {:rarity_per_mille, [:integer]}],
+      "This object describes the model of a unique gift."
+    )
+
+    model(
+      UniqueGiftSymbol,
+      [{:name, [:string]}, {:sticker, [Sticker]}, {:rarity_per_mille, [:integer]}],
+      "This object describes the symbol shown on the pattern of a unique gift."
+    )
+
+    model(
+      UniqueGiftBackdropColors,
+      [{:center_color, [:integer]}, {:edge_color, [:integer]}, {:symbol_color, [:integer]}, {:text_color, [:integer]}],
+      "This object describes the colors of the backdrop of a unique gift."
+    )
+
+    model(
+      UniqueGiftBackdrop,
+      [{:name, [:string]}, {:colors, [UniqueGiftBackdropColors]}, {:rarity_per_mille, [:integer]}],
+      "This object describes the backdrop of a unique gift."
+    )
+
+    model(
+      UniqueGift,
+      [
+        {:base_name, [:string]},
+        {:name, [:string]},
+        {:number, [:integer]},
+        {:model, [UniqueGiftModel]},
+        {:symbol, [UniqueGiftSymbol]},
+        {:backdrop, [UniqueGiftBackdrop]}
+      ],
+      "This object describes a unique gift that was upgraded from a regular gift."
+    )
+
+    model(
+      GiftInfo,
+      [
+        {:gift, [Gift]},
+        {:owned_gift_id, [:string], :optional},
+        {:convert_star_count, [:integer], :optional},
+        {:prepaid_upgrade_star_count, [:integer], :optional},
+        {:can_be_upgraded, [:boolean], :optional},
+        {:text, [:string], :optional},
+        {:entities, [{:array, MessageEntity}], :optional},
+        {:is_private, [:boolean], :optional}
+      ],
+      "Describes a service message about a regular gift that was sent or received."
+    )
+
+    model(
+      UniqueGiftInfo,
+      [
+        {:gift, [UniqueGift]},
+        {:origin, [:string]},
+        {:owned_gift_id, [:string], :optional},
+        {:transfer_star_count, [:integer], :optional}
+      ],
+      "Describes a service message about a unique gift that was sent or received."
+    )
+
+    model(
+      OwnedGift,
+      [
+        {:type, [:string]},
+        {:gift, [Gift]},
+        {:owned_gift_id, [:string], :optional},
+        {:sender_user, [User], :optional},
+        {:send_date, [:integer]},
+        {:text, [:string], :optional},
+        {:entities, [{:array, MessageEntity}], :optional},
+        {:is_private, [:boolean], :optional},
+        {:is_saved, [:boolean], :optional},
+        {:can_be_upgraded, [:boolean], :optional},
+        {:was_refunded, [:boolean], :optional},
+        {:convert_star_count, [:integer], :optional},
+        {:prepaid_upgrade_star_count, [:integer], :optional}
+      ],
+      "This object describes a gift received and owned by a user or a chat. Currently, it can be one of"
+    )
+
+    model(
+      OwnedGiftRegular,
+      [
+        {:type, [:string]},
+        {:gift, [Gift]},
+        {:owned_gift_id, [:string], :optional},
+        {:sender_user, [User], :optional},
+        {:send_date, [:integer]},
+        {:text, [:string], :optional},
+        {:entities, [{:array, MessageEntity}], :optional},
+        {:is_private, [:boolean], :optional},
+        {:is_saved, [:boolean], :optional},
+        {:can_be_upgraded, [:boolean], :optional},
+        {:was_refunded, [:boolean], :optional},
+        {:convert_star_count, [:integer], :optional},
+        {:prepaid_upgrade_star_count, [:integer], :optional}
+      ],
+      "Describes a regular gift owned by a user or a chat."
+    )
+
+    model(
+      OwnedGiftUnique,
+      [
+        {:type, [:string]},
+        {:gift, [UniqueGift]},
+        {:owned_gift_id, [:string], :optional},
+        {:sender_user, [User], :optional},
+        {:send_date, [:integer]},
+        {:is_saved, [:boolean], :optional},
+        {:can_be_transferred, [:boolean], :optional},
+        {:transfer_star_count, [:integer], :optional}
+      ],
+      "Describes a unique gift received and owned by a user or a chat."
+    )
+
+    model(
+      OwnedGifts,
+      [{:total_count, [:integer]}, {:gifts, [{:array, OwnedGift}]}, {:next_offset, [:string], :optional}],
+      "Contains the list of gifts received and owned by a user or a chat."
+    )
+
+    model(
+      AcceptedGiftTypes,
+      [
+        {:unlimited_gifts, [:boolean]},
+        {:limited_gifts, [:boolean]},
+        {:unique_gifts, [:boolean]},
+        {:premium_subscription, [:boolean]}
+      ],
+      "This object describes the types of gifts that can be gifted to a user or a chat."
+    )
+
+    model(
+      StarAmount,
+      [{:amount, [:integer]}, {:nanostar_amount, [:integer], :optional}],
+      "Describes an amount of Telegram Stars."
     )
 
     model(BotCommand, [{:command, [:string]}, {:description, [:string]}], "This object represents a bot command.")
@@ -3024,13 +3450,34 @@ defmodule ExGram do
     )
 
     model(
+      BusinessBotRights,
+      [
+        {:can_reply, [:boolean], :optional},
+        {:can_read_messages, [:boolean], :optional},
+        {:can_delete_sent_messages, [:boolean], :optional},
+        {:can_delete_all_messages, [:boolean], :optional},
+        {:can_edit_name, [:boolean], :optional},
+        {:can_edit_bio, [:boolean], :optional},
+        {:can_edit_profile_photo, [:boolean], :optional},
+        {:can_edit_username, [:boolean], :optional},
+        {:can_change_gift_settings, [:boolean], :optional},
+        {:can_view_gifts_and_stars, [:boolean], :optional},
+        {:can_convert_gifts_to_stars, [:boolean], :optional},
+        {:can_transfer_and_upgrade_gifts, [:boolean], :optional},
+        {:can_transfer_stars, [:boolean], :optional},
+        {:can_manage_stories, [:boolean], :optional}
+      ],
+      "Represents the rights of a business bot."
+    )
+
+    model(
       BusinessConnection,
       [
         {:id, [:string]},
         {:user, [User]},
         {:user_chat_id, [:integer]},
         {:date, [:integer]},
-        {:can_reply, [:boolean]},
+        {:rights, [BusinessBotRights], :optional},
         {:is_enabled, [:boolean]}
       ],
       "Describes the connection of the bot with a business account."
@@ -3150,6 +3597,32 @@ defmodule ExGram do
     )
 
     model(
+      InputProfilePhotoStatic,
+      [{:type, [:string]}, {:photo, [:string]}],
+      "A static profile photo in the .JPG format."
+    )
+
+    model(
+      InputProfilePhotoAnimated,
+      [{:type, [:string]}, {:animation, [:string]}, {:main_frame_timestamp, [:float], :optional}],
+      "An animated profile photo in the MPEG4 format."
+    )
+
+    model(InputStoryContentPhoto, [{:type, [:string]}, {:photo, [:string]}], "Describes a photo to post as a story.")
+
+    model(
+      InputStoryContentVideo,
+      [
+        {:type, [:string]},
+        {:video, [:string]},
+        {:duration, [:float], :optional},
+        {:cover_frame_timestamp, [:float], :optional},
+        {:is_animation, [:boolean], :optional}
+      ],
+      "Describes a video to post as a story."
+    )
+
+    model(
       Sticker,
       [
         {:file_id, [:string]},
@@ -3192,7 +3665,7 @@ defmodule ExGram do
     model(
       InputSticker,
       [
-        {:sticker, [:file, :string]},
+        {:sticker, [:string]},
         {:format, [:string]},
         {:emoji_list, [{:array, :string}]},
         {:mask_position, [MaskPosition], :optional},
@@ -3200,21 +3673,6 @@ defmodule ExGram do
       ],
       "This object describes a sticker to be added to a sticker set."
     )
-
-    model(
-      Gift,
-      [
-        {:id, [:string]},
-        {:sticker, [Sticker]},
-        {:star_count, [:integer]},
-        {:upgrade_star_count, [:integer], :optional},
-        {:total_count, [:integer], :optional},
-        {:remaining_count, [:integer], :optional}
-      ],
-      "This object represents a gift that can be sent by the bot."
-    )
-
-    model(Gifts, [{:gifts, [{:array, Gift}]}], "This object represent a list of gifts.")
 
     model(
       InlineQuery,
@@ -3828,13 +4286,15 @@ defmodule ExGram do
       TransactionPartnerUser,
       [
         {:type, [:string]},
+        {:transaction_type, [:string]},
         {:user, [User]},
         {:affiliate, [AffiliateInfo], :optional},
         {:invoice_payload, [:string], :optional},
         {:subscription_period, [:integer], :optional},
         {:paid_media, [{:array, PaidMedia}], :optional},
         {:paid_media_payload, [:string], :optional},
-        {:gift, [Gift], :optional}
+        {:gift, [Gift], :optional},
+        {:premium_subscription_duration, [:integer], :optional}
       ],
       "Describes a transaction with a user."
     )
@@ -4018,7 +4478,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 214 models
+    # 242 models
 
     defmodule MaybeInaccessibleMessage do
       @moduledoc """
@@ -4237,6 +4697,36 @@ defmodule ExGram do
       end
     end
 
+    defmodule InputProfilePhoto do
+      @moduledoc """
+      InputProfilePhoto model. Valid subtypes: InputProfilePhotoStatic, InputProfilePhotoAnimated
+      """
+      @type t :: InputProfilePhotoStatic.t() | InputProfilePhotoAnimated.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [InputProfilePhotoStatic, InputProfilePhotoAnimated]
+      end
+    end
+
+    defmodule InputStoryContent do
+      @moduledoc """
+      InputStoryContent model. Valid subtypes: InputStoryContentPhoto, InputStoryContentVideo
+      """
+      @type t :: InputStoryContentPhoto.t() | InputStoryContentVideo.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [InputStoryContentPhoto, InputStoryContentVideo]
+      end
+    end
+
     defmodule InlineQueryResult do
       @moduledoc """
       InlineQueryResult model. Valid subtypes: InlineQueryResultCachedAudio, InlineQueryResultCachedDocument, InlineQueryResultCachedGif, InlineQueryResultCachedMpeg4Gif, InlineQueryResultCachedPhoto, InlineQueryResultCachedSticker, InlineQueryResultCachedVideo, InlineQueryResultCachedVoice, InlineQueryResultArticle, InlineQueryResultAudio, InlineQueryResultContact, InlineQueryResultGame, InlineQueryResultDocument, InlineQueryResultGif, InlineQueryResultLocation, InlineQueryResultMpeg4Gif, InlineQueryResultPhoto, InlineQueryResultVenue, InlineQueryResultVideo, InlineQueryResultVoice
@@ -4399,7 +4889,7 @@ defmodule ExGram do
       end
     end
 
-    # 17 generics
+    # 19 generics
   end
 
   # END AUTO GENERATED
