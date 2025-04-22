@@ -1417,7 +1417,7 @@ defmodule ExGram do
     :get,
     "getBusinessAccountStarBalance",
     [{business_connection_id, [:string]}],
-    :any,
+    ExGram.Model.StarAmount,
     "Returns the amount of Telegram Stars owned by a managed business account. Requires the can_view_gifts_and_stars business bot right. Returns StarAmount on success."
   )
 
@@ -1443,7 +1443,7 @@ defmodule ExGram do
       {offset, [:string], :optional},
       {limit, [:integer], :optional}
     ],
-    :any,
+    ExGram.Model.OwnedGifts,
     "Returns the gifts received and owned by a managed business account. Requires the can_view_gifts_and_stars business bot right. Returns OwnedGifts on success."
   )
 
