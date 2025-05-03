@@ -72,7 +72,7 @@ defmodule ExGram.Mixfile do
   defp docs do
     [
       main: "readme",
-      source_ref: "v#{@version}",
+      source_ref: @version,
       source_url: @source_url,
       skip_undefined_reference_warnings_on: ["CHANGELOG.md"],
       extras: ["README.md", "CHANGELOG.md"],
