@@ -26,8 +26,9 @@ defmodule ExGram do
   end
 
   defp reload_engine do
-    engine = Application.get_env(:ex_gram, :json_engine)
-    ExGram.Encoder.EngineCompiler.compile(engine)
+    if engine = Application.get_env(:ex_gram, :json_engine) do
+      ExGram.Encoder.EngineCompiler.compile(engine)
+    end
   end
 
   def test_environment? do
