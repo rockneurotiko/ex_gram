@@ -64,7 +64,7 @@ defmodule ExGram.Mixfile do
       # Development
       {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.23", only: :dev},
+      {:ex_doc, "~> 0.38", only: :dev, runtime: false, warn_if_outdated: true},
       {:styler, "~> 0.11", only: [:dev, :test], runtime: false}
     ]
   end
