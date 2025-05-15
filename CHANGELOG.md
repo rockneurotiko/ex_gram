@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## [0.55.1]
+- Fix: Only reload JSON engine of configuration is set
+
 ## [0.55.0]
 - Update Telegram API to 9.0: https://core.telegram.org/bots/api#april-11-2025
 - Update Telegram API to 8.3: https://core.telegram.org/bots/api#february-12-2025
