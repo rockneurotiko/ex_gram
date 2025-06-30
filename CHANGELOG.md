@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Change: `middleware_halted` now stop the request.
 
 ## [0.55.1]
 - Fix: Only reload JSON engine of configuration is set
