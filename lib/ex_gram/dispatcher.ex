@@ -88,7 +88,7 @@ defmodule ExGram.Dispatcher do
     cnt = %Cnt{default_context(state) | update: update}
     cnt = apply_middlewares(cnt)
 
-    unless cnt.halted do
+    unless cnt.halted || cnt.middleware_halted do
       info = extract_info(cnt)
       spawn(fn -> call_handler(info, cnt, state) end)
     end
