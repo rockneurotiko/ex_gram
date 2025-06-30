@@ -36,6 +36,7 @@ defmodule ExGram.Dispatcher do
 
   defstruct name: __MODULE__,
             bot_info: nil,
+            bot_module: nil,
             dispatcher_name: __MODULE__,
             extra_info: %{},
             commands: %{},
@@ -55,6 +56,7 @@ defmodule ExGram.Dispatcher do
     %__MODULE__{
       name: name,
       bot_info: bot_info,
+      bot_module: module,
       dispatcher_name: name,
       extra_info: extra_info,
       commands: prepare_commands(module.commands()),
@@ -80,6 +82,8 @@ defmodule ExGram.Dispatcher do
 
   @impl GenServer
   def init(%__MODULE__{} = state) do
+    state.bot_module.init(bot: state.name, token: ExGram.Token.fetch(bot: state.name))
+
     {:ok, state}
   end
 
