@@ -31,7 +31,6 @@ defmodule ExGram.Bot.Supervisor do
     {updates_worker, updates_worker_opts} = updates_worker(updates_method)
     updates_worker_opts = Map.merge(updates_worker_opts, %{bot: name, token: token})
 
-    module.init(bot: name, token: token)
     if opts[:setup_commands], do: setup_commands(module.commands(), token)
 
     bot_info = get_bot_info(opts[:username], token)
