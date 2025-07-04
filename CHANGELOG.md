@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.56.0]
 - Update to version 9.1: https://core.telegram.org/bots/api-changelog#july-3-2025
 - Fix: `init/1` callback is called on Dispatcher init instead of Supervisor init, allowing to the user to have the Dispatcher pid
 - Change: `middleware_halted` now stop the request.
