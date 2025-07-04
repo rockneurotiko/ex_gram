@@ -1833,7 +1833,7 @@ defmodule ExGram do
   method(
     :get,
     "getMyStarBalance",
-    [{offset, [:integer], :optional}, {limit, [:integer], :optional}],
+    [],
     ExGram.Model.StarAmount,
     "A method to get the current Telegram Stars balance of the bot. Requires no parameters. On success, returns a StarAmount object."
   )
