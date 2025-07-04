@@ -67,7 +67,7 @@ You can change the engine in the configuration:
 config :ex_gram, json_engine: Poison
 ```
 
-### Middleware Login level
+### Middleware Logger level
 
 By default ex_gram will use `Tesla.Middleware.Logger` and the logger level `info`.
 
