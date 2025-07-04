@@ -67,6 +67,16 @@ You can change the engine in the configuration:
 config :ex_gram, json_engine: Poison
 ```
 
+### Middleware Login level
+
+By default ex_gram will use `Tesla.Middleware.Logger` and the login level `info`.
+
+The login level can be configured:
+
+```elixir
+config :ex_gram, Tesla.Middleware.Logger, log_level: :debug
+```
+
 ## Configuration
 
 There are some optional configurations that you can add to your `config.exs`:
