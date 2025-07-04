@@ -69,7 +69,7 @@ config :ex_gram, json_engine: Poison
 
 ### Middleware Login level
 
-By default ex_gram will use `Tesla.Middleware.Logger` and the login level `info`.
+By default ex_gram will use `Tesla.Middleware.Logger` and the logger level `info`.
 
 The login level can be configured:
 
