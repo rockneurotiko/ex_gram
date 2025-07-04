@@ -53,7 +53,7 @@ defmodule ExGram.Mixfile do
   defp deps do
     [
       # Tesla adapter
-      {:tesla, "~> 1.14", optional: true},
+      {:tesla, "~> 1.2", optional: true},
       {:gun, "~> 2.0", optional: true},
       {:hackney, "~> 1.20", optional: true},
       # JSON encoders/decoders
