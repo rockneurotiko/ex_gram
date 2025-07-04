@@ -6,21 +6,21 @@ if Code.ensure_loaded?(Tesla) do
 
     @behaviour ExGram.Adapter
 
-    use Tesla, only: ~w(get post)a
-
     require Logger
 
     @base_url "https://api.telegram.org"
 
-    plug(Tesla.Middleware.BaseUrl, ExGram.Config.get(:ex_gram, :base_url, @base_url))
-    plug(Tesla.Middleware.Headers, [{"Content-Type", "application/json"}])
-    plug(Tesla.Middleware.Logger, log_level: :info)
-
-    plug(
-      Tesla.Middleware.JSON,
-      decode: &__MODULE__.custom_decode/1,
-      encode: &__MODULE__.custom_encode/1
-    )
+    def middlewares do
+      [
+        {Tesla.Middleware.BaseUrl, ExGram.Config.get(:ex_gram, :base_url, @base_url)},
+        {Tesla.Middleware.Headers, [{"Content-Type", "application/json"}]},
+        {Tesla.Middleware.Logger, log_level: :info},
+        {
+          Tesla.Middleware.JSON,
+          decode: &__MODULE__.custom_decode/1, encode: &__MODULE__.custom_encode/1
+        }
+      ]
+    end
 
     def custom_encode(x), do: ExGram.Encoder.encode(x)
     def custom_decode(x), do: ExGram.Encoder.decode(x, keys: :atoms)
@@ -33,7 +33,7 @@ if Code.ensure_loaded?(Tesla) do
     end
 
     defp new do
-      Tesla.client(custom_middlewares(), http_adapter())
+      Tesla.client(middlewares() ++ custom_middlewares(), http_adapter())
     end
 
     defp do_request(:get, path, body) do
@@ -41,7 +41,7 @@ if Code.ensure_loaded?(Tesla) do
     end
 
     defp do_request(:post, path, body) do
-      post(new(), path, body, opts: opts())
+      Tesla.post(new(), path, body, opts: opts())
     end
 
     defp handle_result({:ok, %{body: %{ok: true, result: body}, status: status}}) when status in 200..299 do
