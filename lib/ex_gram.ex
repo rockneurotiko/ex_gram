@@ -527,6 +527,23 @@ defmodule ExGram do
 
   method(
     :post,
+    "sendChecklist",
+    [
+      {business_connection_id, [:string]},
+      {chat_id, [:integer]},
+      {checklist, [InputChecklist]},
+      {disable_notification, [:boolean], :optional},
+      {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
+      {reply_parameters, [ReplyParameters], :optional},
+      {reply_markup, [InlineKeyboardMarkup], :optional}
+    ],
+    ExGram.Model.Message,
+    "Use this method to send a checklist on behalf of a connected business account. On success, the sent Message is returned."
+  )
+
+  method(
+    :post,
     "sendDice",
     [
       {business_connection_id, [:string], :optional},
@@ -1238,6 +1255,20 @@ defmodule ExGram do
 
   method(
     :post,
+    "editMessageChecklist",
+    [
+      {business_connection_id, [:string]},
+      {chat_id, [:integer]},
+      {message_id, [:integer]},
+      {checklist, [InputChecklist]},
+      {reply_markup, [InlineKeyboardMarkup], :optional}
+    ],
+    ExGram.Model.Message,
+    "Use this method to edit a checklist on behalf of a connected business account. On success, the edited Message is returned."
+  )
+
+  method(
+    :post,
     "editMessageReplyMarkup",
     [
       {business_connection_id, [:string], :optional},
@@ -1801,6 +1832,14 @@ defmodule ExGram do
 
   method(
     :get,
+    "getMyStarBalance",
+    [],
+    ExGram.Model.StarAmount,
+    "A method to get the current Telegram Stars balance of the bot. Requires no parameters. On success, returns a StarAmount object."
+  )
+
+  method(
+    :get,
     "getStarTransactions",
     [{offset, [:integer], :optional}, {limit, [:integer], :optional}],
     ExGram.Model.StarTransactions,
@@ -1879,7 +1918,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 153 methods
+  # 156 methods
 
   # ----------MODELS-----------
 
@@ -2067,6 +2106,7 @@ defmodule ExGram do
         {:caption_entities, [{:array, MessageEntity}], :optional},
         {:show_caption_above_media, [:boolean], :optional},
         {:has_media_spoiler, [:boolean], :optional},
+        {:checklist, [Checklist], :optional},
         {:contact, [Contact], :optional},
         {:dice, [Dice], :optional},
         {:game, [Game], :optional},
@@ -2098,6 +2138,9 @@ defmodule ExGram do
         {:proximity_alert_triggered, [ProximityAlertTriggered], :optional},
         {:boost_added, [ChatBoostAdded], :optional},
         {:chat_background_set, [ChatBackground], :optional},
+        {:checklist_tasks_done, [ChecklistTasksDone], :optional},
+        {:checklist_tasks_added, [ChecklistTasksAdded], :optional},
+        {:direct_message_price_changed, [DirectMessagePriceChanged], :optional},
         {:forum_topic_created, [ForumTopicCreated], :optional},
         {:forum_topic_edited, [ForumTopicEdited], :optional},
         {:forum_topic_closed, [ForumTopicClosed], :optional},
@@ -2170,6 +2213,7 @@ defmodule ExGram do
         {:video_note, [VideoNote], :optional},
         {:voice, [Voice], :optional},
         {:has_media_spoiler, [:boolean], :optional},
+        {:checklist, [Checklist], :optional},
         {:contact, [Contact], :optional},
         {:dice, [Dice], :optional},
         {:game, [Game], :optional},
@@ -2417,6 +2461,70 @@ defmodule ExGram do
     )
 
     model(
+      ChecklistTask,
+      [
+        {:id, [:integer]},
+        {:text, [:string]},
+        {:text_entities, [{:array, MessageEntity}], :optional},
+        {:completed_by_user, [User], :optional},
+        {:completion_date, [:integer], :optional}
+      ],
+      "Describes a task in a checklist."
+    )
+
+    model(
+      Checklist,
+      [
+        {:title, [:string]},
+        {:title_entities, [{:array, MessageEntity}], :optional},
+        {:tasks, [{:array, ChecklistTask}]},
+        {:others_can_add_tasks, [:boolean], :optional},
+        {:others_can_mark_tasks_as_done, [:boolean], :optional}
+      ],
+      "Describes a checklist."
+    )
+
+    model(
+      InputChecklistTask,
+      [
+        {:id, [:integer]},
+        {:text, [:string]},
+        {:parse_mode, [:string], :optional},
+        {:text_entities, [{:array, MessageEntity}], :optional}
+      ],
+      "Describes a task to add to a checklist."
+    )
+
+    model(
+      InputChecklist,
+      [
+        {:title, [:string]},
+        {:parse_mode, [:string], :optional},
+        {:title_entities, [{:array, MessageEntity}], :optional},
+        {:tasks, [{:array, InputChecklistTask}]},
+        {:others_can_add_tasks, [:boolean], :optional},
+        {:others_can_mark_tasks_as_done, [:boolean], :optional}
+      ],
+      "Describes a checklist to create."
+    )
+
+    model(
+      ChecklistTasksDone,
+      [
+        {:checklist_message, [Message], :optional},
+        {:marked_as_done_task_ids, [{:array, :integer}], :optional},
+        {:marked_as_not_done_task_ids, [{:array, :integer}], :optional}
+      ],
+      "Describes a service message about checklist tasks marked as done or not done."
+    )
+
+    model(
+      ChecklistTasksAdded,
+      [{:checklist_message, [Message], :optional}, {:tasks, [{:array, ChecklistTask}]}],
+      "Describes a service message about tasks added to a checklist."
+    )
+
+    model(
       Location,
       [
         {:latitude, [:float]},
@@ -2624,6 +2732,12 @@ defmodule ExGram do
       PaidMessagePriceChanged,
       [{:paid_message_star_count, [:integer]}],
       "Describes a service message about a change in the price of paid messages within a chat."
+    )
+
+    model(
+      DirectMessagePriceChanged,
+      [{:are_direct_messages_enabled, [:boolean]}, {:direct_message_star_count, [:integer], :optional}],
+      "Describes a service message about a change in the price of direct messages sent to a channel chat."
     )
 
     model(
@@ -3258,8 +3372,10 @@ defmodule ExGram do
       [
         {:gift, [UniqueGift]},
         {:origin, [:string]},
+        {:last_resale_star_count, [:integer], :optional},
         {:owned_gift_id, [:string], :optional},
-        {:transfer_star_count, [:integer], :optional}
+        {:transfer_star_count, [:integer], :optional},
+        {:next_transfer_date, [:integer], :optional}
       ],
       "Describes a service message about a unique gift that was sent or received."
     )
@@ -3314,7 +3430,8 @@ defmodule ExGram do
         {:send_date, [:integer]},
         {:is_saved, [:boolean], :optional},
         {:can_be_transferred, [:boolean], :optional},
-        {:transfer_star_count, [:integer], :optional}
+        {:transfer_star_count, [:integer], :optional},
+        {:next_transfer_date, [:integer], :optional}
       ],
       "Describes a unique gift received and owned by a user or a chat."
     )
@@ -4479,7 +4596,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 242 models
+    # 249 models
 
     defmodule MaybeInaccessibleMessage do
       @moduledoc """
