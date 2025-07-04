@@ -71,7 +71,7 @@ config :ex_gram, json_engine: Poison
 
 By default ex_gram will use `Tesla.Middleware.Logger` and the logger level `info`.
 
-The login level can be configured:
+The log level and other options ( [Tesla Logger docs](https://hexdocs.pm/tesla/Tesla.Middleware.Logger.html#module-options) ) can be configured:
 
 ```elixir
 config :ex_gram, Tesla.Middleware.Logger, log_level: :debug
