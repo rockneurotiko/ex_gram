@@ -72,10 +72,12 @@ defmodule ExGram.Updates.Webhook do
     config = :ex_gram |> ExGram.Config.get(:webhook, []) |> Keyword.merge(opts)
     params = webhook_params(config)
 
+    webhook_path = Keyword.get(opts, :webhook_path, "telegram")
+
     case valid_url(config[:url]) do
       {:ok, webhook_url} ->
         params = Keyword.put(params, :token, token)
-        url = "#{webhook_url}/telegram/#{token_hash(token)}"
+        url = "#{webhook_url}/#{webhook_path}/#{token_hash(token)}"
         {:ok, true} = ExGram.set_webhook(url, params)
 
       {:error, error} ->
