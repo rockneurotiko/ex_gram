@@ -16,15 +16,15 @@ if Code.ensure_loaded?(Tesla) do
       [
         {Tesla.Middleware.BaseUrl, ExGram.Config.get(:ex_gram, :base_url, @base_url)},
         {Tesla.Middleware.Headers, [{"Content-Type", "application/json"}]},
-        {Tesla.Middleware.Logger, ExGram.Config.get(:ex_gram, Tesla.Middleware.Logger, level: :info)},
+        {Tesla.Middleware.Logger,
+         ExGram.Config.get(:ex_gram, Tesla.Middleware.Logger, level: :info)},
         {
           Tesla.Middleware.JSON,
-          decode: &__MODULE__.custom_decode/1, encode: &__MODULE__.custom_encode/1
+          decode: &__MODULE__.custom_decode/1
         }
       ]
     end
 
-    def custom_encode(x), do: ExGram.Encoder.encode(x)
     def custom_decode(x), do: ExGram.Encoder.decode(x, keys: :atoms)
 
     @impl ExGram.Adapter
@@ -46,7 +46,8 @@ if Code.ensure_loaded?(Tesla) do
       Tesla.post(new(), path, body, opts: opts())
     end
 
-    defp handle_result({:ok, %{body: %{ok: true, result: body}, status: status}}) when status in 200..299 do
+    defp handle_result({:ok, %{body: %{ok: true, result: body}, status: status}})
+         when status in 200..299 do
       {:ok, body}
     end
 
