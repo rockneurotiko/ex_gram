@@ -1,5 +1,7 @@
 # ExGram
 
+<p align="center"><img src="https://raw.githubusercontent.com/rockneurotiko/ex_gram/refs/heads/master/assets/ex_gram_logo.png" alt="ExGram" height="300px"></p>
+
 [![Hex.pm](https://img.shields.io/hexpm/v/ex_gram.svg)](http://hex.pm/packages/ex_gram)
 [![Hex.pm](https://img.shields.io/hexpm/dt/ex_gram.svg)](https://hex.pm/packages/ex_gram)
 [![Hex.pm](https://img.shields.io/hexpm/dw/ex_gram.svg)](https://hex.pm/packages/ex_gram)
