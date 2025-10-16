@@ -145,7 +145,7 @@ defmodule ExGram.Macros.Executer do
 
     parts = fileparts ++ restparts
 
-    {:multipart, parts} |> dbg()
+    {:multipart, parts}
   end
 
   defp check_params(false, _mandatory, _optional, _optional_types), do: :ok
@@ -174,7 +174,9 @@ defmodule ExGram.Macros.Executer do
 
   defp mandatory_errors({:error, errors}) do
     msg =
-      Enum.map_join(errors, ", ", fn {{value, types}, index} -> expected_type_msg(index, types, value) end)
+      Enum.map_join(errors, ", ", fn {{value, types}, index} ->
+        expected_type_msg(index, types, value)
+      end)
 
     "Mandatory parameter types don't match: #{msg}"
   end

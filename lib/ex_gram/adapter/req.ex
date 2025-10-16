@@ -11,19 +11,20 @@ if Code.ensure_loaded?(Req) do
 
     @impl ExGram.Adapter
     def request(verb, path, body) do
-      Req.Request.new(method: verb, url: path)
+      [method: verb, url: path]
+      |> Req.Request.new()
       |> Req.Request.register_options([:base_url, :json, :form_multipart])
       |> Req.Request.put_new_option(:base_url, ExGram.Config.get(:ex_gram, :base_url, @base_url))
       |> put_body_option(body)
       |> Req.Steps.put_base_url()
       |> Req.Request.append_request_steps(custom_encode: &custom_encode/1)
       |> Req.Request.append_response_steps(custom_decode: &custom_decode/1)
-      |> Req.Request.run_request() |> dbg()
+      |> Req.Request.run_request()
       |> handle_result()
     end
 
     defp req_parts({:file, name, path}, parts) do
-      parts ++ [{name, File.stream!(path)}]
+      parts ++ [{name, File.stream!(path, 2048)}]
     end
 
     defp req_parts({:file_content, name, content, filename}, parts) do
@@ -33,24 +34,24 @@ if Code.ensure_loaded?(Req) do
     defp req_parts({name, value}, parts) do
       parts ++ [{name, value}]
     end
-    
+
     defp put_body_option(req, {:multipart, parts}) do
-      parts = Enum.reduce(parts, [], fn part, acc  -> req_parts(part, acc) end) |> dbg()
-      req |> Req.Request.put_new_option(:form_multipart, parts)
+      parts = Enum.reduce(parts, [], fn part, acc -> req_parts(part, acc) end)
+      Req.Request.put_new_option(req, :form_multipart, parts)
     end
 
     defp put_body_option(req, body) when is_map(body) do
-      req |> Req.Request.put_new_option(:json, body)
+      Req.Request.put_new_option(req, :json, body)
     end
 
     defp custom_encode(request) do
       cond do
         data = request.options[:form_multipart] ->
-          multipart = Req.Utils.encode_form_multipart(data) |> dbg()
+          multipart = Req.Utils.encode_form_multipart(data)
 
           %{request | body: multipart.body}
           |> Req.Request.put_new_header("content-type", multipart.content_type)
-          |> then(&maybe_put_content_length(&1, multipart.size))
+          |> maybe_put_content_length(multipart.size)
 
         data = request.options[:json] ->
           %{request | body: Map.new(data, fn {key, value} -> {key, encode(value)} end)}
@@ -107,17 +108,17 @@ if Code.ensure_loaded?(Req) do
       end
     end
 
-    defp handle_result({_req, %Req.Response{status: status} = response})
+    defp handle_result({_req, %Req.Response{status: status, body: %{ok: true, result: body}} = _response})
          when status in 200..299 do
-      {:ok, response}
+      {:ok, body}
     end
 
-    defp handle_result({_req, %Req.Response{} = response}) do
-      {:error, %ExGram.Error{code: response.status}}
+    defp handle_result({_req, %Req.Response{body: body} = _response}) do
+      {:error, %ExGram.Error{code: :response_status_not_match, message: encode(body)}}
     end
 
     defp handle_result({_req, exception}) do
-      {:error, exception}
+      {:error, %ExGram.Error{code: exception}}
     end
   end
 end
