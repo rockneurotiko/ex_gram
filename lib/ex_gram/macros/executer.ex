@@ -145,7 +145,7 @@ defmodule ExGram.Macros.Executer do
 
     parts = fileparts ++ restparts
 
-    {:multipart, parts}
+    {:multipart, parts} |> dbg()
   end
 
   defp check_params(false, _mandatory, _optional, _optional_types), do: :ok

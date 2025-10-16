@@ -12,20 +12,30 @@ if Code.ensure_loaded?(Req) do
     @impl ExGram.Adapter
     def request(verb, path, body) do
       Req.Request.new(method: verb, url: path)
-      |> Req.Request.register_options([:base_url, :json])
+      |> Req.Request.register_options([:base_url, :json, :form_multipart])
       |> Req.Request.put_new_option(:base_url, ExGram.Config.get(:ex_gram, :base_url, @base_url))
       |> put_body_option(body)
       |> Req.Steps.put_base_url()
       |> Req.Request.append_request_steps(custom_encode: &custom_encode/1)
       |> Req.Request.append_response_steps(custom_decode: &custom_decode/1)
-      |> Req.Request.run_request()
+      |> Req.Request.run_request() |> dbg()
       |> handle_result()
     end
 
-    ## TO_DO: test this i dont know if this ExGram parts, satisfy the
-    ## the format Req wants for multipart, maybe require some sort
-    ## of transformation.
+    defp req_parts({:file, name, path}, parts) do
+      parts ++ [{name, File.stream!(path)}]
+    end
+
+    defp req_parts({:file_content, name, content, filename}, parts) do
+      parts ++ [{name, {content, filename: filename}}]
+    end
+
+    defp req_parts({name, value}, parts) do
+      parts ++ [{name, value}]
+    end
+    
     defp put_body_option(req, {:multipart, parts}) do
+      parts = Enum.reduce(parts, [], fn part, acc  -> req_parts(part, acc) end) |> dbg()
       req |> Req.Request.put_new_option(:form_multipart, parts)
     end
 
@@ -36,9 +46,7 @@ if Code.ensure_loaded?(Req) do
     defp custom_encode(request) do
       cond do
         data = request.options[:form_multipart] ->
-          ## TO_DO: This might fail if `parts` value from ExGram does not satisfy
-          # the same format as Req.
-          multipart = Req.Utils.encode_form_multipart(data)
+          multipart = Req.Utils.encode_form_multipart(data) |> dbg()
 
           %{request | body: multipart.body}
           |> Req.Request.put_new_header("content-type", multipart.content_type)
