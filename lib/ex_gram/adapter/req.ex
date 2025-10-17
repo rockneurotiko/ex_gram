@@ -54,7 +54,11 @@ if Code.ensure_loaded?(Req) do
           |> maybe_put_content_length(multipart.size)
 
         data = request.options[:json] ->
-          %{request | body: Map.new(data, fn {key, value} -> {key, encode(value)} end)}
+          %{
+            request
+            | body:
+                ExGram.Encoder.encode!(Map.new(data, fn {key, value} -> {key, encode(value)} end))
+          }
           |> Req.Request.put_new_header("Content-Type", "application/json")
           |> Req.Request.put_new_header("Accept", "application/json")
 
@@ -108,7 +112,9 @@ if Code.ensure_loaded?(Req) do
       end
     end
 
-    defp handle_result({_req, %Req.Response{status: status, body: %{ok: true, result: body}} = _response})
+    defp handle_result(
+           {_req, %Req.Response{status: status, body: %{ok: true, result: body}} = _response}
+         )
          when status in 200..299 do
       {:ok, body}
     end
