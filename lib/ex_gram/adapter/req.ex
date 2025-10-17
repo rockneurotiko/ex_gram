@@ -54,11 +54,9 @@ if Code.ensure_loaded?(Req) do
           |> maybe_put_content_length(multipart.size)
 
         data = request.options[:json] ->
-          %{
-            request
-            | body:
-                ExGram.Encoder.encode!(Map.new(data, fn {key, value} -> {key, encode(value)} end))
-          }
+          json = ExGram.Encoder.encode!(filter_map(data))
+
+          %{request | body: json}
           |> Req.Request.put_new_header("Content-Type", "application/json")
           |> Req.Request.put_new_header("Accept", "application/json")
 
