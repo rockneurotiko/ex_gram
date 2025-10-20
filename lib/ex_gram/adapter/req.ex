@@ -54,9 +54,7 @@ if Code.ensure_loaded?(Req) do
           |> maybe_put_content_length(multipart.size)
 
         data = request.options[:json] ->
-          json = ExGram.Encoder.encode!(filter_map(data))
-
-          %{request | body: json}
+          %{request | body: ExGram.Adapter.encode(data)}
           |> Req.Request.put_new_header("Content-Type", "application/json")
           |> Req.Request.put_new_header("Accept", "application/json")
 
@@ -71,35 +69,6 @@ if Code.ensure_loaded?(Req) do
       Req.Request.put_new_header(req, "content-length", Integer.to_string(size))
     end
 
-    defp encode(%{__struct__: _} = x) do
-      x
-      |> Map.from_struct()
-      |> filter_map()
-      |> ExGram.Encoder.encode!()
-    end
-
-    defp encode(x) when is_map(x) or is_list(x), do: ExGram.Encoder.encode!(x)
-    defp encode(x), do: x
-
-    defp filter_map(%{__struct__: _} = m) do
-      m |> Map.from_struct() |> filter_map()
-    end
-
-    defp filter_map(m) when is_map(m) do
-      m
-      |> Enum.filter(fn {_key, value} -> not is_nil(value) end)
-      |> Map.new(fn {key, value} ->
-        cond do
-          is_list(value) -> {key, Enum.map(value, &filter_map/1)}
-          is_map(value) -> {key, filter_map(value)}
-          true -> {key, value}
-        end
-      end)
-    end
-
-    defp filter_map(m) when is_list(m), do: Enum.map(m, &filter_map/1)
-    defp filter_map(m), do: m
-
     defp custom_decode({request, response}) do
       case ExGram.Encoder.decode(response.body, keys: :atoms) do
         {:ok, decoded} ->
@@ -110,15 +79,13 @@ if Code.ensure_loaded?(Req) do
       end
     end
 
-    defp handle_result(
-           {_req, %Req.Response{status: status, body: %{ok: true, result: body}} = _response}
-         )
+    defp handle_result({_req, %Req.Response{status: status, body: %{ok: true, result: body}} = _response})
          when status in 200..299 do
       {:ok, body}
     end
 
     defp handle_result({_req, %Req.Response{body: body} = _response}) do
-      {:error, %ExGram.Error{code: :response_status_not_match, message: encode(body)}}
+      {:error, %ExGram.Error{code: :response_status_not_match, message: ExGram.Adapter.encode(body)}}
     end
 
     defp handle_result({_req, exception}) do
