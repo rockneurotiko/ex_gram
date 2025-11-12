@@ -5,10 +5,10 @@ defmodule ExGram.Middleware.Builder do
 
   defmacro __using__(_opts) do
     quote do
-      @before_compile ExGram.Middleware.Builder
-
       import ExGram.Middleware.Builder,
         only: [middleware: 1, middleware: 2, command: 1, command: 2, regex: 2, regex: 3]
+
+      @before_compile ExGram.Middleware.Builder
 
       Module.register_attribute(__MODULE__, :middlewares, accumulate: true)
       Module.register_attribute(__MODULE__, :commands, accumulate: true)

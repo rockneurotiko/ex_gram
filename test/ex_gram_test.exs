@@ -3,6 +3,7 @@ defmodule ExGramTest do
 
   import Test.Support.StringGenerator
 
+  alias ExGram.Adapter.Test
   alias ExGram.Model.User
 
   doctest ExGram
@@ -14,17 +15,17 @@ defmodule ExGramTest do
   describe "a" do
     setup do
       name = 10 |> string_of_length() |> String.to_atom()
-      {:ok, _} = ExGram.Adapter.Test.start_link(name: name)
-      ExGram.Adapter.Test.start_link([])
+      {:ok, _} = Test.start_link(name: name)
+      Test.start_link([])
 
       {:ok, name: name}
     end
 
     test "test random", %{name: name} do
-      ExGram.Adapter.Test.backdoor_request("/getMe", %{username: "rock"}, name)
-      assert {:ok, %{username: "rock"}} == ExGram.Adapter.Test.request(:get, "/getMe", "", name)
+      Test.backdoor_request("/getMe", %{username: "rock"}, name)
+      assert {:ok, %{username: "rock"}} == Test.request(:get, "/getMe", "", name)
 
-      ExGram.Adapter.Test.backdoor_request("/getMe", %{username: "rock"})
+      Test.backdoor_request("/getMe", %{username: "rock"})
       user = %User{username: "rock"}
       assert {:ok, user} == ExGram.get_me()
     end

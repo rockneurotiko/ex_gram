@@ -1,7 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Update to Elixir 1.19 and Erlang 28.1.1
 - Update ex_doc dependency
+- Added CI
 
 ## [0.56.1}
 - Fix paid reaction type: https://github.com/rockneurotiko/ex_gram/pull/192 by @prtngn

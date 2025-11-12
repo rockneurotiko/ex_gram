@@ -4,6 +4,8 @@ defmodule ExGram.Dsl do
   """
 
   alias ExGram.Cnt
+  alias ExGram.Model.Chat
+  alias ExGram.Model.Update
   alias ExGram.Responses
   alias ExGram.Responses.Answer
   alias ExGram.Responses.AnswerCallback
@@ -100,7 +102,7 @@ defmodule ExGram.Dsl do
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard: data}
   end
 
-  @spec extract_id(ExGram.Model.Update.t()) :: {:ok, integer()} | -1
+  @spec extract_id(Update.t()) :: {:ok, integer()} | -1
   def extract_id(u) do
     case extract_chat(u) do
       {:ok, %{id: cid}} ->
@@ -114,7 +116,7 @@ defmodule ExGram.Dsl do
     end
   end
 
-  @spec extract_user(ExGram.Model.Update.t()) :: {:ok, ExGram.Model.User.t()} | :error
+  @spec extract_user(Update.t()) :: {:ok, ExGram.Model.User.t()} | :error
   def extract_user(%{from: u}) when not is_nil(u), do: {:ok, u}
   def extract_user(%{message: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{edited_message: m}) when not is_nil(m), do: extract_user(m)
@@ -132,13 +134,13 @@ defmodule ExGram.Dsl do
   def extract_user(%{chat_join_request: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(_), do: :error
 
-  @spec extract_group(ExGram.Model.Update.t()) :: {:ok, ExGram.Model.Chat.t()} | :error
+  @spec extract_group(Update.t()) :: {:ok, Chat.t()} | :error
   def extract_group(update) do
     Logger.warning("extract_group/1 is deprecated, use extract_chat/1 instead")
     extract_chat(update)
   end
 
-  @spec extract_chat(ExGram.Model.Update.t()) :: {:ok, ExGram.Model.Chat.t()} | :error
+  @spec extract_chat(Update.t()) :: {:ok, Chat.t()} | :error
   def extract_chat(%{chat: c}) when not is_nil(c), do: {:ok, c}
   def extract_chat(%{message: m}) when not is_nil(m), do: extract_chat(m)
   def extract_chat(%{edited_message: m}) when not is_nil(m), do: extract_chat(m)
@@ -195,7 +197,7 @@ defmodule ExGram.Dsl do
           | :chat_join_request
           | :chat_boost
           | :removed_chat_boost
-  @spec extract_update_type(ExGram.Model.Update.t()) :: {:ok, update_type()} | :error
+  @spec extract_update_type(Update.t()) :: {:ok, update_type()} | :error
   def extract_update_type(%{message: m}) when not is_nil(m), do: {:ok, :message}
   def extract_update_type(%{edited_message: m}) when not is_nil(m), do: {:ok, :edited_message}
   def extract_update_type(%{channel_post: m}) when not is_nil(m), do: {:ok, :channel_post}
@@ -289,7 +291,7 @@ defmodule ExGram.Dsl do
     %{cnt | answers: answers}
   end
 
-  defp extract_msg(%Cnt{update: %ExGram.Model.Update{} = u}) do
+  defp extract_msg(%Cnt{update: %Update{} = u}) do
     u = Map.from_struct(u)
     {_, msg} = Enum.find(u, fn {_, m} -> is_map(m) and not is_nil(m) end)
     msg
@@ -305,8 +307,8 @@ defmodule ExGram.Dsl do
     response =
       answer
       |> put_name_if_not(name)
-      |> ExGram.Responses.set_msg(msg)
-      |> ExGram.Responses.execute()
+      |> Responses.set_msg(msg)
+      |> Responses.execute()
 
     responses = responses ++ [response]
 

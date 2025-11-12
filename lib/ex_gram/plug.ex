@@ -24,7 +24,7 @@ if Code.ensure_loaded?(Plug) do
     def call(conn, _), do: conn
 
     defp handle_update(conn) do
-      {:ok, body, conn} = Plug.Conn.read_body(conn)
+      {:ok, body, conn} = Conn.read_body(conn)
 
       {status, message} =
         case conn
