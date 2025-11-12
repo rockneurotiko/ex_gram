@@ -11,7 +11,7 @@ defmodule ExGram.Mixfile do
       package: package(),
       description: description(),
       source_url: "https://github.com/rockneurotiko/ex_gram",
-      elixir: "~> 1.6",
+      elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -63,7 +63,7 @@ defmodule ExGram.Mixfile do
       {:plug, "~> 1.14", optional: true},
       # Development
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.4", only: [:dev], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.39", only: :dev, runtime: false, warn_if_outdated: true},
       {:styler, "~> 0.11", only: [:dev, :test], runtime: false}
     ]
