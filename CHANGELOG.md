@@ -1,7 +1,7 @@
 # Changelog
 
 ## Unreleased
-- Update to Elixir 1.19 and Erlang 28.1
+- Update to Elixir 1.19 and Erlang 28.1.1
 - Update ex_doc dependency
 - Added CI
 
