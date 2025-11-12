@@ -3,6 +3,8 @@ defmodule ExGram.Macros.Executer do
   Executer for the method macro, it takes care of checking the parameters, fetching the token, building the path and body, and calling the adapter.
   """
 
+  alias ExGram.Macros.Checker
+
   require Logger
 
   # credo:disable-for-next-line
@@ -47,7 +49,7 @@ defmodule ExGram.Macros.Executer do
     else
       {:token, _} ->
         message =
-          "No token available in the request, make sure you have the token setup on the config or you used the parameter \"token\" or \"bot\" correctly"
+          ~s(No token available in the request, make sure you have the token setup on the config or you used the parameter "token" or "bot" correctly)
 
         {:error,
          %ExGram.Error{
@@ -149,7 +151,7 @@ defmodule ExGram.Macros.Executer do
   defp check_params(false, _mandatory, _optional, _optional_types), do: :ok
 
   defp check_params(true, mandatory, optional, optional_types) do
-    mandatory_checks = mandatory |> ExGram.Macros.Checker.check_types() |> mandatory_errors()
+    mandatory_checks = mandatory |> Checker.check_types() |> mandatory_errors()
 
     optional =
       Enum.map(optional, fn {key, value} -> {value, Keyword.get(optional_types, key), key} end)
@@ -157,7 +159,7 @@ defmodule ExGram.Macros.Executer do
     optional_checks =
       optional
       |> Enum.map(fn {value, types, _key} -> [value, types] end)
-      |> ExGram.Macros.Checker.check_types()
+      |> Checker.check_types()
       |> optional_errors(optional)
 
     case {mandatory_checks, optional_checks} do

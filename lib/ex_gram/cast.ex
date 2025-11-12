@@ -3,6 +3,8 @@ defmodule ExGram.Cast do
   Helper module to convert plain values returned from Telegram to ExGram models.
   """
 
+  alias ExGram.Model.Subtype
+
   @doc """
   Converts the given plain value to ExGram models.
 
@@ -45,13 +47,13 @@ defmodule ExGram.Cast do
   end
 
   defp subtype?(t) do
-    ExGram.Model.Subtype.impl_for(struct(t, %{}))
+    Subtype.impl_for(struct(t, %{}))
   end
 
   defp apply_subtype(t, params) do
     base = struct(t, %{})
-    selector = ExGram.Model.Subtype.selector_value(base, params)
-    subtype = ExGram.Model.Subtype.subtype(base, selector)
+    selector = Subtype.selector_value(base, params)
+    subtype = Subtype.subtype(base, selector)
 
     process_struct(subtype, params)
   end

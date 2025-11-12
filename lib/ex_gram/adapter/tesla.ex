@@ -6,6 +6,8 @@ if Code.ensure_loaded?(Tesla) do
 
     @behaviour ExGram.Adapter
 
+    alias Tesla.Adapter.Hackney
+
     require Logger
 
     @base_url "https://api.telegram.org"
@@ -106,7 +108,7 @@ if Code.ensure_loaded?(Tesla) do
     defp filter_map(m) when is_list(m), do: Enum.map(m, &filter_map/1)
     defp filter_map(m), do: m
 
-    defp http_adapter, do: Application.get_env(:tesla, :adapter) || Tesla.Adapter.Hackney
+    defp http_adapter, do: Application.get_env(:tesla, :adapter) || Hackney
 
     defp opts, do: [adapter: adapter_opts()]
 
@@ -121,7 +123,7 @@ if Code.ensure_loaded?(Tesla) do
       adapter_opts(adapter_module)
     end
 
-    defp adapter_opts(Tesla.Adapter.Hackney) do
+    defp adapter_opts(Hackney) do
       [connect_timeout: 20_000, timeout: 60_000, recv_timeout: 60_000]
     end
 
