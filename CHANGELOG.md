@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Update ex_doc dependency
 
 ## [0.56.1}
 - Fix paid reaction type: https://github.com/rockneurotiko/ex_gram/pull/192 by @prtngn
