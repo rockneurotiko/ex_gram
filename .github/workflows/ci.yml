@@ -53,15 +53,15 @@ jobs:
         run: mix deps.compile
 
       - name: Check format
-        if: {{ matrix.run_linters }}
+        if: ${{ matrix.run_linters }}
         run: mix format --check-formatted
 
       - name: Run Credo
-        if: {{ matrix.run_linters }}
+        if: ${{ matrix.run_linters }}
         run: mix credo
 
       - name: Restore dialyzer cache
-        if: {{ matrix.run_linters }}
+        if: ${{ matrix.run_linters }}
         uses: actions/cache/restore@v4
         with:
           path: priv/plts
@@ -70,12 +70,12 @@ jobs:
             plts-v1-${{ matrix.otp_version }}-${{ matrix.elixir_version }}-
 
       - name: Run dialyzer
-        if: {{ matrix.run_linters }}
+        if: ${{ matrix.run_linters }}
         run: mix dialyzer --format github
 
       - name: Save dialyzer cache
         uses: actions/cache/save@v4
-        if: {{ matrix.run_linters }}
+        if: ${{ matrix.run_linters }}
         with:
           path: priv/plts
           key: plts-v1-${{ matrix.otp_version }}-${{ matrix.elixir_version }}-${{ hashFiles('mix.lock') }}
