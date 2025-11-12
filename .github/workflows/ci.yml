@@ -1,0 +1,78 @@
+name: Elixir CI
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ex-gram-elixir-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FORCE_BUILD: true
+  MIX_ENV: test
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - otp_version: "28.1.1"
+            elixir_version: "1.19.2"
+          - otp_version: "27.3"
+            elixir_version: "1.18"
+          - otp_version: "26.2"
+            elixir_version: "1.17"
+          - otp_version: "25.3"
+            elixir_version: "1.17"
+          - otp_version: "24.3"
+            elixir_version: "1.15"
+
+    runs-on: ubuntu-latest
+    name: test
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{ matrix.otp_version }}
+          elixir-version: ${{ matrix.elixir_version }}
+
+      - name: Install deps
+        run: mix deps.get
+
+      - name: Compile deps
+        run: mix deps.compile
+
+      - name: Check format
+        run: mix format --check-formatted
+
+      - name: Run Credo
+        run: mix credo
+
+      - name: Restore dialyzer cache
+        uses: actions/cache/restore@v4
+        with:
+          path: priv/plts
+          key: plts-v1-${{ matrix.otp_version }}-${{ matrix.elixir_version }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            plts-v1-${{ matrix.otp_version }}-${{ matrix.elixir_version }}-
+
+      - name: Run dialyzer
+        run: mix dialyzer --format github
+
+      - name: Save dialyzer cache
+        uses: actions/cache/save@v4
+        if: always()
+        with:
+          path: priv/plts
+          key: plts-v1-${{ matrix.otp_version }}-${{ matrix.elixir_version }}-${{ hashFiles('mix.lock') }}
+
+      - name: Run tests
+        run: mix test --warnings-as-errors
+
+      - name: Compile once again but without optional deps
+        run: mix compile --force --warnings-as-errors --no-optional-deps

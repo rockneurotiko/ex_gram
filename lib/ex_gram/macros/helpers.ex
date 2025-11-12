@@ -21,28 +21,28 @@ defmodule ExGram.Macros.Helpers do
   def mandatory_type_specs(analyzed) do
     analyzed
     |> Enum.map(&elem(&1, 1))
-    |> Enum.filter(&(not is_par_optional(&1)))
+    |> Enum.filter(&(not par_optional?(&1)))
     |> Enum.map(fn [n, ts] -> parameter_type_spec(n, types_list_to_spec(ts)) end)
   end
 
   def mandatory_value_type(analyzed) do
     analyzed
     |> Enum.map(&elem(&1, 1))
-    |> Enum.filter(&(not is_par_optional(&1)))
+    |> Enum.filter(&(not par_optional?(&1)))
     |> Enum.map(fn [name, types] -> [nid(name), types] end)
   end
 
   def optional_type_specs(analyzed) do
     analyzed
     |> Enum.map(&elem(&1, 1))
-    |> Enum.filter(&is_par_optional/1)
+    |> Enum.filter(&par_optional?/1)
     |> Enum.map(fn [n, ts, :optional] -> {n, types_list_to_spec(ts)} end)
     |> Kernel.++(common_opts())
   end
 
   def mandatory_parameters(analyzed) do
     mandatory =
-      Enum.filter(analyzed, fn {_name, desc} -> not is_par_optional(desc) end)
+      Enum.filter(analyzed, fn {_name, desc} -> not par_optional?(desc) end)
 
     names = Enum.map(mandatory, fn {name, _desc} -> name end)
 
@@ -58,7 +58,7 @@ defmodule ExGram.Macros.Helpers do
     optionals =
       analyzed
       |> Enum.map(&elem(&1, 1))
-      |> Enum.filter(&is_par_optional/1)
+      |> Enum.filter(&par_optional?/1)
 
     optional_types = Enum.map(optionals, fn [name, types, :optional] -> {name, types} end)
     optional_names = Enum.map(optionals, fn [name, _, _] -> name end)
@@ -143,8 +143,8 @@ defmodule ExGram.Macros.Helpers do
 
   defp nid(x), do: {x, [], nil}
 
-  defp is_par_optional([_n, _t, :optional]), do: true
-  defp is_par_optional(_), do: false
+  defp par_optional?([_n, _t, :optional]), do: true
+  defp par_optional?(_), do: false
 
   defp extract_param_name({name, _line, nil}), do: name
   defp extract_param_name({:\\, _line, [{name, _line2, nil}, nil]}), do: name

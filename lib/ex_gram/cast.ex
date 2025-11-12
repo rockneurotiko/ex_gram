@@ -24,7 +24,7 @@ defmodule ExGram.Cast do
   defp process_type(elem, true), do: elem
 
   defp process_type(elem, t) when is_atom(t) do
-    if is_subtype?(t) do
+    if subtype?(t) do
       apply_subtype(t, elem)
     else
       process_struct(t, elem)
@@ -44,7 +44,7 @@ defmodule ExGram.Cast do
     struct(t, decoded_elem)
   end
 
-  defp is_subtype?(t) do
+  defp subtype?(t) do
     ExGram.Model.Subtype.impl_for(struct(t, %{}))
   end
 

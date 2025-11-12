@@ -118,29 +118,34 @@ if Code.ensure_loaded?(Tesla) do
           _ -> nil
         end
 
-      case adapter_module do
-        Tesla.Adapter.Hackney ->
-          [connect_timeout: 20_000, timeout: 60_000, recv_timeout: 60_000]
-
-        Tesla.Adapter.Finch ->
-          [pool_timeout: 20_000, receive_timeout: 60_000]
-
-        Tesla.Adapter.Gun ->
-          [connect_timeout: 20_000, timeout: 60_000]
-
-        Tesla.Adapter.Mint ->
-          [timeout: 60_000]
-
-        Tesla.Adapter.Httpc ->
-          [connect_timeout: 20_000, timeout: 60_000]
-
-        Tesla.Adapter.Ibrowse ->
-          [connect_timeout: 20_000, timeout: 60_000]
-
-        _ ->
-          []
-      end
+      adapter_opts(adapter_module)
     end
+
+    defp adapter_opts(Tesla.Adapter.Hackney) do
+      [connect_timeout: 20_000, timeout: 60_000, recv_timeout: 60_000]
+    end
+
+    defp adapter_opts(Tesla.Adapter.Finch) do
+      [pool_timeout: 20_000, receive_timeout: 60_000]
+    end
+
+    defp adapter_opts(Tesla.Adapter.Gun) do
+      [connect_timeout: 20_000, timeout: 60_000]
+    end
+
+    defp adapter_opts(Tesla.Adapter.Mint) do
+      [timeout: 60_000]
+    end
+
+    defp adapter_opts(Tesla.Adapter.Httpc) do
+      [connect_timeout: 20_000, timeout: 60_000]
+    end
+
+    defp adapter_opts(Tesla.Adapter.Ibrowse) do
+      [connect_timeout: 20_000, timeout: 60_000]
+    end
+
+    defp adapter_opts(_), do: []
 
     defp format_middleware({m, f, a}) do
       case apply(m, f, a) do
