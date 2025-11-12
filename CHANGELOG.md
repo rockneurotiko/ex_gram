@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## [0.56.1}
+- Fix paid reaction type: https://github.com/rockneurotiko/ex_gram/pull/192 by @prtngn
+
 ## [0.56.0]
 - Update to version 9.1: https://core.telegram.org/bots/api-changelog#july-3-2025
 - Fix: `init/1` callback is called on Dispatcher init instead of Supervisor init, allowing to the user to have the Dispatcher pid
