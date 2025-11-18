@@ -79,7 +79,7 @@ if Code.ensure_loaded?(Tesla) do
       Tesla.Multipart.add_field(mp, name, value)
     end
 
-    defp http_adapter, do: Application.get_env(:tesla, :adapter) || Tesla.Adapter.Hackney
+    defp http_adapter, do: Application.get_env(:tesla, :adapter) || Hackney
 
     defp opts, do: [adapter: adapter_opts()]
 

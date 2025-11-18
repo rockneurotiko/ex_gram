@@ -77,16 +77,13 @@ if Code.ensure_loaded?(Req) do
       end
     end
 
-    defp handle_result(
-           {_req, %Req.Response{status: status, body: %{ok: true, result: body}} = _response}
-         )
+    defp handle_result({_req, %Req.Response{status: status, body: %{ok: true, result: body}} = _response})
          when status in 200..299 do
       {:ok, body}
     end
 
     defp handle_result({_req, %Req.Response{body: body} = _response}) do
-      {:error,
-       %ExGram.Error{code: :response_status_not_match, message: ExGram.Adapter.encode(body)}}
+      {:error, %ExGram.Error{code: :response_status_not_match, message: ExGram.Adapter.encode(body)}}
     end
 
     defp handle_result({_req, exception}) do
