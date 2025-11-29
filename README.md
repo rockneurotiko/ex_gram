@@ -16,7 +16,7 @@ Add `ex_gram` as dependency in `mix.exs`
 ``` elixir
 def deps do
     [
-      {:ex_gram, "~> 0.56"},
+      {:ex_gram, "~> 0.57"},
       {:tesla, "~> 1.2"},
       {:hackney, "~> 1.12"},
       {:jason, ">= 1.0.0"}
@@ -36,7 +36,20 @@ On deps:
 {:hackney, "~> 1.12"}
 ```
 
-- If you want to use Gun:
+- If you want to use Req instead of Tesla:
+
+On deps:
+``` elixir
+{:req, "~> 0.5"}
+```
+
+On config:
+``` elixir
+config :ex_gram, adapter: ExGram.Adapter.Req
+```
+
+
+- If you want to use Gun with Tesla:
 
 On deps:
 ``` elixir

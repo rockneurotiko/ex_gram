@@ -2,7 +2,7 @@ defmodule ExGram.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/rockneurotiko/ex_gram"
-  @version "0.56.1"
+  @version "0.57.0"
 
   def project do
     [
