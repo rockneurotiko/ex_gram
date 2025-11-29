@@ -9,7 +9,7 @@ if Code.ensure_loaded?(Req) do
 
     @impl ExGram.Adapter
     def request(verb, path, body) do
-      [method: verb, url: path]
+      [method: coerce_verb(verb), url: path]
       |> Req.Request.new()
       |> Req.Request.register_options([:base_url, :json, :form_multipart])
       |> Req.Request.put_new_option(:base_url, ExGram.Config.get(:ex_gram, :base_url, @base_url))
@@ -20,6 +20,9 @@ if Code.ensure_loaded?(Req) do
       |> Req.Request.run_request()
       |> handle_result()
     end
+
+    defp coerce_verb(:get), do: :post
+    defp coerce_verb(verb), do: verb
 
     defp req_parts({:file, name, path}, parts) do
       parts ++ [{name, File.stream!(path, 2048)}]
