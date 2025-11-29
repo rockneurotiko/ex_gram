@@ -51,7 +51,7 @@ if Code.ensure_loaded?(Tesla) do
     end
 
     defp handle_result({:ok, %{body: body}}) do
-      {:error, %ExGram.Error{code: :response_status_not_match, message: encode(body)}}
+      {:error, %ExGram.Error{code: :response_status_not_match, message: ExGram.Adapter.encode(body)}}
     end
 
     defp handle_result({:error, reason}) do
@@ -59,7 +59,7 @@ if Code.ensure_loaded?(Tesla) do
     end
 
     defp encode_body(body) when is_map(body) do
-      Map.new(body, fn {key, value} -> {key, encode(value)} end)
+      Map.new(body, fn {key, value} -> {key, ExGram.Adapter.encode(value)} end)
     end
 
     defp encode_body({:multipart, parts}) do
@@ -78,35 +78,6 @@ if Code.ensure_loaded?(Tesla) do
     defp add_multipart_part({name, value}, mp) do
       Tesla.Multipart.add_field(mp, name, value)
     end
-
-    defp encode(%{__struct__: _} = x) do
-      x
-      |> Map.from_struct()
-      |> filter_map()
-      |> ExGram.Encoder.encode!()
-    end
-
-    defp encode(x) when is_map(x) or is_list(x), do: ExGram.Encoder.encode!(x)
-    defp encode(x), do: x
-
-    defp filter_map(%{__struct__: _} = m) do
-      m |> Map.from_struct() |> filter_map()
-    end
-
-    defp filter_map(m) when is_map(m) do
-      m
-      |> Enum.filter(fn {_key, value} -> not is_nil(value) end)
-      |> Map.new(fn {key, value} ->
-        cond do
-          is_list(value) -> {key, Enum.map(value, &filter_map/1)}
-          is_map(value) -> {key, filter_map(value)}
-          true -> {key, value}
-        end
-      end)
-    end
-
-    defp filter_map(m) when is_list(m), do: Enum.map(m, &filter_map/1)
-    defp filter_map(m), do: m
 
     defp http_adapter, do: Application.get_env(:tesla, :adapter) || Hackney
 
