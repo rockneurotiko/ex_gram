@@ -2,7 +2,11 @@ defmodule ExGram.DslTest do
   use ExUnit.Case, async: true
 
   alias ExGram.Dsl
-  alias ExGram.Model.{Chat, Message, Update, User}
+  alias ExGram.Model.Chat
+  alias ExGram.Model.InlineKeyboardMarkup
+  alias ExGram.Model.Message
+  alias ExGram.Model.Update
+  alias ExGram.Model.User
 
   describe "extract_user/1" do
     test "extracts user from update with from field" do
@@ -74,18 +78,18 @@ defmodule ExGram.DslTest do
 
   describe "extract_id/1" do
     test "extracts chat id when chat is present" do
-      chat = %Chat{id: 12345}
+      chat = %Chat{id: 12_345}
       message = %Message{chat: chat}
       update = %Update{message: message}
 
-      assert 12345 = Dsl.extract_id(update)
+      assert 12_345 = Dsl.extract_id(update)
     end
 
     test "extracts user id when only user is present" do
-      user = %User{id: 67890}
+      user = %User{id: 67_890}
       update = %{from: user}
 
-      assert 67890 = Dsl.extract_id(update)
+      assert 67_890 = Dsl.extract_id(update)
     end
 
     test "returns -1 when neither chat nor user found" do
@@ -183,14 +187,14 @@ defmodule ExGram.DslTest do
   describe "create_inline/1" do
     test "creates inline keyboard markup with empty rows" do
       result = Dsl.create_inline([])
-      assert %ExGram.Model.InlineKeyboardMarkup{inline_keyboard: []} = result
+      assert %InlineKeyboardMarkup{inline_keyboard: []} = result
     end
 
     test "creates inline keyboard markup with single button" do
       buttons = [[text: "Button 1", callback_data: "btn1"]]
       result = Dsl.create_inline([buttons])
 
-      assert %ExGram.Model.InlineKeyboardMarkup{inline_keyboard: [row]} = result
+      assert %InlineKeyboardMarkup{inline_keyboard: [row]} = result
       assert [button] = row
       assert %ExGram.Model.InlineKeyboardButton{text: "Button 1", callback_data: "btn1"} = button
     end
@@ -203,7 +207,7 @@ defmodule ExGram.DslTest do
 
       result = Dsl.create_inline([buttons, buttons])
 
-      assert %ExGram.Model.InlineKeyboardMarkup{inline_keyboard: rows} = result
+      assert %InlineKeyboardMarkup{inline_keyboard: rows} = result
       assert length(rows) == 2
     end
 
@@ -215,7 +219,7 @@ defmodule ExGram.DslTest do
 
       result = Dsl.create_inline([row1])
 
-      assert %ExGram.Model.InlineKeyboardMarkup{inline_keyboard: [buttons]} = result
+      assert %InlineKeyboardMarkup{inline_keyboard: [buttons]} = result
       assert length(buttons) == 2
     end
   end

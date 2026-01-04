@@ -2,7 +2,8 @@ defmodule ExGram.CntTest do
   use ExUnit.Case, async: true
 
   alias ExGram.Cnt
-  alias ExGram.Model.{Update, User}
+  alias ExGram.Model.Update
+  alias ExGram.Model.User
 
   describe "new/1" do
     test "creates new context with default values" do

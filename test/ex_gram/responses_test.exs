@@ -1,17 +1,18 @@
 defmodule ExGram.ResponsesTest do
   use ExUnit.Case, async: true
 
+  alias ExGram.Model.User
   alias ExGram.Responses
 
   describe "Responses protocol for Atom" do
     test "new/2 creates struct from atom and params" do
-      result = Responses.new(ExGram.Model.User, %{id: 123, username: "test"})
-      assert %ExGram.Model.User{id: 123, username: "test"} = result
+      result = Responses.new(User, %{id: 123, username: "test"})
+      assert %User{id: 123, username: "test"} = result
     end
 
     test "new/2 with empty params creates empty struct" do
-      result = Responses.new(ExGram.Model.User, %{})
-      assert %ExGram.Model.User{} = result
+      result = Responses.new(User, %{})
+      assert %User{} = result
     end
 
     test "execute/1 raises not implemented for atom" do

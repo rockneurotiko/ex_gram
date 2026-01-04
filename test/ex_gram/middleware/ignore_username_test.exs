@@ -3,7 +3,9 @@ defmodule ExGram.Middleware.IgnoreUsernameTest do
 
   alias ExGram.Cnt
   alias ExGram.Middleware.IgnoreUsername
-  alias ExGram.Model.{Message, Update, User}
+  alias ExGram.Model.Message
+  alias ExGram.Model.Update
+  alias ExGram.Model.User
 
   describe "call/2" do
     test "removes bot username from command" do
