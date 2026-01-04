@@ -5,15 +5,19 @@ defmodule ExGram.FileTest do
   alias ExGram.Model.File, as: TelegramFile
 
   setup do
-    # Clear any existing config
+    # Save the original token and restore it after the test
+    original_token = Application.get_env(:ex_gram, :token)
+
+    on_exit(fn ->
+      if original_token do
+        Application.put_env(:ex_gram, :token, original_token)
+      else
+        Application.delete_env(:ex_gram, :token)
+      end
+    end)
+
+    # Clear any existing config for this test
     Application.delete_env(:ex_gram, :token)
-
-    # Ensure ExGram supervisor is started to have Registry available
-    case ExGram.start_link() do
-      {:ok, _pid} -> :ok
-      {:error, {:already_started, _pid}} -> :ok
-    end
-
     :ok
   end
 

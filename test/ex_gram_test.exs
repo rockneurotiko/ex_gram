@@ -17,10 +17,10 @@ defmodule ExGramTest do
       name = 10 |> string_of_length() |> String.to_atom()
       {:ok, _} = Test.start_link(name: name)
 
-      # Start default test adapter if not already started
+      # Start default test adapter if not already started, and clean its state
       case Test.start_link([]) do
         {:ok, _} -> :ok
-        {:error, {:already_started, _}} -> :ok
+        {:error, {:already_started, _}} -> Test.clean()
       end
 
       {:ok, name: name}
@@ -31,7 +31,7 @@ defmodule ExGramTest do
       Test.backdoor_request("/getMe", %{username: "rock"}, name)
       assert {:ok, %{username: "rock"}} == Test.request(:get, "/getMe", "", name)
 
-      # Test with default adapter
+      # Test with default adapter - set up backdoor before calling
       Test.backdoor_request("/getMe", %{username: "rock"})
       user = %User{username: "rock"}
       assert {:ok, user} == ExGram.get_me()
