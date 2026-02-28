@@ -7,7 +7,7 @@ if Code.ensure_loaded?(Maxwell) do
     @behaviour ExGram.Adapter
 
     @impl ExGram.Adapter
-    def request(_verb, _path, _body) do
+    def request(_verb, _path, _body, _opts) do
       raise "Maxwell is deprecated if you want to use it, use your own adapter"
     end
   end

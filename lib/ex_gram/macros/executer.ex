@@ -37,9 +37,9 @@ defmodule ExGram.Macros.Executer do
 
       if debug, do: Logger.info("Path: #{inspect(path)}\nbody: #{inspect(body)}")
 
-      result = adapter.request(verb, path, body)
+      adapter_opts = Keyword.get(ops, :adapter_opts, [])
 
-      case result do
+      case adapter.request(verb, path, body, adapter_opts) do
         {:ok, body} ->
           process_result(body, returned_type)
 

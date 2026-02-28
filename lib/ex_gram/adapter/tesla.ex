@@ -28,7 +28,7 @@ if Code.ensure_loaded?(Tesla) do
     def custom_decode(x), do: ExGram.Encoder.decode(x, keys: :atoms)
 
     @impl ExGram.Adapter
-    def request(verb, path, body) do
+    def request(verb, path, body, _opts) do
       body = encode_body(body)
 
       verb |> do_request(path, body) |> handle_result()

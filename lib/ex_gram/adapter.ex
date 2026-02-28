@@ -8,7 +8,7 @@ defmodule ExGram.Adapter do
   @type body :: map() | list()
   @type result_request :: {:ok, map} | {:error, ExGram.Error.t()}
 
-  @callback request(verb, path, body) :: result_request
+  @callback request(verb, path, body, keyword) :: result_request
 
   def encode(%{__struct__: _} = x) do
     x

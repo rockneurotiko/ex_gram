@@ -19,7 +19,8 @@ defmodule ExGram.Adapter.Test do
   end
 
   @impl ExGram.Adapter
-  def request(verb, path, body, name \\ @name) do
+  def request(verb, path, body, opts) do
+    name = Keyword.get(opts, :name, @name)
     GenServer.call(name, {:request, verb, path, body})
   end
 
