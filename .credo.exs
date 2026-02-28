@@ -9,61 +9,16 @@
   # You can have as many configs as you like in the `configs:` field.
   configs: [
     %{
-      #
-      # Run any config using `mix credo -C <name>`. If no config name is given
-      # "default" is used.
-      #
       name: "default",
-      #
-      # These are the files included in the analysis:
       files: %{
-        #
-        # You can give explicit globs or simply directories.
-        # In the latter case `**/*.{ex,exs}` will be used.
-        #
-        included: [
-          "lib/",
-          "src/",
-          "test/",
-          "web/",
-          "apps/*/lib/",
-          "apps/*/src/",
-          "apps/*/test/",
-          "apps/*/web/"
-        ],
-        excluded: [~r"/_build/", ~r"/deps/", ~r"/node_modules/"]
+        included: ["lib/", "test/"],
+        excluded: [~r"/_build/", ~r"/deps/", ~r"/node_modules/", "lib/examples/"]
       },
-      #
-      # Load and configure plugins here:
-      #
       plugins: [],
-      #
-      # If you create your own checks, you must specify the source files for
-      # them here, so they can be loaded by Credo before running the analysis.
-      #
       requires: ["checks/**/*.ex"],
-      #
-      # If you want to enforce a style guide and need a more traditional linting
-      # experience, you can change `strict` to `true` below:
-      #
-      strict: false,
-      #
-      # To modify the timeout for parsing files, change this value:
-      #
+      strict: true,
       parse_timeout: 5000,
-      #
-      # If you want to use uncolored output by default, you can change `color`
-      # to `false` below:
-      #
       color: true,
-      #
-      # You can customize the parameters of any check by adding a second element
-      # to the tuple.
-      #
-      # To disable a check put `false` as second element:
-      #
-      #     {Credo.Check.Design.DuplicatedCode, false}
-      #
       checks: %{
         enabled: [
           #
@@ -82,7 +37,7 @@
           # You can customize the priority of any check
           # Priority values are: `low, normal, high, higher`
           #
-          {Credo.Check.Design.AliasUsage, [priority: :low, if_nested_deeper_than: 2, if_called_more_often_than: 0]},
+          {Credo.Check.Design.AliasUsage, [priority: :low, if_nested_deeper_than: 3, if_called_more_often_than: 0]},
           {Credo.Check.Design.TagFIXME, []},
           # You can also customize the exit_status of each check.
           # If you don't want TODO comments to cause `mix credo` to fail, just
@@ -114,6 +69,7 @@
           {Credo.Check.Readability.UnnecessaryAliasExpansion, []},
           {Credo.Check.Readability.VariableNames, []},
           {Credo.Check.Readability.WithSingleClause, []},
+          {Credo.Check.Readability.OneArityFunctionInPipe, []},
 
           #
           ## Refactoring Opportunities
@@ -134,6 +90,8 @@
           {Credo.Check.Refactor.RejectReject, []},
           {Credo.Check.Refactor.UnlessWithElse, []},
           {Credo.Check.Refactor.WithClauses, []},
+          {Credo.Check.Refactor.UtcNowTruncate, []},
+          {Credo.Check.Refactor.FilterReject, []},
 
           #
           ## Warnings
@@ -159,7 +117,7 @@
           {Credo.Check.Warning.UnusedStringOperation, []},
           {Credo.Check.Warning.UnusedTupleOperation, []},
           {Credo.Check.Warning.WrongTestFileExtension, []},
-
+          {Credo.Check.Design.DuplicatedCode, []},
           #
           ## Custom Checks
           #
@@ -168,7 +126,6 @@
         disabled: [
           #
           # Checks scheduled for next check update (opt-in for now)
-          {Credo.Check.Refactor.UtcNowTruncate, []},
 
           #
           # Controversial and experimental checks (opt-in, just move the check to `:enabled`
@@ -176,14 +133,12 @@
           #
           {Credo.Check.Consistency.MultiAliasImportRequireUse, []},
           {Credo.Check.Consistency.UnusedVariableNames, []},
-          {Credo.Check.Design.DuplicatedCode, []},
           {Credo.Check.Design.SkipTestWithoutComment, []},
           {Credo.Check.Readability.AliasAs, []},
           {Credo.Check.Readability.BlockPipe, []},
           {Credo.Check.Readability.ImplTrue, []},
           {Credo.Check.Readability.MultiAlias, []},
           {Credo.Check.Readability.NestedFunctionCalls, []},
-          {Credo.Check.Readability.OneArityFunctionInPipe, []},
           {Credo.Check.Readability.OnePipePerLine, []},
           {Credo.Check.Readability.SeparateAliasRequire, []},
           {Credo.Check.Readability.SingleFunctionToBlockPipe, []},
@@ -194,7 +149,6 @@
           {Credo.Check.Refactor.ABCSize, []},
           {Credo.Check.Refactor.AppendSingleItem, []},
           {Credo.Check.Refactor.DoubleBooleanNegation, []},
-          {Credo.Check.Refactor.FilterReject, []},
           {Credo.Check.Refactor.IoPuts, []},
           {Credo.Check.Refactor.MapMap, []},
           {Credo.Check.Refactor.ModuleDependencies, []},
