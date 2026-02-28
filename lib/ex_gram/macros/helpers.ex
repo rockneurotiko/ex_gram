@@ -67,9 +67,10 @@ defmodule ExGram.Macros.Helpers do
   end
 
   def file_parameters(analyzed) do
+    analyzed_types = Enum.map(analyzed, fn {_n, types} -> types end)
+
     direct_files =
-      analyzed
-      |> Enum.map(fn {_n, types} -> types end)
+      analyzed_types
       |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &(&1 == :file or &1 == :file_content)) end)
       |> Enum.map(fn
         [n, _t] -> {nid(n), Atom.to_string(n)}
@@ -77,8 +78,7 @@ defmodule ExGram.Macros.Helpers do
       end)
 
     media_files =
-      analyzed
-      |> Enum.map(fn {_n, types} -> types end)
+      analyzed_types
       |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &has_input_media_type?/1) end)
       |> Enum.map(fn
         [n, _t] -> {:input_media, n}
@@ -89,19 +89,19 @@ defmodule ExGram.Macros.Helpers do
   end
 
   defp has_input_media_type?({:array, types}) when is_list(types) do
-    Enum.any?(types, &is_input_media_alias?/1)
+    Enum.any?(types, &input_media_alias?/1)
   end
 
-  defp has_input_media_type?({:array, type}), do: is_input_media_alias?(type)
+  defp has_input_media_type?({:array, type}), do: input_media_alias?(type)
 
-  defp has_input_media_type?(type), do: is_input_media_alias?(type)
+  defp has_input_media_type?(type), do: input_media_alias?(type)
 
-  defp is_input_media_alias?({:__aliases__, _, parts}) do
+  defp input_media_alias?({:__aliases__, _, parts}) do
     name = parts |> List.last() |> Atom.to_string()
     String.starts_with?(name, "InputMedia") or String.starts_with?(name, "InputPaidMedia")
   end
 
-  defp is_input_media_alias?(_), do: false
+  defp input_media_alias?(_), do: false
 
   def type_to_spec(:string), do: {{:., [], [{:__aliases__, [alias: false], [:String]}, :t]}, [], []}
 

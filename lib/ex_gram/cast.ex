@@ -41,12 +41,17 @@ defmodule ExGram.Cast do
   defp process_type(list, [t]) when is_list(list), do: process_type(list, {:array, t})
 
   defp process_type(list, {:array, t}) when is_list(list) do
-    Enum.reduce_while(list, {:ok, []}, fn elem, {:ok, acc} ->
+    list
+    |> Enum.reduce_while({:ok, []}, fn elem, {:ok, acc} ->
       case process_type(elem, t) do
-        {:ok, processed} -> {:cont, {:ok, acc ++ [processed]}}
+        {:ok, processed} -> {:cont, {:ok, [processed | acc]}}
         {:error, reason} -> {:halt, {:error, reason}}
       end
     end)
+    |> case do
+      {:ok, processed_list} -> {:ok, Enum.reverse(processed_list)}
+      {:error, reason} -> {:error, reason}
+    end
   end
 
   defp process_type(elem, :integer), do: {:ok, elem}
