@@ -79,6 +79,13 @@ def generate_param(param, model):
 def clean_description(description):
     return description.replace("\n", " ")
 
+def clean_returned_type(returned):
+    if len(returned) == 0:
+        return ":any"
+    elif len(returned) == 1:
+        return returned[0]
+    else:
+        return "[{}]".format(", ".join(returned))
 
 def generate_model(model):
     model_s = "model({}, [{}], \"{}\")"
@@ -98,9 +105,9 @@ def generate_method(method):
     typ = ":get" if method['type'] == 'get' else ':post'
 
     args = [generate_param(param, False) for param in method['params']]
-    returned = generate_type(method['return'], True)[0]
+    returned = generate_type(method['return'], True)
 
-    return method_s.format(typ, name, ", ".join(args), returned, clean_description(description))
+    return method_s.format(typ, name, ", ".join(args), clean_returned_type(returned), clean_description(description))
 
 
 def generate_generic(model):

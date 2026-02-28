@@ -117,6 +117,7 @@ defmodule ExGram do
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {text, [:string]},
       {parse_mode, [:string], :optional},
       {entities, [{:array, MessageEntity}], :optional},
@@ -125,6 +126,7 @@ defmodule ExGram do
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -138,10 +140,13 @@ defmodule ExGram do
     [
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {from_chat_id, [:integer, :string]},
       {video_start_timestamp, [:integer], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {message_id, [:integer]}
     ],
     ExGram.Model.Message,
@@ -154,6 +159,7 @@ defmodule ExGram do
     [
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {from_chat_id, [:integer, :string]},
       {message_ids, [{:array, :integer}]},
       {disable_notification, [:boolean], :optional},
@@ -169,6 +175,7 @@ defmodule ExGram do
     [
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {from_chat_id, [:integer, :string]},
       {message_id, [:integer]},
       {video_start_timestamp, [:integer], :optional},
@@ -179,6 +186,8 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
+      {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -192,6 +201,7 @@ defmodule ExGram do
     [
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {from_chat_id, [:integer, :string]},
       {message_ids, [{:array, :integer}]},
       {disable_notification, [:boolean], :optional},
@@ -209,6 +219,7 @@ defmodule ExGram do
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {photo, [:file, :string]},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
@@ -219,6 +230,7 @@ defmodule ExGram do
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -233,6 +245,7 @@ defmodule ExGram do
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {audio, [:file, :string]},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
@@ -245,6 +258,7 @@ defmodule ExGram do
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -259,6 +273,7 @@ defmodule ExGram do
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {document, [:file, :string]},
       {thumbnail, [:file, :string], :optional},
       {caption, [:string], :optional},
@@ -269,6 +284,7 @@ defmodule ExGram do
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -283,6 +299,7 @@ defmodule ExGram do
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {video, [:file, :string]},
       {duration, [:integer], :optional},
       {width, [:integer], :optional},
@@ -300,6 +317,7 @@ defmodule ExGram do
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -314,6 +332,7 @@ defmodule ExGram do
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {animation, [:file, :string]},
       {duration, [:integer], :optional},
       {width, [:integer], :optional},
@@ -328,6 +347,7 @@ defmodule ExGram do
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -342,6 +362,7 @@ defmodule ExGram do
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {voice, [:file, :string]},
       {caption, [:string], :optional},
       {parse_mode, [:string], :optional},
@@ -351,6 +372,7 @@ defmodule ExGram do
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -365,6 +387,7 @@ defmodule ExGram do
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {video_note, [:file, :string]},
       {duration, [:integer], :optional},
       {length, [:integer], :optional},
@@ -373,6 +396,7 @@ defmodule ExGram do
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -386,6 +410,8 @@ defmodule ExGram do
     [
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
+      {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {star_count, [:integer]},
       {media, [{:array, InputPaidMedia}]},
       {payload, [:string], :optional},
@@ -396,6 +422,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -410,6 +437,7 @@ defmodule ExGram do
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {media, [{:array, [InputMediaAudio, InputMediaDocument, InputMediaPhoto, InputMediaVideo]}]},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
@@ -418,7 +446,7 @@ defmodule ExGram do
       {reply_parameters, [ReplyParameters], :optional}
     ],
     {:array, ExGram.Model.Message},
-    "Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of Messages that were sent is returned."
+    "Use this method to send a group of photos, videos, documents or audios as an album. Documents and audio files can be only grouped in an album with messages of the same type. On success, an array of Message objects that were sent is returned."
   )
 
   method(
@@ -428,6 +456,7 @@ defmodule ExGram do
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {latitude, [:float]},
       {longitude, [:float]},
       {horizontal_accuracy, [:float], :optional},
@@ -438,6 +467,7 @@ defmodule ExGram do
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -452,6 +482,7 @@ defmodule ExGram do
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {latitude, [:float]},
       {longitude, [:float]},
       {title, [:string]},
@@ -464,6 +495,7 @@ defmodule ExGram do
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -478,6 +510,7 @@ defmodule ExGram do
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {phone_number, [:string]},
       {first_name, [:string]},
       {last_name, [:string], :optional},
@@ -486,6 +519,7 @@ defmodule ExGram do
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -549,16 +583,33 @@ defmodule ExGram do
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {emoji, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
     ExGram.Model.Message,
     "Use this method to send an animated emoji that will display a random value. On success, the sent Message is returned."
+  )
+
+  method(
+    :post,
+    "sendMessageDraft",
+    [
+      {chat_id, [:integer]},
+      {message_thread_id, [:integer], :optional},
+      {draft_id, [:integer]},
+      {text, [:string]},
+      {parse_mode, [:string], :optional},
+      {entities, [{:array, MessageEntity}], :optional}
+    ],
+    true,
+    "Use this method to stream a partial message to a user while the message is being generated; supported only for bots with forum topic mode enabled. Returns True on success."
   )
 
   method(
@@ -593,6 +644,14 @@ defmodule ExGram do
     [{user_id, [:integer]}, {offset, [:integer], :optional}, {limit, [:integer], :optional}],
     ExGram.Model.UserProfilePhotos,
     "Use this method to get a list of profile pictures for a user. Returns a UserProfilePhotos object."
+  )
+
+  method(
+    :get,
+    "getUserProfileAudios",
+    [{user_id, [:integer]}, {offset, [:integer], :optional}, {limit, [:integer], :optional}],
+    ExGram.Model.UserProfileAudios,
+    "Use this method to get a list of profile audios for a user. Returns a UserProfileAudios object."
   )
 
   method(
@@ -670,7 +729,8 @@ defmodule ExGram do
       {can_post_messages, [:boolean], :optional},
       {can_edit_messages, [:boolean], :optional},
       {can_pin_messages, [:boolean], :optional},
-      {can_manage_topics, [:boolean], :optional}
+      {can_manage_topics, [:boolean], :optional},
+      {can_manage_direct_messages, [:boolean], :optional}
     ],
     true,
     "Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Pass False for all boolean parameters to demote a user. Returns True on success."
@@ -836,7 +896,7 @@ defmodule ExGram do
       {disable_notification, [:boolean], :optional}
     ],
     true,
-    "Use this method to add a message to the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True on success."
+    "Use this method to add a message to the list of pinned messages in a chat. In private chats and channel direct messages chats, all non-service messages can be pinned. Conversely, the bot must be an administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to pin messages in groups and channels respectively. Returns True on success."
   )
 
   method(
@@ -848,7 +908,7 @@ defmodule ExGram do
       {message_id, [:integer], :optional}
     ],
     true,
-    "Use this method to remove a message from the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True on success."
+    "Use this method to remove a message from the list of pinned messages in a chat. In private chats and channel direct messages chats, all messages can be unpinned. Conversely, the bot must be an administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to unpin messages in groups and channels respectively. Returns True on success."
   )
 
   method(
@@ -856,7 +916,7 @@ defmodule ExGram do
     "unpinAllChatMessages",
     [{chat_id, [:integer, :string]}],
     true,
-    "Use this method to clear the list of pinned messages in a chat. If the chat is not a private chat, the bot must be an administrator in the chat for this to work and must have the 'can_pin_messages' administrator right in a supergroup or 'can_edit_messages' administrator right in a channel. Returns True on success."
+    "Use this method to clear the list of pinned messages in a chat. In private chats and channel direct messages chats, no additional rights are required to unpin all pinned messages. Conversely, the bot must be an administrator with the 'can_pin_messages' right or the 'can_edit_messages' right to unpin all pinned messages in groups and channels respectively. Returns True on success."
   )
 
   method(
@@ -938,7 +998,7 @@ defmodule ExGram do
       {icon_custom_emoji_id, [:string], :optional}
     ],
     ExGram.Model.ForumTopic,
-    "Use this method to create a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights. Returns information about the created topic as a ForumTopic object."
+    "Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator right. Returns information about the created topic as a ForumTopic object."
   )
 
   method(
@@ -951,7 +1011,7 @@ defmodule ExGram do
       {icon_custom_emoji_id, [:string], :optional}
     ],
     true,
-    "Use this method to edit name and icon of a topic in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success."
+    "Use this method to edit name and icon of a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator rights, unless it is the creator of the topic. Returns True on success."
   )
 
   method(
@@ -975,7 +1035,7 @@ defmodule ExGram do
     "deleteForumTopic",
     [{chat_id, [:integer, :string]}, {message_thread_id, [:integer]}],
     true,
-    "Use this method to delete a forum topic along with all its messages in a forum supergroup chat. The bot must be an administrator in the chat for this to work and must have the can_delete_messages administrator rights. Returns True on success."
+    "Use this method to delete a forum topic along with all its messages in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_delete_messages administrator rights. Returns True on success."
   )
 
   method(
@@ -983,7 +1043,7 @@ defmodule ExGram do
     "unpinAllForumTopicMessages",
     [{chat_id, [:integer, :string]}, {message_thread_id, [:integer]}],
     true,
-    "Use this method to clear the list of pinned messages in a forum topic. The bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success."
+    "Use this method to clear the list of pinned messages in a forum topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_pin_messages administrator right in the supergroup. Returns True on success."
   )
 
   method(
@@ -1138,6 +1198,22 @@ defmodule ExGram do
 
   method(
     :post,
+    "setMyProfilePhoto",
+    [{photo, [InputProfilePhoto]}],
+    true,
+    "Changes the profile photo of the bot. Returns True on success."
+  )
+
+  method(
+    :post,
+    "removeMyProfilePhoto",
+    [{chat_id, [:integer], :optional}, {menu_button, [MenuButton], :optional}],
+    true,
+    "Removes the profile photo of the bot. Requires no parameters. Returns True on success."
+  )
+
+  method(
+    :post,
     "setChatMenuButton",
     [{chat_id, [:integer], :optional}, {menu_button, [MenuButton], :optional}],
     true,
@@ -1166,148 +1242,6 @@ defmodule ExGram do
     [{for_channels, [:boolean], :optional}],
     ExGram.Model.ChatAdministratorRights,
     "Use this method to get the current default administrator rights of the bot. Returns ChatAdministratorRights on success."
-  )
-
-  method(
-    :post,
-    "editMessageText",
-    [
-      {business_connection_id, [:string], :optional},
-      {chat_id, [:integer, :string], :optional},
-      {message_id, [:integer], :optional},
-      {inline_message_id, [:string], :optional},
-      {text, [:string]},
-      {parse_mode, [:string], :optional},
-      {entities, [{:array, MessageEntity}], :optional},
-      {link_preview_options, [LinkPreviewOptions], :optional},
-      {reply_markup, [InlineKeyboardMarkup], :optional}
-    ],
-    ExGram.Model.Message,
-    "Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
-  )
-
-  method(
-    :post,
-    "editMessageCaption",
-    [
-      {business_connection_id, [:string], :optional},
-      {chat_id, [:integer, :string], :optional},
-      {message_id, [:integer], :optional},
-      {inline_message_id, [:string], :optional},
-      {caption, [:string], :optional},
-      {parse_mode, [:string], :optional},
-      {caption_entities, [{:array, MessageEntity}], :optional},
-      {show_caption_above_media, [:boolean], :optional},
-      {reply_markup, [InlineKeyboardMarkup], :optional}
-    ],
-    ExGram.Model.Message,
-    "Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
-  )
-
-  method(
-    :post,
-    "editMessageMedia",
-    [
-      {business_connection_id, [:string], :optional},
-      {chat_id, [:integer, :string], :optional},
-      {message_id, [:integer], :optional},
-      {inline_message_id, [:string], :optional},
-      {media, [InputMedia]},
-      {reply_markup, [InlineKeyboardMarkup], :optional}
-    ],
-    ExGram.Model.Message,
-    "Use this method to edit animation, audio, document, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
-  )
-
-  method(
-    :post,
-    "editMessageLiveLocation",
-    [
-      {business_connection_id, [:string], :optional},
-      {chat_id, [:integer, :string], :optional},
-      {message_id, [:integer], :optional},
-      {inline_message_id, [:string], :optional},
-      {latitude, [:float]},
-      {longitude, [:float]},
-      {live_period, [:integer], :optional},
-      {horizontal_accuracy, [:float], :optional},
-      {heading, [:integer], :optional},
-      {proximity_alert_radius, [:integer], :optional},
-      {reply_markup, [InlineKeyboardMarkup], :optional}
-    ],
-    ExGram.Model.Message,
-    "Use this method to edit live location messages. A location can be edited until its live_period expires or editing is explicitly disabled by a call to stopMessageLiveLocation. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned."
-  )
-
-  method(
-    :post,
-    "stopMessageLiveLocation",
-    [
-      {business_connection_id, [:string], :optional},
-      {chat_id, [:integer, :string], :optional},
-      {message_id, [:integer], :optional},
-      {inline_message_id, [:string], :optional},
-      {reply_markup, [InlineKeyboardMarkup], :optional}
-    ],
-    ExGram.Model.Message,
-    "Use this method to stop updating a live location message before live_period expires. On success, if the message is not an inline message, the edited Message is returned, otherwise True is returned."
-  )
-
-  method(
-    :post,
-    "editMessageChecklist",
-    [
-      {business_connection_id, [:string]},
-      {chat_id, [:integer]},
-      {message_id, [:integer]},
-      {checklist, [InputChecklist]},
-      {reply_markup, [InlineKeyboardMarkup], :optional}
-    ],
-    ExGram.Model.Message,
-    "Use this method to edit a checklist on behalf of a connected business account. On success, the edited Message is returned."
-  )
-
-  method(
-    :post,
-    "editMessageReplyMarkup",
-    [
-      {business_connection_id, [:string], :optional},
-      {chat_id, [:integer, :string], :optional},
-      {message_id, [:integer], :optional},
-      {inline_message_id, [:string], :optional},
-      {reply_markup, [InlineKeyboardMarkup], :optional}
-    ],
-    ExGram.Model.Message,
-    "Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
-  )
-
-  method(
-    :post,
-    "stopPoll",
-    [
-      {business_connection_id, [:string], :optional},
-      {chat_id, [:integer, :string]},
-      {message_id, [:integer]},
-      {reply_markup, [InlineKeyboardMarkup], :optional}
-    ],
-    ExGram.Model.Poll,
-    "Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned."
-  )
-
-  method(
-    :post,
-    "deleteMessage",
-    [{chat_id, [:integer, :string]}, {message_id, [:integer]}],
-    true,
-    "Use this method to delete a message, including service messages, with the following limitations: - A message can only be deleted if it was sent less than 48 hours ago. - Service messages about a supergroup, channel, or forum topic creation can't be deleted. - A dice message in a private chat can only be deleted if it was sent more than 24 hours ago. - Bots can delete outgoing messages in private chats, groups, and supergroups. - Bots can delete incoming messages in private chats. - Bots granted can_post_messages permissions can delete outgoing messages in channels. - If the bot is an administrator of a group, it can delete any message there. - If the bot has can_delete_messages permission in a supergroup or a channel, it can delete any message there. Returns True on success."
-  )
-
-  method(
-    :post,
-    "deleteMessages",
-    [{chat_id, [:integer, :string]}, {message_ids, [{:array, :integer}]}],
-    true,
-    "Use this method to delete multiple messages simultaneously. If some of the specified messages can't be found, they are skipped. Returns True on success."
   )
 
   method(
@@ -1469,14 +1403,54 @@ defmodule ExGram do
       {exclude_unsaved, [:boolean], :optional},
       {exclude_saved, [:boolean], :optional},
       {exclude_unlimited, [:boolean], :optional},
-      {exclude_limited, [:boolean], :optional},
+      {exclude_limited_upgradable, [:boolean], :optional},
+      {exclude_limited_non_upgradable, [:boolean], :optional},
       {exclude_unique, [:boolean], :optional},
+      {exclude_from_blockchain, [:boolean], :optional},
       {sort_by_price, [:boolean], :optional},
       {offset, [:string], :optional},
       {limit, [:integer], :optional}
     ],
     ExGram.Model.OwnedGifts,
     "Returns the gifts received and owned by a managed business account. Requires the can_view_gifts_and_stars business bot right. Returns OwnedGifts on success."
+  )
+
+  method(
+    :get,
+    "getUserGifts",
+    [
+      {user_id, [:integer]},
+      {exclude_unlimited, [:boolean], :optional},
+      {exclude_limited_upgradable, [:boolean], :optional},
+      {exclude_limited_non_upgradable, [:boolean], :optional},
+      {exclude_from_blockchain, [:boolean], :optional},
+      {exclude_unique, [:boolean], :optional},
+      {sort_by_price, [:boolean], :optional},
+      {offset, [:string], :optional},
+      {limit, [:integer], :optional}
+    ],
+    ExGram.Model.OwnedGifts,
+    "Returns the gifts owned and hosted by a user. Returns OwnedGifts on success."
+  )
+
+  method(
+    :get,
+    "getChatGifts",
+    [
+      {chat_id, [:integer, :string]},
+      {exclude_unsaved, [:boolean], :optional},
+      {exclude_saved, [:boolean], :optional},
+      {exclude_unlimited, [:boolean], :optional},
+      {exclude_limited_upgradable, [:boolean], :optional},
+      {exclude_limited_non_upgradable, [:boolean], :optional},
+      {exclude_from_blockchain, [:boolean], :optional},
+      {exclude_unique, [:boolean], :optional},
+      {sort_by_price, [:boolean], :optional},
+      {offset, [:string], :optional},
+      {limit, [:integer], :optional}
+    ],
+    ExGram.Model.OwnedGifts,
+    "Returns the gifts owned by a chat. Returns OwnedGifts on success."
   )
 
   method(
@@ -1533,6 +1507,21 @@ defmodule ExGram do
 
   method(
     :post,
+    "repostStory",
+    [
+      {business_connection_id, [:string]},
+      {from_chat_id, [:integer]},
+      {from_story_id, [:integer]},
+      {active_period, [:integer]},
+      {post_to_chat_page, [:boolean], :optional},
+      {protect_content, [:boolean], :optional}
+    ],
+    ExGram.Model.Story,
+    "Reposts a story on behalf of a business account from another business account. Both business accounts must be managed by the same bot, and the story on the source account must have been posted (or reposted) by the bot. Requires the can_manage_stories business bot right for both business accounts. Returns Story on success."
+  )
+
+  method(
+    :post,
     "editStory",
     [
       {business_connection_id, [:string]},
@@ -1557,17 +1546,177 @@ defmodule ExGram do
 
   method(
     :post,
+    "editMessageText",
+    [
+      {business_connection_id, [:string], :optional},
+      {chat_id, [:integer, :string], :optional},
+      {message_id, [:integer], :optional},
+      {inline_message_id, [:string], :optional},
+      {text, [:string]},
+      {parse_mode, [:string], :optional},
+      {entities, [{:array, MessageEntity}], :optional},
+      {link_preview_options, [LinkPreviewOptions], :optional},
+      {reply_markup, [InlineKeyboardMarkup], :optional}
+    ],
+    [ExGram.Model.Message, true],
+    "Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
+  )
+
+  method(
+    :post,
+    "editMessageCaption",
+    [
+      {business_connection_id, [:string], :optional},
+      {chat_id, [:integer, :string], :optional},
+      {message_id, [:integer], :optional},
+      {inline_message_id, [:string], :optional},
+      {caption, [:string], :optional},
+      {parse_mode, [:string], :optional},
+      {caption_entities, [{:array, MessageEntity}], :optional},
+      {show_caption_above_media, [:boolean], :optional},
+      {reply_markup, [InlineKeyboardMarkup], :optional}
+    ],
+    [ExGram.Model.Message, true],
+    "Use this method to edit captions of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
+  )
+
+  method(
+    :post,
+    "editMessageMedia",
+    [
+      {business_connection_id, [:string], :optional},
+      {chat_id, [:integer, :string], :optional},
+      {message_id, [:integer], :optional},
+      {inline_message_id, [:string], :optional},
+      {media, [InputMedia]},
+      {reply_markup, [InlineKeyboardMarkup], :optional}
+    ],
+    [ExGram.Model.Message, true],
+    "Use this method to edit animation, audio, document, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
+  )
+
+  method(
+    :post,
+    "editMessageLiveLocation",
+    [
+      {business_connection_id, [:string], :optional},
+      {chat_id, [:integer, :string], :optional},
+      {message_id, [:integer], :optional},
+      {inline_message_id, [:string], :optional},
+      {latitude, [:float]},
+      {longitude, [:float]},
+      {live_period, [:integer], :optional},
+      {horizontal_accuracy, [:float], :optional},
+      {heading, [:integer], :optional},
+      {proximity_alert_radius, [:integer], :optional},
+      {reply_markup, [InlineKeyboardMarkup], :optional}
+    ],
+    [ExGram.Model.Message, true],
+    "Use this method to edit live location messages. A location can be edited until its live_period expires or editing is explicitly disabled by a call to stopMessageLiveLocation. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned."
+  )
+
+  method(
+    :post,
+    "stopMessageLiveLocation",
+    [
+      {business_connection_id, [:string], :optional},
+      {chat_id, [:integer, :string], :optional},
+      {message_id, [:integer], :optional},
+      {inline_message_id, [:string], :optional},
+      {reply_markup, [InlineKeyboardMarkup], :optional}
+    ],
+    [ExGram.Model.Message, true],
+    "Use this method to stop updating a live location message before live_period expires. On success, if the message is not an inline message, the edited Message is returned, otherwise True is returned."
+  )
+
+  method(
+    :post,
+    "editMessageChecklist",
+    [
+      {business_connection_id, [:string]},
+      {chat_id, [:integer]},
+      {message_id, [:integer]},
+      {checklist, [InputChecklist]},
+      {reply_markup, [InlineKeyboardMarkup], :optional}
+    ],
+    ExGram.Model.Message,
+    "Use this method to edit a checklist on behalf of a connected business account. On success, the edited Message is returned."
+  )
+
+  method(
+    :post,
+    "editMessageReplyMarkup",
+    [
+      {business_connection_id, [:string], :optional},
+      {chat_id, [:integer, :string], :optional},
+      {message_id, [:integer], :optional},
+      {inline_message_id, [:string], :optional},
+      {reply_markup, [InlineKeyboardMarkup], :optional}
+    ],
+    [ExGram.Model.Message, true],
+    "Use this method to edit only the reply markup of messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
+  )
+
+  method(
+    :post,
+    "stopPoll",
+    [
+      {business_connection_id, [:string], :optional},
+      {chat_id, [:integer, :string]},
+      {message_id, [:integer]},
+      {reply_markup, [InlineKeyboardMarkup], :optional}
+    ],
+    ExGram.Model.Poll,
+    "Use this method to stop a poll which was sent by the bot. On success, the stopped Poll is returned."
+  )
+
+  method(
+    :post,
+    "approveSuggestedPost",
+    [{chat_id, [:integer]}, {message_id, [:integer]}, {send_date, [:integer], :optional}],
+    true,
+    "Use this method to approve a suggested post in a direct messages chat. The bot must have the 'can_post_messages' administrator right in the corresponding channel chat. Returns True on success."
+  )
+
+  method(
+    :post,
+    "declineSuggestedPost",
+    [{chat_id, [:integer]}, {message_id, [:integer]}, {comment, [:string], :optional}],
+    true,
+    "Use this method to decline a suggested post in a direct messages chat. The bot must have the 'can_manage_direct_messages' administrator right in the corresponding channel chat. Returns True on success."
+  )
+
+  method(
+    :post,
+    "deleteMessage",
+    [{chat_id, [:integer, :string]}, {message_id, [:integer]}],
+    true,
+    "Use this method to delete a message, including service messages, with the following limitations: - A message can only be deleted if it was sent less than 48 hours ago. - Service messages about a supergroup, channel, or forum topic creation can't be deleted. - A dice message in a private chat can only be deleted if it was sent more than 24 hours ago. - Bots can delete outgoing messages in private chats, groups, and supergroups. - Bots can delete incoming messages in private chats. - Bots granted can_post_messages permissions can delete outgoing messages in channels. - If the bot is an administrator of a group, it can delete any message there. - If the bot has can_delete_messages administrator right in a supergroup or a channel, it can delete any message there. - If the bot has can_manage_direct_messages administrator right in a channel, it can delete any message in the corresponding direct messages chat. Returns True on success."
+  )
+
+  method(
+    :post,
+    "deleteMessages",
+    [{chat_id, [:integer, :string]}, {message_ids, [{:array, :integer}]}],
+    true,
+    "Use this method to delete multiple messages simultaneously. If some of the specified messages can't be found, they are skipped. Returns True on success."
+  )
+
+  method(
+    :post,
     "sendSticker",
     [
       {business_connection_id, [:string], :optional},
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {sticker, [:file, :string]},
       {emoji, [:string], :optional},
       {disable_notification, [:boolean], :optional},
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply], :optional}
     ],
@@ -1746,6 +1895,7 @@ defmodule ExGram do
     [
       {chat_id, [:integer, :string]},
       {message_thread_id, [:integer], :optional},
+      {direct_messages_topic_id, [:integer], :optional},
       {title, [:string]},
       {description, [:string]},
       {payload, [:string]},
@@ -1771,6 +1921,7 @@ defmodule ExGram do
       {protect_content, [:boolean], :optional},
       {allow_paid_broadcast, [:boolean], :optional},
       {message_effect_id, [:string], :optional},
+      {suggested_post_parameters, [SuggestedPostParameters], :optional},
       {reply_parameters, [ReplyParameters], :optional},
       {reply_markup, [InlineKeyboardMarkup], :optional}
     ],
@@ -1901,7 +2052,7 @@ defmodule ExGram do
       {message_id, [:integer], :optional},
       {inline_message_id, [:string], :optional}
     ],
-    ExGram.Model.Message,
+    [ExGram.Model.Message, true],
     "Use this method to set the score of the specified user in a game message. On success, if the message is not an inline message, the Message is returned, otherwise True is returned. Returns an error, if the new score is not greater than the user's current score in the chat and force is False."
   )
 
@@ -1918,7 +2069,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 156 methods
+  # 165 methods
 
   # ----------MODELS-----------
 
@@ -1991,7 +2142,9 @@ defmodule ExGram do
         {:can_read_all_group_messages, [:boolean], :optional},
         {:supports_inline_queries, [:boolean], :optional},
         {:can_connect_to_business, [:boolean], :optional},
-        {:has_main_web_app, [:boolean], :optional}
+        {:has_main_web_app, [:boolean], :optional},
+        {:has_topics_enabled, [:boolean], :optional},
+        {:allows_users_to_create_topics, [:boolean], :optional}
       ],
       "This object represents a Telegram user or bot."
     )
@@ -2005,7 +2158,8 @@ defmodule ExGram do
         {:username, [:string], :optional},
         {:first_name, [:string], :optional},
         {:last_name, [:string], :optional},
-        {:is_forum, [:boolean], :optional}
+        {:is_forum, [:boolean], :optional},
+        {:is_direct_messages, [:boolean], :optional}
       ],
       "This object represents a chat."
     )
@@ -2020,6 +2174,7 @@ defmodule ExGram do
         {:first_name, [:string], :optional},
         {:last_name, [:string], :optional},
         {:is_forum, [:boolean], :optional},
+        {:is_direct_messages, [:boolean], :optional},
         {:accent_color_id, [:integer]},
         {:max_reaction_count, [:integer]},
         {:photo, [ChatPhoto], :optional},
@@ -2029,6 +2184,7 @@ defmodule ExGram do
         {:business_location, [BusinessLocation], :optional},
         {:business_opening_hours, [BusinessOpeningHours], :optional},
         {:personal_chat, [Chat], :optional},
+        {:parent_chat, [Chat], :optional},
         {:available_reactions, [{:array, ReactionType}], :optional},
         {:background_custom_emoji_id, [:string], :optional},
         {:profile_accent_color_id, [:integer], :optional},
@@ -2057,7 +2213,11 @@ defmodule ExGram do
         {:can_set_sticker_set, [:boolean], :optional},
         {:custom_emoji_sticker_set_name, [:string], :optional},
         {:linked_chat_id, [:integer], :optional},
-        {:location, [ChatLocation], :optional}
+        {:location, [ChatLocation], :optional},
+        {:rating, [UserRating], :optional},
+        {:first_profile_audio, [Audio], :optional},
+        {:unique_gift_colors, [UniqueGiftColors], :optional},
+        {:paid_message_star_count, [:integer], :optional}
       ],
       "This object contains full information about a chat."
     )
@@ -2067,6 +2227,7 @@ defmodule ExGram do
       [
         {:message_id, [:integer]},
         {:message_thread_id, [:integer], :optional},
+        {:direct_messages_topic, [DirectMessagesTopic], :optional},
         {:from, [User], :optional},
         {:sender_chat, [Chat], :optional},
         {:sender_boost_count, [:integer], :optional},
@@ -2081,16 +2242,19 @@ defmodule ExGram do
         {:external_reply, [ExternalReplyInfo], :optional},
         {:quote, [TextQuote], :optional},
         {:reply_to_story, [Story], :optional},
+        {:reply_to_checklist_task_id, [:integer], :optional},
         {:via_bot, [User], :optional},
         {:edit_date, [:integer], :optional},
         {:has_protected_content, [:boolean], :optional},
         {:is_from_offline, [:boolean], :optional},
+        {:is_paid_post, [:boolean], :optional},
         {:media_group_id, [:string], :optional},
         {:author_signature, [:string], :optional},
         {:paid_star_count, [:integer], :optional},
         {:text, [:string], :optional},
         {:entities, [{:array, MessageEntity}], :optional},
         {:link_preview_options, [LinkPreviewOptions], :optional},
+        {:suggested_post_info, [SuggestedPostInfo], :optional},
         {:effect_id, [:string], :optional},
         {:animation, [Animation], :optional},
         {:audio, [Audio], :optional},
@@ -2115,6 +2279,8 @@ defmodule ExGram do
         {:location, [Location], :optional},
         {:new_chat_members, [{:array, User}], :optional},
         {:left_chat_member, [User], :optional},
+        {:chat_owner_left, [ChatOwnerLeft], :optional},
+        {:chat_owner_changed, [ChatOwnerChanged], :optional},
         {:new_chat_title, [:string], :optional},
         {:new_chat_photo, [{:array, PhotoSize}], :optional},
         {:delete_chat_photo, [:boolean], :optional},
@@ -2132,6 +2298,7 @@ defmodule ExGram do
         {:chat_shared, [ChatShared], :optional},
         {:gift, [GiftInfo], :optional},
         {:unique_gift, [UniqueGiftInfo], :optional},
+        {:gift_upgrade_sent, [GiftInfo], :optional},
         {:connected_website, [:string], :optional},
         {:write_access_allowed, [WriteAccessAllowed], :optional},
         {:passport_data, [PassportData], :optional},
@@ -2152,6 +2319,11 @@ defmodule ExGram do
         {:giveaway_winners, [GiveawayWinners], :optional},
         {:giveaway_completed, [GiveawayCompleted], :optional},
         {:paid_message_price_changed, [PaidMessagePriceChanged], :optional},
+        {:suggested_post_approved, [SuggestedPostApproved], :optional},
+        {:suggested_post_approval_failed, [SuggestedPostApprovalFailed], :optional},
+        {:suggested_post_declined, [SuggestedPostDeclined], :optional},
+        {:suggested_post_paid, [SuggestedPostPaid], :optional},
+        {:suggested_post_refunded, [SuggestedPostRefunded], :optional},
         {:video_chat_scheduled, [VideoChatScheduled], :optional},
         {:video_chat_started, [VideoChatStarted], :optional},
         {:video_chat_ended, [VideoChatEnded], :optional},
@@ -2236,7 +2408,8 @@ defmodule ExGram do
         {:quote, [:string], :optional},
         {:quote_parse_mode, [:string], :optional},
         {:quote_entities, [{:array, MessageEntity}], :optional},
-        {:quote_position, [:integer], :optional}
+        {:quote_position, [:integer], :optional},
+        {:checklist_task_id, [:integer], :optional}
       ],
       "Describes reply parameters for the message that is being sent."
     )
@@ -2331,6 +2504,19 @@ defmodule ExGram do
     model(Story, [{:chat, [Chat]}, {:id, [:integer]}], "This object represents a story.")
 
     model(
+      VideoQuality,
+      [
+        {:file_id, [:string]},
+        {:file_unique_id, [:string]},
+        {:width, [:integer]},
+        {:height, [:integer]},
+        {:codec, [:string]},
+        {:file_size, [:integer], :optional}
+      ],
+      "This object represents a video file of a specific quality."
+    )
+
+    model(
       Video,
       [
         {:file_id, [:string]},
@@ -2341,6 +2527,7 @@ defmodule ExGram do
         {:thumbnail, [PhotoSize], :optional},
         {:cover, [{:array, PhotoSize}], :optional},
         {:start_timestamp, [:integer], :optional},
+        {:qualities, [{:array, VideoQuality}], :optional},
         {:file_name, [:string], :optional},
         {:mime_type, [:string], :optional},
         {:file_size, [:integer], :optional}
@@ -2467,6 +2654,7 @@ defmodule ExGram do
         {:text, [:string]},
         {:text_entities, [{:array, MessageEntity}], :optional},
         {:completed_by_user, [User], :optional},
+        {:completed_by_chat, [Chat], :optional},
         {:completion_date, [:integer], :optional}
       ],
       "Describes a task in a checklist."
@@ -2630,7 +2818,12 @@ defmodule ExGram do
 
     model(
       ForumTopicCreated,
-      [{:name, [:string]}, {:icon_color, [:integer]}, {:icon_custom_emoji_id, [:string], :optional}],
+      [
+        {:name, [:string]},
+        {:icon_color, [:integer]},
+        {:icon_custom_emoji_id, [:string], :optional},
+        {:is_name_implicit, [:boolean], :optional}
+      ],
       "This object represents a service message about a new forum topic created in the chat."
     )
 
@@ -2741,6 +2934,45 @@ defmodule ExGram do
     )
 
     model(
+      SuggestedPostApproved,
+      [
+        {:suggested_post_message, [Message], :optional},
+        {:price, [SuggestedPostPrice], :optional},
+        {:send_date, [:integer]}
+      ],
+      "Describes a service message about the approval of a suggested post."
+    )
+
+    model(
+      SuggestedPostApprovalFailed,
+      [{:suggested_post_message, [Message], :optional}, {:price, [SuggestedPostPrice]}],
+      "Describes a service message about the failed approval of a suggested post. Currently, only caused by insufficient user funds at the time of approval."
+    )
+
+    model(
+      SuggestedPostDeclined,
+      [{:suggested_post_message, [Message], :optional}, {:comment, [:string], :optional}],
+      "Describes a service message about the rejection of a suggested post."
+    )
+
+    model(
+      SuggestedPostPaid,
+      [
+        {:suggested_post_message, [Message], :optional},
+        {:currency, [:string]},
+        {:amount, [:integer], :optional},
+        {:star_amount, [StarAmount], :optional}
+      ],
+      "Describes a service message about a successful payment for a suggested post."
+    )
+
+    model(
+      SuggestedPostRefunded,
+      [{:suggested_post_message, [Message], :optional}, {:reason, [:string]}],
+      "Describes a service message about a payment refund for a suggested post."
+    )
+
+    model(
       GiveawayCreated,
       [{:prize_star_count, [:integer], :optional}],
       "This object represents a service message about the creation of a scheduled giveaway."
@@ -2805,9 +3037,39 @@ defmodule ExGram do
     )
 
     model(
+      SuggestedPostPrice,
+      [{:currency, [:string]}, {:amount, [:integer]}],
+      "Describes the price of a suggested post."
+    )
+
+    model(
+      SuggestedPostInfo,
+      [{:state, [:string]}, {:price, [SuggestedPostPrice], :optional}, {:send_date, [:integer], :optional}],
+      "Contains information about a suggested post."
+    )
+
+    model(
+      SuggestedPostParameters,
+      [{:price, [SuggestedPostPrice], :optional}, {:send_date, [:integer], :optional}],
+      "Contains parameters of a post that is being suggested by the bot."
+    )
+
+    model(
+      DirectMessagesTopic,
+      [{:topic_id, [:integer]}, {:user, [User], :optional}],
+      "Describes a topic of a direct messages chat."
+    )
+
+    model(
       UserProfilePhotos,
       [{:total_count, [:integer]}, {:photos, [{:array, {:array, PhotoSize}}]}],
       "This object represent a user's profile pictures."
+    )
+
+    model(
+      UserProfileAudios,
+      [{:total_count, [:integer]}, {:audios, [{:array, Audio}]}],
+      "This object represents the audios displayed on a user's profile."
     )
 
     model(
@@ -2840,6 +3102,8 @@ defmodule ExGram do
       KeyboardButton,
       [
         {:text, [:string]},
+        {:icon_custom_emoji_id, [:string], :optional},
+        {:style, [:string], :optional},
         {:request_users, [KeyboardButtonRequestUsers], :optional},
         {:request_chat, [KeyboardButtonRequestChat], :optional},
         {:request_contact, [:boolean], :optional},
@@ -2847,7 +3111,7 @@ defmodule ExGram do
         {:request_poll, [KeyboardButtonPollType], :optional},
         {:web_app, [WebAppInfo], :optional}
       ],
-      "This object represents one button of the reply keyboard. At most one of the optional fields must be used to specify type of the button. For simple text buttons, String can be used instead of this object to specify the button text."
+      "This object represents one button of the reply keyboard. At most one of the fields other than text, icon_custom_emoji_id, and style must be used to specify the type of the button. For simple text buttons, String can be used instead of this object to specify the button text."
     )
 
     model(
@@ -2904,6 +3168,8 @@ defmodule ExGram do
       InlineKeyboardButton,
       [
         {:text, [:string]},
+        {:icon_custom_emoji_id, [:string], :optional},
+        {:style, [:string], :optional},
         {:url, [:string], :optional},
         {:callback_data, [:string], :optional},
         {:web_app, [WebAppInfo], :optional},
@@ -2915,7 +3181,7 @@ defmodule ExGram do
         {:callback_game, [CallbackGame], :optional},
         {:pay, [:boolean], :optional}
       ],
-      "This object represents one button of an inline keyboard. Exactly one of the optional fields must be used to specify type of the button."
+      "This object represents one button of an inline keyboard. Exactly one of the fields other than text, icon_custom_emoji_id, and style must be used to specify the type of the button."
     )
 
     model(
@@ -3017,7 +3283,8 @@ defmodule ExGram do
         {:can_post_messages, [:boolean], :optional},
         {:can_edit_messages, [:boolean], :optional},
         {:can_pin_messages, [:boolean], :optional},
-        {:can_manage_topics, [:boolean], :optional}
+        {:can_manage_topics, [:boolean], :optional},
+        {:can_manage_direct_messages, [:boolean], :optional}
       ],
       "Represents the rights of an administrator in a chat."
     )
@@ -3064,6 +3331,7 @@ defmodule ExGram do
         {:can_edit_messages, [:boolean], :optional},
         {:can_pin_messages, [:boolean], :optional},
         {:can_manage_topics, [:boolean], :optional},
+        {:can_manage_direct_messages, [:boolean], :optional},
         {:custom_title, [:string], :optional}
       ],
       "Represents a chat member that has some additional privileges."
@@ -3177,6 +3445,17 @@ defmodule ExGram do
     )
 
     model(
+      UserRating,
+      [
+        {:level, [:integer]},
+        {:rating, [:integer]},
+        {:current_level_rating, [:integer]},
+        {:next_level_rating, [:integer], :optional}
+      ],
+      "This object describes the rating of a user based on their Telegram Star spendings."
+    )
+
+    model(
       StoryAreaPosition,
       [
         {:x_percentage, [:float]},
@@ -3198,12 +3477,6 @@ defmodule ExGram do
         {:street, [:string], :optional}
       ],
       "Describes the physical address of a location."
-    )
-
-    model(
-      StoryAreaType,
-      [{:type, [:string]}, {:latitude, [:float]}, {:longitude, [:float]}, {:address, [LocationAddress], :optional}],
-      "Describes the type of a clickable area on a story. Currently, it can be one of"
     )
 
     model(
@@ -3295,9 +3568,16 @@ defmodule ExGram do
         {:message_thread_id, [:integer]},
         {:name, [:string]},
         {:icon_color, [:integer]},
-        {:icon_custom_emoji_id, [:string], :optional}
+        {:icon_custom_emoji_id, [:string], :optional},
+        {:is_name_implicit, [:boolean], :optional}
       ],
       "This object represents a forum topic."
+    )
+
+    model(
+      GiftBackground,
+      [{:center_color, [:integer]}, {:edge_color, [:integer]}, {:text_color, [:integer]}],
+      "This object describes the background of a gift."
     )
 
     model(
@@ -3307,8 +3587,15 @@ defmodule ExGram do
         {:sticker, [Sticker]},
         {:star_count, [:integer]},
         {:upgrade_star_count, [:integer], :optional},
+        {:is_premium, [:boolean], :optional},
+        {:has_colors, [:boolean], :optional},
         {:total_count, [:integer], :optional},
-        {:remaining_count, [:integer], :optional}
+        {:remaining_count, [:integer], :optional},
+        {:personal_total_count, [:integer], :optional},
+        {:personal_remaining_count, [:integer], :optional},
+        {:background, [GiftBackground], :optional},
+        {:unique_gift_variant_count, [:integer], :optional},
+        {:publisher_chat, [Chat], :optional}
       ],
       "This object represents a gift that can be sent by the bot."
     )
@@ -3317,7 +3604,7 @@ defmodule ExGram do
 
     model(
       UniqueGiftModel,
-      [{:name, [:string]}, {:sticker, [Sticker]}, {:rarity_per_mille, [:integer]}],
+      [{:name, [:string]}, {:sticker, [Sticker]}, {:rarity_per_mille, [:integer]}, {:rarity, [:string], :optional}],
       "This object describes the model of a unique gift."
     )
 
@@ -3340,14 +3627,33 @@ defmodule ExGram do
     )
 
     model(
+      UniqueGiftColors,
+      [
+        {:model_custom_emoji_id, [:string]},
+        {:symbol_custom_emoji_id, [:string]},
+        {:light_theme_main_color, [:integer]},
+        {:light_theme_other_colors, [{:array, :integer}]},
+        {:dark_theme_main_color, [:integer]},
+        {:dark_theme_other_colors, [{:array, :integer}]}
+      ],
+      "This object contains information about the color scheme for a user's name, message replies and link previews based on a unique gift."
+    )
+
+    model(
       UniqueGift,
       [
+        {:gift_id, [:string]},
         {:base_name, [:string]},
         {:name, [:string]},
         {:number, [:integer]},
         {:model, [UniqueGiftModel]},
         {:symbol, [UniqueGiftSymbol]},
-        {:backdrop, [UniqueGiftBackdrop]}
+        {:backdrop, [UniqueGiftBackdrop]},
+        {:is_premium, [:boolean], :optional},
+        {:is_burned, [:boolean], :optional},
+        {:is_from_blockchain, [:boolean], :optional},
+        {:colors, [UniqueGiftColors], :optional},
+        {:publisher_chat, [Chat], :optional}
       ],
       "This object describes a unique gift that was upgraded from a regular gift."
     )
@@ -3359,10 +3665,12 @@ defmodule ExGram do
         {:owned_gift_id, [:string], :optional},
         {:convert_star_count, [:integer], :optional},
         {:prepaid_upgrade_star_count, [:integer], :optional},
+        {:is_upgrade_separate, [:boolean], :optional},
         {:can_be_upgraded, [:boolean], :optional},
         {:text, [:string], :optional},
         {:entities, [{:array, MessageEntity}], :optional},
-        {:is_private, [:boolean], :optional}
+        {:is_private, [:boolean], :optional},
+        {:unique_gift_number, [:integer], :optional}
       ],
       "Describes a service message about a regular gift that was sent or received."
     )
@@ -3372,32 +3680,13 @@ defmodule ExGram do
       [
         {:gift, [UniqueGift]},
         {:origin, [:string]},
-        {:last_resale_star_count, [:integer], :optional},
+        {:last_resale_currency, [:string], :optional},
+        {:last_resale_amount, [:integer], :optional},
         {:owned_gift_id, [:string], :optional},
         {:transfer_star_count, [:integer], :optional},
         {:next_transfer_date, [:integer], :optional}
       ],
       "Describes a service message about a unique gift that was sent or received."
-    )
-
-    model(
-      OwnedGift,
-      [
-        {:type, [:string]},
-        {:gift, [Gift]},
-        {:owned_gift_id, [:string], :optional},
-        {:sender_user, [User], :optional},
-        {:send_date, [:integer]},
-        {:text, [:string], :optional},
-        {:entities, [{:array, MessageEntity}], :optional},
-        {:is_private, [:boolean], :optional},
-        {:is_saved, [:boolean], :optional},
-        {:can_be_upgraded, [:boolean], :optional},
-        {:was_refunded, [:boolean], :optional},
-        {:convert_star_count, [:integer], :optional},
-        {:prepaid_upgrade_star_count, [:integer], :optional}
-      ],
-      "This object describes a gift received and owned by a user or a chat. Currently, it can be one of"
     )
 
     model(
@@ -3415,7 +3704,9 @@ defmodule ExGram do
         {:can_be_upgraded, [:boolean], :optional},
         {:was_refunded, [:boolean], :optional},
         {:convert_star_count, [:integer], :optional},
-        {:prepaid_upgrade_star_count, [:integer], :optional}
+        {:prepaid_upgrade_star_count, [:integer], :optional},
+        {:is_upgrade_separate, [:boolean], :optional},
+        {:unique_gift_number, [:integer], :optional}
       ],
       "Describes a regular gift owned by a user or a chat."
     )
@@ -3448,7 +3739,8 @@ defmodule ExGram do
         {:unlimited_gifts, [:boolean]},
         {:limited_gifts, [:boolean]},
         {:unique_gifts, [:boolean]},
-        {:premium_subscription, [:boolean]}
+        {:premium_subscription, [:boolean]},
+        {:gifts_from_channels, [:boolean]}
       ],
       "This object describes the types of gifts that can be gifted to a user or a chat."
     )
@@ -3559,6 +3851,18 @@ defmodule ExGram do
       ChatBoostRemoved,
       [{:chat, [Chat]}, {:boost_id, [:string]}, {:remove_date, [:integer]}, {:source, [ChatBoostSource]}],
       "This object represents a boost removed from a chat."
+    )
+
+    model(
+      ChatOwnerLeft,
+      [{:new_owner, [User], :optional}],
+      "Describes a service message about the chat owner leaving the chat."
+    )
+
+    model(
+      ChatOwnerChanged,
+      [{:new_owner, [User]}],
+      "Describes a service message about an ownership change in the chat."
     )
 
     model(
@@ -4596,7 +4900,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 249 models
+    # 263 models
 
     defmodule MaybeInaccessibleMessage do
       @moduledoc """
@@ -4705,6 +5009,32 @@ defmodule ExGram do
       end
     end
 
+    defmodule StoryAreaType do
+      @moduledoc """
+      StoryAreaType model. Valid subtypes: StoryAreaTypeLocation, StoryAreaTypeSuggestedReaction, StoryAreaTypeLink, StoryAreaTypeWeather, StoryAreaTypeUniqueGift
+      """
+      @type t ::
+              StoryAreaTypeLocation.t()
+              | StoryAreaTypeSuggestedReaction.t()
+              | StoryAreaTypeLink.t()
+              | StoryAreaTypeWeather.t()
+              | StoryAreaTypeUniqueGift.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [
+          StoryAreaTypeLocation,
+          StoryAreaTypeSuggestedReaction,
+          StoryAreaTypeLink,
+          StoryAreaTypeWeather,
+          StoryAreaTypeUniqueGift
+        ]
+      end
+    end
+
     defmodule ReactionType do
       @moduledoc """
       ReactionType model. Valid subtypes: ReactionTypeEmoji, ReactionTypeCustomEmoji, ReactionTypePaid
@@ -4717,6 +5047,21 @@ defmodule ExGram do
 
       def subtypes do
         [ReactionTypeEmoji, ReactionTypeCustomEmoji, ReactionTypePaid]
+      end
+    end
+
+    defmodule OwnedGift do
+      @moduledoc """
+      OwnedGift model. Valid subtypes: OwnedGiftRegular, OwnedGiftUnique
+      """
+      @type t :: OwnedGiftRegular.t() | OwnedGiftUnique.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [OwnedGiftRegular, OwnedGiftUnique]
       end
     end
 
@@ -5007,7 +5352,7 @@ defmodule ExGram do
       end
     end
 
-    # 19 generics
+    # 21 generics
   end
 
   # END AUTO GENERATED

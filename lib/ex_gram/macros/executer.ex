@@ -41,7 +41,7 @@ defmodule ExGram.Macros.Executer do
 
       case result do
         {:ok, body} ->
-          {:ok, process_result(body, returned_type)}
+          process_result(body, returned_type)
 
         {:error, error} ->
           {:error, error}
