@@ -978,12 +978,7 @@ defmodule ExGram do
   method(
     :get,
     "getForumTopicIconStickers",
-    [
-      {chat_id, [:integer, :string]},
-      {name, [:string]},
-      {icon_color, [:integer], :optional},
-      {icon_custom_emoji_id, [:string], :optional}
-    ],
+    [],
     {:array, ExGram.Model.Sticker},
     "Use this method to get custom emoji stickers, which can be used as a forum topic icon by any user. Requires no parameters. Returns an Array of Sticker objects."
   )
@@ -1207,7 +1202,7 @@ defmodule ExGram do
   method(
     :post,
     "removeMyProfilePhoto",
-    [{chat_id, [:integer], :optional}, {menu_button, [MenuButton], :optional}],
+    [],
     true,
     "Removes the profile photo of the bot. Requires no parameters. Returns True on success."
   )
