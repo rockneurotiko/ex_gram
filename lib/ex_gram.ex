@@ -3916,7 +3916,7 @@ defmodule ExGram do
       InputMediaPhoto,
       [
         {:type, [:string]},
-        {:media, [:string]},
+        {:media, [:string, :file]},
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
@@ -3930,9 +3930,9 @@ defmodule ExGram do
       InputMediaVideo,
       [
         {:type, [:string]},
-        {:media, [:string]},
-        {:thumbnail, [:string], :optional},
-        {:cover, [:string], :optional},
+        {:media, [:string, :file]},
+        {:thumbnail, [:string, :file], :optional},
+        {:cover, [:string, :file], :optional},
         {:start_timestamp, [:integer], :optional},
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
@@ -3951,8 +3951,8 @@ defmodule ExGram do
       InputMediaAnimation,
       [
         {:type, [:string]},
-        {:media, [:string]},
-        {:thumbnail, [:string], :optional},
+        {:media, [:string, :file]},
+        {:thumbnail, [:string, :file], :optional},
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
@@ -3969,8 +3969,8 @@ defmodule ExGram do
       InputMediaAudio,
       [
         {:type, [:string]},
-        {:media, [:string]},
-        {:thumbnail, [:string], :optional},
+        {:media, [:string, :file]},
+        {:thumbnail, [:string, :file], :optional},
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
@@ -3985,8 +3985,8 @@ defmodule ExGram do
       InputMediaDocument,
       [
         {:type, [:string]},
-        {:media, [:string]},
-        {:thumbnail, [:string], :optional},
+        {:media, [:string, :file]},
+        {:thumbnail, [:string, :file], :optional},
         {:caption, [:string], :optional},
         {:parse_mode, [:string], :optional},
         {:caption_entities, [{:array, MessageEntity}], :optional},
@@ -3995,15 +3995,15 @@ defmodule ExGram do
       "Represents a general file to be sent."
     )
 
-    model(InputPaidMediaPhoto, [{:type, [:string]}, {:media, [:string]}], "The paid media to send is a photo.")
+    model(InputPaidMediaPhoto, [{:type, [:string]}, {:media, [:string, :file]}], "The paid media to send is a photo.")
 
     model(
       InputPaidMediaVideo,
       [
         {:type, [:string]},
-        {:media, [:string]},
-        {:thumbnail, [:string], :optional},
-        {:cover, [:string], :optional},
+        {:media, [:string, :file]},
+        {:thumbnail, [:string, :file], :optional},
+        {:cover, [:string, :file], :optional},
         {:start_timestamp, [:integer], :optional},
         {:width, [:integer], :optional},
         {:height, [:integer], :optional},
@@ -4015,23 +4015,27 @@ defmodule ExGram do
 
     model(
       InputProfilePhotoStatic,
-      [{:type, [:string]}, {:photo, [:string]}],
+      [{:type, [:string]}, {:photo, [:string, :file]}],
       "A static profile photo in the .JPG format."
     )
 
     model(
       InputProfilePhotoAnimated,
-      [{:type, [:string]}, {:animation, [:string]}, {:main_frame_timestamp, [:float], :optional}],
+      [{:type, [:string]}, {:animation, [:string, :file]}, {:main_frame_timestamp, [:float], :optional}],
       "An animated profile photo in the MPEG4 format."
     )
 
-    model(InputStoryContentPhoto, [{:type, [:string]}, {:photo, [:string]}], "Describes a photo to post as a story.")
+    model(
+      InputStoryContentPhoto,
+      [{:type, [:string]}, {:photo, [:string, :file]}],
+      "Describes a photo to post as a story."
+    )
 
     model(
       InputStoryContentVideo,
       [
         {:type, [:string]},
-        {:video, [:string]},
+        {:video, [:string, :file]},
         {:duration, [:float], :optional},
         {:cover_frame_timestamp, [:float], :optional},
         {:is_animation, [:boolean], :optional}
@@ -4082,7 +4086,7 @@ defmodule ExGram do
     model(
       InputSticker,
       [
-        {:sticker, [:string]},
+        {:sticker, [:string, :file]},
         {:format, [:string]},
         {:emoji_list, [{:array, :string}]},
         {:mask_position, [MaskPosition], :optional},

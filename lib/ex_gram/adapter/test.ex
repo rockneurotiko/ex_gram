@@ -35,6 +35,10 @@ defmodule ExGram.Adapter.Test do
     GenServer.call(name, {:clean})
   end
 
+  def get_calls(name \\ @name) do
+    GenServer.call(name, {:get_calls})
+  end
+
   def handle_call({:request, verb, path, body}, _, state) do
     state = add_call(state, {verb, path, body})
 
@@ -57,6 +61,10 @@ defmodule ExGram.Adapter.Test do
 
   def handle_call({:clean}, _, _) do
     {:reply, :ok, %__MODULE__{}}
+  end
+
+  def handle_call({:get_calls}, _, %{calls: calls} = state) do
+    {:reply, calls, state}
   end
 
   defp add_call(%{calls: calls} = state, data), do: %{state | calls: calls ++ [data]}

@@ -75,8 +75,14 @@ defmodule ExGram.Macros.Executer do
   end
 
   defp body_with_files(body, file_parts) do
-    file_parts =
-      file_parts
+    {input_media_params, direct_params} =
+      Enum.split_with(file_parts, fn
+        {:input_media, _name} -> true
+        _ -> false
+      end)
+
+    direct_file_parts =
+      direct_params
       |> Enum.map(fn
         {v, p} -> {v, p}
         keyw -> {body[keyw], Atom.to_string(keyw)}
@@ -93,8 +99,64 @@ defmodule ExGram.Macros.Executer do
           {:file_content, partname, content, filename}
       end)
 
-    create_multipart(body, file_parts)
+    {body, media_file_parts} =
+      Enum.reduce(input_media_params, {body, []}, fn {:input_media, name}, {body, files} ->
+        case Map.get(body, name) do
+          nil ->
+            {body, files}
+
+          media_value ->
+            {updated_media, extracted_files} = extract_media_files(media_value, name)
+            {Map.put(body, name, updated_media), files ++ extracted_files}
+        end
+      end)
+
+    create_multipart(body, direct_file_parts ++ media_file_parts)
   end
+
+  @input_media_file_fields [:media, :thumbnail, :cover]
+
+  defp extract_media_files(media_list, param_name) when is_list(media_list) do
+    {updated_items, all_files} =
+      media_list
+      |> Enum.with_index()
+      |> Enum.map_reduce([], fn {item, index}, acc_files ->
+        {updated_item, files} = extract_files_from_media_item(item, param_name, index)
+        {updated_item, acc_files ++ files}
+      end)
+
+    {updated_items, all_files}
+  end
+
+  defp extract_media_files(media_item, param_name) when is_map(media_item) do
+    {updated_item, files} = extract_files_from_media_item(media_item, param_name, 0)
+    {updated_item, files}
+  end
+
+  defp extract_media_files(other, _param_name), do: {other, []}
+
+  defp extract_files_from_media_item(item, param_name, index) when is_map(item) do
+    Enum.reduce(@input_media_file_fields, {item, []}, fn field, {item, files} ->
+      case Map.get(item, field) do
+        {:file, path} ->
+          attach_name = "#{param_name}_#{index}_#{field}"
+          updated_item = Map.put(item, field, "attach://#{attach_name}")
+          file_part = {:file, attach_name, path}
+          {updated_item, files ++ [file_part]}
+
+        {:file_content, content, filename} ->
+          attach_name = "#{param_name}_#{index}_#{field}"
+          updated_item = Map.put(item, field, "attach://#{attach_name}")
+          file_part = {:file_content, attach_name, content, filename}
+          {updated_item, files ++ [file_part]}
+
+        _ ->
+          {item, files}
+      end
+    end)
+  end
+
+  defp extract_files_from_media_item(item, _param_name, _index), do: {item, []}
 
   defp to_size_string(true), do: "true"
   defp to_size_string(false), do: "false"
@@ -133,7 +195,15 @@ defmodule ExGram.Macros.Executer do
   defp create_multipart(body, []), do: body
 
   defp create_multipart(body, fileparts) do
-    filepart_names = fileparts |> Enum.map(&elem(&1, 1)) |> Enum.map(&String.to_existing_atom/1)
+    filepart_names =
+      fileparts
+      |> Enum.map(&elem(&1, 1))
+      |> Enum.reduce([], fn name, acc ->
+        case safe_to_existing_atom(name) do
+          {:ok, atom} -> [atom | acc]
+          :error -> acc
+        end
+      end)
 
     restparts =
       body
@@ -146,6 +216,12 @@ defmodule ExGram.Macros.Executer do
     parts = fileparts ++ restparts
 
     {:multipart, parts}
+  end
+
+  defp safe_to_existing_atom(name) when is_binary(name) do
+    {:ok, String.to_existing_atom(name)}
+  rescue
+    ArgumentError -> :error
   end
 
   defp check_params(false, _mandatory, _optional, _optional_types), do: :ok

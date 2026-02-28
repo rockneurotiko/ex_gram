@@ -10,7 +10,8 @@ import pyperclip
 DEBUG = True
 REPLACE = True
 WEB = True
-URL = "https://raw.githubusercontent.com/rockneurotiko/telegram_api_json/master/exports/tg_api.json"
+# URL = "https://raw.githubusercontent.com/rockneurotiko/telegram_api_json/master/exports/tg_api.json"
+URL = "https://raw.githack.com/rockneurotiko/telegram_api_json/master/exports/tg_api.json"
 # URL = "https://raw.githack.com/rockneurotiko/telegram_api_json/master/exports/tg_api_pretty.json"
 
 
