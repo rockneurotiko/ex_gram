@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+- Update to version 9.4
+- Added support to multiple return types on casting.
+- Implemented Subtype protocol to 10 generic types missing.
+- Added credo check to make sure new generic types don't miss the protocol implementation
 
 ## [0.57.0]
 - Update to Elixir 1.19 and Erlang 28.1.1
