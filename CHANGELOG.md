@@ -1,7 +1,7 @@
 # Changelog
 
 ## Unreleased
-- Update to version 9.4
+- Update to version 9.5
 - Added support to multiple return types on casting (fixes #196)
 - Implemented Subtype protocol to 10 generic types missing.
 - Added credo check to make sure new generic types don't miss the protocol implementation
