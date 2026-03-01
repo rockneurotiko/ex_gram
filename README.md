@@ -16,27 +16,19 @@ Add `ex_gram` as dependency in `mix.exs`
 ``` elixir
 def deps do
     [
-      {:ex_gram, "~> 0.57"},
-      {:tesla, "~> 1.2"},
-      {:hackney, "~> 1.12"},
-      {:jason, ">= 1.0.0"}
+      {:ex_gram, "~> 0.58"},
+      {:jason, ">= 1.0.0"},
+      # HTTP Adapter, see next section
     ]
 end
 ```
 
-See the next sections to select a different HTTP adapter or JSON engine.
 
 ### HTTP Adapter
 
-You should add Tesla or custom HTTP adapter, by default it will try to use the Tesla adapter, these are the defaults:
+You need to add an HTTP Adapter, ExGram comes with three adapters out of the box for the libraries Req and Tesla, if you want to use other HTTP adapter you can write your own.
 
-On deps:
-``` elixir
-{:tesla, "~> 1.2"},
-{:hackney, "~> 1.12"}
-```
-
-- If you want to use Req instead of Tesla:
+#### Req adapter
 
 On deps:
 ``` elixir
@@ -48,8 +40,30 @@ On config:
 config :ex_gram, adapter: ExGram.Adapter.Req
 ```
 
+#### Tesla adapter
 
-- If you want to use Gun with Tesla:
+For the Tesla adapter you will need Tesla and the underlying http client, here how to install both:
+
+On deps:
+``` elixir
+{:tesla, "~> 1.2"},
+{:hackney, "~> 1.12"} 
+```
+
+On config:
+``` elixir
+config :ex_gram, adapter: ExGram.Adapter.Tesla
+```
+
+The underlying tesla adapters that you can use are:
+- Hackney (Default)
+- Finch
+- Gun
+- Mint
+- Httpc
+- Ibrowse
+
+For example, to use Gun:
 
 On deps:
 ``` elixir
@@ -62,11 +76,19 @@ On config:
 config :tesla, adapter: Tesla.Adapter.Gun
 ```
 
-- If you prefer your custom adapter instead of Tesla:
+##### Tesla Logger level
+
+By default ex_gram will add `Tesla.Middleware.Logger` when using Tesla and the logger level `info`.
+
+The log level and other options ( [Tesla Logger docs](https://hexdocs.pm/tesla/Tesla.Middleware.Logger.html#module-options) ) can be configured:
+
+```elixir
+config :ex_gram, Tesla.Middleware.Logger, level: :debug
+```
+
+#### Custom adapter
 
 It must implement the behaviour `ExGram.Adapter`
-
-On config:
 
 ``` elixir
 config :ex_gram, adapter: YourCustomAdapter
@@ -82,20 +104,10 @@ You can change the engine in the configuration:
 config :ex_gram, json_engine: Poison
 ```
 
-### Middleware Logger level
-
-By default ex_gram will use `Tesla.Middleware.Logger` and the logger level `info`.
-
-The log level and other options ( [Tesla Logger docs](https://hexdocs.pm/tesla/Tesla.Middleware.Logger.html#module-options) ) can be configured:
-
-```elixir
-config :ex_gram, Tesla.Middleware.Logger, level: :debug
-```
 
 ## Configuration
 
 There are some optional configurations that you can add to your `config.exs`:
-
 
 ### Token
 

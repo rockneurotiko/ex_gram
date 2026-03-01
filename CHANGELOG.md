@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.58.0]
 - Update to version 9.5
 - Added support to multiple return types on casting (fixes #196)
 - Implemented Subtype protocol to 10 generic types missing.
