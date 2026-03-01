@@ -8,9 +8,15 @@ if Code.ensure_loaded?(Req) do
     @base_url "https://api.telegram.org"
 
     @impl ExGram.Adapter
-    def request(verb, path, body, _opts) do
-      [method: coerce_verb(verb), url: path]
+    def request(verb, path, body, opts) do
+      req_opts = [
+        method: coerce_verb(verb),
+        url: path
+      ]
+
+      req_opts
       |> Req.Request.new()
+      |> put_finch_options(opts)
       |> Req.Request.register_options([:base_url, :json, :form_multipart])
       |> Req.Request.put_new_option(:base_url, ExGram.Config.get(:ex_gram, :base_url, @base_url))
       |> put_body_option(body)
@@ -19,6 +25,22 @@ if Code.ensure_loaded?(Req) do
       |> Req.Request.append_response_steps(custom_decode: &custom_decode/1)
       |> Req.Request.run_request()
       |> handle_result()
+    end
+
+    defp put_finch_options(req, opts) do
+      connect_options = [timeout: Keyword.get(opts, :connect_timeout, to_timeout(second: 30))]
+
+      finch_options = [
+        connect_options: connect_options,
+        pool_timeout: Keyword.get(opts, :pool_timeout, to_timeout(second: 5)),
+        # High timeout, we use long polling
+        receive_timeout: Keyword.get(opts, :receive_timeout, to_timeout(minute: 1)),
+        finch: Keyword.get(opts, :finch)
+      ]
+
+      req
+      |> Req.Request.register_options([:connect_options, :pool_timeout, :receive_timeout, :finch])
+      |> Req.Request.merge_options(finch_options)
     end
 
     defp coerce_verb(:get), do: :post
@@ -90,7 +112,7 @@ if Code.ensure_loaded?(Req) do
     end
 
     defp handle_result({_req, exception}) do
-      {:error, %ExGram.Error{code: exception}}
+      {:error, %ExGram.Error{code: exception, message: "Request failed with exception: #{inspect(exception)}"}}
     end
   end
 end
