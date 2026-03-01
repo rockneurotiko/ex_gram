@@ -204,7 +204,12 @@ defmodule ExGram.Macros.Helpers do
   defp param_to_decode_as(_other), do: nil
 
   def params_descriptions(params) do
-    Enum.map(params, fn [k, _, desc | _] -> {k, desc} end)
+    params
+    |> Enum.sort_by(&par_optional?/1)
+    |> Enum.map(fn
+      [k, _, desc] -> {k, desc}
+      [k, _, desc, :optional] -> {"#{k} (optional)", desc}
+    end)
   end
 
   def struct_type_specs([], acc), do: acc
