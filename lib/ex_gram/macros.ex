@@ -6,12 +6,15 @@ defmodule ExGram.Macros do
   import __MODULE__.Helpers
 
   defmacro model(name, params, description) do
-    tps = struct_type_specs(params)
+    analyzed = analyze_params(params)
+    tps = struct_type_specs(analyzed)
 
     initials =
       Enum.map(tps, fn {id, _t} -> {id, nil} end)
 
-    dca = params_to_decode_as(params)
+    dca = params_to_decode_as(analyzed)
+
+    params_descriptions = params_descriptions(analyzed)
 
     quote do
       defmodule unquote(name) do
@@ -19,6 +22,8 @@ defmodule ExGram.Macros do
         #{unquote(description)}
 
         Check the documentation of this model in https://core.telegram.org/bots/api##{unquote(name) |> inspect() |> String.split(".") |> Enum.at(-1) |> String.downcase()}
+
+        #{Enum.map_join(unquote(params_descriptions), "\n", fn {k, v} -> "- `#{k}`: #{v}" end)}
         """
         defstruct unquote(initials)
         @type t :: %unquote(name){unquote_splicing(tps)}
@@ -43,7 +48,9 @@ defmodule ExGram.Macros do
     fname_exception =
       String.to_atom("#{Macro.underscore(name)}!")
 
-    analyzed = Enum.map(params, &analyze_param/1)
+    analyzed = analyze_params(params)
+
+    # params_descriptions = analyzed |> params_descriptions() |> dbg()
 
     types_mand_value = mandatory_value_type(analyzed)
     types_mand_spec = mandatory_type_specs(analyzed)
@@ -58,12 +65,16 @@ defmodule ExGram.Macros do
 
     file_parameters = file_parameters(analyzed)
 
+    params_descriptions = params_descriptions(analyzed)
+
     quote location: :keep do
       # Safe method
       @doc """
       #{unquote(description)}
 
       Check the documentation of this method in https://core.telegram.org/bots/api##{String.downcase(unquote(name))}
+
+      #{Enum.map_join(unquote(params_descriptions), "\n", fn {k, v} -> "- `#{k}`: #{v}" end)}
       """
       @spec unquote(fname)(unquote_splicing(types_mand_spec), options :: unquote(types_opt_spec)) ::
               {:ok, unquote(returned_type_spec)}
