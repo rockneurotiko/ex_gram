@@ -28,13 +28,13 @@ if Code.ensure_loaded?(Req) do
     end
 
     defp put_finch_options(req, opts) do
-      connect_options = [timeout: Keyword.get(opts, :connect_timeout, to_timeout(second: 30))]
+      connect_options = [timeout: Keyword.get(opts, :connect_timeout, 30_000)]
 
       finch_options = [
         connect_options: connect_options,
-        pool_timeout: Keyword.get(opts, :pool_timeout, to_timeout(second: 5)),
+        pool_timeout: Keyword.get(opts, :pool_timeout, 5_000),
         # High timeout, we use long polling
-        receive_timeout: Keyword.get(opts, :receive_timeout, to_timeout(minute: 1)),
+        receive_timeout: Keyword.get(opts, :receive_timeout, 60_000),
         finch: Keyword.get(opts, :finch)
       ]
 
