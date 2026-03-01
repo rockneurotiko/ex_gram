@@ -105,15 +105,17 @@ defmodule ExGram.Cast do
   end
 
   defp struct_decode_as(t) do
-    if function_exported?(t, :decode_as, 0) do
-      {:ok, Map.from_struct(t.decode_as())}
-    else
+    # We can't check if the struct implements decode_as/0 because the models are sometimes not loaded
+    {:ok, Map.from_struct(t.decode_as())}
+  rescue
+    _ ->
       {:error, %ExGram.Error{message: "Module #{inspect(t)} does not implement decode_as/0"}}
-    end
   end
 
   defp subtype?(t) do
-    function_exported?(t, :__struct__, 0) and Subtype.impl_for(struct(t, %{}))
+    Subtype.impl_for(struct(t, %{}))
+  rescue
+    _ -> false
   end
 
   defp apply_subtype(t, params) when is_map(params) do

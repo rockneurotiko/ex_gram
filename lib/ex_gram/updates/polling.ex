@@ -59,7 +59,10 @@ defmodule ExGram.Updates.Polling do
     try do
       ExGram.get_updates!(opts)
     rescue
-      ExGram.Error -> []
+      e in ExGram.Error ->
+        formatted_error = Exception.format(:error, e, __STACKTRACE__)
+        Logger.error("[ExGram] Error fetching updates: #{formatted_error}")
+        []
     end
   end
 

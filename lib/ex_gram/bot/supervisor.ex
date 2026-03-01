@@ -66,8 +66,6 @@ defmodule ExGram.Bot.Supervisor do
   defp get_bot_info(username, _token) when is_binary(username), do: %User{username: username, is_bot: true}
 
   defp get_bot_info(_username, token) do
-    Code.ensure_loaded(User)
-
     case ExGram.get_me(token: token) do
       {:ok, bot} -> bot
       _ -> nil
