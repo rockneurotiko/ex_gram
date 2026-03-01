@@ -1,12 +1,12 @@
 # ExGram
 
+<p align="center"><img src="https://raw.githubusercontent.com/rockneurotiko/ex_gram/refs/heads/master/assets/ex_gram_logo.png" alt="ExGram" height="300px"></p>
+
 [![Hex.pm](https://img.shields.io/hexpm/v/ex_gram.svg)](http://hex.pm/packages/ex_gram)
 [![Documentation](https://img.shields.io/badge/documentation-4B275F?logo=elixir)](https://hexdocs.pm/ex_gram)
 [![Hex.pm](https://img.shields.io/hexpm/dt/ex_gram.svg)](https://hex.pm/packages/ex_gram)
 [![Hex.pm](https://img.shields.io/hexpm/dw/ex_gram.svg)](https://hex.pm/packages/ex_gram)
 [![Build Status](https://github.com/rockneurotiko/ex_gram/actions/workflows/ci.yml/badge.svg)](https://github.com/rockneurotiko/ex_gram/actions/workflows/ci.yml)
-
-<p align="center"><img src="https://raw.githubusercontent.com/rockneurotiko/ex_gram/refs/heads/master/assets/ex_gram_logo.png" alt="ExGram" height="300px"></p>
 
 ExGram is a library to build Telegram Bots, you can use the low-level methods and models, or use the really opinionated framework included.
 
