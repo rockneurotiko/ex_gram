@@ -3,6 +3,7 @@ defmodule ExGram.Bot.Supervisor do
   Bot supervisor that starts the dispatcher and updates processes and tie them together
   """
   alias ExGram.Dispatcher
+  alias ExGram.Model.User
 
   def child_spec(opts, module) do
     %{
@@ -62,7 +63,7 @@ defmodule ExGram.Bot.Supervisor do
   defp updates_worker_module(:test), do: ExGram.Updates.Test
   defp updates_worker_module(module) when is_atom(module), do: module
 
-  defp get_bot_info(username, _token) when is_binary(username), do: %ExGram.Model.User{username: username, is_bot: true}
+  defp get_bot_info(username, _token) when is_binary(username), do: %User{username: username, is_bot: true}
 
   defp get_bot_info(_username, token) do
     case ExGram.get_me(token: token) do

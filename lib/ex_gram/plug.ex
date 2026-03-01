@@ -44,7 +44,7 @@ if Code.ensure_loaded?(Plug) do
       token_hash = token_hash(conn.path_info)
 
       update
-      |> ExGram.Cast.cast(ExGram.Model.Update)
+      |> ExGram.Cast.cast!(ExGram.Model.Update)
       |> ExGram.Updates.Webhook.update(token_hash)
 
       {200, %{ok: true}}

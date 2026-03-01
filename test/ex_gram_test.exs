@@ -23,11 +23,10 @@ defmodule ExGramTest do
 
     test "test random", %{name: name} do
       Test.backdoor_request("/getMe", %{username: "rock"}, name)
-      assert {:ok, %{username: "rock"}} == Test.request(:get, "/getMe", "", name)
+      assert {:ok, %{username: "rock"}} == Test.request(:get, "/getMe", "", name: name)
 
-      Test.backdoor_request("/getMe", %{username: "rock"})
       user = %User{username: "rock"}
-      assert {:ok, user} == ExGram.get_me()
+      assert {:ok, user} == ExGram.get_me(adapter_opts: [name: name])
     end
   end
 end
