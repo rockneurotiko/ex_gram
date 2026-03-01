@@ -230,7 +230,9 @@ defmodule ExGram.Macros.Executer do
     mandatory_checks = mandatory |> Checker.check_types() |> mandatory_errors()
 
     optional =
-      Enum.map(optional, fn {key, value} -> {value, Keyword.get(optional_types, key), key} end)
+      optional
+      |> Enum.reject(fn {_key, value} -> is_nil(value) end)
+      |> Enum.map(fn {key, value} -> {value, Keyword.get(optional_types, key), key} end)
 
     optional_checks =
       optional
