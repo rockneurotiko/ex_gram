@@ -153,6 +153,7 @@ defmodule ExGram.Macros.Helpers do
 
   @common_opts [
     adapter: :atom,
+    adapter_opts: :keyword,
     bot: :atom,
     token: :string,
     debug: :boolean,
