@@ -6,6 +6,8 @@
 - Implemented Subtype protocol to 10 generic types missing.
 - Added credo check to make sure new generic types don't miss the protocol implementation
 - Added support to media input files (fixes #195)
+- Add timeouts to Req adapter to handle longpolling correctly
+- Add missing types and updates on `extract_user`, `extract_chat` and `extract_update_type`
 
 ## [0.57.0]
 - Update to Elixir 1.19 and Erlang 28.1.1
