@@ -609,7 +609,7 @@ defmodule ExGram do
       {entities, [{:array, MessageEntity}], :optional}
     ],
     true,
-    "Use this method to stream a partial message to a user while the message is being generated; supported only for bots with forum topic mode enabled. Returns True on success."
+    "Use this method to stream a partial message to a user while the message is being generated. Returns True on success."
   )
 
   method(
@@ -730,7 +730,8 @@ defmodule ExGram do
       {can_edit_messages, [:boolean], :optional},
       {can_pin_messages, [:boolean], :optional},
       {can_manage_topics, [:boolean], :optional},
-      {can_manage_direct_messages, [:boolean], :optional}
+      {can_manage_direct_messages, [:boolean], :optional},
+      {can_manage_tags, [:boolean], :optional}
     ],
     true,
     "Use this method to promote or demote a user in a supergroup or a channel. The bot must be an administrator in the chat for this to work and must have the appropriate administrator rights. Pass False for all boolean parameters to demote a user. Returns True on success."
@@ -742,6 +743,14 @@ defmodule ExGram do
     [{chat_id, [:integer, :string]}, {user_id, [:integer]}, {custom_title, [:string]}],
     true,
     "Use this method to set a custom title for an administrator in a supergroup promoted by the bot. Returns True on success."
+  )
+
+  method(
+    :post,
+    "setChatMemberTag",
+    [{chat_id, [:integer, :string]}, {user_id, [:integer]}, {tag, [:string], :optional}],
+    true,
+    "Use this method to set a tag for a regular member in a group or a supergroup. The bot must be an administrator in the chat for this to work and must have the can_manage_tags administrator right. Returns True on success."
   )
 
   method(
@@ -2064,7 +2073,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 165 methods
+  # 166 methods
 
   # ----------MODELS-----------
 
@@ -2227,6 +2236,7 @@ defmodule ExGram do
         {:sender_chat, [Chat], :optional},
         {:sender_boost_count, [:integer], :optional},
         {:sender_business_bot, [User], :optional},
+        {:sender_tag, [:string], :optional},
         {:date, [:integer]},
         {:business_connection_id, [:string], :optional},
         {:chat, [Chat]},
@@ -2346,7 +2356,9 @@ defmodule ExGram do
         {:url, [:string], :optional},
         {:user, [User], :optional},
         {:language, [:string], :optional},
-        {:custom_emoji_id, [:string], :optional}
+        {:custom_emoji_id, [:string], :optional},
+        {:unix_time, [:integer], :optional},
+        {:date_time_format, [:string], :optional}
       ],
       "This object represents one special entity in a text message. For example, hashtags, usernames, URLs, etc."
     )
@@ -3279,7 +3291,8 @@ defmodule ExGram do
         {:can_edit_messages, [:boolean], :optional},
         {:can_pin_messages, [:boolean], :optional},
         {:can_manage_topics, [:boolean], :optional},
-        {:can_manage_direct_messages, [:boolean], :optional}
+        {:can_manage_direct_messages, [:boolean], :optional},
+        {:can_manage_tags, [:boolean], :optional}
       ],
       "Represents the rights of an administrator in a chat."
     )
@@ -3327,6 +3340,7 @@ defmodule ExGram do
         {:can_pin_messages, [:boolean], :optional},
         {:can_manage_topics, [:boolean], :optional},
         {:can_manage_direct_messages, [:boolean], :optional},
+        {:can_manage_tags, [:boolean], :optional},
         {:custom_title, [:string], :optional}
       ],
       "Represents a chat member that has some additional privileges."
@@ -3334,7 +3348,7 @@ defmodule ExGram do
 
     model(
       ChatMemberMember,
-      [{:status, [:string]}, {:user, [User]}, {:until_date, [:integer], :optional}],
+      [{:status, [:string]}, {:tag, [:string], :optional}, {:user, [User]}, {:until_date, [:integer], :optional}],
       "Represents a chat member that has no additional privileges or restrictions."
     )
 
@@ -3342,6 +3356,7 @@ defmodule ExGram do
       ChatMemberRestricted,
       [
         {:status, [:string]},
+        {:tag, [:string], :optional},
         {:user, [User]},
         {:is_member, [:boolean]},
         {:can_send_messages, [:boolean]},
@@ -3354,6 +3369,7 @@ defmodule ExGram do
         {:can_send_polls, [:boolean]},
         {:can_send_other_messages, [:boolean]},
         {:can_add_web_page_previews, [:boolean]},
+        {:can_edit_tag, [:boolean]},
         {:can_change_info, [:boolean]},
         {:can_invite_users, [:boolean]},
         {:can_pin_messages, [:boolean]},
@@ -3401,6 +3417,7 @@ defmodule ExGram do
         {:can_send_polls, [:boolean], :optional},
         {:can_send_other_messages, [:boolean], :optional},
         {:can_add_web_page_previews, [:boolean], :optional},
+        {:can_edit_tag, [:boolean], :optional},
         {:can_change_info, [:boolean], :optional},
         {:can_invite_users, [:boolean], :optional},
         {:can_pin_messages, [:boolean], :optional},
