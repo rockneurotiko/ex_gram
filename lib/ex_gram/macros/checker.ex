@@ -70,6 +70,8 @@ defmodule ExGram.Macros.Checker do
   # defp check_type(t1, %{__struct__: t2}), do: t1 == t2
   defp check_type(%{}, x), do: is_map(x)
 
+  defp check_type(_, _), do: false
+
   defp check_same_struct(t1, t2) do
     t2s = Atom.to_string(t2)
 

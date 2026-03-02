@@ -106,8 +106,7 @@ defmodule ExGram.Dsl do
   end
 
   def create_inline(data \\ [[]]) do
-    data =
-      Enum.map(data, &create_inline_button/1)
+    data = Enum.map(data, &create_inline_button/1)
 
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard: data}
   end

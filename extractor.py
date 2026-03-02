@@ -67,20 +67,20 @@ def generate_type(typ, is_return):
 
 
 def generate_param(param, model):
-    param_s = "{{{}, {}{}}}"
+    param_s = "{{{}, {}, \"{}\"{}}}"
 
     name = ":{}".format(param['name']) if model else param['name']
     debug("Extracting type: " + name)
     ts = generate_type(param['type'], False)
     t = "[{}]".format(', '.join(ts))
-    debug(str(t))
+    description = clean_description(param['description'] or "")
     extra = "" if not param['optional'] else ", :optional"
 
-    return param_s.format(name, t, extra)
+    return param_s.format(name, t, description, extra)
 
 
 def clean_description(description):
-    return description.replace("\n", " ")
+    return description.replace("\n", " ").replace('"', '\\"').replace("“", '\\"')
 
 def clean_returned_type(returned):
     if len(returned) == 0:
