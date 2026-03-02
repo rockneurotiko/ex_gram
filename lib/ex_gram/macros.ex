@@ -50,8 +50,6 @@ defmodule ExGram.Macros do
 
     analyzed = analyze_params(params)
 
-    # params_descriptions = analyzed |> params_descriptions() |> dbg()
-
     types_mand_value = mandatory_value_type(analyzed)
     types_mand_spec = mandatory_type_specs(analyzed)
 

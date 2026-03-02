@@ -227,18 +227,6 @@ defmodule ExGram.Macros.Helpers do
     struct_type_specs(xs, act)
   end
 
-  # def struct_type_specs([{:{}, _line, [id, t, _]} | xs], acc) do
-  #   act = acc ++ [{id, type_to_spec(t)}]
-
-  #   struct_type_specs(xs, act)
-  # end
-
-  # def struct_type_specs([{:{}, _line, [id, t, _, :optional]} | xs], acc) do
-  #   act = acc ++ [{id, {:|, [], [type_to_spec(t), nil]}}]
-
-  #   struct_type_specs(xs, act)
-  # end
-
   def struct_type_specs(_x, acc) do
     # Logger.error "WTF struct?"
     # Logger.error inspect(x)
