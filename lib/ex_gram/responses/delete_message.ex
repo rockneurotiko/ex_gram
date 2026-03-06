@@ -13,6 +13,10 @@ defimpl ExGram.Responses, for: ExGram.Responses.DeleteMessage do
     ExGram.delete_message(cb.chat_id, cb.message_id, cb.ops || [])
   end
 
+  def set_msg(%{chat_id: nil, message_id: nil} = response, %{chat_id: chat_id, message_id: message_id}) do
+    %{response | chat_id: chat_id, message_id: message_id}
+  end
+
   def set_msg(%{chat_id: nil, message_id: nil} = response, msg) do
     %{
       response

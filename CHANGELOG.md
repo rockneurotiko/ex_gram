@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Added the possibility to pass `chat_id` and `message_id` directly to delete and edit DSL helpers
+- Added `on_result` DSL to "interject" the result of the previous enqueued action
 - Simplified the Macros.Helper, now it's easier to deal with params AST
 - Added parameters description to models and methods @doc field
 - Fix Tesla and Req adapters to return proper Telegram errors

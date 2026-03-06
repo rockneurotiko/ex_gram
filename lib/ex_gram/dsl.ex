@@ -81,6 +81,10 @@ defmodule ExGram.Dsl do
     DeleteMessage |> Responses.new(%{ops: ops}) |> Responses.set_msg(msg) |> add_answer(cnt)
   end
 
+  def on_result(cnt, func) when is_function(func, 2) do
+    add_on_result(cnt, func)
+  end
+
   defguardp is_file(file) when is_binary(file) or (is_tuple(file) and elem(file, 0) == :file)
 
   def answer_document(cnt, document, ops \\ [])
@@ -322,6 +326,11 @@ defmodule ExGram.Dsl do
     %{cnt | answers: answers}
   end
 
+  defp add_on_result(%Cnt{answers: answers} = cnt, func) do
+    answers = answers ++ [{:on_result, func}]
+    %{cnt | answers: answers}
+  end
+
   defp extract_msg(%Cnt{update: %Update{} = u}) do
     u = Map.from_struct(u)
     {_, msg} = Enum.find(u, fn {_, m} -> is_map(m) and not is_nil(m) end)
@@ -344,6 +353,25 @@ defmodule ExGram.Dsl do
     responses = responses ++ [response]
 
     send_all_answers(answers, name, msg, responses)
+  end
+
+  defp send_all_answers([{:on_result, callback} | answers], name, msg, responses) do
+    case Enum.split(responses, -1) do
+      {_, []} ->
+        error = %ExGram.Error{
+          code: :unknown_answer,
+          message: "On Result callback should have a response before."
+        }
+
+        responses = responses ++ [{:error, error}]
+
+        send_all_answers(answers, name, msg, responses)
+
+      {resp, [last_response]} ->
+        response = callback.(last_response, name)
+        responses = resp ++ [response]
+        send_all_answers(answers, name, msg, responses)
+    end
   end
 
   defp send_all_answers([answer | answers], name, msg, responses) do
