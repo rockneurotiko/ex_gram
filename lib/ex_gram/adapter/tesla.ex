@@ -50,6 +50,17 @@ if Code.ensure_loaded?(Tesla) do
       {:ok, body}
     end
 
+    defp handle_result({:ok, %{body: %{ok: false, description: description, error_code: error_code} = body}}) do
+      parameters =
+        if parameters = body[:parameters],
+          do: ExGram.Cast.cast(parameters, {:array, ExGram.Model.ResponseParameters}),
+          else: []
+
+      error = %ExGram.Error{code: error_code, message: description, metadata: %{parameters: parameters}}
+
+      {:error, error}
+    end
+
     defp handle_result({:ok, %{body: body}}) do
       {:error, %ExGram.Error{code: :response_status_not_match, message: ExGram.Adapter.encode(body)}}
     end

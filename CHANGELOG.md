@@ -3,6 +3,7 @@
 ## Unreleased
 - Simplified the Macros.Helper, now it's easier to deal with params AST
 - Added parameters description to models and methods @doc field
+- Fix Tesla and Req adapters to return proper Telegram errors
 
 ## [0.58.0]
 - Update to version 9.5
