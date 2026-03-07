@@ -106,7 +106,7 @@ defmodule ExGram.Mixfile do
 
   defp groups_for_extras do
     [
-      "How-To's": ~r/guides\/.?/
+      "How-To's": ~r/guides\/.*/
     ]
   end
 end

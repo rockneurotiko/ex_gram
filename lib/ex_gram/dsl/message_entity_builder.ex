@@ -451,6 +451,24 @@ defmodule ExGram.Dsl.MessageEntityBuilder do
 
   def split(text, max_length), do: split(text(text), max_length)
 
+  @doc """
+  Slices a string by UTF-16 code unit position.
+
+  Takes a string `str`, starts at UTF-16 position `start`, and extracts `length`
+  UTF-16 code units. Ensures surrogate pairs are not split.
+
+  ## Examples
+
+      iex> slice_utf16("hello", 0, 5)
+      "hello"
+
+      iex> slice_utf16("hello world", 6, 5)
+      "world"
+
+  """
+  @spec slice_utf16(String.t(), non_neg_integer(), non_neg_integer()) :: String.t()
+  def slice_utf16(str, start, length), do: do_slice_utf16(str, start, length)
+
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
@@ -538,9 +556,9 @@ defmodule ExGram.Dsl.MessageEntityBuilder do
   end
 
   # Slice `str` starting at UTF-16 code-unit position `start` for `length` units.
-  defp slice_utf16(_str, _start, length) when length <= 0, do: ""
+  defp do_slice_utf16(_str, _start, length) when length <= 0, do: ""
 
-  defp slice_utf16(str, start, length) do
+  defp do_slice_utf16(str, start, length) do
     utf16 = :unicode.characters_to_binary(str, :utf8, {:utf16, :big})
     byte_start = start * 2
     byte_length = length * 2

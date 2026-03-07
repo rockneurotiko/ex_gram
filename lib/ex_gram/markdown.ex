@@ -60,6 +60,34 @@ if Code.ensure_loaded?(MDEx) do
       end
     end
 
+    @doc """
+    Converts a `{plain_text, [MessageEntity]}` tuple back into a markdown string.
+
+    ## Formats
+
+      * `:markdown` — CommonMark output (via MDEx AST)
+      * `:markdown_v2` — Telegram MarkdownV2 output with proper escaping
+
+    ## Example
+
+        iex> alias ExGram.Model.MessageEntity
+        iex> entities = [%MessageEntity{type: "bold", offset: 0, length: 4}]
+        iex> ExGram.Markdown.from_entities({"bold text", entities}, :markdown)
+        "**bold** text"
+        iex> ExGram.Markdown.from_entities({"bold text", entities}, :markdown_v2)
+        "*bold* text"
+
+    """
+    @spec from_entities(B.t(), :markdown | :markdown_v2) :: String.t()
+    def from_entities({text, entities}, format \\ :markdown) when is_binary(text) and is_list(entities) do
+      tree = build_entity_tree(text, entities)
+
+      case format do
+        :markdown -> tree_to_commonmark(tree)
+        :markdown_v2 -> tree_to_markdown_v2(tree)
+      end
+    end
+
     # ---------------------------------------------------------------------------
     # Node rendering: returns {text, entities} tuples
     # ---------------------------------------------------------------------------
@@ -106,7 +134,7 @@ if Code.ensure_loaded?(MDEx) do
       lang = if lang == "", do: nil, else: lang
       # Strip trailing newline from literal (comrak always adds one)
       text = String.trim_trailing(literal, "\n")
-      B.pre(text, lang)
+      B.concat([B.pre(text, lang), B.text("\n\n")])
     end
 
     # Link: text_link entity
@@ -129,34 +157,37 @@ if Code.ensure_loaded?(MDEx) do
     # Headings: render as bold with surrounding newlines
     defp render_node(%MDEx.Heading{nodes: nodes}, ctx) do
       inner = render_nodes(nodes, ctx)
-      B.concat([B.text("\n"), B.wrap("bold", inner), B.text("\n")])
+      B.concat([B.wrap("bold", inner), B.text("\n\n")])
     end
 
-    # Paragraph: add a newline
+    # Paragraph: add blank line after
     defp render_node(%MDEx.Paragraph{nodes: nodes}, ctx) do
       rendered = render_nodes(nodes, ctx)
-      B.concat([rendered, "\n"])
+      B.concat([rendered, "\n\n"])
     end
 
     # Blockquote: either a blockquote entity or indented plain text
     defp render_node(%MDEx.BlockQuote{nodes: nodes}, %{skip_blockquotes: true} = ctx) do
       # Indent with 2 spaces per line instead of entity
       # Because the user asked to skip them
-      {inner_text, inner_entities} = render_nodes(nodes, ctx) |> B.trim()
+      {inner_text, inner_entities} = nodes |> render_nodes(ctx) |> B.trim()
 
-      indented =
-        trimmed
-        |> String.split("\n")
-        |> Enum.map_join("\n", &"  #{&1}")
+      lines = String.split(inner_text, "\n")
+      indent = "  "
 
-      # Entities need to be shifted per line to account for the 2-space indent.
-      # Rather than complex per-line offset arithmetic, we rebuild with plain indentation.
-      # Inner entities cannot be easily preserved with line-by-line indentation;
-      # we preserve them by offsetting uniformly (works for single-line blockquotes
-      # and is a best-effort for multi-line ones).
-      indent_offset = 2
+      # Build indented text with 2 spaces per line
+      indented_lines = Enum.map(lines, &(indent <> &1))
+      indented = Enum.join(indented_lines, "\n")
 
-      adjusted_entities = B.offset_entities(inner_entities, indent_offset)
+      # Adjust each entity's offset based on which line it appears on
+      adjusted_entities =
+        Enum.map(inner_entities, fn entity ->
+          # Calculate which line this entity starts on
+          line_num = count_newlines_before(inner_text, entity.offset)
+          # Add 2 spaces for each line including the current one
+          extra_offset = (line_num + 1) * 2
+          %{entity | offset: entity.offset + extra_offset}
+        end)
 
       {indented <> "\n", adjusted_entities}
     end
@@ -166,17 +197,25 @@ if Code.ensure_loaded?(MDEx) do
       {inner_text, _} = inner
       trimmed = String.trim_trailing(inner_text, "\n")
       inner_trimmed = {trimmed, elem(inner, 1)}
-      B.concat([B.blockquote(inner_trimmed), B.text("\n")])
+      B.concat([B.blockquote(inner_trimmed), B.text("\n\n")])
     end
 
     # Lists
     defp render_node(%MDEx.List{list_type: list_type, start: start, nodes: nodes}, ctx) do
       child_ctx = %{ctx | list_type: list_type, list_depth: ctx.list_depth + 1}
 
-      nodes
-      |> Enum.with_index(start || 1)
-      |> Enum.map(fn {item, idx} -> render_list_item(item, idx, child_ctx) end)
-      |> B.concat()
+      items =
+        nodes
+        |> Enum.with_index(start || 1)
+        |> Enum.map(fn {item, idx} -> render_list_item(item, idx, child_ctx) end)
+        |> B.concat()
+
+      # Add blank line after top-level lists
+      if ctx.list_depth == 0 do
+        B.concat([items, B.text("\n")])
+      else
+        items
+      end
     end
 
     defp render_node(%MDEx.ListItem{} = item, ctx) do
@@ -257,20 +296,44 @@ if Code.ensure_loaded?(MDEx) do
 
       prefix_str = indent <> prefix
 
-      # Paragraphs inside list items: don't add double newlines
-      inner =
-        nodes
+      # Separate nested lists from inline content to handle newlines properly
+      {inline_nodes, nested_lists} =
+        Enum.split_with(nodes, fn
+          %MDEx.List{} -> false
+          _ -> true
+        end)
+
+      # Render inline content (paragraphs, formatting, etc.)
+      inline_content =
+        inline_nodes
         |> Enum.map(fn
           %MDEx.Paragraph{nodes: children} -> render_nodes(children, ctx)
           child -> render_node(child, ctx)
         end)
         |> B.concat()
 
-      {inner_text, inner_entities} = inner
-      trimmed = String.trim(inner_text)
+      {inline_text, inline_entities} = inline_content
+      trimmed = String.trim(inline_text)
       offset = B.utf16_length(prefix_str)
-      adjusted_entities = B.offset_entities(inner_entities, offset)
-      {prefix_str <> trimmed <> "\n", adjusted_entities}
+      adjusted_entities = B.offset_entities(inline_entities, offset)
+
+      item_line = prefix_str <> trimmed <> "\n"
+
+      # Render nested lists after the item line with proper newlines
+      if nested_lists == [] do
+        {item_line, adjusted_entities}
+      else
+        nested_content =
+          nested_lists
+          |> Enum.map(&render_node(&1, ctx))
+          |> B.concat()
+
+        {nested_text, nested_entities} = nested_content
+        total_offset = B.utf16_length(item_line)
+        adjusted_nested = B.offset_entities(nested_entities, total_offset)
+
+        {item_line <> nested_text, adjusted_entities ++ adjusted_nested}
+      end
     end
 
     defp render_list_item(node, _idx, ctx), do: render_node(node, ctx)
@@ -295,6 +358,335 @@ if Code.ensure_loaded?(MDEx) do
 
     defp strip_html_tags(html) when is_binary(html) do
       Regex.replace(~r/<[^>]*>/, html, "")
+    end
+
+    # Count newlines before a UTF-16 offset position
+    defp count_newlines_before(text, utf16_offset) do
+      # Convert UTF-16 offset to byte offset for string slicing
+      text_before = B.slice_utf16(text, 0, utf16_offset)
+
+      text_before
+      |> String.graphemes()
+      |> Enum.count(&(&1 == "\n"))
+    end
+
+    # ---------------------------------------------------------------------------
+    # Entity tree building (for from_entities)
+    # ---------------------------------------------------------------------------
+
+    # Converts flat entities into a nested tree structure
+    defp build_entity_tree(text, entities) do
+      # Sort entities by offset (asc), then by length (desc) for proper nesting
+      sorted =
+        entities
+        |> Enum.reject(fn e -> e.length <= 0 end)
+        |> Enum.sort_by(fn e -> {e.offset, -e.length} end)
+
+      # Validate no partial overlaps (entities must be fully nested or disjoint)
+      validate_entity_nesting!(sorted)
+
+      text_len = B.utf16_length(text)
+      build_tree_range(text, sorted, 0, text_len)
+    end
+
+    # Validates that entities are properly nested (no partial overlaps)
+    defp validate_entity_nesting!(entities) do
+      Enum.reduce(entities, [], fn entity, stack ->
+        entity_end = entity.offset + entity.length
+        # Pop entities from stack that end before or at the start of this entity
+        stack = Enum.reject(stack, fn {_parent, parent_end} -> parent_end <= entity.offset end)
+
+        # Check remaining stack for partial overlaps
+        Enum.each(stack, fn {parent, parent_end} ->
+          # If current entity extends beyond parent's end, it's a partial overlap
+          if entity_end > parent_end do
+            raise ArgumentError,
+                  "Partial entity overlap detected: entity at offset #{parent.offset} (type: #{parent.type}, length: #{parent.length}) " <>
+                    "and entity at offset #{entity.offset} (type: #{entity.type}, length: #{entity.length}) overlap but neither fully contains the other. " <>
+                    "Entities must be either fully nested or completely disjoint."
+          end
+        end)
+
+        # Add current entity to stack
+        [{entity, entity_end} | stack]
+      end)
+
+      :ok
+    end
+
+    # Build tree for a specific UTF-16 range
+    defp build_tree_range(text, entities, range_start, range_end) do
+      # Find entities that start exactly at range_start
+      {starting_here, rest} = Enum.split_while(entities, fn e -> e.offset == range_start end)
+
+      case starting_here do
+        [] ->
+          # No entity at this position, check for gap or done
+          case Enum.find(rest, fn e -> e.offset < range_end end) do
+            nil ->
+              # No more entities in this range
+              if range_start < range_end do
+                gap_text = B.slice_utf16(text, range_start, range_end - range_start)
+                [{:text, gap_text}]
+              else
+                []
+              end
+
+            next_entity ->
+              # Gap before next entity
+              gap_text = B.slice_utf16(text, range_start, next_entity.offset - range_start)
+              [{:text, gap_text} | build_tree_range(text, rest, next_entity.offset, range_end)]
+          end
+
+        [entity | also_at_start] ->
+          # Entity starts here
+          entity_end = min(entity.offset + entity.length, range_end)
+
+          # Find children: entities fully contained within this entity
+          # Include both entities that also started here (also_at_start) and entities from rest
+          all_potential_children = also_at_start ++ rest
+
+          children =
+            Enum.filter(all_potential_children, fn e ->
+              e.offset >= entity.offset and e.offset + e.length <= entity_end
+            end)
+
+          # Build entity node
+          entity_children = build_tree_range(text, children, entity.offset, entity_end)
+          entity_node = {:entity, entity, entity_children}
+
+          # Exclude children from rest for continuation
+          rest_after = Enum.reject(rest, fn e -> e in children end)
+
+          # Continue after this entity
+          [entity_node | build_tree_range(text, rest_after, entity_end, range_end)]
+      end
+    end
+
+    # ---------------------------------------------------------------------------
+    # CommonMark rendering (direct string rendering, not MDEx AST)
+    # ---------------------------------------------------------------------------
+
+    defp tree_to_commonmark(tree) do
+      Enum.map_join(tree, &tree_node_to_commonmark/1)
+    end
+
+    defp tree_node_to_commonmark({:text, text}) do
+      # In CommonMark, only backslashes and backticks in certain contexts need escaping
+      # For simplicity, we'll escape the most common special chars
+      text
+      |> String.replace("\\", "\\\\")
+      |> String.replace("[", "\\[")
+      |> String.replace("]", "\\]")
+      |> String.replace("<", "\\<")
+      |> String.replace(">", "\\>")
+    end
+
+    defp tree_node_to_commonmark({:entity, entity, children}) do
+      case entity.type do
+        "bold" ->
+          "**#{render_children_commonmark(children)}**"
+
+        "italic" ->
+          "*#{render_children_commonmark(children)}*"
+
+        "underline" ->
+          "__#{render_children_commonmark(children)}__"
+
+        "strikethrough" ->
+          "~~#{render_children_commonmark(children)}~~"
+
+        "spoiler" ->
+          "||#{render_children_commonmark(children)}||"
+
+        "code" ->
+          "`#{get_entity_text(children)}`"
+
+        "pre" ->
+          lang = if entity.language, do: entity.language, else: ""
+          text = get_entity_text(children)
+          "```#{lang}\n#{text}\n```"
+
+        "text_link" ->
+          if entity.url do
+            "[#{render_children_commonmark(children)}](#{entity.url})"
+          else
+            # Fallback to plain text if URL is nil
+            render_children_commonmark(children)
+          end
+
+        "text_mention" ->
+          "[#{render_children_commonmark(children)}](tg://user?id=#{entity.user.id})"
+
+        "blockquote" ->
+          # Regular blockquote: prefix lines with >
+          inner = render_children_commonmark(children)
+
+          inner
+          |> String.split("\n")
+          |> Enum.map_join("\n", &"> #{&1}")
+
+        "expandable_blockquote" ->
+          # CommonMark doesn't have expandable blockquotes, render as regular blockquote
+          inner = render_children_commonmark(children)
+
+          inner
+          |> String.split("\n")
+          |> Enum.map_join("\n", &"> #{&1}")
+
+        # Auto-detected types and special types: render as plain text
+        _ ->
+          render_children_commonmark(children)
+      end
+    end
+
+    defp render_children_commonmark(children) do
+      Enum.map_join(children, &tree_node_to_commonmark/1)
+    end
+
+    # Extract plain text from tree nodes (for code/pre entities)
+    defp get_entity_text(children) do
+      Enum.map_join(children, fn
+        {:text, text} -> text
+        {:entity, _entity, nested} -> get_entity_text(nested)
+      end)
+    end
+
+    # ---------------------------------------------------------------------------
+    # Telegram MarkdownV2 rendering
+    # ---------------------------------------------------------------------------
+    # Telegram MarkdownV2 rendering
+    # ---------------------------------------------------------------------------
+
+    defp tree_to_markdown_v2(tree) do
+      Enum.map_join(tree, &tree_node_to_markdown_v2/1)
+    end
+
+    defp tree_node_to_markdown_v2({:text, text}) do
+      escape_markdown_v2(text)
+    end
+
+    defp tree_node_to_markdown_v2({:entity, entity, children}) do
+      case entity.type do
+        "bold" ->
+          "*#{render_children_v2(children)}*"
+
+        "italic" ->
+          "_#{render_children_v2(children)}_"
+
+        "underline" ->
+          "__#{render_children_v2(children)}__"
+
+        "strikethrough" ->
+          "~#{render_children_v2(children)}~"
+
+        "spoiler" ->
+          "||#{render_children_v2(children)}||"
+
+        "code" ->
+          "`#{escape_markdown_v2_code(get_entity_text(children))}`"
+
+        "pre" ->
+          lang = if entity.language, do: entity.language, else: ""
+          text = escape_markdown_v2_code(get_entity_text(children))
+          "```#{lang}\n#{text}\n```"
+
+        "text_link" ->
+          if entity.url do
+            "[#{render_children_v2(children)}](#{escape_markdown_v2_url(entity.url)})"
+          else
+            # Fallback to plain text if URL is nil
+            render_children_v2(children)
+          end
+
+        "text_mention" ->
+          "[#{render_children_v2(children)}](tg://user?id=#{entity.user.id})"
+
+        "custom_emoji" ->
+          "[#{render_children_v2(children)}](tg://emoji?id=#{entity.custom_emoji_id})"
+
+        "date_time" ->
+          url = "tg://time?unix=#{entity.unix_time}"
+          url = if entity.date_time_format, do: "#{url}&format=#{entity.date_time_format}", else: url
+          "[#{render_children_v2(children)}](#{url})"
+
+        "blockquote" ->
+          # Regular blockquote: prefix lines with >
+          inner = render_children_v2(children)
+
+          inner
+          |> String.split("\n")
+          |> Enum.map_join("\n", &">#{&1}")
+
+        "expandable_blockquote" ->
+          # Expandable blockquote: **> prefix, || suffix on last line
+          inner = render_children_v2(children)
+          lines = String.split(inner, "\n")
+
+          case lines do
+            [] ->
+              "**>"
+
+            [single] ->
+              "**>#{single}||"
+
+            multiple ->
+              [first | rest_with_last] = multiple
+              {middle, [last]} = Enum.split(rest_with_last, -1)
+              Enum.join(["**>#{first}"] ++ Enum.map(middle, &">#{&1}") ++ [">#{last}||"], "\n")
+          end
+
+        # Auto-detected types: render as plain text (no extra markup)
+        type when type in ["mention", "hashtag", "cashtag", "bot_command", "url", "email", "phone_number"] ->
+          render_children_v2(children)
+
+        _ ->
+          render_children_v2(children)
+      end
+    end
+
+    defp render_children_v2(children) do
+      Enum.map_join(children, &tree_node_to_markdown_v2/1)
+    end
+
+    # Escape special characters for MarkdownV2 (general text)
+    defp escape_markdown_v2(text) do
+      # Must escape: _ * [ ] ( ) ~ ` > # + - = | { } . ! \
+      text
+      |> String.replace("\\", "\\\\")
+      |> String.replace("_", "\\_")
+      |> String.replace("*", "\\*")
+      |> String.replace("[", "\\[")
+      |> String.replace("]", "\\]")
+      |> String.replace("(", "\\(")
+      |> String.replace(")", "\\)")
+      |> String.replace("~", "\\~")
+      |> String.replace("`", "\\`")
+      |> String.replace(">", "\\>")
+      |> String.replace("#", "\\#")
+      |> String.replace("+", "\\+")
+      |> String.replace("-", "\\-")
+      |> String.replace("=", "\\=")
+      |> String.replace("|", "\\|")
+      |> String.replace("{", "\\{")
+      |> String.replace("}", "\\}")
+      |> String.replace(".", "\\.")
+      |> String.replace("!", "\\!")
+    end
+
+    # Escape for code/pre entities (only ` and \)
+    defp escape_markdown_v2_code(text) do
+      text
+      |> String.replace("\\", "\\\\")
+      |> String.replace("`", "\\`")
+    end
+
+    # Escape for URL part of links (only ) and \ and ()
+    defp escape_markdown_v2_url(text) do
+      text
+      |> String.replace("\\", "\\\\")
+      |> String.replace("(", "\\(")
+      |> String.replace(")", "\\)")
     end
   end
 end
