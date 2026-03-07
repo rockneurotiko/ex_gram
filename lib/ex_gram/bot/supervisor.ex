@@ -2,6 +2,7 @@ defmodule ExGram.Bot.Supervisor do
   @moduledoc """
   Bot supervisor that starts the dispatcher and updates processes and tie them together
   """
+  alias ExGram.Bot.SetupCommands
   alias ExGram.Dispatcher
   alias ExGram.Model.User
 
@@ -32,7 +33,7 @@ defmodule ExGram.Bot.Supervisor do
     {updates_worker, updates_worker_opts} = updates_worker(updates_method)
     updates_worker_opts = Map.merge(updates_worker_opts, %{bot: name, token: token})
 
-    if opts[:setup_commands], do: setup_commands(module.commands(), token)
+    if opts[:setup_commands], do: SetupCommands.setup(module.commands(), token)
 
     bot_info = get_bot_info(opts[:username], token)
     extra_info = Keyword.get(opts, :extra_info, %{})
@@ -70,17 +71,5 @@ defmodule ExGram.Bot.Supervisor do
       {:ok, bot} -> bot
       _ -> nil
     end
-  end
-
-  defp setup_commands(commands, token) do
-    send_commands =
-      for command <- commands, command[:description] != nil do
-        %ExGram.Model.BotCommand{
-          command: command[:command],
-          description: command[:description]
-        }
-      end
-
-    ExGram.set_my_commands(send_commands, token: token)
   end
 end
