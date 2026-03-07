@@ -1,6 +1,54 @@
 # Changelog
 
 ## Unreleased
+- Simplified the Macros.Helper, now it's easier to deal with params AST
+- Added parameters description to models and methods @doc field
+
+## [0.58.0]
+- Update to version 9.5
+- Added support to multiple return types on casting (fixes #196)
+- Implemented Subtype protocol to 10 generic types missing.
+- Added credo check to make sure new generic types don't miss the protocol implementation
+- Added support to media input files (fixes #195)
+- Add timeouts to Req adapter to handle longpolling correctly
+- Add missing types and updates on `extract_user`, `extract_chat` and `extract_update_type`
+
+## [0.57.0]
+- Update to Elixir 1.19 and Erlang 28.1.1
+- Update ex_doc dependency
+- Added CI
+- Added Req adapter
+
+## [0.56.1}
+- Fix paid reaction type: https://github.com/rockneurotiko/ex_gram/pull/192 by @prtngn
+
+## [0.56.0]
+- Update to version 9.1: https://core.telegram.org/bots/api-changelog#july-3-2025
+- Fix: `init/1` callback is called on Dispatcher init instead of Supervisor init, allowing to the user to have the Dispatcher pid
+- Change: `middleware_halted` now stop the request.
+
+## [0.55.1]
+- Fix: Only reload JSON engine of configuration is set
+
+## [0.55.0]
+- Update Telegram API to 9.0: https://core.telegram.org/bots/api#april-11-2025
+- Update Telegram API to 8.3: https://core.telegram.org/bots/api#february-12-2025
+
+## [0.54.0]
+- Add ExGram.Cast to convert responses to models
+- Fix webhook response casting, now all should be models
+- Fix webhook options allowed_updates when sending a multipart
+
+## [0.53.0]
+- Update Telegram API to 7.5: https://core.telegram.org/bots/api#june-18-2024
+
+- Breaking changes from the API:
+  - `ExGram.get_chat` now returns the new `ExGram.Model.ChatFullInfo` instead of `ExGram.Model.Chat`
+  - `ExGram.send_invoice`, `ExGram.create_invoice_link` and  now have 1 less mandatory param, `provider_token` now is optional. If `nil` it will use telegram stars
+  - `ExGram.Model.Chat` now have less fields, to get the full chat you need to use `ExGram.get_chat`
+
+## [0.52.2]
+- Update Telegram API to 7.2: https://core.telegram.org/bots/api#march-31-2024
 
 ## [0.52.1]
 - Fix ChatBoostSource, MaybeInaccessibleMessage, MessageOrigin and ReactionType subtypes for decoding

@@ -20,10 +20,8 @@ defmodule ExGram.Dsl.Keyboard do
   """
 
   defmacro keyboard(which_keyboard, do: block) do
-    build_keyboard_f =
-      case which_keyboard do
-        :inline -> &ExGram.Dsl.create_inline/1
-      end
+    :inline = which_keyboard
+    build_keyboard_f = &ExGram.Dsl.create_inline/1
 
     quote do
       var!(keyboard_variable_1) = []

@@ -36,6 +36,7 @@ defmodule ExGram.Dispatcher do
 
   defstruct name: __MODULE__,
             bot_info: nil,
+            bot_module: nil,
             dispatcher_name: __MODULE__,
             extra_info: %{},
             commands: %{},
@@ -55,6 +56,7 @@ defmodule ExGram.Dispatcher do
     %__MODULE__{
       name: name,
       bot_info: bot_info,
+      bot_module: module,
       dispatcher_name: name,
       extra_info: extra_info,
       commands: prepare_commands(module.commands()),
@@ -80,15 +82,17 @@ defmodule ExGram.Dispatcher do
 
   @impl GenServer
   def init(%__MODULE__{} = state) do
+    state.bot_module.init(bot: state.name, token: ExGram.Token.fetch(bot: state.name))
+
     {:ok, state}
   end
 
   @impl GenServer
   def handle_call({:update, update}, _from, %__MODULE__{} = state) do
-    cnt = %Cnt{default_context(state) | update: update}
+    cnt = %{default_context(state) | update: update}
     cnt = apply_middlewares(cnt)
 
-    unless cnt.halted do
+    if !(cnt.halted || cnt.middleware_halted) do
       info = extract_info(cnt)
       spawn(fn -> call_handler(info, cnt, state) end)
     end
@@ -133,7 +137,7 @@ defmodule ExGram.Dispatcher do
     message = {:cast, msg}
     cnt = build_context_with_middlewares(state, message)
 
-    unless cnt.halted do
+    if !cnt.halted do
       spawn(fn -> call_handler(message, cnt, state) end)
     end
 
@@ -143,10 +147,10 @@ defmodule ExGram.Dispatcher do
   @impl GenServer
   def handle_info(msg, %__MODULE__{} = state) do
     message = {:info, msg}
-    cnt = %Cnt{default_context(state) | message: message}
+    cnt = %{default_context(state) | message: message}
     cnt = apply_middlewares(cnt)
 
-    unless cnt.halted do
+    if !cnt.halted do
       call_handler(message, cnt, state)
     end
 
@@ -174,7 +178,7 @@ defmodule ExGram.Dispatcher do
   end
 
   defp build_context_with_middlewares(state, message, extra \\ %{}) do
-    %Cnt{default_context(state) | message: message}
+    %{default_context(state) | message: message}
     |> ExGram.Middleware.add_extra(extra)
     |> apply_middlewares()
   end
@@ -250,7 +254,7 @@ defmodule ExGram.Dispatcher do
   defp apply_middlewares(%Cnt{middleware_halted: true} = cnt), do: cnt
 
   defp apply_middlewares(%Cnt{middlewares: [{fun, opts} | rest]} = cnt) when is_function(fun, 2) do
-    %Cnt{cnt | middlewares: rest}
+    %{cnt | middlewares: rest}
     |> fun.(opts)
     |> apply_middlewares()
   end
@@ -258,13 +262,13 @@ defmodule ExGram.Dispatcher do
   defp apply_middlewares(%Cnt{middlewares: [{module, opts} | rest]} = cnt) when is_atom(module) do
     init_opts = module.init(opts)
 
-    %Cnt{cnt | middlewares: rest}
+    %{cnt | middlewares: rest}
     |> module.call(init_opts)
     |> apply_middlewares()
   end
 
   defp apply_middlewares(%Cnt{middlewares: [_ | rest]} = cnt) do
-    apply_middlewares(%Cnt{cnt | middlewares: rest})
+    apply_middlewares(%{cnt | middlewares: rest})
   end
 
   defp call_handler(info, cnt, %__MODULE__{handler: {module, method}} = state) do

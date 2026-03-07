@@ -43,6 +43,11 @@ defmodule ExGram.Encoder do
   end
 
   @default_engine Jason
+  __MODULE__.EngineCompiler.compile(@default_engine)
+
+  defp engine do
+    Engine.engine()
+  end
 
   def encode(data, opts \\ []) do
     engine().encode(data, opts)
@@ -58,9 +63,5 @@ defmodule ExGram.Encoder do
 
   def decode!(data, opts \\ []) do
     engine().decode!(data, opts)
-  end
-
-  defp engine do
-    Engine.engine() || @default_engine
   end
 end

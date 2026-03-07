@@ -1,9 +1,12 @@
 # ExGram
 
+<p align="center"><img src="https://raw.githubusercontent.com/rockneurotiko/ex_gram/refs/heads/master/assets/ex_gram_logo.png" alt="ExGram" height="300px"></p>
+
 [![Hex.pm](https://img.shields.io/hexpm/v/ex_gram.svg)](http://hex.pm/packages/ex_gram)
+[![Documentation](https://img.shields.io/badge/documentation-4B275F?logo=elixir)](https://hexdocs.pm/ex_gram)
 [![Hex.pm](https://img.shields.io/hexpm/dt/ex_gram.svg)](https://hex.pm/packages/ex_gram)
 [![Hex.pm](https://img.shields.io/hexpm/dw/ex_gram.svg)](https://hex.pm/packages/ex_gram)
-[![Build Status](https://travis-ci.com/rockneurotiko/ex_gram.svg?branch=master)](https://travis-ci.com/rockneurotiko/ex_gram)
+[![Build Status](https://github.com/rockneurotiko/ex_gram/actions/workflows/ci.yml/badge.svg)](https://github.com/rockneurotiko/ex_gram/actions/workflows/ci.yml)
 
 ExGram is a library to build Telegram Bots, you can use the low-level methods and models, or use the really opinionated framework included.
 
@@ -14,27 +17,54 @@ Add `ex_gram` as dependency in `mix.exs`
 ``` elixir
 def deps do
     [
-      {:ex_gram, "~> 0.52"},
-      {:tesla, "~> 1.2"},
-      {:hackney, "~> 1.12"},
-      {:jason, ">= 1.0.0"}
+      {:ex_gram, "~> 0.58"},
+      {:jason, ">= 1.0.0"},
+      # HTTP Adapter, see next section
     ]
 end
 ```
 
-See the next sections to select a different HTTP adapter or JSON engine.
 
 ### HTTP Adapter
 
-You should add Tesla or custom HTTP adapter, by default it will try to use the Tesla adapter, these are the defaults:
+You need to add an HTTP Adapter, ExGram comes with three adapters out of the box for the libraries Req and Tesla, if you want to use other HTTP adapter you can write your own.
+
+#### Req adapter
+
+On deps:
+``` elixir
+{:req, "~> 0.5"}
+```
+
+On config:
+``` elixir
+config :ex_gram, adapter: ExGram.Adapter.Req
+```
+
+#### Tesla adapter
+
+For the Tesla adapter you will need Tesla and the underlying http client, here how to install both:
 
 On deps:
 ``` elixir
 {:tesla, "~> 1.2"},
-{:hackney, "~> 1.12"}
+{:hackney, "~> 1.12"} 
 ```
 
-- If you want to use Gun:
+On config:
+``` elixir
+config :ex_gram, adapter: ExGram.Adapter.Tesla
+```
+
+The underlying tesla adapters that you can use are:
+- Hackney (Default)
+- Finch
+- Gun
+- Mint
+- Httpc
+- Ibrowse
+
+For example, to use Gun:
 
 On deps:
 ``` elixir
@@ -47,11 +77,19 @@ On config:
 config :tesla, adapter: Tesla.Adapter.Gun
 ```
 
-- If you prefer your custom adapter instead of Tesla:
+##### Tesla Logger level
+
+By default ex_gram will add `Tesla.Middleware.Logger` when using Tesla and the logger level `info`.
+
+The log level and other options ( [Tesla Logger docs](https://hexdocs.pm/tesla/Tesla.Middleware.Logger.html#module-options) ) can be configured:
+
+```elixir
+config :ex_gram, Tesla.Middleware.Logger, level: :debug
+```
+
+#### Custom adapter
 
 It must implement the behaviour `ExGram.Adapter`
-
-On config:
 
 ``` elixir
 config :ex_gram, adapter: YourCustomAdapter
@@ -67,10 +105,10 @@ You can change the engine in the configuration:
 config :ex_gram, json_engine: Poison
 ```
 
+
 ## Configuration
 
 There are some optional configurations that you can add to your `config.exs`:
-
 
 ### Token
 
@@ -118,6 +156,14 @@ children = [
 
 ``` elixir
 config :ex_gram, :polling, allowed_updates: ["message", "edited_message"]
+```
+
+Webhooks might cause some issues if you are doing polling but if you have never used webhooks you can configure to not delete it.
+
+```elixir
+# This will not delete the webhook because it is never created.
+# by default :delete_webhook is true
+config :ex_gram, :polling, allowed_updates: ["message", "edited_message"], delete_webhook: false
 ```
 
 This configuration takes priority over the ones on the configuration files, but you can combine them, for example having a default `allowed_updates` in the application configuration and in some bots where you need other updates overide it on the children options.

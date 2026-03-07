@@ -10,7 +10,7 @@ defimpl ExGram.Responses, for: ExGram.Responses.DeleteMessage do
   def new(response, params), do: struct(response, params)
 
   def execute(cb) do
-    ExGram.delete_message(cb.chat_id, cb.message_id, cb.ops)
+    ExGram.delete_message(cb.chat_id, cb.message_id, cb.ops || [])
   end
 
   def set_msg(%{chat_id: nil, message_id: nil} = response, msg) do

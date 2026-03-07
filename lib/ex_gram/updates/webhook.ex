@@ -74,9 +74,9 @@ defmodule ExGram.Updates.Webhook do
 
     case valid_url(config[:url]) do
       {:ok, webhook_url} ->
-        ExGram.set_webhook("#{webhook_url}/telegram/#{token_hash(token)}", [
-          {:token, token} | params
-        ])
+        params = Keyword.put(params, :token, token)
+        url = "#{webhook_url}/telegram/#{token_hash(token)}"
+        {:ok, true} = ExGram.set_webhook(url, params)
 
       {:error, error} ->
         Logger.error(
@@ -87,15 +87,6 @@ defmodule ExGram.Updates.Webhook do
 
   defp valid_url(nil), do: {:error, :not_set}
   defp valid_url(url), do: url |> URI.parse() |> do_valid_url()
-
-  # TODO: Remove it in the future!
-  defp do_valid_url(%URI{scheme: nil, host: nil, path: path}) when is_binary(path) do
-    Logger.warning(
-      "Webhook URL only with the host is deprecated. Add the protocol and the port if needed. Example: https://#{path} Check the README.md for more information"
-    )
-
-    {:ok, "https://#{path}"}
-  end
 
   defp do_valid_url(%URI{scheme: nil}), do: {:error, :scheme_not_set}
 

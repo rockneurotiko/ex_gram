@@ -10,7 +10,10 @@ import pyperclip
 DEBUG = True
 REPLACE = True
 WEB = True
+# Sometimes when fixing things on the API json, the CDN don't refresh fast, so change between this URLs to
+# get a more recent one
 URL = "https://raw.githubusercontent.com/rockneurotiko/telegram_api_json/master/exports/tg_api.json"
+# URL = "https://raw.githack.com/rockneurotiko/telegram_api_json/master/exports/tg_api.json"
 # URL = "https://raw.githack.com/rockneurotiko/telegram_api_json/master/exports/tg_api_pretty.json"
 
 
@@ -64,21 +67,28 @@ def generate_type(typ, is_return):
 
 
 def generate_param(param, model):
-    param_s = "{{{}, {}{}}}"
+    param_s = "{{{}, {}, \"{}\"{}}}"
 
     name = ":{}".format(param['name']) if model else param['name']
     debug("Extracting type: " + name)
     ts = generate_type(param['type'], False)
     t = "[{}]".format(', '.join(ts))
-    debug(str(t))
+    description = clean_description(param['description'] or "")
     extra = "" if not param['optional'] else ", :optional"
 
-    return param_s.format(name, t, extra)
+    return param_s.format(name, t, description, extra)
 
 
 def clean_description(description):
-    return description.replace("\n", " ")
+    return description.replace("\n", " ").replace('"', '\\"').replace("“", '\\"')
 
+def clean_returned_type(returned):
+    if len(returned) == 0:
+        return ":any"
+    elif len(returned) == 1:
+        return returned[0]
+    else:
+        return "[{}]".format(", ".join(returned))
 
 def generate_model(model):
     model_s = "model({}, [{}], \"{}\")"
@@ -98,9 +108,9 @@ def generate_method(method):
     typ = ":get" if method['type'] == 'get' else ':post'
 
     args = [generate_param(param, False) for param in method['params']]
-    returned = generate_type(method['return'], True)[0]
+    returned = generate_type(method['return'], True)
 
-    return method_s.format(typ, name, ", ".join(args), returned, clean_description(description))
+    return method_s.format(typ, name, ", ".join(args), clean_returned_type(returned), clean_description(description))
 
 
 def generate_generic(model):

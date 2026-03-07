@@ -18,8 +18,10 @@ defmodule ExGram.Updates.Polling do
   def init({:ok, pid, token, opts}) do
     opts = :ex_gram |> ExGram.Config.get(:polling, []) |> Keyword.merge(Keyword.new(opts))
 
-    # Clean webhook
-    ExGram.delete_webhook(token: token)
+    if Keyword.get(opts, :delete_webhook, true) do
+      # Clean webhook
+      ExGram.delete_webhook(token: token)
+    end
 
     Process.send_after(self(), {:fetch, :update_id}, @polling_timeout)
     {:ok, {pid, token, -1, opts}}
@@ -57,7 +59,10 @@ defmodule ExGram.Updates.Polling do
     try do
       ExGram.get_updates!(opts)
     rescue
-      ExGram.Error -> []
+      e in ExGram.Error ->
+        formatted_error = Exception.format(:error, e, __STACKTRACE__)
+        Logger.error("[ExGram] Error fetching updates: #{formatted_error}")
+        []
     end
   end
 

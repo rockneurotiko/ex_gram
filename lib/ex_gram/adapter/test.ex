@@ -19,7 +19,8 @@ defmodule ExGram.Adapter.Test do
   end
 
   @impl ExGram.Adapter
-  def request(verb, path, body, name \\ @name) do
+  def request(verb, path, body, opts) do
+    name = Keyword.get(opts, :name, @name)
     GenServer.call(name, {:request, verb, path, body})
   end
 
@@ -33,6 +34,10 @@ defmodule ExGram.Adapter.Test do
 
   def clean(name \\ @name) do
     GenServer.call(name, {:clean})
+  end
+
+  def get_calls(name \\ @name) do
+    GenServer.call(name, {:get_calls})
   end
 
   def handle_call({:request, verb, path, body}, _, state) do
@@ -57,6 +62,10 @@ defmodule ExGram.Adapter.Test do
 
   def handle_call({:clean}, _, _) do
     {:reply, :ok, %__MODULE__{}}
+  end
+
+  def handle_call({:get_calls}, _, %{calls: calls} = state) do
+    {:reply, calls, state}
   end
 
   defp add_call(%{calls: calls} = state, data), do: %{state | calls: calls ++ [data]}

@@ -3,48 +3,50 @@ defmodule ExGram.Macros.Helpers do
   Helpers for the ExGram.Macros module
   """
 
-  def analyze_param({:{}, line, [{name, _line, nil}]}), do: {{name, line, nil}, [name, [:any]]}
+  @doc """
+  Entry point for all the macros that has parameters (model + method).
 
-  def analyze_param({:{}, line, [{name, _line, nil}, types, :optional]}),
-    do: {{:\\, line, [{name, line, nil}, nil]}, [name, types, :optional]}
+  It analyzed the AST and return the list of params with the following format:
+  - For mandatory parameters: `[name, types, description]`
+  - For optional parameters: `[name, types, description, :optional]`
 
-  def analyze_param({name, _line, nil} = full), do: {full, [name, [:any]]}
+  All the other methods in this module that deal with parameters expect this format.
+  """
+  def analyze_params(params) do
+    Enum.map(params, &analyze_param/1)
+  end
 
-  def analyze_param({{name, line, nil}, :optional}),
-    do: {{:\\, line, [{name, line, nil}, nil]}, [name, [:any], :optional]}
+  defp analyze_param({:{}, _line, [name, types, description]}), do: [param_name(name), types, description]
 
-  def analyze_param({{name, line, nil}, types}), do: {{name, line, nil}, [name, types]}
+  defp analyze_param({:{}, _line, [name, types, description, :optional]}),
+    do: [param_name(name), types, description, :optional]
 
-  def analyze_param({{name, line, nil}, types, :optional}),
-    do: {{:\\, line, [{name, line, nil}, nil]}, [name, types, :optional]}
+  defp param_name({name, _nline, nil}), do: name
+  defp param_name(name) when is_atom(name), do: name
 
   def mandatory_type_specs(analyzed) do
     analyzed
-    |> Enum.map(&elem(&1, 1))
-    |> Enum.filter(&(not is_par_optional(&1)))
-    |> Enum.map(fn [n, ts] -> parameter_type_spec(n, types_list_to_spec(ts)) end)
+    |> Enum.filter(&(not par_optional?(&1)))
+    |> Enum.map(fn [n, ts, _desc] -> parameter_type_spec(n, types_list_to_spec(ts)) end)
   end
 
   def mandatory_value_type(analyzed) do
     analyzed
-    |> Enum.map(&elem(&1, 1))
-    |> Enum.filter(&(not is_par_optional(&1)))
-    |> Enum.map(fn [name, types] -> [nid(name), types] end)
+    |> Enum.filter(&(not par_optional?(&1)))
+    |> Enum.map(fn [name, types, _desc] -> [nid(name), types] end)
   end
 
   def optional_type_specs(analyzed) do
     analyzed
-    |> Enum.map(&elem(&1, 1))
-    |> Enum.filter(&is_par_optional/1)
-    |> Enum.map(fn [n, ts, :optional] -> {n, types_list_to_spec(ts)} end)
+    |> Enum.filter(&par_optional?/1)
+    |> Enum.map(fn [n, ts, _desc, :optional] -> {n, types_list_to_spec(ts)} end)
     |> Kernel.++(common_opts())
   end
 
   def mandatory_parameters(analyzed) do
-    mandatory =
-      Enum.filter(analyzed, fn {_name, desc} -> not is_par_optional(desc) end)
+    mandatory = Enum.reject(analyzed, &par_optional?/1)
 
-    names = Enum.map(mandatory, fn {name, _desc} -> name end)
+    names = Enum.map(mandatory, fn [name | _] -> {name, [line: __ENV__.line], nil} end)
 
     mand_atoms = Enum.map(names, &extract_param_name/1)
     mand_values = Enum.map(mand_atoms, &nid/1)
@@ -55,26 +57,48 @@ defmodule ExGram.Macros.Helpers do
   end
 
   def optional_parameters(analyzed) do
-    optionals =
-      analyzed
-      |> Enum.map(&elem(&1, 1))
-      |> Enum.filter(&is_par_optional/1)
+    optionals = Enum.filter(analyzed, &par_optional?/1)
 
-    optional_types = Enum.map(optionals, fn [name, types, :optional] -> {name, types} end)
-    optional_names = Enum.map(optionals, fn [name, _, _] -> name end)
+    optional_types = Enum.map(optionals, fn [name, types, _desc, :optional] -> {name, types} end)
+    optional_names = Enum.map(optionals, fn [name, _, _, _] -> name end)
 
     {optional_names, optional_types}
   end
 
   def file_parameters(analyzed) do
-    analyzed
-    |> Enum.map(fn {_n, types} -> types end)
-    |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &(&1 == :file or &1 == :file_content)) end)
-    |> Enum.map(fn
-      [n, _t] -> {nid(n), Atom.to_string(n)}
-      [n, _t, :optional] -> n
-    end)
+    direct_files =
+      analyzed
+      |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &(&1 == :file or &1 == :file_content)) end)
+      |> Enum.map(fn
+        [n, _t, _d] -> {nid(n), Atom.to_string(n)}
+        [n, _t, _d, :optional] -> n
+      end)
+
+    media_files =
+      analyzed
+      |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &has_input_media_type?/1) end)
+      |> Enum.map(fn
+        [n, _t, _d] -> {:input_media, n}
+        [n, _t, _d, :optional] -> {:input_media, n}
+      end)
+
+    direct_files ++ media_files
   end
+
+  defp has_input_media_type?({:array, types}) when is_list(types) do
+    Enum.any?(types, &input_media_alias?/1)
+  end
+
+  defp has_input_media_type?({:array, type}), do: input_media_alias?(type)
+
+  defp has_input_media_type?(type), do: input_media_alias?(type)
+
+  defp input_media_alias?({:__aliases__, _, parts}) do
+    name = parts |> List.last() |> Atom.to_string()
+    String.starts_with?(name, "InputMedia") or String.starts_with?(name, "InputPaidMedia")
+  end
+
+  defp input_media_alias?(_), do: false
 
   def type_to_spec(:string), do: {{:., [], [{:__aliases__, [alias: false], [:String]}, :t]}, [], []}
 
@@ -129,6 +153,7 @@ defmodule ExGram.Macros.Helpers do
 
   @common_opts [
     adapter: :atom,
+    adapter_opts: :keyword,
     bot: :atom,
     token: :string,
     debug: :boolean,
@@ -143,9 +168,10 @@ defmodule ExGram.Macros.Helpers do
 
   defp nid(x), do: {x, [], nil}
 
-  defp is_par_optional([_n, _t, :optional]), do: true
-  defp is_par_optional(_), do: false
+  defp par_optional?([_n, _t, _d, :optional]), do: true
+  defp par_optional?(_), do: false
 
+  defp extract_param_name(name) when is_atom(name), do: name
   defp extract_param_name({name, _line, nil}), do: name
   defp extract_param_name({:\\, _line, [{name, _line2, nil}, nil]}), do: name
 
@@ -153,13 +179,8 @@ defmodule ExGram.Macros.Helpers do
 
   def params_to_decode_as(params) do
     params
-    |> Stream.map(fn
-      {k, v} -> {k, v}
-      {:{}, _, [k, v, :optional]} -> {k, v}
-    end)
-    |> Stream.map(fn {k, [v | _]} ->
-      {k, param_to_decode_as(v)}
-    end)
+    |> Stream.map(fn [k, v | _] -> {k, v} end)
+    |> Stream.map(fn {k, [v | _]} -> {k, param_to_decode_as(v)} end)
     |> Enum.filter(fn {_k, v} -> not is_nil(v) end)
   end
 
@@ -183,15 +204,24 @@ defmodule ExGram.Macros.Helpers do
 
   defp param_to_decode_as(_other), do: nil
 
+  def params_descriptions(params) do
+    params
+    |> Enum.sort_by(&par_optional?/1)
+    |> Enum.map(fn
+      [k, _, desc] -> {k, desc}
+      [k, _, desc, :optional] -> {"#{k} (optional)", desc}
+    end)
+  end
+
   def struct_type_specs([], acc), do: acc
 
-  def struct_type_specs([{id, t} | xs], acc) do
+  def struct_type_specs([[id, t, _] | xs], acc) do
     act = acc ++ [{id, type_to_spec(t)}]
 
     struct_type_specs(xs, act)
   end
 
-  def struct_type_specs([{:{}, _line, [id, t, :optional]} | xs], acc) do
+  def struct_type_specs([[id, t, _, :optional] | xs], acc) do
     act = acc ++ [{id, {:|, [], [type_to_spec(t), nil]}}]
 
     struct_type_specs(xs, act)

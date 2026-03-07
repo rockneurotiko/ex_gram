@@ -3,6 +3,8 @@ defmodule ExGram.Macros.Executer do
   Executer for the method macro, it takes care of checking the parameters, fetching the token, building the path and body, and calling the adapter.
   """
 
+  alias ExGram.Macros.Checker
+
   require Logger
 
   # credo:disable-for-next-line
@@ -35,11 +37,11 @@ defmodule ExGram.Macros.Executer do
 
       if debug, do: Logger.info("Path: #{inspect(path)}\nbody: #{inspect(body)}")
 
-      result = adapter.request(verb, path, body)
+      adapter_opts = Keyword.get(ops, :adapter_opts, [])
 
-      case result do
+      case adapter.request(verb, path, body, adapter_opts) do
         {:ok, body} ->
-          {:ok, process_result(body, returned_type)}
+          process_result(body, returned_type)
 
         {:error, error} ->
           {:error, error}
@@ -47,7 +49,7 @@ defmodule ExGram.Macros.Executer do
     else
       {:token, _} ->
         message =
-          "No token available in the request, make sure you have the token setup on the config or you used the parameter \"token\" or \"bot\" correctly"
+          ~s(No token available in the request, make sure you have the token setup on the config or you used the parameter "token" or "bot" correctly)
 
         {:error,
          %ExGram.Error{
@@ -73,8 +75,14 @@ defmodule ExGram.Macros.Executer do
   end
 
   defp body_with_files(body, file_parts) do
-    file_parts =
-      file_parts
+    {input_media_params, direct_params} =
+      Enum.split_with(file_parts, fn
+        {:input_media, _name} -> true
+        _ -> false
+      end)
+
+    direct_file_parts =
+      direct_params
       |> Enum.map(fn
         {v, p} -> {v, p}
         keyw -> {body[keyw], Atom.to_string(keyw)}
@@ -91,8 +99,64 @@ defmodule ExGram.Macros.Executer do
           {:file_content, partname, content, filename}
       end)
 
-    create_multipart(body, file_parts)
+    {body, media_file_parts} =
+      Enum.reduce(input_media_params, {body, []}, fn {:input_media, name}, {body, files} ->
+        case Map.get(body, name) do
+          nil ->
+            {body, files}
+
+          media_value ->
+            {updated_media, extracted_files} = extract_media_files(media_value, name)
+            {Map.put(body, name, updated_media), files ++ extracted_files}
+        end
+      end)
+
+    create_multipart(body, direct_file_parts ++ media_file_parts)
   end
+
+  @input_media_file_fields [:media, :thumbnail, :cover]
+
+  defp extract_media_files(media_list, param_name) when is_list(media_list) do
+    {updated_items, all_files} =
+      media_list
+      |> Enum.with_index()
+      |> Enum.map_reduce([], fn {item, index}, acc_files ->
+        {updated_item, files} = extract_files_from_media_item(item, param_name, index)
+        {updated_item, acc_files ++ files}
+      end)
+
+    {updated_items, all_files}
+  end
+
+  defp extract_media_files(media_item, param_name) when is_map(media_item) do
+    {updated_item, files} = extract_files_from_media_item(media_item, param_name, 0)
+    {updated_item, files}
+  end
+
+  defp extract_media_files(other, _param_name), do: {other, []}
+
+  defp extract_files_from_media_item(item, param_name, index) when is_map(item) do
+    Enum.reduce(@input_media_file_fields, {item, []}, fn field, {item, files} ->
+      attach_name = "#{param_name}_#{index}_#{field}"
+
+      case Map.get(item, field) do
+        {:file, path} ->
+          updated_item = Map.put(item, field, "attach://#{attach_name}")
+          file_part = {:file, attach_name, path}
+          {updated_item, files ++ [file_part]}
+
+        {:file_content, content, filename} ->
+          updated_item = Map.put(item, field, "attach://#{attach_name}")
+          file_part = {:file_content, attach_name, content, filename}
+          {updated_item, files ++ [file_part]}
+
+        _ ->
+          {item, files}
+      end
+    end)
+  end
+
+  defp extract_files_from_media_item(item, _param_name, _index), do: {item, []}
 
   defp to_size_string(true), do: "true"
   defp to_size_string(false), do: "false"
@@ -100,6 +164,7 @@ defmodule ExGram.Macros.Executer do
   defp to_size_string(x) when is_integer(x), do: Integer.to_string(x)
   # This is useful to encode automatically
   defp to_size_string(x) when is_map(x), do: encode(x)
+  defp to_size_string(x) when is_list(x), do: encode(x)
   defp to_size_string(_), do: raise("Not sizable!")
 
   defp encode(%{__struct__: _} = x) do
@@ -124,56 +189,21 @@ defmodule ExGram.Macros.Executer do
   defp clean_body(m), do: m
 
   defp process_result(result, type) do
-    process_type(result, type)
-  end
-
-  defp process_type(nil, _), do: nil
-  defp process_type(elem, nil), do: elem
-
-  defp process_type(list, {:array, t}), do: Enum.map(list, &process_type(&1, t))
-  defp process_type(list, [t]), do: Enum.map(list, &process_type(&1, t))
-
-  defp process_type(elem, :integer), do: elem
-  defp process_type(elem, :string), do: elem
-  defp process_type(elem, true), do: elem
-
-  defp process_type(elem, t) when is_atom(t) do
-    if is_subtype?(t) do
-      apply_subtype(t, elem)
-    else
-      process_struct(t, elem)
-    end
-  end
-
-  defp process_type(elem, _t), do: elem
-
-  defp process_struct(t, elem) do
-    decoded_elem =
-      t.decode_as()
-      |> Map.from_struct()
-      |> Map.new(fn {k, v} ->
-        {k, process_type(elem[k], v)}
-      end)
-
-    struct(t, decoded_elem)
-  end
-
-  defp is_subtype?(t) do
-    ExGram.Model.Subtype.impl_for(struct(t, %{}))
-  end
-
-  defp apply_subtype(t, params) do
-    base = struct(t, %{})
-    selector = ExGram.Model.Subtype.selector_value(base, params)
-    subtype = ExGram.Model.Subtype.subtype(base, selector)
-
-    process_struct(subtype, params)
+    ExGram.Cast.cast(result, type)
   end
 
   defp create_multipart(body, []), do: body
 
   defp create_multipart(body, fileparts) do
-    filepart_names = fileparts |> Enum.map(&elem(&1, 1)) |> Enum.map(&String.to_atom/1)
+    filepart_names =
+      fileparts
+      |> Enum.map(&elem(&1, 1))
+      |> Enum.reduce([], fn name, acc ->
+        case safe_to_existing_atom(name) do
+          {:ok, atom} -> [atom | acc]
+          :error -> acc
+        end
+      end)
 
     restparts =
       body
@@ -188,18 +218,26 @@ defmodule ExGram.Macros.Executer do
     {:multipart, parts}
   end
 
+  defp safe_to_existing_atom(name) when is_binary(name) do
+    {:ok, String.to_existing_atom(name)}
+  rescue
+    ArgumentError -> :error
+  end
+
   defp check_params(false, _mandatory, _optional, _optional_types), do: :ok
 
   defp check_params(true, mandatory, optional, optional_types) do
-    mandatory_checks = mandatory |> ExGram.Macros.Checker.check_types() |> mandatory_errors()
+    mandatory_checks = mandatory |> Checker.check_types() |> mandatory_errors()
 
     optional =
-      Enum.map(optional, fn {key, value} -> {value, Keyword.get(optional_types, key), key} end)
+      optional
+      |> Enum.reject(fn {_key, value} -> is_nil(value) end)
+      |> Enum.map(fn {key, value} -> {value, Keyword.get(optional_types, key), key} end)
 
     optional_checks =
       optional
       |> Enum.map(fn {value, types, _key} -> [value, types] end)
-      |> ExGram.Macros.Checker.check_types()
+      |> Checker.check_types()
       |> optional_errors(optional)
 
     case {mandatory_checks, optional_checks} do
@@ -214,7 +252,9 @@ defmodule ExGram.Macros.Executer do
 
   defp mandatory_errors({:error, errors}) do
     msg =
-      Enum.map_join(errors, ", ", fn {{value, types}, index} -> expected_type_msg(index, types, value) end)
+      Enum.map_join(errors, ", ", fn {{value, types}, index} ->
+        expected_type_msg(index, types, value)
+      end)
 
     "Mandatory parameter types don't match: #{msg}"
   end

@@ -4,8 +4,7 @@ import Config
 
 config :tesla, adapter: Tesla.Adapter.Gun
 
-config :ex_gram, token: "TOKEN", adapter: ExGram.Adapter.Tesla, json_engine: Jason
-
+config :ex_gram, token: "TOKEN", adapter: ExGram.Adapter.Tesla, json_engine: Jason, delete_webhook: true
 # This configuration is loaded before any dependency and is restricted
 # to this project. If another project depends on this project, this
 # file won't be loaded nor affect the parent project. For this reason,

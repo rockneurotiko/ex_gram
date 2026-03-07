@@ -2,7 +2,7 @@ defmodule ExGram.Mixfile do
   use Mix.Project
 
   @source_url "https://github.com/rockneurotiko/ex_gram"
-  @version "0.52.1"
+  @version "0.58.0"
 
   def project do
     [
@@ -11,7 +11,7 @@ defmodule ExGram.Mixfile do
       package: package(),
       description: description(),
       source_url: "https://github.com/rockneurotiko/ex_gram",
-      elixir: "~> 1.6",
+      elixir: "~> 1.15",
       elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
@@ -56,23 +56,24 @@ defmodule ExGram.Mixfile do
       {:tesla, "~> 1.2", optional: true},
       {:gun, "~> 2.0", optional: true},
       {:hackney, "~> 1.20", optional: true},
+      {:req, "~> 0.5.0", optional: true},
       # JSON encoders/decoders
       {:jason, ">= 1.0.0", optional: true},
       {:poison, ">= 1.0.0", optional: true},
       # Webhook adapter
       {:plug, "~> 1.14", optional: true},
       # Development
-      {:credo, "~> 1.5", only: [:dev, :test], runtime: false},
-      {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
-      {:ex_doc, "~> 0.23", only: :dev},
-      {:styler, "~> 0.11", only: [:dev, :test], runtime: false}
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+      {:ex_doc, "~> 0.39", only: :dev, runtime: false, warn_if_outdated: true},
+      {:styler, "~> 1.9", only: [:dev, :test], runtime: false}
     ]
   end
 
   defp docs do
     [
       main: "readme",
-      source_ref: "v#{@version}",
+      source_ref: @version,
       source_url: @source_url,
       extra_section: "GUIDES",
       skip_undefined_reference_warnings_on: ["CHANGELOG.md"],

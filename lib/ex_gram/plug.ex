@@ -24,7 +24,7 @@ if Code.ensure_loaded?(Plug) do
     def call(conn, _), do: conn
 
     defp handle_update(conn) do
-      {:ok, body, conn} = Plug.Conn.read_body(conn)
+      {:ok, body, conn} = Conn.read_body(conn)
 
       {status, message} =
         case conn
@@ -43,8 +43,8 @@ if Code.ensure_loaded?(Plug) do
     defp handle_update(conn, {:ok, update}) do
       token_hash = token_hash(conn.path_info)
 
-      ExGram.Model.Update
-      |> struct(update)
+      update
+      |> ExGram.Cast.cast!(ExGram.Model.Update)
       |> ExGram.Updates.Webhook.update(token_hash)
 
       {200, %{ok: true}}

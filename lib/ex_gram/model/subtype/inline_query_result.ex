@@ -16,6 +16,7 @@ defimpl ExGram.Model.Subtype, for: ExGram.Model.InlineQueryResult do
   def subtype(_, "video"), do: ExGram.Model.InlineQueryResultVideo
   def subtype(_, "voice"), do: ExGram.Model.InlineQueryResultVoice
 
+  # credo:disable-for-next-line
   # TODO use custom fields to differentiate between normal & cached
 
   # def subtype(_, "audio"), do: ExGram.Model.InlineQueryResultCachedAudio
