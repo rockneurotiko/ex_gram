@@ -25,12 +25,16 @@ defmodule ExGram.Middleware.Builder do
   defmacro command(command, opts \\ []) do
     name = Keyword.get(opts, :name, String.to_atom(command))
     description = Keyword.get(opts, :description)
+    lang = Keyword.get(opts, :lang, [])
+    scopes = Keyword.get(opts, :scopes, nil)
 
     quote do
       @commands [
         command: unquote(command),
         name: unquote(name),
-        description: unquote(description)
+        description: unquote(description),
+        lang: unquote(lang),
+        scopes: unquote(scopes)
       ]
     end
   end

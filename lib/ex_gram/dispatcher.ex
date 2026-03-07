@@ -69,10 +69,22 @@ defmodule ExGram.Dispatcher do
 
   @spec prepare_commands([Keyword.t()]) :: %{String.t() => map()}
   defp prepare_commands(commands) when is_list(commands) do
-    Map.new(commands, fn command ->
-      command = Map.new(command)
-      {command.command, command}
+    commands
+    |> Enum.flat_map(fn command ->
+      command_map = Map.new(command)
+      base_entry = {command_map.command, command_map}
+
+      # Add lang command variations
+      lang_entries =
+        for {_lang_code, overrides} <- command_map[:lang] || [],
+            lang_command = overrides[:command],
+            lang_command != nil do
+          {lang_command, command_map}
+        end
+
+      [base_entry | lang_entries]
     end)
+    |> Map.new()
   end
 
   @spec start_link(t()) :: GenServer.on_start()
@@ -189,7 +201,7 @@ defmodule ExGram.Dispatcher do
           | {:regex, key :: custom_key(), text :: String.t()}
   defp handle_text("/" <> text, %Cnt{commands: commands}) do
     {cmd, text} =
-      case String.split(text, " ", parts: 2) do
+      case String.split(text, ~r/\s/, parts: 2) do
         [cmd] -> {cmd, ""}
         [cmd, rest] -> {cmd, rest}
       end
@@ -211,13 +223,21 @@ defmodule ExGram.Dispatcher do
     end
   end
 
+  defp handle_message_text(text, message, field, cnt) do
+    case handle_text(text, cnt) do
+      {:command, key, rest} -> {:command, key, %{message | field => rest}}
+      {:text, _rest} -> {:text, text, message}
+      {:regex, key, _rest} -> {:regex, key, message}
+    end
+  end
+
   @spec extract_info(Cnt.t()) :: parsed_message()
   defp extract_info(%Cnt{update: %{message: %{text: text} = message}} = cnt) when is_binary(text) do
-    case handle_text(text, cnt) do
-      {:command, key, text} -> {:command, key, %{message | text: text}}
-      {:text, text} -> {:text, text, %{message | text: text}}
-      {:regex, key, text} -> {:regex, key, %{message | text: text}}
-    end
+    handle_message_text(text, message, :text, cnt)
+  end
+
+  defp extract_info(%Cnt{update: %{message: %{caption: text} = message}} = cnt) when is_binary(text) do
+    handle_message_text(text, message, :caption, cnt)
   end
 
   defp extract_info(%Cnt{update: %{message: %{location: %{} = location}}}) do

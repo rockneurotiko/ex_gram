@@ -17,10 +17,18 @@ defmodule ExGram.Middleware.IgnoreUsername do
     %{cnt | update: new_update}
   end
 
+  def call(%Cnt{bot_info: %{username: username}, update: %{message: %{caption: t} = message} = update} = cnt, _opts)
+      when is_binary(username) and is_binary(t) do
+    new_caption = clean_command(t, username)
+    new_msg = %{message | caption: new_caption}
+    new_update = %{update | message: new_msg}
+    %{cnt | update: new_update}
+  end
+
   def call(cnt, _), do: cnt
 
   defp clean_command("/" <> text, username) do
-    [raw_command | rest] = String.split(text, " ")
+    [raw_command | rest] = String.split(text, ~r/\s/, parts: 2)
 
     cmd =
       case String.split(raw_command, "@") do
