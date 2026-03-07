@@ -99,6 +99,7 @@ defmodule ExGram.Mixfile do
       "README.md",
       "guides/multiple_bots.md",
       "guides/flyio.md",
+      "guides/message_entities.md",
       "CHANGELOG.md"
     ]
   end

@@ -60,7 +60,7 @@ Now we will create a bot's dynamic supervisor:
 defmodule MyBot.BotSupervisor do
   use DynamicSupervisor
 
-  @spec start_link(any()) :: Supervisor.on_start_child() | :ignore
+  @spec start_link(any()) :: Supervisor.on_start() | :ignore
   def start_link(_init_arg) do
     DynamicSupervisor.start_link(__MODULE__, [], name: __MODULE__)
   end
@@ -108,7 +108,7 @@ end
 ```
 
 
-NOTE: This sets the bot's name in line 40 (`bot_name: bot.bot_name`), this is done in order to allow to use the same bot module with different tokens, but it also implies that the name in the configuration is the one that will be used, and not the one setup in `use ExGram.Bot, name: <name>`, it only matters if you make direct calls to `ExGram` like `ExGram.send_message(..., bot: :bot_name)`, if you don't need to release different bots with the same bot's module, I recommend deleting that line.
+NOTE: This sets the bot's name explicit (`bot_name: bot.bot_name`), this is done in order to allow to use the same bot module with different tokens, but it also implies that the name in the configuration is the one that will be used, and not the one setup in `use ExGram.Bot, name: <name>`, it only matters if you make direct calls to `ExGram` like `ExGram.send_message(..., bot: :bot_name)`, if you don't need to release different bots with the same bot's module, I recommend deleting that line.
 
 
 And finally, we just need to change our `application.ex` to start the supervisor and the bots:

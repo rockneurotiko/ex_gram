@@ -204,7 +204,7 @@ config :ex_gram, token: "NOTHING", adapter: ExGram.Adapter.Test, updates: ExGram
 
 The webhook configuration is on `runtime.exs`, and we can see that we are using two environment variables, let's set them up in our Fly application:
 
-``` shen
+``` shell
 fly secrets set BOT_TOKEN=YOUR_BOT_TOKEN --stage
 fly secrets set WEBHOOK_SECRET_TOKEN=WHATEVER_SECRET_TOKEN_YOU_WANT --stage
 ```

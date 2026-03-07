@@ -11,7 +11,7 @@ if Code.ensure_loaded?(MDEx) do
 
     ## Options
 
-      * `:skip_blockquotes` — when `true`, blockquote nodes are rendered as
+      * `:skip_blockquotes`: when `true`, blockquote nodes are rendered as
         indented plain text instead of a `blockquote` entity. Useful when the
         output will itself be wrapped in an expandable blockquote, since Telegram
         forbids nested blockquotes.
@@ -61,19 +61,20 @@ if Code.ensure_loaded?(MDEx) do
     end
 
     # ---------------------------------------------------------------------------
-    # Node rendering — returns {text, entities} tuples
+    # Node rendering: returns {text, entities} tuples
     # ---------------------------------------------------------------------------
 
     defp render_nodes(nodes, ctx) when is_list(nodes) do
       nodes
       |> Enum.map(&render_node(&1, ctx))
       |> B.concat()
+      |> B.trim()
     end
 
-    # Document root — just recurse
+    # Document root: just recurse
     defp render_node(%MDEx.Document{nodes: nodes}, ctx), do: render_nodes(nodes, ctx)
 
-    # Inline formatting — wrap children in the entity
+    # Inline formatting: wrap children in the entity
     defp render_node(%MDEx.Strong{nodes: nodes}, ctx) do
       B.wrap("bold", render_nodes(nodes, ctx))
     end
@@ -94,12 +95,12 @@ if Code.ensure_loaded?(MDEx) do
       B.wrap("spoiler", render_nodes(nodes, ctx))
     end
 
-    # Inline code — entity over the literal text (no escaping needed)
+    # Inline code: entity over the literal text (no escaping needed)
     defp render_node(%MDEx.Code{literal: literal}, _ctx) do
       B.code(literal)
     end
 
-    # Fenced code block — pre entity with optional language
+    # Fenced code block: pre entity with optional language
     defp render_node(%MDEx.CodeBlock{info: info, literal: literal}, _ctx) do
       lang = info && String.trim(info)
       lang = if lang == "", do: nil, else: lang
@@ -108,7 +109,7 @@ if Code.ensure_loaded?(MDEx) do
       B.pre(text, lang)
     end
 
-    # Link — text_link entity
+    # Link: text_link entity
     defp render_node(%MDEx.Link{url: url, nodes: nodes}, ctx) do
       {inner_text, inner_entities} = render_nodes(nodes, ctx)
 
@@ -120,28 +121,28 @@ if Code.ensure_loaded?(MDEx) do
       end)
     end
 
-    # Image — render alt text only (Telegram can't display images in text)
+    # Image: render alt text only (Telegram can't display images in text)
     defp render_node(%MDEx.Image{nodes: nodes}, ctx) do
       render_nodes(nodes, ctx)
     end
 
-    # Headings — render as bold with surrounding newlines
+    # Headings: render as bold with surrounding newlines
     defp render_node(%MDEx.Heading{nodes: nodes}, ctx) do
       inner = render_nodes(nodes, ctx)
       B.concat([B.text("\n"), B.wrap("bold", inner), B.text("\n")])
     end
 
-    # Paragraph — add double newline after
+    # Paragraph: add a newline
     defp render_node(%MDEx.Paragraph{nodes: nodes}, ctx) do
-      inner = render_nodes(nodes, ctx)
-      B.concat([inner, B.text("\n\n")])
+      rendered = render_nodes(nodes, ctx)
+      B.concat([rendered, "\n"])
     end
 
-    # Blockquote — either a blockquote entity or indented plain text
+    # Blockquote: either a blockquote entity or indented plain text
     defp render_node(%MDEx.BlockQuote{nodes: nodes}, %{skip_blockquotes: true} = ctx) do
       # Indent with 2 spaces per line instead of entity
-      {inner_text, inner_entities} = render_nodes(nodes, ctx)
-      trimmed = String.trim(inner_text)
+      # Because the user asked to skip them
+      {inner_text, inner_entities} = render_nodes(nodes, ctx) |> B.trim()
 
       indented =
         trimmed
@@ -179,7 +180,7 @@ if Code.ensure_loaded?(MDEx) do
     end
 
     defp render_node(%MDEx.ListItem{} = item, ctx) do
-      # ListItem outside a List context — render children directly
+      # ListItem outside a List context: render children directly
       render_nodes(item.nodes, ctx)
     end
 
@@ -199,7 +200,7 @@ if Code.ensure_loaded?(MDEx) do
       {prefix_text <> trimmed <> "\n", offset}
     end
 
-    # Table — render as a code block (pre entity), plain text only
+    # Table: render as a code block (pre entity), plain text only
     defp render_node(%MDEx.Table{nodes: nodes}, _ctx) do
       rows =
         Enum.map(nodes, fn row ->
@@ -218,22 +219,22 @@ if Code.ensure_loaded?(MDEx) do
       end
     end
 
-    # Thematic break (---) — em-dash separator
-    defp render_node(%MDEx.ThematicBreak{}, _ctx), do: B.text("———\n")
+    # Thematic break (---): dashes
+    defp render_node(%MDEx.ThematicBreak{}, _ctx), do: B.text("---\n")
 
     # Soft and hard breaks
     defp render_node(%MDEx.SoftBreak{}, _ctx), do: B.text("\n")
     defp render_node(%MDEx.LineBreak{}, _ctx), do: B.text("\n")
 
-    # Plain text — no escaping needed (not MarkdownV2)
+    # Plain text: no escaping needed (not MarkdownV2)
     defp render_node(%MDEx.Text{literal: literal}, _ctx), do: B.text(literal)
 
-    # Raw HTML — strip tags, plain text
+    # Raw HTML: strip tags, plain text
     defp render_node(%MDEx.HtmlInline{literal: literal}, _ctx), do: B.text(strip_html_tags(literal))
 
     defp render_node(%MDEx.HtmlBlock{literal: literal}, _ctx), do: B.text(strip_html_tags(literal))
 
-    # Unknown nodes with children — recurse gracefully
+    # Unknown nodes with children: recurse gracefully
     defp render_node(node, ctx) do
       case Map.get(node, :nodes) do
         nodes when is_list(nodes) -> render_nodes(nodes, ctx)
@@ -256,7 +257,7 @@ if Code.ensure_loaded?(MDEx) do
 
       prefix_str = indent <> prefix
 
-      # Paragraphs inside list items — don't add double newlines
+      # Paragraphs inside list items: don't add double newlines
       inner =
         nodes
         |> Enum.map(fn
@@ -275,7 +276,7 @@ if Code.ensure_loaded?(MDEx) do
     defp render_list_item(node, _idx, ctx), do: render_node(node, ctx)
 
     # ---------------------------------------------------------------------------
-    # Plain-text extraction (for table cells — no entities)
+    # Plain-text extraction (for table cells: no entities)
     # ---------------------------------------------------------------------------
 
     defp render_plain_text(nodes) when is_list(nodes) do
