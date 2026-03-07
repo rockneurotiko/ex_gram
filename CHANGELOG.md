@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Added ExGram.Dsl.MessageEntityBuilder to build messages with MessageEntity instead of markdon or html
+- If `MDEx` is installed as a dependency, a module `ExGram.Markdown` will be provided to transform from markdown to MessageEntities. 
 - Added the possibility to pass `chat_id` and `message_id` directly to delete and edit DSL helpers
 - Added `on_result` DSL to "interject" the result of the previous enqueued action
 - Simplified the Macros.Helper, now it's easier to deal with params AST
