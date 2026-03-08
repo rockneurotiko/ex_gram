@@ -54,8 +54,8 @@ defmodule ExGram.Bot.SetupCommands do
     default ++ translations
   end
 
-  defp expand_scopes(nil), do: [%BotCommandScopeDefault{type: "default"}]
-  defp expand_scopes([]), do: []
+  defp expand_scopes(nil), do: expand_scopes([:default])
+  defp expand_scopes([]), do: expand_scopes([:default])
 
   defp expand_scopes(scopes) when is_list(scopes) do
     Enum.flat_map(scopes, &List.wrap(expand_scope(&1)))
