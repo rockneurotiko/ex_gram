@@ -17,28 +17,29 @@ defmodule ExGram.Bot.SetupCommands do
 
   def setup(commands, token) do
     commands
-    |> Enum.filter(& &1[:description])
+    |> Enum.filter(& &1[:opts][:description])
     |> Enum.flat_map(&expand_command/1)
     |> Enum.group_by(fn {scope, lang, _cmd} -> {scope, lang} end, fn {_scope, _lang, cmd} -> cmd end)
     |> Enum.each(fn {{scope, lang}, cmds} ->
-      opts = [scope: scope, token: token]
-      opts = if lang, do: [{:language_code, lang} | opts], else: opts
-      ExGram.set_my_commands(cmds, opts)
+      api_opts = [scope: scope, token: token]
+      api_opts = if lang, do: [{:language_code, lang} | api_opts], else: api_opts
+      ExGram.set_my_commands(cmds, api_opts)
     end)
   end
 
   defp expand_command(command) do
-    for scope_struct <- expand_scopes(command[:scopes]),
-        {lang_code, cmd_text, cmd_desc} <- expand_langs(command) do
+    opts = command[:opts]
+
+    for scope_struct <- expand_scopes(opts[:scopes]),
+        {lang_code, cmd_text, cmd_desc} <- expand_langs(command[:command], opts) do
       bot_cmd = %ExGram.Model.BotCommand{command: cmd_text, description: cmd_desc}
       {scope_struct, lang_code, bot_cmd}
     end
   end
 
-  defp expand_langs(command) do
-    base_cmd = command[:command]
-    base_desc = command[:description]
-    lang_overrides = command[:lang] || []
+  defp expand_langs(base_cmd, opts) do
+    base_desc = opts[:description]
+    lang_overrides = opts[:lang] || []
 
     default = [{nil, base_cmd, base_desc}]
 

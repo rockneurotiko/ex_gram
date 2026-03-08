@@ -7,8 +7,15 @@ defmodule ExGram.Bot.ValidateCommands do
 
   def validate!(commands) do
     Enum.each(commands, fn command ->
-      if command[:description] do
-        validate_scopes!(command[:command], command[:scopes])
+      cmd = command[:command]
+      opts = command[:opts]
+
+      if opts != [] and !opts[:description] do
+        raise ArgumentError, "Missing :description for /#{cmd}"
+      end
+
+      if opts[:description] do
+        validate_scopes!(cmd, opts[:scopes])
       end
     end)
   end
