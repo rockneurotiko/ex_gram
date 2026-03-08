@@ -106,13 +106,34 @@ defmodule ExGram.Dsl do
   end
 
   def create_inline_button(row) do
-    Enum.map(row, fn ops -> Map.merge(%ExGram.Model.InlineKeyboardButton{}, Map.new(ops)) end)
+    Enum.map(row, fn
+      %ExGram.Model.InlineKeyboardButton{} = b -> b
+      ops -> struct!(ExGram.Model.InlineKeyboardButton, ops)
+    end)
   end
 
-  def create_inline(data \\ [[]]) do
+  def create_reply_button(row) do
+    Enum.map(row, fn
+      %ExGram.Model.KeyboardButton{} = b -> b
+      ops -> struct!(ExGram.Model.KeyboardButton, ops)
+    end)
+  end
+
+  @doc "Deprecated, use create_inline_keyboard/1 instead"
+  def create_inline(data \\ [[]]), do: create_inline_keyboard(data)
+
+  def create_inline_keyboard(data \\ [[]]) do
     data = Enum.map(data, &create_inline_button/1)
 
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard: data}
+  end
+
+  def create_reply_keyboard(data \\ [[]], opts \\ []) do
+    data = Enum.map(data, &create_reply_button/1)
+
+    opts = opts |> Map.new() |> Map.merge(%{keyboard: data})
+
+    struct!(ExGram.Model.ReplyKeyboardMarkup, opts)
   end
 
   @spec extract_id(Update.t()) :: {:ok, integer()} | -1
