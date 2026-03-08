@@ -51,8 +51,7 @@ defmodule ExGram.Dsl.Keyboard do
     buttons = wrap_block(block)
 
     quote do
-      unquote(buttons)
-      |> Enum.reject(&is_nil/1)
+      Enum.reject(unquote(buttons), &is_nil/1)
     end
   end
 

@@ -5,7 +5,7 @@ This guide walks you through creating your first ExGram bot from scratch.
 ## Prerequisites
 
 Make sure you have:
-- Elixir installed (1.13 or later)
+- Elixir installed (1.15 or later)
 - A Telegram Bot Token from [@BotFather](https://t.me/botfather)
 - Completed the [Installation](installation.md) guide
 
@@ -48,8 +48,6 @@ defmodule MyBot.Bot do
   command("help", description: "Print the bot's help")
 
   middleware(ExGram.Middleware.IgnoreUsername)
-
-  def bot(), do: @bot
 
   def handle({:command, :start, _msg}, context) do
     answer(context, "Hi!")
@@ -110,9 +108,9 @@ end
 ```
 
 **Key points:**
-- `ExGram` must be started before your bot (sets up the bot registry)
-- `method: :polling` - Use polling to receive updates (easiest for development)
-- `token:` - Pass the token explicitly (can override config)
+- `ExGram` must be started before your bot 
+- `method: :polling` - Use polling to receive updates, learn more about how to get updates [in this guide](./polling-and-webhooks.md)
+- `token:` - Pass the token explicitly
 
 ## Run Your Bot
 
@@ -126,16 +124,14 @@ Open Telegram and send `/start` to your bot. It should reply with "Hi!"
 
 ## Token Configuration Options
 
-You have several ways to provide the token:
-
-### 1. Global Config (Simplest)
+### 1. Global Config + Exlicit on bot
 
 ```elixir
 # config/config.exs
 config :ex_gram, token: "TOKEN"
 
 # lib/my_bot/application.ex
-{MyBot.Bot, [method: :polling]}
+{MyBot.Bot, [method: :polling, token: "TOKEN"]}
 ```
 
 ### 2. Explicit Token (Recommended for Multiple Bots)

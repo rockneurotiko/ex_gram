@@ -5,6 +5,8 @@ defmodule ExGram.Dsl do
 
   alias ExGram.Cnt
   alias ExGram.Model.Chat
+  alias ExGram.Model.InlineKeyboardButton
+  alias ExGram.Model.KeyboardButton
   alias ExGram.Model.Update
   alias ExGram.Responses
   alias ExGram.Responses.Answer
@@ -107,15 +109,15 @@ defmodule ExGram.Dsl do
 
   def create_inline_button(row) do
     Enum.map(row, fn
-      %ExGram.Model.InlineKeyboardButton{} = b -> b
-      ops -> struct!(ExGram.Model.InlineKeyboardButton, ops)
+      %InlineKeyboardButton{} = b -> b
+      ops -> struct!(InlineKeyboardButton, ops)
     end)
   end
 
   def create_reply_button(row) do
     Enum.map(row, fn
-      %ExGram.Model.KeyboardButton{} = b -> b
-      ops -> struct!(ExGram.Model.KeyboardButton, ops)
+      %KeyboardButton{} = b -> b
+      ops -> struct!(KeyboardButton, ops)
     end)
   end
 
@@ -131,7 +133,7 @@ defmodule ExGram.Dsl do
   def create_reply_keyboard(data \\ [[]], opts \\ []) do
     data = Enum.map(data, &create_reply_button/1)
 
-    opts = opts |> Map.new() |> Map.merge(%{keyboard: data})
+    opts = opts |> Map.new() |> Map.put(:keyboard, data)
 
     struct!(ExGram.Model.ReplyKeyboardMarkup, opts)
   end
