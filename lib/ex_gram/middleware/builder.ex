@@ -56,15 +56,16 @@ defmodule ExGram.Middleware.Builder do
     middlewares =
       env.module |> Module.get_attribute(:middlewares) |> Enum.reverse() |> Macro.escape()
 
-    commands = env.module |> Module.get_attribute(:commands) |> Enum.reverse() |> Macro.escape()
+    commands = env.module |> Module.get_attribute(:commands) |> Enum.reverse()
+    ExGram.Bot.ValidateCommands.validate!(commands)
+    commands = Macro.escape(commands)
+
     regexes = env.module |> Module.get_attribute(:regexes) |> Enum.reverse() |> Macro.escape()
 
     quote do
       def middlewares, do: unquote(middlewares)
       def commands, do: unquote(commands)
       def regexes, do: unquote(regexes)
-
-      # Do it like plug and decompile all the core with the middlewares here?
     end
   end
 end

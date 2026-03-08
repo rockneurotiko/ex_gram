@@ -2,19 +2,23 @@ defmodule ExGram.Bot.SetupCommands do
   @moduledoc """
   Handles registering bot commands with the Telegram API,
   expanding scopes and language variations.
+
+  Command definitions are validated at compile time by
+  `ExGram.Bot.ValidateCommands`.
   """
 
+  alias ExGram.Model.BotCommandScopeAllChatAdministrators
   alias ExGram.Model.BotCommandScopeAllGroupChats
   alias ExGram.Model.BotCommandScopeAllPrivateChats
   alias ExGram.Model.BotCommandScopeChat
   alias ExGram.Model.BotCommandScopeChatAdministrators
-  alias ExGram.Model.BotCommandScopeAllChatAdministrators
   alias ExGram.Model.BotCommandScopeChatMember
   alias ExGram.Model.BotCommandScopeDefault
 
   def setup(commands, token) do
     commands
-    |> expand_commands_by_scopes_and_langs()
+    |> Enum.filter(& &1[:description])
+    |> Enum.flat_map(&expand_command/1)
     |> Enum.group_by(fn {scope, lang, _cmd} -> {scope, lang} end, fn {_scope, _lang, cmd} -> cmd end)
     |> Enum.each(fn {{scope, lang}, cmds} ->
       opts = [scope: scope, token: token]
@@ -23,16 +27,10 @@ defmodule ExGram.Bot.SetupCommands do
     end)
   end
 
-  defp expand_commands_by_scopes_and_langs(commands) do
-    for command <- commands,
-        command[:description] != nil,
-        scope_struct <- expand_scopes(command[:scopes]),
+  defp expand_command(command) do
+    for scope_struct <- expand_scopes(command[:scopes]),
         {lang_code, cmd_text, cmd_desc} <- expand_langs(command) do
-      bot_cmd = %ExGram.Model.BotCommand{
-        command: cmd_text,
-        description: cmd_desc
-      }
-
+      bot_cmd = %ExGram.Model.BotCommand{command: cmd_text, description: cmd_desc}
       {scope_struct, lang_code, bot_cmd}
     end
   end
@@ -55,42 +53,30 @@ defmodule ExGram.Bot.SetupCommands do
     default ++ translations
   end
 
-  # nil defaults to [:default], empty list [] means no scopes (command won't be registered)
   defp expand_scopes(nil), do: [%BotCommandScopeDefault{type: "default"}]
   defp expand_scopes([]), do: []
-  defp expand_scopes(scopes) when is_list(scopes), do: Enum.flat_map(scopes, &expand_scope/1)
+
+  defp expand_scopes(scopes) when is_list(scopes) do
+    Enum.flat_map(scopes, &expand_scope/1)
+  end
 
   defp expand_scope(:default), do: [%BotCommandScopeDefault{type: "default"}]
   defp expand_scope(:all_private_chats), do: [%BotCommandScopeAllPrivateChats{type: "all_private_chats"}]
   defp expand_scope(:all_group_chats), do: [%BotCommandScopeAllGroupChats{type: "all_group_chats"}]
 
-  defp expand_scope(:all_chat_administrators),
-    do: [%BotCommandScopeAllChatAdministrators{type: "all_chat_administrators"}]
+  defp expand_scope(:all_chat_administrators) do
+    [%BotCommandScopeAllChatAdministrators{type: "all_chat_administrators"}]
+  end
 
   defp expand_scope({:chat, opts}) do
-    for chat_id <- Keyword.get(opts, :chat_ids, []) do
-      %BotCommandScopeChat{type: "chat", chat_id: chat_id}
-    end
+    Enum.map(opts[:chat_ids], &%BotCommandScopeChat{type: "chat", chat_id: &1})
   end
 
   defp expand_scope({:chat_administrators, opts}) do
-    for chat_id <- Keyword.get(opts, :chat_ids, []) do
-      %BotCommandScopeChatAdministrators{type: "chat_administrators", chat_id: chat_id}
-    end
+    Enum.map(opts[:chat_ids], &%BotCommandScopeChatAdministrators{type: "chat_administrators", chat_id: &1})
   end
 
   defp expand_scope({:chat_member, opts}) do
-    chat_id = Keyword.get(opts, :chat_id)
-
-    for user_id <- Keyword.get(opts, :user_ids, []) do
-      %BotCommandScopeChatMember{type: "chat_member", chat_id: chat_id, user_id: user_id}
-    end
-  end
-
-  defp expand_scope(scope_type) do
-    raise ArgumentError,
-          "Unknown scope: #{inspect(scope_type)}. " <>
-            "Atom scopes: :default, :all_private_chats, :all_group_chats, :all_chat_administrators. " <>
-            "Tuple scopes: {:chat, opts}, {:chat_administrators, opts}, {:chat_member, opts}"
+    Enum.map(opts[:user_ids], &%BotCommandScopeChatMember{type: "chat_member", chat_id: opts[:chat_id], user_id: &1})
   end
 end
