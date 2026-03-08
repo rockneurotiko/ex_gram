@@ -2,7 +2,7 @@
 
 The low-level API provides direct access to all Telegram Bot API methods without the DSL framework. This is useful for:
 
-- **Complex bots** with background tasks or scheduled jobs
+- **Complex applications** with background tasks or scheduled jobs
 - **Fine-grained control** over requests and responses
 - **Library usage** without the bot framework
 - **Direct integration** with other systems
@@ -15,8 +15,8 @@ ExGram's low-level API is **automatically generated** from an up-to-date JSON de
 
 1. The `telegram_api_json` project scrapes the [Telegram Bot API documentation](https://core.telegram.org/bots/api)
 2. It produces a standardized JSON file with all methods, parameters, and models
-3. A Python script (`extractor.py`) reads this JSON and generates Elixir code
-4. Macros in `lib/ex_gram/macros.ex` create methods and models with proper typespecs
+3. A Python script ([`extractor.py`](../extractor.py)) reads this JSON and generates Elixir code in [`lib/ex_gram.ex`](../lib/ex_gram.ex)
+4. As a result, `ExGram` have all the available methods and `Exgram.Model.*` all the models, both with proper typespecs and documentation
 
 **Result:** Every method has correct type specs and documentation, making the API a pleasure to use!
 
@@ -50,12 +50,6 @@ iex> t ExGram.Model.User
   last_name: String.t(),
   username: String.t()
 }
-```
-
-Or use the built-in introspection:
-
-```bash
-mix run --eval 'IEx.Introspection.t({ExGram.Model, :User})'
 ```
 
 ## Methods
@@ -146,27 +140,32 @@ def send_message(chat_id, text, ops \\ [])
 
 All methods support three extra options:
 
-### `token` - Use specific token
-
-```elixir
-ExGram.send_message("@channel", "Update!", token: "BOT_TOKEN")
-```
-
 ### `bot` - Use named bot
 
 ```elixir
 ExGram.send_message(chat_id, "Hello", bot: :my_bot)
 ```
 
-The bot name is looked up in `Registry.ExGram` (populated by `ExGram` and bot framework).
+The bot name has to match to a defined AND started bot, the name is the one you write in `use ExGram.Bot, name: :my_bot`, and you can always get the name of a bot from the module with `MyBot.name()`
+
+**Note:** Only use **one** of `token` or `bot`, not both.
+
+### `token` - Use specific token
+
+```elixir
+ExGram.send_message("@channel", "Update!", token: "BOT_TOKEN")
+```
 
 ### `debug` - Print HTTP response
 
 ```elixir
-ExGram.send_message(chat_id, "Test", debug: true)
+ExGram.get_me(debug: true)
+
+# 16:37:49.397 [info] Path: "/bot<token>/getMe"
+body: %{}
 ```
 
-**Note:** Only use **one** of `token` or `bot`, not both.
+**Warning:** Do not use this in production, it will log your bot's tokens
 
 ## Common Use Cases
 
@@ -192,40 +191,18 @@ end
 ExGram.send_message("@my_channel", "Update!", token: System.get_env("BOT_TOKEN"))
 ```
 
-### Error Handling
-
-```elixir
-def send_with_retry(chat_id, text, retries \\ 3) do
-  case ExGram.send_message(chat_id, text, bot: :my_bot) do
-    {:ok, message} ->
-      {:ok, message}
-    
-    {:error, %{reason: reason}} when retries > 0 ->
-      Logger.warning("Send failed: #{inspect(reason)}, retrying...")
-      :timer.sleep(1000)
-      send_with_retry(chat_id, text, retries - 1)
-    
-    {:error, error} ->
-      {:error, error}
-  end
-end
-```
-
-### Working with Files
+### Working with not supported on the DSL
 
 ```elixir
 # By file ID
-{:ok, message} = ExGram.send_document(chat_id, "BQACAgIAAxkBAAI...")
+{:ok, message} = ExGram.send_photo(chat_id, "BQACAgIAAxkBAAI...")
 
 # By local path
-{:ok, message} = ExGram.send_document(chat_id, {:file, "priv/report.pdf"})
+{:ok, message} = ExGram.send_photo(chat_id, {:file, "priv/image.png"})
 
 # By content
-pdf_content = generate_pdf()
-{:ok, message} = ExGram.send_document(
-  chat_id,
-  {:file_content, pdf_content, "report.pdf"}
-)
+image_stream = generate_image_stream()
+{:ok, message} = ExGram.send_photo(chat_id, {:file_content, image_stream, "image.png"})
 ```
 
 ### Pinning Messages
@@ -242,18 +219,6 @@ ExGram.pin_chat_message(chat_id, msg_id)
 IO.puts("Bot username: @#{username}")
 ```
 
-## Type Definitions
-
-ExGram defines custom types for the Telegram API:
-
-- `:string` → `String.t()`
-- `:int` or `:integer` → `integer()`
-- `:bool` or `:boolean` → `boolean()`
-- `:file` → `{:file, String.t()}` (file path)
-- `{:file_content, binary(), String.t()}` - file content with name
-- `{:array, t}` → `[t]` (list of type)
-- Any `ExGram.Model.*` struct
-
 ## Using Without the Framework
 
 You can use ExGram purely as a library without the bot framework:
@@ -264,6 +229,7 @@ config :ex_gram,
   token: "YOUR_BOT_TOKEN",
   adapter: ExGram.Adapter.Req
 
+# lib/my_app/application.ex
 # No need to add ExGram to supervision tree
 
 # lib/my_app.ex
@@ -288,47 +254,40 @@ ExGram.send_message("@channel", "Update!", token: "BOT_TOKEN")
 
 ```elixir
 defmodule MyApp.Notifications do
+  # You can still use the ExGram.Dsl.* if you want, they are independent
+  import ExGram.Dsl.Keyboard
+  
+  alias ExGram.Dsl.MessageEntityBuilder, as: B
   alias ExGram.Model.{InlineKeyboardMarkup, InlineKeyboardButton}
   
   def send_notification(user_id, type, data) do
-    message = format_message(type, data)
+    {message, entities} = format_message(type, data)
     keyboard = build_keyboard(type, data)
     
-    ExGram.send_message(
-      user_id,
-      message,
-      parse_mode: "Markdown",
-      reply_markup: keyboard,
-      bot: :my_bot
-    )
+    ExGram.send_message(user_id, message, reply_markup: keyboard, entities: entities, bot: :my_bot)
   end
   
   defp format_message(:order_shipped, %{order_id: id, tracking: tracking}) do
-    """
-    📦 *Order Shipped!*
+    header = B.join(["📦", B.bold("Order Shipped!")])
+    order = B.join([
+      B.join([B.bold("Order"), B.code("##{id}"), "has been shipped"]),
+      B.join([B.bold("Tracking:"), B.url(tracking)])
+    ], "\n")
     
-    Order ##{id} has been shipped.
-    Tracking: `#{tracking}`
-    """
+    B.join([header, order], "\n\n")
   end
   
   defp build_keyboard(:order_shipped, %{tracking_url: url}) do
-    %InlineKeyboardMarkup{
-      inline_keyboard: [
-        [
-          %InlineKeyboardButton{
-            text: "Track Package",
-            url: url
-          }
-        ]
-      ]
-    }
+    keyboard :inline do
+      row do
+        button "Track Package", url: url
+      end
+    end
   end
 end
 ```
 
 ## Next Steps
 
-- [Sending Messages](sending-messages.md) - DSL for simpler bots
 - [Multiple Bots](multiple_bots.md) - Using `bot:` option effectively
 - [Testing](testing.md) - Test adapter for low-level API calls

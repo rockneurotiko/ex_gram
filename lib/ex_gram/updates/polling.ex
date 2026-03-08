@@ -11,7 +11,6 @@ defmodule ExGram.Updates.Polling do
 
   def start_link(%{bot: pid, token: token} = opts) do
     opts = Map.drop(opts, [:bot, :token])
-    # Logger.debug "START WORKER"
     GenServer.start_link(__MODULE__, {:ok, pid, token, opts})
   end
 

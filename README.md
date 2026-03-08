@@ -202,13 +202,14 @@ See the [Cheatsheet](guides/cheatsheet.md) for a complete reference.
 
 - [Handling Updates](guides/handling-updates.md) - Process commands, messages, and callbacks
 - [Sending Messages](guides/sending-messages.md) - DSL philosophy and response building
+- [Define commands](guides/commands.md) - Clearly define you bot's commands, with options for different scopes and languages
 - [Message Entities](guides/message_entities.md) - Format messages without dealing with MarkdownV2 or HTML
 - [Middlewares](guides/middlewares.md) - Add preprocessing logic
 
 ### Advanced
 
-- [Multiple Bots](guides/multiple_bots.md) - Run multiple bots in one application
 - [Low-Level API](guides/low-level-api.md) - Direct API calls for complex scenarios
+- [Multiple Bots](guides/multiple_bots.md) - Run multiple bots in one application
 - [Testing](guides/testing.md) - Test your bots
 
 ### Deployment

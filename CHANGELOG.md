@@ -5,6 +5,7 @@
 - Added ExGram.Dsl.MessageEntityBuilder to build messages with MessageEntity instead of markdon or html
 - If `MDEx` is installed as a dependency, a module `ExGram.Markdown` will be provided to transform from markdown to MessageEntities. 
 - Improved ExGram.Dsl.Keyboard macros and helpers
+- Improved `ExGram.Adapter.Test` to enable actually real and useful tests 
 - Added `on_result` DSL to "interject" the result of the previous enqueued action
 - Simplified the Macros.Helper, now it's easier to deal with params AST
 - Added parameters description to models and methods @doc field

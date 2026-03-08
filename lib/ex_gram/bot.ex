@@ -58,6 +58,11 @@ defmodule ExGram.Bot do
         ExGram.Bot.Supervisor.child_spec(opts, __MODULE__)
       end
 
+      def start_link(opts) do
+        opts = Keyword.merge(opts, unquote(module_opts))
+        ExGram.Bot.Supervisor.start_link(opts, __MODULE__)
+      end
+
       @type init_opts :: [bot: atom() | String.t(), token: String.t()]
       @spec init(init_opts) :: :ok
       def init(_opts) do

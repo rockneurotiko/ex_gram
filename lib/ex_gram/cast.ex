@@ -42,6 +42,8 @@ defmodule ExGram.Cast do
 
   defp process_type(list, [t]) when is_list(list), do: process_type(list, {:array, t})
 
+  defp process_type([], {:array, _}), do: {:ok, []}
+
   defp process_type(list, {:array, t}) when is_list(list) do
     list
     |> Enum.reduce_while({:ok, []}, fn elem, {:ok, acc} ->
@@ -85,6 +87,8 @@ defmodule ExGram.Cast do
   end
 
   defp process_type(elem, _t), do: {:ok, elem}
+
+  defp process_struct(t, %t{} = elem), do: elem
 
   defp process_struct(t, elem) when is_map(elem) do
     with {:ok, decode_as} <- struct_decode_as(t),

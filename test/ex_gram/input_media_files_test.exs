@@ -17,9 +17,9 @@ defmodule ExGram.InputMediaFilesTest do
   setup do
     name = :"test_adapter_#{System.unique_integer([:positive, :monotonic])}"
     {:ok, _pid} = TestAdapter.start_link(name: name)
-    TestAdapter.backdoor_request("sendMediaGroup", %{"result" => []}, name)
-    TestAdapter.backdoor_request("editMessageMedia", %{"result" => true}, name)
-    TestAdapter.backdoor_request("sendPaidMedia", %{"result" => []}, name)
+    TestAdapter.backdoor_request(:send_media_group, %{"result" => []}, name)
+    TestAdapter.backdoor_request(:edit_message_media, %{"result" => true}, name)
+    TestAdapter.backdoor_request(:send_paid_media, %{"result" => []}, name)
 
     {:ok, adapter_name: name}
   end

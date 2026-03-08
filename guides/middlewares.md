@@ -310,4 +310,5 @@ end
 
 - [Handling Updates](handling-updates.md) - Understanding handlers
 - [Sending Messages](sending-messages.md) - DSL for building responses
+- [Low-Level API](low-level-api.md) - Direct API calls for complex scenarios
 - [Multiple Bots](multiple_bots.md) - Running multiple bots

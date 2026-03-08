@@ -511,8 +511,18 @@ if Code.ensure_loaded?(MDEx) do
 
     # Links
     defp commonmark_format_entity("text_link", entity, children) do
-      url = entity.url || ""
-      "[#{render_children_commonmark(children)}](#{url})"
+      text = render_children_commonmark(children)
+
+      if url = entity.url do
+        "[#{text}](#{url})"
+      else
+        text
+      end
+    end
+
+    defp commonmark_format_entity("url", _entity, children) do
+      text = render_children_commonmark(children)
+      "[#{text}](#{text})"
     end
 
     defp commonmark_format_entity("text_mention", entity, children) do
@@ -579,8 +589,18 @@ if Code.ensure_loaded?(MDEx) do
 
     # Links
     defp markdown_v2_format_entity("text_link", entity, children) do
-      url = entity.url || ""
-      "[#{render_children_v2(children)}](#{escape_markdown_v2_url(url)})"
+      text = render_children_v2(children)
+
+      if url = entity.url do
+        "[#{text}](#{escape_markdown_v2_url(url)})"
+      else
+        text
+      end
+    end
+
+    defp markdown_v2_format_entity("url", _entity, children) do
+      url = render_children_v2(children)
+      "[#{url}](#{url})"
     end
 
     defp markdown_v2_format_entity("text_mention", entity, children) do

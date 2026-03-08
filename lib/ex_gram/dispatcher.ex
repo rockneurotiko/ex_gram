@@ -50,9 +50,10 @@ defmodule ExGram.Dispatcher do
     struct!(__MODULE__, overrides)
   end
 
-  @spec init_state(atom(), Model.User.t() | nil, module()) :: t()
-  @spec init_state(atom(), Model.User.t() | nil, module(), map()) :: t()
-  def init_state(name, bot_info, module, extra_info \\ %{}) when is_atom(name) and is_atom(module) do
+  @spec init_state(atom(), module(), String.t() | nil, map()) :: t()
+  def init_state(name, module, username, extra_info) when is_atom(name) and is_atom(module) do
+    bot_info = if username, do: %Model.User{username: username, is_bot: true}
+
     %__MODULE__{
       name: name,
       bot_info: bot_info,
@@ -82,9 +83,26 @@ defmodule ExGram.Dispatcher do
 
   @impl GenServer
   def init(%__MODULE__{} = state) do
-    state.bot_module.init(bot: state.name, token: ExGram.Token.fetch(bot: state.name))
+    {:ok, state, {:continue, :initialize_bot}}
+  end
 
-    {:ok, state}
+  @impl GenServer
+  def handle_continue(:initialize_bot, %__MODULE__{} = state) do
+    token = ExGram.Token.fetch(bot: state.name)
+    bot_info = get_bot_info(state, token)
+
+    state.bot_module.init(bot: state.name, token: token)
+
+    {:noreply, %{state | bot_info: bot_info}}
+  end
+
+  defp get_bot_info(%__MODULE__{bot_info: %Model.User{} = bot_info}, _token), do: bot_info
+
+  defp get_bot_info(%__MODULE__{}, token) do
+    case ExGram.get_me(token: token) do
+      {:ok, bot} -> bot
+      _ -> nil
+    end
   end
 
   @impl GenServer
@@ -95,6 +113,19 @@ defmodule ExGram.Dispatcher do
     if !(cnt.halted || cnt.middleware_halted) do
       info = extract_info(cnt)
       spawn(fn -> call_handler(info, cnt, state) end)
+    end
+
+    {:reply, :ok, state}
+  end
+
+  @impl GenServer
+  def handle_call({:sync_update, update}, _from, %__MODULE__{} = state) do
+    cnt = %{default_context(state) | update: update}
+    cnt = apply_middlewares(cnt)
+
+    if !(cnt.halted || cnt.middleware_halted) do
+      info = extract_info(cnt)
+      call_handler(info, cnt, state)
     end
 
     {:reply, :ok, state}

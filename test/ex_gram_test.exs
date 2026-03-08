@@ -4,7 +4,6 @@ defmodule ExGramTest do
   import Test.Support.StringGenerator
 
   alias ExGram.Adapter.Test
-  alias ExGram.Model.User
 
   doctest ExGram
 
@@ -19,14 +18,6 @@ defmodule ExGramTest do
       Test.start_link([])
 
       {:ok, name: name}
-    end
-
-    test "test random", %{name: name} do
-      Test.backdoor_request("/getMe", %{username: "rock"}, name)
-      assert {:ok, %{username: "rock"}} == Test.request(:get, "/getMe", "", name: name)
-
-      user = %User{username: "rock"}
-      assert {:ok, user} == ExGram.get_me(adapter_opts: [name: name])
     end
   end
 end

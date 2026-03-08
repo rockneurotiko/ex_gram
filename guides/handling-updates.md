@@ -350,5 +350,7 @@ end
 ## Next Steps
 
 - [Sending Messages](sending-messages.md) - Learn the DSL for building responses
+- [Message Entities](message-entities.md) - Format messages without Markdown or HTML
 - [Middlewares](middlewares.md) - Add preprocessing logic to your bot
+- [Low-Level API](low-level-api.md) - Direct API calls for complex scenarios
 - [Cheatsheet](cheatsheet.md) - Quick reference for all patterns

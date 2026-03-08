@@ -178,6 +178,12 @@ defmodule ExGram.MarkdownTest do
       assert result == "[link](https://example.com) here"
     end
 
+    test "url entity" do
+      input = B.concat([B.url("https://example.com"), " here"])
+      result = Markdown.from_entities(input, :markdown)
+      assert result == "[https://example.com](https://example.com) here"
+    end
+
     test "nested entities: bold inside italic" do
       input = B.concat([B.wrap("italic", B.concat([B.text("italic "), B.bold("bold")])), " text"])
       result = Markdown.from_entities(input, :markdown)
@@ -411,6 +417,13 @@ defmodule ExGram.MarkdownTest do
       input = B.concat([B.text_link("link", "https://example.com/path(with)parens"), " here"])
       result = Markdown.from_entities(input, :markdown_v2)
       assert result == "[link](https://example.com/path\\(with\\)parens) here"
+    end
+
+    test "url with special characters in URL" do
+      input = B.concat([B.url("https://example.com/path(with)parens"), " here"])
+      result = Markdown.from_entities(input, :markdown_v2)
+      expected = "[https://example\\.com/path\\(with\\)parens](https://example\\.com/path\\(with\\)parens) here"
+      assert result == expected
     end
 
     test "nested entities: bold inside italic" do

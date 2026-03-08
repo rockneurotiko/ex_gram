@@ -3,7 +3,6 @@ defmodule ExGram.Bot.Supervisor do
   Bot supervisor that starts the dispatcher and updates processes and tie them together
   """
   alias ExGram.Dispatcher
-  alias ExGram.Model.User
 
   def child_spec(opts, module) do
     %{
@@ -32,11 +31,11 @@ defmodule ExGram.Bot.Supervisor do
     {updates_worker, updates_worker_opts} = updates_worker(updates_method)
     updates_worker_opts = Map.merge(updates_worker_opts, %{bot: name, token: token})
 
+    # TODO: move this to handle_continue too after commands PR is merged
     if opts[:setup_commands], do: setup_commands(module.commands(), token)
 
-    bot_info = get_bot_info(opts[:username], token)
     extra_info = Keyword.get(opts, :extra_info, %{})
-    dispatcher_opts = Dispatcher.init_state(name, bot_info, module, extra_info)
+    dispatcher_opts = Dispatcher.init_state(name, module, opts[:username], extra_info)
 
     children =
       [
@@ -62,15 +61,6 @@ defmodule ExGram.Bot.Supervisor do
   defp updates_worker_module(:polling), do: ExGram.Updates.Polling
   defp updates_worker_module(:test), do: ExGram.Updates.Test
   defp updates_worker_module(module) when is_atom(module), do: module
-
-  defp get_bot_info(username, _token) when is_binary(username), do: %User{username: username, is_bot: true}
-
-  defp get_bot_info(_username, token) do
-    case ExGram.get_me(token: token) do
-      {:ok, bot} -> bot
-      _ -> nil
-    end
-  end
 
   defp setup_commands(commands, token) do
     send_commands =

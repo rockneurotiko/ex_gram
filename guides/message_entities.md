@@ -1,28 +1,18 @@
 # Formatting Messages with Entities
 
-Telegram supports two approaches for formatting messages: **parse modes**
-(MarkdownV2 / HTML) and **MessageEntity annotations**. ExGram ships a
-composable DSL - `ExGram.Dsl.MessageEntityBuilder` - for the entity-based
-approach, and an optional `ExGram.Markdown` module that converts standard
-Markdown into entities using MDEx.
+Telegram supports two approaches for formatting messages: **parse modes** (MarkdownV2 / HTML) and **MessageEntity annotations**. 
 
-With entities, the plain text carries no formatting syntax. All formatting
-is expressed via `%ExGram.Model.MessageEntity{}` structs with UTF-16 offsets
-and lengths. This means:
+ExGram ships a composable DSL - `ExGram.Dsl.MessageEntityBuilder` - for the entity-based approach, and an optional `ExGram.Markdown` module that converts standard Markdown into entities using MDEx.
 
-- **No escaping headaches** - MarkdownV2 requires escaping many special
-  characters (`_`, `*`, `[`, `]`, `(`, `)`, `~`, `` ` ``, `>`, `#`, `+`,
-  `-`, `=`, `|`, `{`, `}`, `.`, `!`). With entities you send plain text.
-- **Longer effective messages** - formatting markup doesn't consume characters
-  from the message body, so you can fit more content within Telegram's
-  message size limits.
-- **Composable** - build messages from reusable parts and combine them
-  freely.
+With entities, the plain text carries no formatting syntax. All formatting is expressed via `%ExGram.Model.MessageEntity{}` structs with UTF-16 offsets and lengths. This means:
+
+- **No escaping headaches** - MarkdownV2 requires escaping many special characters (`_`, `*`, `[`, `]`, `(`, `)`, `~`, `` ` ``, `>`, `#`, `+`, `-`, `=`, `|`, `{`, `}`, `.`, `!`). With entities you send plain text.
+- **Longer effective messages** - Message entities doesn't consume characters from the message body, so you can fit more content within Telegram's message size limits (4096 UTF-16 characters)
+- **Composable** - build messages from reusable parts and combine them freely.
 
 ## A Real Example: Entity vs MarkdownV2
 
-Let's compare building a complex message with both approaches. Here's a status
-notification with multiple formatting styles:
+Let's compare building a complex message with both approaches. Here's a status notification with multiple formatting styles:
 
 **With MarkdownV2** (requires escaping):
 
@@ -45,9 +35,8 @@ IO.puts("Length: #{B.utf16_length(text)}")
 ExGram.send_message(chat_id, text, parse_mode: "MarkdownV2")
 ```
 
-Notice the escaped dots (`\\.`) and ampersand (`\\&`) in the URL, and the
-escaped dots in the version number. **Text size: 210 characters** (including
-markup).
+**Text size: 210 characters**.
+Notice the escaped dots (`\\.`) and ampersand (`\\&`) in the URL, and the escaped dots in the version number. 
 
 **With MessageEntity**:
 
@@ -77,8 +66,9 @@ IO.puts("Length: #{B.utf16_length(text)}")
 ExGram.send_message(chat_id, text, entities: entities)
 ```
 
-No escaping needed! **Text size: 115 characters**.
-That's **95 characters saved** - more room for actual content.
+**Text size: 115 characters**, that's **95 characters saved**, more room for actual content.
+
+Also, no escaping needed! 
 
 The `{text, entities}` result:
 
@@ -96,8 +86,7 @@ The `{text, entities}` result:
 
 ## The MessageEntityBuilder DSL
 
-Every builder function returns a `{text, entities}` tuple. Alias the module
-for convenience:
+Every builder function returns a `{text, entities}` tuple. Alias the module for convenience:
 
 ```elixir
 alias ExGram.Dsl.MessageEntityBuilder, as: B
@@ -442,3 +431,10 @@ answer(context, text, entities: entities)
 
 This lets you mix programmatically built sections with Markdown-sourced
 content in a single message.
+
+## Next Steps
+
+- [Sending Messages](sending-messages.md) - DSL for simpler bots
+- [Middlewares](middlewares.md) - Add preprocessing logic
+- [Low-Level API](low-level-api.md) - Direct API calls for complex scenarios
+- [Cheatsheet](cheatsheet.md) - Quick reference for all DSL functions
