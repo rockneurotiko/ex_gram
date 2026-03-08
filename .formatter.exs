@@ -14,10 +14,25 @@
     edit: 5,
     row: 1,
     button: 1,
-    button: 2
+    button: 2,
+    reply_button: 1,
+    reply_button: 2,
+    inline_button: 1,
+    inline_button: 2
   ],
   plugins: [
     Styler
   ],
-  line_length: 120
+  line_length: 120,
+  exports: [
+    locals_without_parens: [
+      keyboard: 2,
+      button: 1,
+      button: 2,
+      reply_button: 1,
+      reply_button: 2,
+      inline_button: 1,
+      inline_button: 2
+    ]
+  ]
 ]

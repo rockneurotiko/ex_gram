@@ -7,45 +7,70 @@ defmodule ExGram.Dsl.Keyboard do
   ``` elixir
   keyb = keyboard :inline do
     row do
-      button "A", callback_data: "a"
-      button "B", callback_data: "b"
+      button "A", callback_data: "a", style: "green"
+      button "B", switch_inline_query_current_chat: "b"
     end
 
     row do
-      button "C", callback_data: "c"
-      button "D", callback_data: "d"
+      button "C", callback_data: "C", style: "red"
+      button "D", copy_text: "D"
     end
   end
   ```
   """
 
-  defmacro keyboard(which_keyboard, do: block) do
-    :inline = which_keyboard
-    build_keyboard_f = &ExGram.Dsl.create_inline/1
+  def remove_keyboard(:reply, selective? \\ nil) do
+    %ExGram.Model.ReplyKeyboardRemove{remove_keyboard: true, selective: selective?}
+  end
+
+  @spec keyboard(:inline | :reply, keyword(), do: any()) ::
+          ExGram.Model.InlineKeyboardMarkup.t() | ExGram.Model.ReplyKeyboardMarkup.t()
+  defmacro keyboard(type, opts \\ [], do_block)
+
+  defmacro keyboard(:inline, _opts, do: block) do
+    rows = wrap_block(block)
 
     quote do
-      var!(keyboard_variable_1) = []
+      unquote(rows)
+      |> Enum.reject(&(is_nil(&1) or Enum.empty?(&1)))
+      |> ExGram.Dsl.create_inline_keyboard()
+    end
+  end
 
-      unquote(block)
+  defmacro keyboard(:reply, opts, do: block) do
+    rows = wrap_block(block)
 
-      unquote(build_keyboard_f).(var!(keyboard_variable_1))
+    quote do
+      unquote(rows)
+      |> Enum.reject(&(is_nil(&1) or Enum.empty?(&1)))
+      |> ExGram.Dsl.create_reply_keyboard(unquote(opts))
     end
   end
 
   defmacro row(do: block) do
+    buttons = wrap_block(block)
+
     quote do
-      var!(keyboard_variable_row) = []
-
-      unquote(block)
-
-      var!(keyboard_variable_1) = var!(keyboard_variable_1) ++ [var!(keyboard_variable_row)]
+      unquote(buttons)
+      |> Enum.reject(&is_nil/1)
     end
   end
 
-  defmacro button(text, opts \\ []) do
-    quote do
-      var!(keyboard_variable_row) =
-        var!(keyboard_variable_row) ++ [Keyword.merge([text: unquote(text)], unquote(opts))]
-    end
+  # Here for backwards compatibility
+  def button(text, opts \\ []) do
+    inline_button(text, opts)
   end
+
+  def inline_button(text, opts \\ []) do
+    opts = opts |> Map.new() |> Map.put(:text, text)
+    struct!(ExGram.Model.InlineKeyboardButton, opts)
+  end
+
+  def reply_button(text, opts \\ []) do
+    opts = opts |> Map.new() |> Map.put(:text, text)
+    struct!(ExGram.Model.KeyboardButton, opts)
+  end
+
+  defp wrap_block({:__block__, _, exprs}), do: exprs
+  defp wrap_block(single), do: [single]
 end
