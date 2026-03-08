@@ -16,9 +16,11 @@ defmodule ExGram.Bot.SetupCommands do
   alias ExGram.Model.BotCommandScopeDefault
 
   def setup(commands, token) do
-    commands
-    |> Enum.filter(& &1[:opts][:description])
-    |> Enum.flat_map(&expand_command/1)
+    commands_with_description = Enum.filter(commands, & &1[:opts][:description])
+    used_scopes = collect_used_scopes(commands_with_description)
+
+    commands_with_description
+    |> Enum.flat_map(&expand_command(&1, used_scopes))
     |> Enum.group_by(fn {scope, lang, _cmd} -> {scope, lang} end, fn {_scope, _lang, cmd} -> cmd end)
     |> Enum.each(fn {{scope, lang}, cmds} ->
       api_opts = [scope: scope, token: token]
@@ -27,10 +29,21 @@ defmodule ExGram.Bot.SetupCommands do
     end)
   end
 
-  defp expand_command(command) do
+  defp collect_used_scopes(commands_with_description) do
+    commands_with_description
+    |> Enum.flat_map(fn cmd ->
+      case cmd[:opts][:scopes] do
+        nil -> []
+        scopes -> scopes
+      end
+    end)
+    |> Enum.uniq()
+  end
+
+  defp expand_command(command, used_scopes) do
     opts = command[:opts]
 
-    for scope_struct <- expand_scopes(opts[:scopes]),
+    for scope_struct <- expand_scopes(opts[:scopes], used_scopes),
         {lang_code, cmd_text, cmd_desc} <- expand_langs(command[:command], opts) do
       bot_cmd = %ExGram.Model.BotCommand{command: cmd_text, description: cmd_desc}
       {scope_struct, lang_code, bot_cmd}
@@ -54,10 +67,10 @@ defmodule ExGram.Bot.SetupCommands do
     default ++ translations
   end
 
-  defp expand_scopes(nil), do: expand_scopes([:default])
-  defp expand_scopes([]), do: expand_scopes([:default])
+  def expand_scopes(nil, used_scopes), do: expand_scopes(used_scopes, used_scopes)
+  def expand_scopes([], used_scopes), do: expand_scopes([:default], used_scopes)
 
-  defp expand_scopes(scopes) when is_list(scopes) do
+  def expand_scopes(scopes, _used_scopes) when is_list(scopes) do
     Enum.flat_map(scopes, &List.wrap(expand_scope(&1)))
   end
 
