@@ -23,8 +23,16 @@ defimpl ExGram.Responses, for: ExGram.Responses.EditInline do
   end
 
   def set_msg(%{message_id: nil, chat_id: nil, inline_message_id: nil} = response, msg) do
-    Map.merge(response, ExGram.Dsl.extract_inline_id_params(msg))
+    Map.merge(response, msg_params(msg))
   end
 
   def set_msg(response, _msg), do: response
+
+  defp msg_params(%_struct{} = msg), do: ExGram.Dsl.extract_inline_id_params(msg)
+
+  defp msg_params(%{chat_id: chat_id, message_id: message_id}) do
+    %{chat_id: chat_id, message_id: message_id}
+  end
+
+  defp msg_params(%{inline_message_id: mid}), do: %{inline_message_id: mid}
 end

@@ -5,6 +5,8 @@ defmodule ExGram.Dsl do
 
   alias ExGram.Cnt
   alias ExGram.Model.Chat
+  alias ExGram.Model.InlineKeyboardButton
+  alias ExGram.Model.KeyboardButton
   alias ExGram.Model.Update
   alias ExGram.Responses
   alias ExGram.Responses.Answer
@@ -81,6 +83,10 @@ defmodule ExGram.Dsl do
     DeleteMessage |> Responses.new(%{ops: ops}) |> Responses.set_msg(msg) |> add_answer(cnt)
   end
 
+  def on_result(cnt, func) when is_function(func, 2) do
+    add_on_result(cnt, func)
+  end
+
   defguardp is_file(file) when is_binary(file) or (is_tuple(file) and elem(file, 0) == :file)
 
   def answer_document(cnt, document, ops \\ [])
@@ -102,13 +108,34 @@ defmodule ExGram.Dsl do
   end
 
   def create_inline_button(row) do
-    Enum.map(row, fn ops -> Map.merge(%ExGram.Model.InlineKeyboardButton{}, Map.new(ops)) end)
+    Enum.map(row, fn
+      %InlineKeyboardButton{} = b -> b
+      ops -> struct!(InlineKeyboardButton, ops)
+    end)
   end
 
-  def create_inline(data \\ [[]]) do
+  def create_reply_button(row) do
+    Enum.map(row, fn
+      %KeyboardButton{} = b -> b
+      ops -> struct!(KeyboardButton, ops)
+    end)
+  end
+
+  @doc "Deprecated, use create_inline_keyboard/1 instead"
+  def create_inline(data \\ [[]]), do: create_inline_keyboard(data)
+
+  def create_inline_keyboard(data \\ [[]]) do
     data = Enum.map(data, &create_inline_button/1)
 
     %ExGram.Model.InlineKeyboardMarkup{inline_keyboard: data}
+  end
+
+  def create_reply_keyboard(data \\ [[]], opts \\ []) do
+    data = Enum.map(data, &create_reply_button/1)
+
+    opts = opts |> Map.new() |> Map.put(:keyboard, data)
+
+    struct!(ExGram.Model.ReplyKeyboardMarkup, opts)
   end
 
   @spec extract_id(Update.t()) :: {:ok, integer()} | -1
@@ -322,6 +349,11 @@ defmodule ExGram.Dsl do
     %{cnt | answers: answers}
   end
 
+  defp add_on_result(%Cnt{answers: answers} = cnt, func) do
+    answers = answers ++ [{:on_result, func}]
+    %{cnt | answers: answers}
+  end
+
   defp extract_msg(%Cnt{update: %Update{} = u}) do
     u = Map.from_struct(u)
     {_, msg} = Enum.find(u, fn {_, m} -> is_map(m) and not is_nil(m) end)
@@ -344,6 +376,25 @@ defmodule ExGram.Dsl do
     responses = responses ++ [response]
 
     send_all_answers(answers, name, msg, responses)
+  end
+
+  defp send_all_answers([{:on_result, callback} | answers], name, msg, responses) do
+    case Enum.split(responses, -1) do
+      {_, []} ->
+        error = %ExGram.Error{
+          code: :unknown_answer,
+          message: "On Result callback should have a response before."
+        }
+
+        responses = responses ++ [{:error, error}]
+
+        send_all_answers(answers, name, msg, responses)
+
+      {resp, [last_response]} ->
+        response = callback.(last_response, name)
+        responses = resp ++ [response]
+        send_all_answers(answers, name, msg, responses)
+    end
   end
 
   defp send_all_answers([answer | answers], name, msg, responses) do

@@ -62,11 +62,13 @@ defmodule ExGram.Mixfile do
       {:poison, ">= 1.0.0", optional: true},
       # Webhook adapter
       {:plug, "~> 1.14", optional: true},
+      # For Markdown to MessageEntity convert
+      {:mdex, "~> 0.11", optional: true},
       # Development
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false, warn_if_outdated: true},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.39", only: :dev, runtime: false, warn_if_outdated: true},
-      {:styler, "~> 1.9", only: [:dev, :test], runtime: false}
+      {:ex_doc, "~> 0.40", only: :dev, runtime: false, warn_if_outdated: true},
+      {:styler, "~> 1.11", only: [:dev, :test], runtime: false, warn_if_outdated: true}
     ]
   end
 
@@ -97,13 +99,14 @@ defmodule ExGram.Mixfile do
       "README.md",
       "guides/multiple_bots.md",
       "guides/flyio.md",
+      "guides/message_entities.md",
       "CHANGELOG.md"
     ]
   end
 
   defp groups_for_extras do
     [
-      "How-To's": ~r/guides\/.?/
+      "How-To's": ~r/guides\/.*/
     ]
   end
 end
