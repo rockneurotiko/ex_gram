@@ -51,10 +51,7 @@ if Code.ensure_loaded?(Tesla) do
     end
 
     defp handle_result({:ok, %{body: %{ok: false, description: description, error_code: error_code} = body}}) do
-      parameters =
-        if parameters = body[:parameters],
-          do: ExGram.Cast.cast(parameters, {:array, ExGram.Model.ResponseParameters}),
-          else: []
+      parameters = maybe_error_parameters(body)
 
       error = %ExGram.Error{code: error_code, message: description, metadata: %{parameters: parameters}}
 
@@ -68,6 +65,15 @@ if Code.ensure_loaded?(Tesla) do
     defp handle_result({:error, reason}) do
       {:error, %ExGram.Error{code: reason}}
     end
+
+    defp maybe_error_parameters(%{parameters: parameters}) do
+      case ExGram.Cast.cast(parameters, {:array, ExGram.Model.ResponseParameters}) do
+        {:ok, parameters} -> parameters
+        _ -> []
+      end
+    end
+
+    defp maybe_error_parameters(_), do: []
 
     defp encode_body(body) when is_map(body) do
       Map.new(body, fn {key, value} -> {key, ExGram.Adapter.encode(value)} end)

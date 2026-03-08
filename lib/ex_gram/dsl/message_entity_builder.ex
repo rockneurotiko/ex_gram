@@ -491,26 +491,7 @@ defmodule ExGram.Dsl.MessageEntityBuilder do
           e.offset < raw_end and e.offset + e.length > raw_end
         end)
 
-      cut =
-        if spanning == [] do
-          # No spanning entity — cut cleanly at raw_end (or end of text).
-          min(raw_end, current + remaining)
-        else
-          # Move cut to just before the earliest spanning entity's start —
-          # unless that entity is larger than max_length (failsafe).
-          earliest_start = spanning |> Enum.map(& &1.offset) |> Enum.min()
-          entity_len = spanning |> Enum.map(&(&1.offset + &1.length)) |> Enum.max()
-          entity_size = entity_len - earliest_start
-
-          if entity_size >= max_length do
-            # Entity alone exceeds max_length — forced split at raw_end.
-            min(raw_end, current + remaining)
-          else
-            # Back the cut up to just before this entity, but never behind
-            # `current` (that would cause an infinite loop for edge cases).
-            max(earliest_start, current + 1)
-          end
-        end
+      cut = calculate_cut_point(spanning, current, raw_end, remaining, max_length)
 
       part_text = slice_utf16(text, current, cut - current)
       # Recalculate the actual cut based on what slice_utf16 produced
@@ -520,6 +501,29 @@ defmodule ExGram.Dsl.MessageEntityBuilder do
       part = {part_text, part_entities}
 
       do_split(text, entities, max_length, actual_cut, [part | acc])
+    end
+  end
+
+  # Calculate the optimal cut point considering spanning entities.
+  defp calculate_cut_point(spanning, current, raw_end, remaining, max_length) do
+    if spanning == [] do
+      # No spanning entity — cut cleanly at raw_end (or end of text).
+      min(raw_end, current + remaining)
+    else
+      # Move cut to just before the earliest spanning entity's start —
+      # unless that entity is larger than max_length (failsafe).
+      earliest_start = spanning |> Enum.map(& &1.offset) |> Enum.min()
+      entity_len = spanning |> Enum.map(&(&1.offset + &1.length)) |> Enum.max()
+      entity_size = entity_len - earliest_start
+
+      if entity_size >= max_length do
+        # Entity alone exceeds max_length — forced split at raw_end.
+        min(raw_end, current + remaining)
+      else
+        # Back the cut up to just before this entity, but never behind
+        # `current` (that would cause an infinite loop for edge cases).
+        max(earliest_start, current + 1)
+      end
     end
   end
 

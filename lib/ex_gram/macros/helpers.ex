@@ -105,7 +105,7 @@ defmodule ExGram.Macros.Helpers do
   def type_to_spec(:enum), do: {{:., [], [{:__aliases__, [alias: false], [:Enum]}, :t]}, [], []}
 
   def type_to_spec(:file) do
-    orT(
+    or_t(
       {:file, type_to_spec(:string)},
       type_to_spec(:file_content)
     )
@@ -116,7 +116,7 @@ defmodule ExGram.Macros.Helpers do
   end
 
   def type_to_spec(:file_data) do
-    orT(type_to_spec(:iodata), type_to_spec(:enum))
+    or_t(type_to_spec(:iodata), type_to_spec(:enum))
   end
 
   def type_to_spec({:array, t}), do: {:list, [], [type_to_spec(t)]}
@@ -144,7 +144,7 @@ defmodule ExGram.Macros.Helpers do
   end
 
   defp types_list_to_spec([e1 | rest]) do
-    orT(type_to_spec(e1), types_list_to_spec(rest))
+    or_t(type_to_spec(e1), types_list_to_spec(rest))
   end
 
   defp types_list_to_spec([]) do
@@ -235,7 +235,6 @@ defmodule ExGram.Macros.Helpers do
 
   def struct_type_specs(initial), do: struct_type_specs(initial, [])
 
-  # credo:disable-for-next-line
-  defp orT({:|, _, [x, y]}, z), do: orT(x, orT(y, z))
-  defp orT(x, y), do: {:|, [], [x, y]}
+  defp or_t({:|, _, [x, y]}, z), do: or_t(x, or_t(y, z))
+  defp or_t(x, y), do: {:|, [], [x, y]}
 end

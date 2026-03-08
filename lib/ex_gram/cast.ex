@@ -14,7 +14,9 @@ defmodule ExGram.Cast do
     iex> ExGram.Cast.cast(true, ExGram.Model.Message)
     {:error, %ExGram.Error{message: "Expected a map for type ExGram.Model.Message, got: true"}}
   """
-  @spec cast(any, atom) :: {:ok, any} | {:error, ExGram.Error.t()}
+  @type type_def :: atom() | {:array, type_def()} | [type_def()] | nil
+
+  @spec cast(any(), type_def()) :: {:ok, any()} | {:error, ExGram.Error.t()}
   def cast(elem, type) do
     process_type(elem, type)
   end
@@ -24,7 +26,7 @@ defmodule ExGram.Cast do
 
   Raises an error if the conversion fails. See cast/2 for more details.
   """
-  @spec cast!(any, atom) :: any
+  @spec cast!(any(), type_def()) :: any()
   def cast!(elem, type) do
     case cast(elem, type) do
       {:ok, casted} ->

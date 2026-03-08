@@ -397,21 +397,24 @@ if Code.ensure_loaded?(MDEx) do
         stack = Enum.reject(stack, fn {_parent, parent_end} -> parent_end <= entity.offset end)
 
         # Check remaining stack for partial overlaps
-        Enum.each(stack, fn {parent, parent_end} ->
-          # If current entity extends beyond parent's end, it's a partial overlap
-          if entity_end > parent_end do
-            raise ArgumentError,
-                  "Partial entity overlap detected: entity at offset #{parent.offset} (type: #{parent.type}, length: #{parent.length}) " <>
-                    "and entity at offset #{entity.offset} (type: #{entity.type}, length: #{entity.length}) overlap but neither fully contains the other. " <>
-                    "Entities must be either fully nested or completely disjoint."
-          end
-        end)
+        check_partial_overlap!(entity, entity_end, stack)
 
         # Add current entity to stack
         [{entity, entity_end} | stack]
       end)
+    end
 
-      :ok
+    # Check if the current entity partially overlaps with any entity in the stack
+    defp check_partial_overlap!(entity, entity_end, stack) do
+      Enum.each(stack, fn {parent, parent_end} ->
+        # If current entity extends beyond parent's end, it's a partial overlap
+        if entity_end > parent_end do
+          raise ArgumentError,
+                "Partial entity overlap detected: entity at offset #{parent.offset} (type: #{parent.type}, length: #{parent.length}) " <>
+                  "and entity at offset #{entity.offset} (type: #{entity.type}, length: #{entity.length}) overlap but neither fully contains the other. " <>
+                  "Entities must be either fully nested or completely disjoint."
+        end
+      end)
     end
 
     # Build tree for a specific UTF-16 range
@@ -422,21 +425,7 @@ if Code.ensure_loaded?(MDEx) do
       case starting_here do
         [] ->
           # No entity at this position, check for gap or done
-          case Enum.find(rest, fn e -> e.offset < range_end end) do
-            nil ->
-              # No more entities in this range
-              if range_start < range_end do
-                gap_text = B.slice_utf16(text, range_start, range_end - range_start)
-                [{:text, gap_text}]
-              else
-                []
-              end
-
-            next_entity ->
-              # Gap before next entity
-              gap_text = B.slice_utf16(text, range_start, next_entity.offset - range_start)
-              [{:text, gap_text} | build_tree_range(text, rest, next_entity.offset, range_end)]
-          end
+          handle_no_entity_at_position(text, rest, range_start, range_end)
 
         [entity | also_at_start] ->
           # Entity starts here
@@ -463,6 +452,25 @@ if Code.ensure_loaded?(MDEx) do
       end
     end
 
+    # Handle the case where no entity starts at the current position
+    defp handle_no_entity_at_position(text, rest, range_start, range_end) do
+      case Enum.find(rest, fn e -> e.offset < range_end end) do
+        nil ->
+          # No more entities in this range
+          if range_start < range_end do
+            gap_text = B.slice_utf16(text, range_start, range_end - range_start)
+            [{:text, gap_text}]
+          else
+            []
+          end
+
+        next_entity ->
+          # Gap before next entity
+          gap_text = B.slice_utf16(text, range_start, next_entity.offset - range_start)
+          [{:text, gap_text} | build_tree_range(text, rest, next_entity.offset, range_end)]
+      end
+    end
+
     # ---------------------------------------------------------------------------
     # CommonMark rendering (direct string rendering, not MDEx AST)
     # ---------------------------------------------------------------------------
@@ -483,62 +491,44 @@ if Code.ensure_loaded?(MDEx) do
     end
 
     defp tree_node_to_commonmark({:entity, entity, children}) do
-      case entity.type do
-        "bold" ->
-          "**#{render_children_commonmark(children)}**"
-
-        "italic" ->
-          "*#{render_children_commonmark(children)}*"
-
-        "underline" ->
-          "__#{render_children_commonmark(children)}__"
-
-        "strikethrough" ->
-          "~~#{render_children_commonmark(children)}~~"
-
-        "spoiler" ->
-          "||#{render_children_commonmark(children)}||"
-
-        "code" ->
-          "`#{get_entity_text(children)}`"
-
-        "pre" ->
-          lang = if entity.language, do: entity.language, else: ""
-          text = get_entity_text(children)
-          "```#{lang}\n#{text}\n```"
-
-        "text_link" ->
-          if entity.url do
-            "[#{render_children_commonmark(children)}](#{entity.url})"
-          else
-            # Fallback to plain text if URL is nil
-            render_children_commonmark(children)
-          end
-
-        "text_mention" ->
-          "[#{render_children_commonmark(children)}](tg://user?id=#{entity.user.id})"
-
-        "blockquote" ->
-          # Regular blockquote: prefix lines with >
-          inner = render_children_commonmark(children)
-
-          inner
-          |> String.split("\n")
-          |> Enum.map_join("\n", &"> #{&1}")
-
-        "expandable_blockquote" ->
-          # CommonMark doesn't have expandable blockquotes, render as regular blockquote
-          inner = render_children_commonmark(children)
-
-          inner
-          |> String.split("\n")
-          |> Enum.map_join("\n", &"> #{&1}")
-
-        # Auto-detected types and special types: render as plain text
-        _ ->
-          render_children_commonmark(children)
-      end
+      commonmark_format_entity(entity.type, entity, children)
     end
+
+    # Simple inline formatting
+    defp commonmark_format_entity("bold", _entity, children), do: "**#{render_children_commonmark(children)}**"
+    defp commonmark_format_entity("italic", _entity, children), do: "*#{render_children_commonmark(children)}*"
+    defp commonmark_format_entity("underline", _entity, children), do: "__#{render_children_commonmark(children)}__"
+    defp commonmark_format_entity("strikethrough", _entity, children), do: "~~#{render_children_commonmark(children)}~~"
+    defp commonmark_format_entity("spoiler", _entity, children), do: "||#{render_children_commonmark(children)}||"
+    defp commonmark_format_entity("code", _entity, children), do: "`#{get_entity_text(children)}`"
+
+    # Code blocks with language
+    defp commonmark_format_entity("pre", entity, children) do
+      lang = entity.language || ""
+      text = get_entity_text(children)
+      "```#{lang}\n#{text}\n```"
+    end
+
+    # Links
+    defp commonmark_format_entity("text_link", entity, children) do
+      url = entity.url || ""
+      "[#{render_children_commonmark(children)}](#{url})"
+    end
+
+    defp commonmark_format_entity("text_mention", entity, children) do
+      "[#{render_children_commonmark(children)}](tg://user?id=#{entity.user.id})"
+    end
+
+    # Blockquotes
+    defp commonmark_format_entity(type, _entity, children) when type in ["blockquote", "expandable_blockquote"] do
+      children
+      |> render_children_commonmark()
+      |> String.split("\n")
+      |> Enum.map_join("\n", &"> #{&1}")
+    end
+
+    # Default: render children as-is
+    defp commonmark_format_entity(_, _entity, children), do: render_children_commonmark(children)
 
     defp render_children_commonmark(children) do
       Enum.map_join(children, &tree_node_to_commonmark/1)
@@ -567,82 +557,78 @@ if Code.ensure_loaded?(MDEx) do
     end
 
     defp tree_node_to_markdown_v2({:entity, entity, children}) do
-      case entity.type do
-        "bold" ->
-          "*#{render_children_v2(children)}*"
+      markdown_v2_format_entity(entity.type, entity, children)
+    end
 
-        "italic" ->
-          "_#{render_children_v2(children)}_"
+    # Simple inline formatting
+    defp markdown_v2_format_entity("bold", _entity, children), do: "*#{render_children_v2(children)}*"
+    defp markdown_v2_format_entity("italic", _entity, children), do: "_#{render_children_v2(children)}_"
+    defp markdown_v2_format_entity("underline", _entity, children), do: "__#{render_children_v2(children)}__"
+    defp markdown_v2_format_entity("strikethrough", _entity, children), do: "~#{render_children_v2(children)}~"
+    defp markdown_v2_format_entity("spoiler", _entity, children), do: "||#{render_children_v2(children)}||"
 
-        "underline" ->
-          "__#{render_children_v2(children)}__"
+    defp markdown_v2_format_entity("code", _entity, children),
+      do: "`#{escape_markdown_v2_code(get_entity_text(children))}`"
 
-        "strikethrough" ->
-          "~#{render_children_v2(children)}~"
+    # Code blocks with language
+    defp markdown_v2_format_entity("pre", entity, children) do
+      lang = entity.language || ""
+      text = escape_markdown_v2_code(get_entity_text(children))
+      "```#{lang}\n#{text}\n```"
+    end
 
-        "spoiler" ->
-          "||#{render_children_v2(children)}||"
+    # Links
+    defp markdown_v2_format_entity("text_link", entity, children) do
+      url = entity.url || ""
+      "[#{render_children_v2(children)}](#{escape_markdown_v2_url(url)})"
+    end
 
-        "code" ->
-          "`#{escape_markdown_v2_code(get_entity_text(children))}`"
+    defp markdown_v2_format_entity("text_mention", entity, children) do
+      "[#{render_children_v2(children)}](tg://user?id=#{entity.user.id})"
+    end
 
-        "pre" ->
-          lang = if entity.language, do: entity.language, else: ""
-          text = escape_markdown_v2_code(get_entity_text(children))
-          "```#{lang}\n#{text}\n```"
+    defp markdown_v2_format_entity("custom_emoji", entity, children) do
+      "[#{render_children_v2(children)}](tg://emoji?id=#{entity.custom_emoji_id})"
+    end
 
-        "text_link" ->
-          if entity.url do
-            "[#{render_children_v2(children)}](#{escape_markdown_v2_url(entity.url)})"
-          else
-            # Fallback to plain text if URL is nil
-            render_children_v2(children)
-          end
+    # Date/time
+    defp markdown_v2_format_entity("date_time", entity, children) do
+      url = "tg://time?unix=#{entity.unix_time}"
+      url = if entity.date_time_format, do: "#{url}&format=#{entity.date_time_format}", else: url
+      "[#{render_children_v2(children)}](#{url})"
+    end
 
-        "text_mention" ->
-          "[#{render_children_v2(children)}](tg://user?id=#{entity.user.id})"
+    # Blockquotes
+    defp markdown_v2_format_entity("blockquote", _entity, children) do
+      children
+      |> render_children_v2()
+      |> String.split("\n")
+      |> Enum.map_join("\n", &">#{&1}")
+    end
 
-        "custom_emoji" ->
-          "[#{render_children_v2(children)}](tg://emoji?id=#{entity.custom_emoji_id})"
+    defp markdown_v2_format_entity("expandable_blockquote", _entity, children) do
+      inner = render_children_v2(children)
+      lines = String.split(inner, "\n")
 
-        "date_time" ->
-          url = "tg://time?unix=#{entity.unix_time}"
-          url = if entity.date_time_format, do: "#{url}&format=#{entity.date_time_format}", else: url
-          "[#{render_children_v2(children)}](#{url})"
-
-        "blockquote" ->
-          # Regular blockquote: prefix lines with >
-          inner = render_children_v2(children)
-
-          inner
-          |> String.split("\n")
-          |> Enum.map_join("\n", &">#{&1}")
-
-        "expandable_blockquote" ->
-          # Expandable blockquote: **> prefix, || suffix on last line
-          inner = render_children_v2(children)
-          lines = String.split(inner, "\n")
-
-          case lines do
-            [] ->
-              "**>"
-
-            [single] ->
-              "**>#{single}||"
-
-            multiple ->
-              [first | rest_with_last] = multiple
-              {middle, [last]} = Enum.split(rest_with_last, -1)
-              Enum.join(["**>#{first}"] ++ Enum.map(middle, &">#{&1}") ++ [">#{last}||"], "\n")
-          end
-
-        # Auto-detected types: render as plain text (no extra markup)
-        type when type in ["mention", "hashtag", "cashtag", "bot_command", "url", "email", "phone_number"] ->
-          render_children_v2(children)
-
-        _ ->
-          render_children_v2(children)
+      case lines do
+        [] -> "**>"
+        [single] -> "**>#{single}||"
+        multiple -> format_expandable_lines(multiple)
       end
+    end
+
+    # Auto-detected types: render as plain text
+    defp markdown_v2_format_entity(type, _entity, children)
+         when type in ["mention", "hashtag", "cashtag", "bot_command", "url", "email", "phone_number"] do
+      render_children_v2(children)
+    end
+
+    # Default: render children as-is
+    defp markdown_v2_format_entity(_, _entity, children), do: render_children_v2(children)
+
+    defp format_expandable_lines([first | rest_with_last]) do
+      {middle, [last]} = Enum.split(rest_with_last, -1)
+      Enum.join(["**>#{first}"] ++ Enum.map(middle, &">#{&1}") ++ [">#{last}||"], "\n")
     end
 
     defp render_children_v2(children) do
