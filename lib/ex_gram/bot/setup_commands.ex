@@ -19,10 +19,13 @@ defmodule ExGram.Bot.SetupCommands do
     commands_with_description = Enum.filter(commands, & &1[:opts][:description])
     used_scopes = collect_used_scopes(commands_with_description)
 
-    commands_with_description
-    |> Enum.flat_map(&expand_command(&1, used_scopes))
-    |> Enum.group_by(fn {scope, lang, _cmd} -> {scope, lang} end, fn {_scope, _lang, cmd} -> cmd end)
-    |> Enum.each(fn {{scope, lang}, cmds} ->
+    grouped =
+      commands_with_description
+      |> Enum.flat_map(&expand_command(&1, used_scopes))
+      |> Enum.group_by(fn {scope, lang, _cmd} -> {scope, lang} end, fn {_scope, _lang, cmd} -> cmd end)
+
+    Enum.each(grouped, fn {{scope, lang}, cmds} ->
+      cmds = if lang, do: merge_with_base(grouped, scope, cmds), else: cmds
       api_opts = [scope: scope, token: token]
       api_opts = if lang, do: Keyword.put(api_opts, :language_code, lang), else: api_opts
       ExGram.set_my_commands(cmds, api_opts)
@@ -65,6 +68,13 @@ defmodule ExGram.Bot.SetupCommands do
       end
 
     default ++ translations
+  end
+
+  defp merge_with_base(grouped, scope, lang_cmds) do
+    base_cmds = Map.get(grouped, {scope, nil}, [])
+    translated_names = MapSet.new(lang_cmds, & &1.command)
+    untranslated = Enum.reject(base_cmds, &(&1.command in translated_names))
+    lang_cmds ++ untranslated
   end
 
   def expand_scopes(nil, used_scopes), do: expand_scopes(used_scopes, used_scopes)
