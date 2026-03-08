@@ -22,7 +22,7 @@ defmodule ExGram.Bot.SetupCommands do
     |> Enum.group_by(fn {scope, lang, _cmd} -> {scope, lang} end, fn {_scope, _lang, cmd} -> cmd end)
     |> Enum.each(fn {{scope, lang}, cmds} ->
       api_opts = [scope: scope, token: token]
-      api_opts = if lang, do: [{:language_code, lang} | api_opts], else: api_opts
+      api_opts = if lang, do: Keyword.put(api_opts, :language_code, lang), else: api_opts
       ExGram.set_my_commands(cmds, api_opts)
     end)
   end
@@ -58,15 +58,15 @@ defmodule ExGram.Bot.SetupCommands do
   defp expand_scopes([]), do: []
 
   defp expand_scopes(scopes) when is_list(scopes) do
-    Enum.flat_map(scopes, &expand_scope/1)
+    Enum.flat_map(scopes, &List.wrap(expand_scope(&1)))
   end
 
-  defp expand_scope(:default), do: [%BotCommandScopeDefault{type: "default"}]
-  defp expand_scope(:all_private_chats), do: [%BotCommandScopeAllPrivateChats{type: "all_private_chats"}]
-  defp expand_scope(:all_group_chats), do: [%BotCommandScopeAllGroupChats{type: "all_group_chats"}]
+  defp expand_scope(:default), do: %BotCommandScopeDefault{type: "default"}
+  defp expand_scope(:all_private_chats), do: %BotCommandScopeAllPrivateChats{type: "all_private_chats"}
+  defp expand_scope(:all_group_chats), do: %BotCommandScopeAllGroupChats{type: "all_group_chats"}
 
   defp expand_scope(:all_chat_administrators) do
-    [%BotCommandScopeAllChatAdministrators{type: "all_chat_administrators"}]
+    %BotCommandScopeAllChatAdministrators{type: "all_chat_administrators"}
   end
 
   defp expand_scope({:chat, opts}) do
