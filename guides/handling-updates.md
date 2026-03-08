@@ -19,6 +19,7 @@ end
 The context contains:
 - `update` - The full [Update](https://core.telegram.org/bots/api#update) object
 - `name` - Your bot's name (important for multiple bots)
+- `bot_info` - You bot's information, extracted with `ExGram.get_me` at startup
 - `extra` - Custom data from middlewares
 - Internal fields used by ExGram
 
@@ -28,7 +29,7 @@ ExGram parses updates into convenient tuples for pattern matching.
 
 ### Commands
 
-Matches messages starting with `/command`.
+Matches messages starting with `/command` or `/command@your_bot`.
 
 ```elixir
 def handle({:command, "start", msg}, context) do
@@ -58,6 +59,24 @@ command("settings", description: "Configure your settings")
 ```
 
 With `setup_commands: true`, these are automatically registered with Telegram.
+
+And, once you declare them, you will receive the commands as atoms:
+
+```elixir
+def handle({:command, :start, msg}, context) do
+  # ...
+end
+
+def handle({:command, :help, _msg}, context)
+def handle({:command, :settings, _msg}, context)
+
+# You can still handle not defined commands
+def handle({:command, "othercommand", _msg}, context)
+```
+
+This is really important if you want to provide command translations or commands for different roles.
+
+Check the [commands guide](./commands.md) if you want to know more.
 
 ### Plain Text
 
@@ -150,7 +169,7 @@ end
 Handles location sharing.
 
 ```elixir
-def handle({:location, %{latitude: lat, longitude: lon}}, context) do
+def handle({:location, %ExGram.Model.Location{latitude: lat, longitude: lon}}, context) do
   answer(context, "You're at #{lat}, #{lon}. Thanks for sharing!")
 end
 ```
@@ -173,7 +192,7 @@ end
 Catches any message that doesn't match other patterns.
 
 ```elixir
-def handle({:message, message}, context) do
+def handle({:message, update}, context) do
   cond do
     message.photo ->
       answer(context, "Nice photo!")
@@ -197,6 +216,9 @@ end
 
 Catches all other updates.
 
+ExGram will slowly add more specific handlers to make it easier to differentiate all the possible update types.
+
+
 ```elixir
 def handle({:update, update}, context) do
   Logger.debug("Received unhandled update: #{inspect(update)}")
@@ -210,12 +232,11 @@ The context struct contains:
 
 ```elixir
 %ExGram.Cnt{
-  update: %ExGram.Model.Update{},  # Full Telegram update
-  name: :my_bot,                    # Your bot's name
-  halted: false,                    # Stop processing?
-  middleware_halted: false,         # Stop middleware chain?
-  commands: [...],                  # Registered commands
+  update: %ExGram.Model.Update{},  # Full Telegram update, useful to get more information about the update in specific handlers
+  name: :my_bot,                    # Your bot's name (the one from "use ExGram.Bot, name: :my_bot")
+  bot_info: %ExGram.Model.User{} | nil, # The bot's information, extracted with ExGram.get_me at bot's startup
   extra: %{}                        # Custom data from middlewares
+  # More fields used internally
 }
 ```
 
@@ -225,11 +246,13 @@ Middlewares can add custom data to `context.extra`:
 
 ```elixir
 # In a middleware
+use ExGram.Middleware
+
 def call(context, _opts) do
   user_id = extract_id(context)
   extra_data = %{user_role: fetch_user_role(user_id)}
   
-  ExGram.Cnt.add_extra(context, extra_data)
+  add_extra(context, extra_data)
 end
 
 # In your handler
@@ -240,6 +263,8 @@ def handle({:command, "admin", _msg}, context) do
   end
 end
 ```
+
+Read more about middlewares in [this guide](./middlewares.md)
 
 ## The `init/1` Callback
 
@@ -258,20 +283,14 @@ def init(opts) do
     token: opts[:token]
   )
   
-  ExGram.set_my_commands!(
-    commands: [
-      %{command: "start", description: "Start the bot"},
-      %{command: "help", description: "Get help"},
-      %{command: "tasks", description: "View your tasks"}
-    ],
-    bot: opts[:bot]
-  )
+  # Do some logic you need before starting your bots
+  # MyBot.notify_admins_restart(opts[:bot])
   
   :ok
 end
 ```
 
-**Note:** If you use `setup_commands: true`, commands are automatically registered. Use `init/1` for additional setup like bot name and description.
+**Note:** If you use `setup_commands: true`, commands are automatically registered. Use `init/1` for additional setup.
 
 ## Pattern Matching Tips
 
@@ -280,9 +299,9 @@ end
 Use multiple function clauses for clean code:
 
 ```elixir
-def handle({:command, "start", _}, context), do: answer(context, "Welcome!")
-def handle({:command, "help", _}, context), do: show_help(context)
-def handle({:command, "about", _}, context), do: show_about(context)
+def handle({:command, :start, _}, context), do: answer(context, "Welcome!")
+def handle({:command, :help, _}, context), do: show_help(context)
+def handle({:command, :about, _}, context), do: show_about(context)
 
 def handle({:callback_query, %{data: "yes"}}, context) do
   answer_callback(context, "You chose yes!")

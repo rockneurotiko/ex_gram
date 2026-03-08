@@ -13,7 +13,7 @@ defmodule ExGram.Dsl.MessageEntityBuilderTest do
     end
 
     test "BMP characters (U+0080..U+FFFF) count as 1 UTF-16 unit each" do
-      # "café" — é is U+00E9, single UTF-16 code unit
+      # "café" - é is U+00E9, single UTF-16 code unit
       assert B.utf16_length("café") == 4
     end
 
@@ -393,7 +393,7 @@ defmodule ExGram.Dsl.MessageEntityBuilderTest do
     end
 
     test "drops entities that start at or after the cut point" do
-      # "aaa bbb" — bold on "bbb" at offset 4..7
+      # "aaa bbb" - bold on "bbb" at offset 4..7
       msg = B.concat([B.text("aaa "), B.bold("bbb")])
       {text, entities} = B.truncate(msg, 6, "...")
       # cutoff = 6 - 3 = 3 → sliced text = "aaa", bold entity starts at 4 → dropped
@@ -415,7 +415,7 @@ defmodule ExGram.Dsl.MessageEntityBuilderTest do
     end
 
     test "handles emoji (2 UTF-16 units) in sliced text" do
-      # "hi😀bye" — 2 + 2 + 3 = 7 UTF-16 units; truncate at 5 with "…" (1 unit)
+      # "hi😀bye" - 2 + 2 + 3 = 7 UTF-16 units; truncate at 5 with "…" (1 unit)
       msg = B.text("hi😀bye")
       {text, _} = B.truncate(msg, 5, "…")
       # cutoff = 4, slice 4 units = "hi😀"
@@ -467,7 +467,7 @@ defmodule ExGram.Dsl.MessageEntityBuilderTest do
     end
 
     test "entity fully within first part stays in first part" do
-      # "aaa bbb" — bold on "aaa" (offset 0, length 3), split at 4
+      # "aaa bbb" - bold on "aaa" (offset 0, length 3), split at 4
       msg = B.concat([B.bold("aaa"), B.text(" bbb")])
       [part1, part2] = B.split(msg, 4)
       {t1, e1} = part1
@@ -481,7 +481,7 @@ defmodule ExGram.Dsl.MessageEntityBuilderTest do
     end
 
     test "entity spanning split boundary is moved to next part" do
-      # "aaa bold" — bold on "bold" (offset 4, length 4), split at 5
+      # "aaa bold" - bold on "bold" (offset 4, length 4), split at 5
       msg = B.concat([B.text("aaa "), B.bold("bold")])
       [part1, part2] = B.split(msg, 5)
       {t1, e1} = part1
@@ -522,7 +522,7 @@ defmodule ExGram.Dsl.MessageEntityBuilderTest do
     end
 
     test "handles emoji spanning split boundary" do
-      # "ab😀cd" — emoji at UTF-16 offset 2, length 2; split at 3
+      # "ab😀cd" - emoji at UTF-16 offset 2, length 2; split at 3
       # cutting at 3 lands inside the emoji (offset 2+2=4 > 3 > 2=offset),
       # so slice_utf16 backs up and the first part is "ab" (2 units).
       # The second part is "😀cd" which is 4 UTF-16 units; with max_length=3

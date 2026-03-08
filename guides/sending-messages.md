@@ -14,7 +14,7 @@ def handle({:command, "start", _msg}, context) do
   |> answer("Welcome!")           # Action 1: queued
   |> answer("Here's a menu:")     # Action 2: queued
   |> answer_photo(photo_id)       # Action 3: queued
-end  
+end
 # After handler returns, ExGram executes: action 1 → action 2 → action 3
 ```
 
@@ -24,9 +24,74 @@ end
 - Actions execute **in order** after your handler completes
 - This is perfect for common/basic bot logic
 
+### Wrong patterns
+
+#### Not carrying context updates
+
+This won't work as expected, Elixir it's immutable, so the updated context need to be passed to the next actions all the way to the end.
+
+```elixir
+def handle({:command, "start", _msg}, context) do
+  answer(context, "Welcome!") # ❌ This will never be sent!!
+  answer(context, "Here's a menu:") # ❌ This will never be sent!!
+  answer_photo(context, photo_id)
+end
+```
+
+#### Doing actions, and then other things
+
+There are two common got-chas.
+
+The first one is, queueing actions, but not returning the context, this will make the actions to not be executed at all.
+
+```elixir
+def handle({:command, "start", msg}, context) do
+  answer(context, "Welcome!") # ❌ This will never be sent!!
+
+  MyBot.update_user_stats(extract_user(msg))
+end
+
+# Correct:
+def handle({:command, "start", msg}, context) do
+  MyBot.update_user_stats(extract_user(msg))
+
+  answer(context, "Welcome!")
+end
+```
+
+The second common mistake is the order if you mix DSL and non DSL:
+
+```elixir
+def handle({:command, "start", msg}, context) do
+  context = answer(context, "Welcome!")
+
+  # ❌ This will be sent BEFORE the "Welcome!" message, because the DSL actions are enqueued and executed AFTER the handle/2 method
+  ExGram.send_photo(extract_chat_id(msg), photo_id, bot: context.name) 
+  
+  context
+end
+
+# Correct:
+def handle({:command, "start", msg}, context) do
+  chat_id = extract_id(msg) 
+  # Using on_result allow you to do actions after the previous action
+  context 
+  |> answer("Welcome!")
+  |> on_result(fn 
+    {:ok, _}, name -> 
+      ExGram.send_photo(chat_id, photo_id, bot: name)
+    error, _name -> 
+      error
+  end)
+end
+```
+
 ### When NOT to Use the DSL
 
-For complex bots with **background tasks**, **scheduled jobs**, or operations outside of handlers, use the [Low-Level API](low-level-api.md) instead:
+The DSL is really powerful and helps to make the bot's logic easier to follow, but there are cases where you will need to use the [Low-Level API](./low-level-api.md), for example:
+
+- There are still no DSL action for the method you want. The DSL has been created as needed, so many methods still don't have a DSL created. Feel free to open an issue or a pull request 😄
+- For complex bots with **background tasks**, **scheduled jobs**, or operations outside of handlers, in this cases you can't use the DSL at all.
 
 ```elixir
 # In a background task or GenServer
@@ -36,11 +101,13 @@ def send_notification(user_id) do
 end
 ```
 
+Read more about the Low-Level API in [this guide](./low-level-api.md)
+
 ## Sending Text Messages
 
 ### `answer/2-4`
 
-Send a text reply to the current chat.
+Send a text message to the current chat.
 
 ```elixir
 # Simple text
@@ -64,7 +131,7 @@ def handle({:command, "help", _}, context) do
 end
 ```
 
-**Options:** `parse_mode`, `disable_web_page_preview`, `disable_notification`, `reply_to_message_id`, `reply_markup`
+**Options:** All the `ExGram.send_message` options, you can see them in [the documentation](https://hexdocs.pm/ex_gram/ExGram.html#send_message/3)
 
 ### Multiple Messages
 
@@ -81,97 +148,56 @@ end
 
 ## Sending Media
 
-### `answer_photo/2-4`
+All the fields that are files, will support three ways of sending that file:
 
-Send photos:
+- String: This is a file_id previously received in Telegram responses or messages.
+- `{:file, "/path/to/file"}`: This will read the file and send it 
+- `{:file_content, "content", "filename.jpg"}`: Will send the "content" directly. It can be a `String.t`, `iodata()` or a `Enum.t()`, useful for streaming data directly without loading everything in memory.
 
-```elixir
-# By file ID (already uploaded to Telegram)
-def handle({:command, "photo", _}, context) do
-  answer_photo(context, "AgACAgIAAxkBAAI...")
-end
-
-# By local file path
-def handle({:command, "local_photo", _}, context) do
-  answer_photo(context, {:file, "priv/static/images/photo.jpg"})
-end
-
-# By file content
-def handle({:command, "generated", _}, context) do
-  image_binary = generate_image()
-  answer_photo(context, {:file_content, image_binary, "generated.png"})
-end
-
-# With caption
-def handle({:command, "captioned", _}, context) do
-  answer_photo(context, photo_id, caption: "Look at this!", parse_mode: "Markdown")
-end
-```
-
-### Other Media Functions
-
-All media functions support the same three ways of providing files:
+For now only `answer_document` has a DSL method, we'll add more DSL for sending media files
 
 ```elixir
 # Documents
-answer_document(context, file_or_id, opts \\ [])
-
-# Videos
-answer_video(context, video_or_id, opts \\ [])
-
-# Audio
-answer_audio(context, audio_or_id, opts \\ [])
-
-# Voice messages
-answer_voice(context, voice_or_id, opts \\ [])
-
-# Stickers
-answer_sticker(context, sticker_or_id, opts \\ [])
-
-# Animations (GIFs)
-answer_animation(context, animation_or_id, opts \\ [])
+answer_document(context, {:file, "/path/to/document.txt"}, opts \\ [])
 ```
 
-## Inline Keyboards
+## Keyboards
 
 Create interactive buttons that users can press.
 
-### Basic Inline Keyboard
+### Inline Keyboard
+
+There is a neat DSL to create keyboards!
 
 ```elixir
+import ExGram.Dsl.Keyboard # It is not added by default, you have to import it
+
 def handle({:command, "choose", _}, context) do
-  markup = create_inline([
-    [
-      %{text: "Option A", callback_data: "option_a"},
-      %{text: "Option B", callback_data: "option_b"}
-    ],
-    [
-      %{text: "Cancel", callback_data: "cancel"}
-    ]
-  ])
+  markup = 
+    keyboard :inline do
+      row do
+        inline_button "Option A", callback_data: "option_a"
+        inline_button "Option B", callback_data: "option_b"
+      end
+      
+      row do
+        inline_button "Cancel", callback_data: "cancel"
+      end
+    end
   
   answer(context, "Choose an option:", reply_markup: markup)
 end
 ```
 
-### Using `create_inline_button/1`
-
-For URL buttons and other types:
+The `inline_button` accepts all the options that the `ExGram.Model.InlineKeyboardButton` accepts, for example:
 
 ```elixir
-def handle({:command, "links", _}, context) do
-  markup = create_inline([
-    [
-      create_inline_button("Visit Website", url: "https://example.com"),
-      create_inline_button("Join Channel", url: "https://t.me/channel")
-    ]
-  ])
-  
-  answer(context, "Check out these links:", reply_markup: markup)
-end
+inline_button "Visit website", url: "https://example.com", style: "success"
 ```
 
-### Handling Callback Queries
+#### Handling Callback Queries
+
+Just as a reminder, the callback_data it's handled in the bot with the `:callback_query` handler
 
 ```elixir
 def handle({:callback_query, %{data: "option_a"}}, context) do
@@ -179,13 +205,31 @@ def handle({:callback_query, %{data: "option_a"}}, context) do
   |> answer_callback("You chose A!")
   |> edit("You selected Option A")
 end
+```
 
-def handle({:callback_query, %{data: "option_b"}}, context) do
-  context
-  |> answer_callback("You chose B!")
-  |> edit("You selected Option B")
+### Reply keyboards
+
+This are the keyboards that pop up at the botton of the screen. You can create them also with the DSL.
+
+```elixir
+keyboard :reply do
+  row do
+    reply_button "Help", style: "success"
+    reply_button "Send my location", request_location: true, style: "danger"
+  end
 end
 ```
+
+This keyboards accept more options too, check [the documentation](https://hexdocs.pm/ex_gram/ExGram.Model.ReplyKeyboardMarkup.html) for available options:
+
+```elixir
+keyboard :reply, [is_persistent: true, one_time_keyboard: true, resize_keyboard: true] do
+  row do
+    reply_button "Help", style: "success"
+  end
+end
+```
+
 
 ## Callback Queries
 
@@ -275,7 +319,11 @@ Update only the inline keyboard:
 
 ```elixir
 def handle({:callback_query, %{data: "toggle"}}, context) do
-  new_markup = create_inline([[%{text: "Toggled!", callback_data: "toggle"}]])
+  new_markup = keyboard do
+    row do
+      button "Toggled!", callback_data: "toggle"
+    end
+  end
   
   context
   |> answer_callback()
@@ -300,13 +348,18 @@ end
 # Delete specific message
 def handle({:command, "cleanup", _}, context) do
   chat_id = extract_id(context)
-  delete(context, chat_id, message_id)
+  msg = %{chat_id: chat_id, message_id: message_id}
+  delete(context, msg)
 end
 ```
 
 ## Chaining Results with `on_result/2`
 
-Use the result of one action in the next action:
+Tap into the execution chain and do something with the result of the previous action.
+
+The callback receives two parameters:
+- result: `{:ok, x} | {:error, error}`
+- name: The bot's name
 
 ```elixir
 def handle({:command, "pin", _}, context) do
@@ -324,15 +377,18 @@ def handle({:command, "forward_to_admin", _}, context) do
   
   context
   |> answer("Message sent to admin!")
-  |> on_result(fn {:ok, message} ->
-    # Forward the confirmation to admin
-    ExGram.forward_message(admin_chat_id, message.chat.id, message.message_id)
-    :ok
+  |> on_result(fn 
+    {:ok, message}, name ->
+      # Forward the confirmation to admin
+      ExGram.forward_message(admin_chat_id, extract_id(message), extract_message_id(message), bot: name)
+      
+    error, _name -> 
+      error
   end)
 end
 ```
 
-**Note:** `on_result/2` receives the result of the previous action. Return `:ok` to continue the chain.
+**Note:** `on_result/2` receives the result of the previous action. What you return will be treated as the new result of that action. 
 
 ## Context Helper Functions
 
@@ -340,7 +396,9 @@ ExGram provides helper functions to extract information from the context:
 
 ### `extract_id/1`
 
-Get the chat ID from the update:
+Get the origin id from the update, if it's a chat, will be the chat id, if it's a private conversation will be the user id.
+
+Used to know who to answer.
 
 ```elixir
 chat_id = extract_id(context)
@@ -372,7 +430,7 @@ message_id = extract_message_id(context)
 
 ### `extract_callback_id/1`
 
-Get callback query ID (for answering callbacks):
+Get callback query ID
 
 ```elixir
 callback_id = extract_callback_id(context)
@@ -383,7 +441,7 @@ callback_id = extract_callback_id(context)
 Get the update type:
 
 ```elixir
-case extract_update_type(context) do
+case extract_update_type(update) do
   :message -> # ...
   :callback_query -> # ...
   :inline_query -> # ...
@@ -395,7 +453,7 @@ end
 Get the message type:
 
 ```elixir
-case extract_message_type(context) do
+case extract_message_type(message) do
   :text -> # ...
   :photo -> # ...
   :document -> # ...
@@ -409,8 +467,6 @@ extract_response_id(context)      # Get response ID for editing
 extract_inline_id_params(context) # Get inline message params
 ```
 
-See [Cheatsheet](cheatsheet.md) for the complete list.
-
 ## Complete Example
 
 Here's a bot that demonstrates multiple DSL features:
@@ -418,12 +474,14 @@ Here's a bot that demonstrates multiple DSL features:
 ```elixir
 defmodule MyBot.Bot do
   use ExGram.Bot, name: :my_bot, setup_commands: true
+  
+  import ExGram.Dsl.Keyboard
 
-  command("start")
-  command("menu")
-  command("info")
+  command("start", description: "Start")
+  command("menu", description: "Show menu")
+  command("info", description: "Information")
 
-  def handle({:command, "start", _}, context) do
+  def handle({:command, :start, _}, context) do
     user = extract_user(context)
     
     context
@@ -431,17 +489,18 @@ defmodule MyBot.Bot do
     |> answer("I'm here to help you. Use /menu to see options.")
   end
 
-  def handle({:command, "menu", _}, context) do
-    markup = create_inline([
-      [
-        %{text: "📊 Stats", callback_data: "stats"},
-        %{text: "⚙️ Settings", callback_data: "settings"}
-      ],
-      [
-        %{text: "ℹ️ Info", callback_data: "info"},
-        %{text: "❌ Close", callback_data: "close"}
-      ]
-    ])
+  def handle({:command, :menu, _}, context) do
+    markup = keyboard :inline do
+      row do
+        button "📊 Stats", callback_data: "stats"
+        button "⚙️ Settings", callback_data: "settings"
+      end
+      
+      row do
+        button "ℹ️ Info", callback_data: "info"
+        button "❌ Close", callback_data: "close"
+      end
+    end
     
     answer(context, "Main Menu:", reply_markup: markup)
   end

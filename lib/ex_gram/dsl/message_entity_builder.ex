@@ -46,7 +46,7 @@ defmodule ExGram.Dsl.MessageEntityBuilder do
   end
 
   # ---------------------------------------------------------------------------
-  # Leaf builders — produce a single-entity tuple
+  # Leaf builders - produce a single-entity tuple
   # ---------------------------------------------------------------------------
 
   @doc "Plain text with no formatting."
@@ -434,7 +434,7 @@ defmodule ExGram.Dsl.MessageEntityBuilder do
 
   The split respects entity boundaries: if an entity would span a split point it
   is moved entirely to the next part. The only exception is when the entity alone
-  is larger than `max_length` — in that case it is split at the limit (unavoidable).
+  is larger than `max_length` - in that case it is split at the limit (unavoidable).
 
   Returns a list with a single element when no splitting is needed.
   """
@@ -484,7 +484,7 @@ defmodule ExGram.Dsl.MessageEntityBuilder do
     else
       raw_end = current + max_length
 
-      # Find entities that start before `raw_end` but end after it — they span
+      # Find entities that start before `raw_end` but end after it - they span
       # the candidate cut point and must be kept whole (pushed to next part).
       spanning =
         Enum.filter(entities, fn e ->
@@ -507,17 +507,17 @@ defmodule ExGram.Dsl.MessageEntityBuilder do
   # Calculate the optimal cut point considering spanning entities.
   defp calculate_cut_point(spanning, current, raw_end, remaining, max_length) do
     if spanning == [] do
-      # No spanning entity — cut cleanly at raw_end (or end of text).
+      # No spanning entity - cut cleanly at raw_end (or end of text).
       min(raw_end, current + remaining)
     else
-      # Move cut to just before the earliest spanning entity's start —
+      # Move cut to just before the earliest spanning entity's start -
       # unless that entity is larger than max_length (failsafe).
       earliest_start = spanning |> Enum.map(& &1.offset) |> Enum.min()
       entity_len = spanning |> Enum.map(&(&1.offset + &1.length)) |> Enum.max()
       entity_size = entity_len - earliest_start
 
       if entity_size >= max_length do
-        # Entity alone exceeds max_length — forced split at raw_end.
+        # Entity alone exceeds max_length - forced split at raw_end.
         min(raw_end, current + remaining)
       else
         # Back the cut up to just before this entity, but never behind
@@ -581,7 +581,7 @@ defmodule ExGram.Dsl.MessageEntityBuilder do
         <<high, _low>> = binary_part(utf16, last_byte_pos, 2)
 
         if high in 0xD8..0xDB do
-          # We are cutting inside a surrogate pair — step back 2 bytes.
+          # We are cutting inside a surrogate pair - step back 2 bytes.
           byte_len - 2
         else
           byte_len

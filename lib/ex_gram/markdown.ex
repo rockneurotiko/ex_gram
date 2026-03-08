@@ -65,8 +65,8 @@ if Code.ensure_loaded?(MDEx) do
 
     ## Formats
 
-      * `:markdown` — CommonMark output (via MDEx AST)
-      * `:markdown_v2` — Telegram MarkdownV2 output with proper escaping
+      * `:markdown` - CommonMark output (via MDEx AST)
+      * `:markdown_v2` - Telegram MarkdownV2 output with proper escaping
 
     ## Example
 

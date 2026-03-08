@@ -126,32 +126,42 @@ Open Telegram and send `/start` to your bot. It should reply with "Hi!"
 
 ### 1. Global Config + Exlicit on bot
 
+If you just have one bot, this combination will allow you to use the DSL and the normal methods without any problem.
+
 ```elixir
 # config/config.exs
 config :ex_gram, token: "TOKEN"
 
 # lib/my_bot/application.ex
-{MyBot.Bot, [method: :polling, token: "TOKEN"]}
-```
-
-### 2. Explicit Token (Recommended for Multiple Bots)
-
-```elixir
-# lib/my_bot/application.ex
 token = System.get_env("BOT_TOKEN") || Application.fetch_env!(:ex_gram, :token)
 {MyBot.Bot, [method: :polling, token: token]}
 ```
 
+### 2. Only global config
+
+If you are just going to use the normal methods, no ExGram.Bot bots, then you can just configure the global token.
+
+```elixir
+# config/config.exs
+config :ex_gram, token: "TOKEN"
+```
+
 ### 3. Runtime Configuration
+
+**DO NOT** hardcode any token in any configuration file or source code. It's the most common reason people publish secret tokens by mistake.
+
+The easiest way to avoid this it's to have a `config/runtime.exs`
 
 ```elixir
 # config/runtime.exs
 import Config
 
 if config_env() == :prod do
-  config :ex_gram,
-    token: System.fetch_env!("BOT_TOKEN")
+  config :ex_gram, token: System.fetch_env!("BOT_TOKEN")
 end
+
+# config/config.exs
+config :ex_gram, token: "fake token"
 ```
 
 ## Next Steps
@@ -166,9 +176,8 @@ Now that you have a working bot:
 
 ### Bot doesn't respond
 
-1. Check that `ExGram` is listed before your bot in the supervision tree
-2. Verify your token is correct
-3. Check logs for errors: `Logger.configure(level: :debug)`
+1. Verify your token is correct
+2. Check logs for errors: `Logger.configure(level: :debug)`
 
 ### "Registry.ExGram not started"
 

@@ -2,7 +2,7 @@
 
 Telegram supports two approaches for formatting messages: **parse modes**
 (MarkdownV2 / HTML) and **MessageEntity annotations**. ExGram ships a
-composable DSL — `ExGram.Dsl.MessageEntityBuilder` — for the entity-based
+composable DSL - `ExGram.Dsl.MessageEntityBuilder` - for the entity-based
 approach, and an optional `ExGram.Markdown` module that converts standard
 Markdown into entities using MDEx.
 
@@ -10,13 +10,13 @@ With entities, the plain text carries no formatting syntax. All formatting
 is expressed via `%ExGram.Model.MessageEntity{}` structs with UTF-16 offsets
 and lengths. This means:
 
-- **No escaping headaches** — MarkdownV2 requires escaping many special
+- **No escaping headaches** - MarkdownV2 requires escaping many special
   characters (`_`, `*`, `[`, `]`, `(`, `)`, `~`, `` ` ``, `>`, `#`, `+`,
   `-`, `=`, `|`, `{`, `}`, `.`, `!`). With entities you send plain text.
-- **Longer effective messages** — formatting markup doesn't consume characters
+- **Longer effective messages** - formatting markup doesn't consume characters
   from the message body, so you can fit more content within Telegram's
   message size limits.
-- **Composable** — build messages from reusable parts and combine them
+- **Composable** - build messages from reusable parts and combine them
   freely.
 
 ## A Real Example: Entity vs MarkdownV2
@@ -78,7 +78,7 @@ ExGram.send_message(chat_id, text, entities: entities)
 ```
 
 No escaping needed! **Text size: 115 characters**.
-That's **95 characters saved** — more room for actual content.
+That's **95 characters saved** - more room for actual content.
 
 The `{text, entities}` result:
 
@@ -161,7 +161,7 @@ B.concat(["Status: ", B.bold("✅ Online")])
 #                           Offset accounts for "Status: " (8 chars) + "✅ " (2 UTF-16 units for emoji + 1 space)
 ```
 
-When building messages with emojis, use the builder functions — they calculate
+When building messages with emojis, use the builder functions - they calculate
 offsets correctly so you don't have to think about UTF-16 encoding.
 
 ### Block-level formatting
@@ -200,7 +200,7 @@ B.concat([B.bold("Hello"), B.text(", "), B.italic("world")])
 # ]}
 ```
 
-You can also pass plain strings directly inside `concat/1` — they are
+You can also pass plain strings directly inside `concat/1` - they are
 treated as `B.text/1`:
 
 ```elixir
@@ -371,8 +371,8 @@ convenience that extracts the chat ID from the context.
 
 ## Converting Markdown with ExGram.Markdown
 
-If you already have Markdown content — from an API response, user input, or
-a template — `ExGram.Markdown` converts it directly into the same
+If you already have Markdown content - from an API response, user input, or
+a template - `ExGram.Markdown` converts it directly into the same
 `{text, entities}` tuple format.
 
 ### Setup
