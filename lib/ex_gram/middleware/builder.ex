@@ -23,12 +23,19 @@ defmodule ExGram.Middleware.Builder do
   end
 
   defmacro command(command, opts \\ []) do
-    name = Keyword.get(opts, :name, String.to_atom(command))
+    {command_str, default_name} =
+      if is_atom(command) do
+        {Atom.to_string(command), command}
+      else
+        {command, String.to_atom(command)}
+      end
+
+    name = Keyword.get(opts, :name, default_name)
     opts = Keyword.delete(opts, :name)
 
     quote do
       @commands [
-        command: unquote(command),
+        command: unquote(command_str),
         name: unquote(name),
         opts: unquote(opts)
       ]
