@@ -54,12 +54,12 @@ defmodule ExGram.Bot do
       def name, do: unquote(name)
 
       def child_spec(opts) do
-        opts = Keyword.merge(opts, unquote(module_opts))
+        opts = Keyword.merge(unquote(module_opts), opts)
         ExGram.Bot.Supervisor.child_spec(opts, __MODULE__)
       end
 
       def start_link(opts) do
-        opts = Keyword.merge(opts, unquote(module_opts))
+        opts = Keyword.merge(unquote(module_opts), opts)
         ExGram.Bot.Supervisor.start_link(opts, __MODULE__)
       end
 

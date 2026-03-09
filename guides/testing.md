@@ -4,21 +4,52 @@ ExGram ships with a test adapter that intercepts Telegram API calls, making it e
 
 ## Setup
 
-### Configuration
+### Global Configuration
 
-Configure ExGram to use the test adapter in your test environment:
+Configure ExGram and your bot to use the test adapter in test environment:
 
 ```elixir
 # config/test.exs
 config :ex_gram,
   token: "test_token",
-  adapter: ExGram.Adapter.Test,
-  updates: ExGram.Updates.Test
+  adapter: ExGram.Adapter.Test
+  
+config :my_app, MyBot.Bot,
+  token: "test_token",
+  method: :test,
+  username: "testbot", # Setting a username we skip the get_me call on startup
+  setup_commands: false # Setting setup_commands: false we skip setting up the commands on startup
+
 ```
 
 This tells ExGram to:
 - Use `ExGram.Adapter.Test` to intercept API calls
-- Use `ExGram.Updates.Test` for pushing test updates (instead of polling or webhook)
+- Use `method` `:test` (which is `ExGram.Updates.Test`) for pushing test updates (instead of polling or webhook)
+- Fake username and disable setup_commands, so starting the application don't fail.
+
+The bot's options has to be passed on startup, this is how I recommend doing it, a config entry for your bot's module, and then something like this in your `application.ex`:
+
+```elixir
+# lib/my_app/application.ex
+defmodule MyApp.Application do
+  use Application
+
+  def start(_type, _args) do
+    bot_config = Application.get_env(:my_app, MyApp.Bot, [])
+  
+    children = [
+      # ... your other children
+      {MyApp.Bot, bot_config}
+      # ...
+    ]
+
+    opts = [strategy: :one_for_one, name: MyApp.Supervisor]
+    Supervisor.start_link(children, opts)
+  end
+end
+```
+
+### Bot configuration
 
 ### Starting the Adapter
 
@@ -34,11 +65,16 @@ defmodule MyApp.Application do
   use Application
 
   def start(_type, _args) do
-    children = test_children() ++ [
+    bot_config = Application.get_env(:my_app, MyApp.Bot, [])
+    
+    app_children = [
       # ... your other children
-      {MyApp.Bot, ...}
+      {MyApp.Bot, bot_config}
       # ...
     ]
+    
+    # Notife the `test_children()` call
+    children = test_children() ++ app_children
 
     opts = [strategy: :one_for_one, name: MyApp.Supervisor]
     Supervisor.start_link(children, opts)
@@ -68,7 +104,55 @@ ExUnit.start()
 
 ### A Minimal Test
 
-Here's a complete working test:
+Here's a complete working test to test your Bot's logic asynchronous and isolated.
+
+```elixir
+defmodule MyApp.NotificationsTest do
+  use ExUnit.Case, async: true
+  
+  setup {ExGram.Test, :verify_on_exit!}
+  
+  describe "handle start command" do
+    setup context do
+      # Start an isolated instance of your bot with an unique name
+      {bot_name, _} = ExGram.Test.start_bot(context, MyApp.Bot)
+        
+      {:ok, bot_name: bot_name}
+    end
+    
+    test "/start command returns welcome message", %{bot_name: bot_name} do
+      ExGram.Test.expect(:send_message, fn body ->
+        text = body[:text]
+        assert text =~ "Welcome", "Expected welcome message, got body: #{inspect(body)}"
+
+        {:ok, %{message_id: 1, date: 0, chat: %{id: @chat_id, type: "private"}, text: "Response"}}
+      end)
+
+      update = build_command_update("/start")
+      # Push it just like if it were a real update
+      # using the unique bot_name
+      ExGram.Test.push_update(bot_name, update) 
+    end
+  end
+  
+  # Helper to build a command update
+  defp build_command_update(text) do
+    %ExGram.Model.Update{
+      update_id: System.unique_integer([:positive]),
+      message: %ExGram.Model.Message{
+        message_id: System.unique_integer([:positive]),
+        date: DateTime.utc_now(),
+        chat: %ExGram.Model.Chat{id: @chat_id, type: "private"},
+        from: %ExGram.Model.User{id: @chat_id, is_bot: false, first_name: "Test"},
+        text: text
+      }
+    }
+  end
+end
+```
+
+
+For testing modules (for example, business logic modules) that just do calls with `ExGram`, you can skip setting up the bot and just use `ExGram.Test.expect/2` or similar.
 
 ```elixir
 defmodule MyApp.NotificationsTest do
@@ -78,12 +162,18 @@ defmodule MyApp.NotificationsTest do
 
   test "sends notification message" do
     # Stub the API response
-    ExGram.Test.expect(:send_message, %{
-      message_id: 1,
-      chat: %{id: 123, type: "private"},
-      date: 1_700_000_000,
-      text: "Your order has shipped!"
-    })
+    ExGram.Test.expect(:send_message, fn body -> 
+      # You can assert on body here
+      assert body[:chat_id] == 123
+      assert body[:text] == "Your order has shipped!"
+      
+      %{
+        message_id: 1,
+        chat: %{id: 123, type: "private"},
+        date: 1_700_000_000,
+        text: "Your order has shipped!"
+      } 
+    end)
 
     # Call your code
     {:ok, message} = ExGram.send_message(123, "Your order has shipped!")
@@ -92,7 +182,7 @@ defmodule MyApp.NotificationsTest do
     assert message.message_id == 1
     assert message.text == "Your order has shipped!"
 
-    # Inspect what was called
+    # If you prefer, you can check the calls after, but it's not needed with the :verify_on_exit!
     calls = ExGram.Test.get_calls()
     assert length(calls) == 1
 
@@ -185,6 +275,37 @@ test "catch-all expectation" do
   {:error, _} = ExGram.get_me()
 end
 ```
+
+### Error Responses
+
+Return errors with `expect/2`:
+
+```elixir
+test "handles API errors" do
+  error = %ExGram.Error{
+    code: 400,
+    message: "Bad Request: chat not found"
+  }
+
+  ExGram.Test.expect(:send_message, {:error, error})
+
+  result = ExGram.send_message(123, "Hello")
+  assert {:error, %ExGram.Error{message: "Bad Request: chat not found"}} = result
+end
+```
+
+You can use it for in callbacks too:
+
+```elixir
+ExGram.Test.expect(:send_message, fn body ->
+  if body[:chat_id] == 999 do
+    {:error, %ExGram.Error{message: "Forbidden: bot was blocked by the user"}}
+  else
+    {:ok, %{message_id: 1, text: "ok"}}
+  end
+end)
+```
+
 
 ## Stubbing Responses
 
@@ -281,7 +402,7 @@ end
 
 ### Error Responses
 
-Stub errors with `stub/2`:
+Just like with `expect/2`, you can stub errors with `stub/2` in any of the two forms:
 
 ```elixir
 test "handles API errors" do
@@ -294,20 +415,20 @@ test "handles API errors" do
 
   result = ExGram.send_message(123, "Hello")
   assert {:error, %ExGram.Error{message: "Bad Request: chat not found"}} = result
+  
+  ExGram.Test.stub(:send_message, fn body ->
+    if body[:chat_id] == 999 do
+      {:error, %ExGram.Error{message: "Forbidden: bot was blocked by the user"}}
+    else
+      {:ok, %{message_id: 1, text: "ok"}}
+    end
+  end)
+
+  result = ExGram.send_message(123, "Hello")
+  assert {:error, %ExGram.Error{message: "Bad Request: chat not found"}} = result
 end
 ```
 
-You can use it for in callbacks too:
-
-```elixir
-ExGram.Test.stub(:send_message, fn body ->
-  if body[:chat_id] == 999 do
-    {:error, %ExGram.Error{message: "Forbidden: bot was blocked by the user"}}
-  else
-    {:ok, %{message_id: 1, text: "ok"}}
-  end
-end)
-```
 
 ## Priority Order
 
@@ -535,9 +656,9 @@ setup {ExGram.Test, :set_from_context}
 Use `ExGram.Test.push_update/2` to simulate incoming updates from Telegram:
 
 ```elixir
-test "bot responds to /start command" do
-  # Start your bot (or it may be started by your application)
-  {:ok, _bot} = MyBot.start_link(name: :my_test_bot)
+test "bot responds to /start command", context do
+  # Start an instance of your bot with a random name
+  {bot_name, _} = ExGram.Test.start_bot(context, MyApp.Bot)
 
   # Expect the call
   ExGram.Test.expect(:send_message, fn body -> 
@@ -563,7 +684,7 @@ test "bot responds to /start command" do
   }
 
   # Push the update to the bot
-  ExGram.Test.push_update(:my_test_bot, update)
+  ExGram.Test.push_update(bot_name, update)
 end
 ```
 
@@ -641,18 +762,7 @@ defmodule MyApp.BotTest do
   setup {ExGram.Test, :verify_on_exit!}
 
   setup context do
-    # Start bot with unique name for test isolation
-    base = context.test |> Atom.to_string() |> String.replace(~r/[^a-z0-9]/i, "_")
-    bot_name = String.to_atom("bot_#{base}")
-    module_name = Module.concat([MyApp.Tests, String.to_atom("Bot_#{name}")])
-
-    {:ok, _pid} =
-      MyApp.Bot.start_link(
-        name: module_name,
-        bot_name: bot_name,
-        method: :test,
-        token: "dummy"
-      )
+    {bot_name, _} = ExGram.Test.start_bot(context, MyApp.Bot)
 
     {:ok, bot_name: bot_name}
   end
@@ -732,6 +842,102 @@ defmodule MyApp.BotTest do
   end
 end
 ```
+
+### Testing the initial calls
+
+Up until now, we skipped the initial `get_me` call and the set commands calls, they are executed on bot's startup, so it's cumbersome to setup it up in every test.
+
+I recommend to not bother testing this, but if you want to test it anyway, this is how you do it:
+
+(You can also find a working test like this in `test/ex_gram/bot_test.exs` called `"Register commands on startup"`)
+
+- First, in your bot's `init/1` callback, you have to notify the test that you are starting, so the test can allow the bot's PID to use the mocks, and it has to wait:
+
+```elixir
+# lib/my_app/bot.ex
+defmodule MyApp.Bot do
+  use ExGram.Bot, name: :my_bot
+  
+  # .....
+  
+  def init(opts) do
+    if opts[:extra_info][:test_init] do
+        test_pid = opts[:extra_info][:test_pid]
+        send(test_pid, :init)
+        
+        receive do
+            :contitue -> :ok
+        end
+    end
+  end
+  
+  # .....
+end
+```
+
+- Then, in your test, you need to start the bot passing that extra information, waiting for the `:init` and allowing the process:
+
+```elixir
+# test/my_app/bot_test.exs
+
+test "Register commands on startup", context do
+  test_pid = self()
+
+  ExGram.Test.expect(:get_me, build_user(%{id: 999, is_bot: true, first_name: "TestBot", username: "test_bot"}))
+
+  ExGram.Test.expect(:set_my_commands, fn body ->
+    assert body[:scope] == %{type: "default"}
+    assert length(body[:commands]) == 2
+    assert Enum.any?(body[:commands], fn cmd -> cmd[:command] == "start" end)
+    assert Enum.any?(body[:commands], fn cmd -> cmd[:command] == "help" end)
+
+    {:ok, true}
+  end)
+
+  # There can be more than one command depending on the scopes/languages
+  ExGram.Test.expect(:set_my_commands, fn body ->
+    assert body[:scope] == %{type: "default"}
+    assert body[:language_code] == "es"
+    assert length(body[:commands]) == 2
+    assert Enum.any?(body[:commands], fn cmd -> cmd[:command] == "start" end)
+    assert Enum.any?(body[:commands], fn cmd -> cmd[:command] == "ayuda" end)
+
+    # Final message to the test, to know we are done with the initialization
+    send(test_pid, :commands_set)
+    {:ok, true}
+  end)
+
+  # Important here! We send `username: nil` to do the initial `get_me` and `setup_commands: true` to setup on start
+  # We also use the extra_info to pass :test_init, so the bot knows it has to do the test workflow
+  # The test_pid is already injected by the `ExGram.Test.start_bot/3` method
+  bot_opts = [username: nil, setup_commands: true, extra_info: %{test_init: true}]
+  {bot_name, _} = ExGram.Test.start_bot(context, SetupCommandBot, bot_opts)
+
+  # Allow the bot to access the `ExGram.Test` mocks
+  # In normal tests you don't need this, because when you do a `ExGram.Test.push_update/2`
+  # it's done automatically, but since this is on startup we have to manually allow it
+  
+  allow_dispatcher(bot_name)
+  
+  # Let the initialization continue
+  send(Process.whereis(bot_name), :continue)
+
+  # We now finished the initialization with the last set commands
+  assert_receive :commands_set, 1000
+  
+  # Now the bot is fully initialize!
+end
+
+defp allow_dispatcher(bot_name) do
+    receive do
+      :init ->
+        if pid = Process.whereis(bot_name) do
+          ExGram.Test.allow(self(), pid)
+        end
+    end
+end
+```
+
 
 ## Next Steps
 

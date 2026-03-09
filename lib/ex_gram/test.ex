@@ -100,6 +100,30 @@ defmodule ExGram.Test do
 
   alias ExGram.Adapter.Test
 
+  def start_bot(context, bot_module, opts \\ []) do
+    base = context.test |> Atom.to_string() |> String.replace(~r/[^a-z0-9]/i, "_")
+    bot_name = String.to_atom("test_bot_#{base}_#{System.unique_integer([:positive])}")
+    module_name = Module.concat([bot_module, String.to_atom("Bot_#{bot_name}")])
+    extra_info = opts |> Keyword.get(:extra_info, %{}) |> Map.put(:test_pid, self())
+
+    base_opts = [
+      method: :test,
+      name: module_name,
+      bot_name: bot_name,
+      token: "test_token",
+      username: "test_bot",
+      setup_commands: false,
+      extra_info: extra_info
+    ]
+
+    bot_opts = Keyword.merge(base_opts, opts)
+
+    {:ok, _pid} =
+      bot_module.start_link(bot_opts)
+
+    {bot_name, module_name}
+  end
+
   @doc """
   Stub a response for a specific action or path.
 
@@ -314,6 +338,11 @@ defmodule ExGram.Test do
   This is the default mode.
   """
   defdelegate set_private(), to: Test
+
+  @doc """
+  Set the adapter to private or global mode depending on the current test context.
+  """
+  defdelegate set_from_context(context), to: Test
 
   @doc """
   Clean the current process's stubs, expectations, and recorded calls.

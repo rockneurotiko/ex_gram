@@ -13,6 +13,7 @@ defmodule ExGram.Dispatcher do
   alias ExGram.Cnt
   alias ExGram.Model
 
+  @type init_opts() :: [username: String.t() | nil, setup_commands: boolean()]
   @type custom_key() :: any()
 
   @type parsed_message() ::
@@ -32,6 +33,7 @@ defmodule ExGram.Dispatcher do
           bot_info: Model.User.t() | nil,
           dispatcher_name: atom(),
           extra_info: map(),
+          init_opts: init_opts(),
           commands: %{String.t() => map()},
           regex: [Regex.t()],
           middlewares: [Bot.middleware()],
@@ -44,6 +46,7 @@ defmodule ExGram.Dispatcher do
             bot_module: nil,
             dispatcher_name: __MODULE__,
             extra_info: %{},
+            init_opts: [username: nil, setup_commands: false],
             commands: %{},
             regex: [],
             middlewares: [],
@@ -55,9 +58,9 @@ defmodule ExGram.Dispatcher do
     struct!(__MODULE__, overrides)
   end
 
-  @spec init_state(atom(), module(), String.t() | nil, map()) :: t()
-  def init_state(name, module, username, extra_info) when is_atom(name) and is_atom(module) do
-    bot_info = if username, do: %Model.User{username: username, is_bot: true}
+  @spec init_state(atom(), module(), init_opts(), map()) :: t()
+  def init_state(name, module, opts, extra_info) when is_atom(name) and is_atom(module) do
+    bot_info = if username = opts[:username], do: %Model.User{username: username, is_bot: true}
 
     %__MODULE__{
       name: name,
@@ -65,6 +68,7 @@ defmodule ExGram.Dispatcher do
       bot_module: module,
       dispatcher_name: name,
       extra_info: extra_info,
+      init_opts: opts,
       commands: prepare_commands(module.commands()),
       regex: module.regexes(),
       middlewares: module.middlewares(),
@@ -106,9 +110,13 @@ defmodule ExGram.Dispatcher do
   @impl GenServer
   def handle_continue(:initialize_bot, %__MODULE__{} = state) do
     token = ExGram.Token.fetch(bot: state.name)
+
+    state.bot_module.init(bot: state.name, token: token, extra_info: state.extra_info)
+
     bot_info = get_bot_info(state, token)
 
-    state.bot_module.init(bot: state.name, token: token)
+    # We have to use bot_module.commands() to get the raw commands definitions
+    if state.init_opts[:setup_commands], do: Bot.SetupCommands.setup(state.bot_module.commands(), token)
 
     {:noreply, %{state | bot_info: bot_info}}
   end

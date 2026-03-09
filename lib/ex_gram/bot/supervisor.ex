@@ -8,7 +8,6 @@ defmodule ExGram.Bot.Supervisor do
 
   See the [Polling and Webhooks guide](polling-and-webhooks.md) for more details about different updates methods and the [testing guide](testing.md) for using the test updates worker in your tests.
   """
-  alias ExGram.Bot.SetupCommands
   alias ExGram.Dispatcher
 
   def child_spec(opts, module) do
@@ -38,11 +37,9 @@ defmodule ExGram.Bot.Supervisor do
     {updates_worker, updates_worker_opts} = updates_worker(updates_method)
     updates_worker_opts = Map.merge(updates_worker_opts, %{bot: name, token: token})
 
-    # move this to handle_continue too after commands PR is merged
-    if opts[:setup_commands], do: SetupCommands.setup(module.commands(), token)
-
     extra_info = Keyword.get(opts, :extra_info, %{})
-    dispatcher_opts = Dispatcher.init_state(name, module, opts[:username], extra_info)
+    dispatcher_init_opts = Keyword.take(opts, [:username, :setup_commands])
+    dispatcher_opts = Dispatcher.init_state(name, module, dispatcher_init_opts, extra_info)
 
     children =
       [

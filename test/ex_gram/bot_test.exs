@@ -3,9 +3,71 @@ defmodule ExGram.BotTest do
 
   import ExGram.TestHelpers
 
+  setup {ExGram.Test, :set_from_context}
   setup {ExGram.Test, :verify_on_exit!}
 
+  defp allow_dispatcher(bot_name) do
+    receive do
+      :init ->
+        if pid = Process.whereis(bot_name) do
+          ExGram.Test.allow(self(), pid)
+        end
+    end
+  end
+
   # --- Command Handling ---
+
+  describe "setup commands call" do
+    defmodule SetupCommandBot do
+      @moduledoc false
+      use ExGram.Bot, name: :setup_command_bot, setup_commands: true
+
+      command("start", description: "Start the bot")
+      command("help", description: "Get help information", lang: [es: [command: "ayuda"]])
+
+      def init(opts) do
+        test_pid = opts[:extra_info][:test_pid]
+        send(test_pid, :init)
+
+        receive do
+          :continue -> :ok
+        end
+      end
+    end
+
+    test "Register commands on startup", context do
+      test_pid = self()
+
+      ExGram.Test.expect(:get_me, build_user(%{id: 999, is_bot: true, first_name: "TestBot", username: "test_bot"}))
+
+      ExGram.Test.expect(:set_my_commands, fn body ->
+        assert body[:scope] == %{type: "default"}
+        assert length(body[:commands]) == 2
+        assert Enum.any?(body[:commands], fn cmd -> cmd[:command] == "start" end)
+        assert Enum.any?(body[:commands], fn cmd -> cmd[:command] == "help" end)
+
+        {:ok, true}
+      end)
+
+      ExGram.Test.expect(:set_my_commands, fn body ->
+        assert body[:scope] == %{type: "default"}
+        assert body[:language_code] == "es"
+        assert length(body[:commands]) == 2
+        assert Enum.any?(body[:commands], fn cmd -> cmd[:command] == "start" end)
+        assert Enum.any?(body[:commands], fn cmd -> cmd[:command] == "ayuda" end)
+
+        send(test_pid, :commands_set)
+        {:ok, true}
+      end)
+
+      {bot_name, _} = ExGram.Test.start_bot(context, SetupCommandBot, username: nil, setup_commands: true)
+
+      allow_dispatcher(bot_name)
+      send(Process.whereis(bot_name), :continue)
+
+      assert_receive :commands_set, 1000
+    end
+  end
 
   describe "command handling" do
     defmodule CommandBot do
@@ -38,8 +100,7 @@ defmodule ExGram.BotTest do
     end
 
     setup context do
-      {bot_name, module_name} = unique_bot_name(context)
-      {:ok, _pid} = CommandBot.start_link(method: :test, name: module_name, bot_name: bot_name, token: "test_token")
+      {bot_name, _} = ExGram.Test.start_bot(context, CommandBot)
       {:ok, bot_name: bot_name}
     end
 
@@ -160,8 +221,7 @@ defmodule ExGram.BotTest do
     end
 
     setup context do
-      {bot_name, module_name} = unique_bot_name(context)
-      {:ok, _pid} = TextBot.start_link(method: :test, name: module_name, bot_name: bot_name, token: "test_token")
+      {bot_name, _} = ExGram.Test.start_bot(context, TextBot)
       {:ok, bot_name: bot_name}
     end
 
@@ -237,8 +297,7 @@ defmodule ExGram.BotTest do
     end
 
     setup context do
-      {bot_name, module_name} = unique_bot_name(context)
-      {:ok, _pid} = CallbackBot.start_link(method: :test, name: module_name, bot_name: bot_name, token: "test_token")
+      {bot_name, _} = ExGram.Test.start_bot(context, CallbackBot)
       {:ok, bot_name: bot_name}
     end
 
@@ -355,14 +414,7 @@ defmodule ExGram.BotTest do
     end
 
     setup context do
-      # Stub get_me to prevent unexpected API call errors
-      ExGram.Test.stub(:get_me, fn _ ->
-        {:ok, build_user(%{id: 999, is_bot: true, first_name: "TestBot", username: "test_bot"})}
-      end)
-
-      {bot_name, module_name} = unique_bot_name(context)
-      {:ok, _pid} = InlineBot.start_link(method: :test, name: module_name, bot_name: bot_name, token: "test_token")
-
+      {bot_name, _} = ExGram.Test.start_bot(context, InlineBot)
       {:ok, bot_name: bot_name}
     end
 
@@ -405,8 +457,7 @@ defmodule ExGram.BotTest do
     end
 
     setup context do
-      {bot_name, module_name} = unique_bot_name(context)
-      {:ok, _pid} = LocationBot.start_link(method: :test, name: module_name, bot_name: bot_name, token: "test_token")
+      {bot_name, _} = ExGram.Test.start_bot(context, LocationBot)
       {:ok, bot_name: bot_name}
     end
 
@@ -451,8 +502,7 @@ defmodule ExGram.BotTest do
     end
 
     setup context do
-      {bot_name, module_name} = unique_bot_name(context)
-      {:ok, _pid} = EditBot.start_link(method: :test, name: module_name, bot_name: bot_name, token: "test_token")
+      {bot_name, _} = ExGram.Test.start_bot(context, EditBot)
       {:ok, bot_name: bot_name}
     end
 
@@ -503,8 +553,7 @@ defmodule ExGram.BotTest do
     end
 
     setup context do
-      {bot_name, module_name} = unique_bot_name(context)
-      {:ok, _pid} = GenericBot.start_link(method: :test, name: module_name, bot_name: bot_name, token: "test_token")
+      {bot_name, _} = ExGram.Test.start_bot(context, GenericBot)
       {:ok, bot_name: bot_name}
     end
 
@@ -608,8 +657,7 @@ defmodule ExGram.BotTest do
     end
 
     setup context do
-      {bot_name, module_name} = unique_bot_name(context)
-      {:ok, _pid} = DefaultBot.start_link(method: :test, name: module_name, bot_name: bot_name, token: "test_token")
+      {bot_name, _} = ExGram.Test.start_bot(context, DefaultBot)
       {:ok, bot_name: bot_name}
     end
 
@@ -653,8 +701,7 @@ defmodule ExGram.BotTest do
     end
 
     setup context do
-      {bot_name, module_name} = unique_bot_name(context)
-      {:ok, _pid} = RegexBot.start_link(method: :test, name: module_name, bot_name: bot_name, token: "test_token")
+      {bot_name, _} = ExGram.Test.start_bot(context, RegexBot)
       {:ok, bot_name: bot_name}
     end
 
@@ -735,8 +782,7 @@ defmodule ExGram.BotTest do
     end
 
     setup context do
-      {bot_name, module_name} = unique_bot_name(context)
-      {:ok, _pid} = ChainingBot.start_link(method: :test, name: module_name, bot_name: bot_name, token: "test_token")
+      {bot_name, _} = ExGram.Test.start_bot(context, ChainingBot)
       {:ok, bot_name: bot_name}
     end
 

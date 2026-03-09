@@ -52,6 +52,15 @@ defmodule ExGram.Adapter.Test do
             unexpected_calls: []
 
   # ---------------------------------------------------------------------------
+  # Exceptions
+  # ---------------------------------------------------------------------------
+
+  defmodule UnexpectedCallError do
+    @moduledoc false
+    defexception [:message]
+  end
+
+  # ---------------------------------------------------------------------------
   # Public API
   # ---------------------------------------------------------------------------
 
@@ -381,20 +390,41 @@ defmodule ExGram.Adapter.Test do
   @impl ExGram.Adapter
   def request(verb, path, body, _opts) do
     # Find the owner through the callers chain
-    callers = [self() | Process.get(:"$callers", [])]
+    callers = [self() | caller_pids()]
+    action = path |> clean_path() |> to_action()
 
     case fetch_owner_from_callers(callers) do
       {:ok, owner_pid} ->
-        handle_request(owner_pid, verb, path, body)
+        handle_request(owner_pid, verb, action, body)
 
       :no_expectation ->
-        {:error, %ExGram.Error{code: 404, message: "No owner found for adapter test"}}
+        raise UnexpectedCallError,
+              "no expectation defined for action #{action} in #{format_process()} with body #{inspect(body)}"
     end
   end
 
   # ---------------------------------------------------------------------------
   # Private helpers
   # ---------------------------------------------------------------------------
+
+  defp format_process do
+    callers = caller_pids()
+
+    "process #{inspect(self())}" <>
+      if Enum.empty?(callers) do
+        ""
+      else
+        " (or in its callers #{inspect(callers)})"
+      end
+  end
+
+  # Find the pid of the actual caller
+  defp caller_pids do
+    case Process.get(:"$callers") do
+      nil -> []
+      pids when is_list(pids) -> pids
+    end
+  end
 
   # Atomically fetch metadata and record the call to prevent race conditions.
   # If ownership exists but get_and_update fails (race with cleanup_owner),
@@ -423,15 +453,18 @@ defmodule ExGram.Adapter.Test do
     end
   end
 
-  defp handle_request(owner_pid, verb, path, body) do
-    action = path |> clean_path() |> to_action()
-
+  defp handle_request(owner_pid, verb, action, body) do
     # Atomically fetch metadata and record call to prevent race conditions
     case fetch_owner_and_record(owner_pid, {verb, action, body}) do
       {:ok, meta} ->
         get_response(owner_pid, meta, action, body)
 
       :error ->
+        # Record as unexpected call
+        update_owner_metadata(owner_pid, fn m ->
+          %{m | unexpected_calls: [{action, body} | m.unexpected_calls]}
+        end)
+
         {:error, %ExGram.Error{code: 404, message: "Owner metadata not found"}}
     end
   end
@@ -442,6 +475,11 @@ defmodule ExGram.Adapter.Test do
         normalize_response(response)
 
       :not_found ->
+        # Record as unexpected call
+        update_owner_metadata(owner_pid, fn m ->
+          %{m | unexpected_calls: [{action, body} | m.unexpected_calls]}
+        end)
+
         {:error, %ExGram.Error{code: 404, message: "No stub or expectation found for #{action}"}}
     end
   end
@@ -457,7 +495,7 @@ defmodule ExGram.Adapter.Test do
         {:ok, response}
 
       :not_found ->
-        check_stub_expectation(owner_pid, meta, action, body)
+        check_stub_expectation(meta, action, body)
     end
   end
 
@@ -471,10 +509,10 @@ defmodule ExGram.Adapter.Test do
     end
   end
 
-  defp check_stub_expectation(owner_pid, meta, action, body) do
+  defp check_stub_expectation(meta, action, body) do
     case check_stubs_and_errors(meta, action, body) do
       :not_found ->
-        check_catch_all_stub(owner_pid, meta, action, body)
+        check_catch_all_stub(meta, action, body)
 
       response ->
         response
@@ -590,14 +628,9 @@ defmodule ExGram.Adapter.Test do
     end
   end
 
-  defp check_catch_all_stub(owner_pid, meta, action, body) do
+  defp check_catch_all_stub(meta, action, body) do
     case meta.catch_all_stub do
       nil ->
-        # Record as unexpected call
-        update_owner_metadata(owner_pid, fn m ->
-          %{m | unexpected_calls: [{action, body} | m.unexpected_calls]}
-        end)
-
         :not_found
 
       callback ->

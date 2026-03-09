@@ -104,7 +104,11 @@ defmodule ExGram.Cast do
   end
 
   defp process_struct(t, elem) do
-    {:error, %ExGram.Error{message: "Expected a map for type #{inspect(t)}, got: #{inspect(elem)}"}}
+    if Keyword.keyword?(elem) do
+      process_struct(t, Map.new(elem))
+    else
+      {:error, %ExGram.Error{message: "Expected a map for type #{inspect(t)}, got: #{inspect(elem)}"}}
+    end
   end
 
   defp decode_struct_elements(elem, decode_as) do
