@@ -17,7 +17,9 @@ defmodule ExGram.TestHelpers do
   end
 
   def unique_bot_name(context) do
-    unique_name(context, "bot_test")
+    name = unique_name(context, "bot_test")
+    module_name = Module.concat([ExGram.TestHelpers, String.to_atom("Bot_#{name}")])
+    {name, module_name}
   end
 
   @doc """

@@ -638,6 +638,7 @@ defmodule MyApp.BotTest do
     # Start bot with unique name for test isolation
     base = context.test |> Atom.to_string() |> String.replace(~r/[^a-z0-9]/i, "_")
     bot_name = String.to_atom("bot_#{base}")
+    module_name = Module.concat([MyApp.Tests, String.to_atom("Bot_#{name}")])
 
     {:ok, _pid} =
       MyApp.Bot.start_link(
