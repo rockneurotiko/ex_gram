@@ -26,6 +26,18 @@ Add ExGram to `mix.exs` as shown in the [Installation](installation.md) guide, t
 mix deps.get
 ```
 
+## Add formatter (Optional)
+
+It is recommended to add `ExGram` to your `.formatter.exs` deps, that way the DSL will look clean.
+
+```elixir
+# .formatter.exs
+[
+    # ....
+    import_deps: [:ex_gram] # Add :ex_gram here
+]
+```
+
 ## Generate Your Bot
 
 ExGram provides a Mix task to generate a bot module:

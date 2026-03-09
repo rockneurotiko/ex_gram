@@ -44,6 +44,16 @@ Configure the adapter:
 config :ex_gram, adapter: ExGram.Adapter.Req
 ```
 
+Configure the formatter (Optional):
+
+```elixir
+# .formatter.exs
+[
+    # ....
+    import_deps: [:ex_gram] # Add :ex_gram here
+]
+```
+
 ### Your First Bot
 
 Generate a bot module:
