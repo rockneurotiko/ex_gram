@@ -4,22 +4,22 @@ if Code.ensure_loaded?(MDEx) do
     Converts CommonMark/GFM Markdown into a `{plain_text, [MessageEntity]}` tuple
     for the Telegram Bot API.
 
-    Uses MDEx (backed by Rust's `comrak`) for spec-compliant parsing, then walks
-    the AST to produce plain text annotated with `%ExGram.Model.MessageEntity{}`
+    Uses [MDEx](https://hexdocs.pm/mdex) (backed by Rust's `comrak`) for spec-compliant
+    parsing, then walks the AST to produce plain text annotated with `ExGram.Model.MessageEntity`
     structs whose `offset` and `length` fields are measured in UTF-16 code units
     (as required by Telegram).
 
     ## Options
 
-      * `:skip_blockquotes`: when `true`, blockquote nodes are rendered as
+      * `:skip_blockquotes` - when `true`, blockquote nodes are rendered as
         indented plain text instead of a `blockquote` entity. Useful when the
         output will itself be wrapped in an expandable blockquote, since Telegram
         forbids nested blockquotes.
 
     ## Fallback
 
-    If MDEx fails to parse, the raw markdown is returned as plain text with no
-    entities.
+    If [MDEx](https://hexdocs.pm/mdex) fails to parse, the raw markdown is returned
+    as plain text with no entities.
 
     ## Example
 
@@ -45,7 +45,7 @@ if Code.ensure_loaded?(MDEx) do
     ]
 
     @doc """
-    Converts a Markdown string into a `{plain_text, [MessageEntity]}` tuple.
+    Converts a Markdown string into a `t:ExGram.Dsl.MessageEntityBuilder.t/0` ready to be used.
     """
     @spec to_entities(String.t(), keyword()) :: B.t()
     def to_entities(markdown, opts \\ []) when is_binary(markdown) do
@@ -61,11 +61,16 @@ if Code.ensure_loaded?(MDEx) do
     end
 
     @doc """
-    Converts a `{plain_text, [MessageEntity]}` tuple back into a markdown string.
+    Converts a `t:ExGram.Dsl.MessageEntityBuilder.t/0` back into a markdown string.
+
+    > #### Warning {: .warning}
+    >
+    > The conversion from markdown <-> entities is not 1 on 1, since entities is a limited
+    > subset of markdown.
 
     ## Formats
 
-      * `:markdown` - CommonMark output (via MDEx AST)
+      * `:markdown` - CommonMark output (via [MDEx](https://hexdocs.pm/mdex) AST)
       * `:markdown_v2` - Telegram MarkdownV2 output with proper escaping
 
     ## Example

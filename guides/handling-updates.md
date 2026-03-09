@@ -4,10 +4,10 @@ This guide explains how to handle different types of updates from Telegram in yo
 
 ## The `handle/2` Function
 
-Every bot must implement the `handle/2` function. It receives:
+Every bot must implement the `c:ExGram.Handler.handle/2` function. It receives:
 
 1. **Update tuple** - Different tuple patterns for different update types
-2. **Context** - A `%ExGram.Cnt{}` struct with update information
+2. **Context** - A `t:ExGram.Cnt.t/0` struct with update information
 
 ```elixir
 def handle(update_tuple, context) do
@@ -19,7 +19,7 @@ end
 The context contains:
 - `update` - The full [Update](https://core.telegram.org/bots/api#update) object
 - `name` - Your bot's name (important for multiple bots)
-- `bot_info` - You bot's information, extracted with `ExGram.get_me` at startup
+- `bot_info` - You bot's information, extracted with `ExGram.get_me/1` at startup
 - `extra` - Custom data from middlewares
 - Internal fields used by ExGram
 
@@ -226,7 +226,7 @@ def handle({:update, update}, context) do
 end
 ```
 
-## The Context (`%ExGram.Cnt{}`)
+## The Context (`t:ExGram.Cnt.t/0`)
 
 The context struct contains:
 
@@ -266,9 +266,9 @@ end
 
 Read more about middlewares in [this guide](./middlewares.md)
 
-## The `init/1` Callback
+## The `c:ExGram.Handler.init/1` Callback
 
-The optional `init/1` callback runs once before processing updates. Use it to initialize your bot:
+The optional `c:ExGram.Handler.init/1` callback runs once before processing updates. Use it to initialize your bot:
 
 ```elixir
 def init(opts) do

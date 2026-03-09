@@ -1,6 +1,12 @@
 defmodule ExGram.Bot.Supervisor do
   @moduledoc """
-  Bot supervisor that starts the dispatcher and updates processes and tie them together
+  Bot supervisor that starts the `ExGram.Dispatcher` and Updates processes.
+
+  This supervisor coordinates the lifecycle of a bot's core components: the dispatcher
+  (which handles incoming updates) and the updates worker (which fetches or receives
+  updates from Telegram via polling, webhooks, or test mode).
+
+  See the [Polling and Webhooks guide](polling-and-webhooks.md) for more details about different updates methods and the [testing guide](testing.md) for using the test updates worker in your tests.
   """
   alias ExGram.Dispatcher
 

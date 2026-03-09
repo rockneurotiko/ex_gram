@@ -16,7 +16,7 @@ ExGram's low-level API is **automatically generated** from an up-to-date JSON de
 1. The `telegram_api_json` project scrapes the [Telegram Bot API documentation](https://core.telegram.org/bots/api)
 2. It produces a standardized JSON file with all methods, parameters, and models
 3. A Python script ([`extractor.py`](../extractor.py)) reads this JSON and generates Elixir code in [`lib/ex_gram.ex`](../lib/ex_gram.ex)
-4. As a result, `ExGram` have all the available methods and `Exgram.Model.*` all the models, both with proper typespecs and documentation
+4. As a result, `ExGram` have all the available methods and `ExGram.Model.*` all the models, both with proper typespecs and documentation
 
 **Result:** Every method has correct type specs and documentation, making the API a pleasure to use!
 
@@ -58,11 +58,11 @@ All methods are in the `ExGram` module and follow these conventions:
 
 ### Naming Convention
 
-Telegram's `camelCase` → Elixir's `snake_case`
+Telegram's `camelCase` to Elixir's `snake_case`
 
-- `sendMessage` → `send_message`
-- `getUpdates` → `get_updates`
-- `answerCallbackQuery` → `answer_callback_query`
+- `sendMessage` to `ExGram.send_message/3`
+- `getUpdates` to `ExGram.get_updates/1`
+- `answerCallbackQuery` to `ExGram.answer_callback_query/2`
 
 ### Method Signatures
 
@@ -146,7 +146,7 @@ All methods support three extra options:
 ExGram.send_message(chat_id, "Hello", bot: :my_bot)
 ```
 
-The bot name has to match to a defined AND started bot, the name is the one you write in `use ExGram.Bot, name: :my_bot`, and you can always get the name of a bot from the module with `MyBot.name()`
+The bot name has to match to a defined AND started bot, the name is the one you write in `use ExGram.Bot, name: :my_bot`, and you can always get the name of a bot from the module with `MyBot.name/0`
 
 **Note:** Only use **one** of `token` or `bot`, not both.
 

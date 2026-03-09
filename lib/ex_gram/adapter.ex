@@ -1,6 +1,13 @@
 defmodule ExGram.Adapter do
   @moduledoc """
-  Behaviour for HTTP adapters
+  Behaviour for HTTP adapters.
+
+  ExGram ships with three adapters:
+  - `ExGram.Adapter.Req` - Recommended, uses Req
+  - `ExGram.Adapter.Tesla` - Uses Tesla with configurable middleware
+  - `ExGram.Adapter.Test` - For testing, see [Testing guide](testing.md)
+
+  Implement this behaviour to create a custom adapter.
   """
 
   @type verb :: :post | :get

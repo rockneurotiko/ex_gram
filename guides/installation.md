@@ -28,7 +28,7 @@ ExGram requires an HTTP adapter to communicate with the Telegram Bot API. Choose
 
 ### Req Adapter (Recommended)
 
-The Req adapter is the simplest to set up and is recommended for most use cases.
+The [Req](https://hexdocs.pm/req) adapter is the simplest to set up and is recommended for most use cases.
 
 **Add to deps:**
 
@@ -44,7 +44,7 @@ config :ex_gram, adapter: ExGram.Adapter.Req
 
 ### Tesla Adapter
 
-Tesla provides more flexibility and supports multiple underlying HTTP clients.
+[Tesla](https://hexdocs.pm/tesla) provides more flexibility and supports multiple underlying HTTP clients.
 
 **Add to deps:**
 
@@ -138,7 +138,7 @@ config :ex_gram, adapter: YourCustomAdapter
 
 ## JSON Engine
 
-By default, ExGram uses `Jason` for JSON encoding/decoding. You can change it to any engine that exposes `encode/2`, `encode!/2`, `decode/2`, and `decode!/2`:
+By default, ExGram uses [Jason](https://hexdocs.pm/jason) for JSON encoding/decoding. You can change it to any engine that exposes `encode/2`, `encode!/2`, `decode/2`, and `decode!/2`:
 
 ```elixir
 config :ex_gram, json_engine: Poison

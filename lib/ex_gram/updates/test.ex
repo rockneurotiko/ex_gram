@@ -1,6 +1,14 @@
 defmodule ExGram.Updates.Test do
   @moduledoc """
-  Updates implementation for testing purposes
+  Updates implementation for testing purposes.
+
+  This GenServer implements the updates interface for test environments. Instead of
+  fetching updates from Telegram, it allows pushing updates synchronously via
+  `push_update/2`.
+
+  Configured with `config :ex_gram, updates: ExGram.Updates.Test`.
+
+  See the [Testing guide](testing.md) for more details.
   """
 
   use GenServer
@@ -30,15 +38,15 @@ defmodule ExGram.Updates.Test do
   end
 
   @doc """
-  Push an update synchronously through the bot's Dispatcher pipeline.
+  Push an update synchronously through the bot's `ExGram.Dispatcher` pipeline.
 
-  Automatically allows the Dispatcher process to use the caller's
-  test adapter stubs via NimbleOwnership.
+  Automatically allows the Dispatcher process to use the caller's test adapter stubs
+  via [NimbleOwnership](https://hexdocs.pm/nimble_ownership).
 
   ## Parameters
 
-    - `bot_name`: The bot's registered name (atom), which is also the Dispatcher's name
-    - `update`: An `%ExGram.Model.Update{}` struct
+    * `bot_name` - The bot's registered name (atom), which is also the Dispatcher's name
+    * `update` - An `t:ExGram.Model.Update.t/0` struct
 
   ## Example
 

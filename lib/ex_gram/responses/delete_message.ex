@@ -1,6 +1,8 @@
 defmodule ExGram.Responses.DeleteMessage do
   @moduledoc """
-  Delete message response
+  Delete message response using `ExGram.delete_message/3`.
+
+  Used by `ExGram.Dsl` for deleting message responses.
   """
 
   defstruct [:chat_id, :message_id, :ops]

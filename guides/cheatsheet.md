@@ -2,6 +2,59 @@
 
 Quick reference for common ExGram patterns and functions.
 
+## Configuration
+
+```elixir
+# config/config.exs
+config :ex_gram,
+  token: "BOT_TOKEN",
+  adapter: ExGram.Adapter.Req
+```
+
+## Bot module example
+
+```elixir
+defmodule MyBot.Bot do
+  @bot :my_bot
+  
+  use ExGram.Bot,
+    name: @bot,
+    setup_commands: true
+  
+  # Declare commands
+  command("start")
+  command("help", description: "Show help")
+  
+  # Declare regex patterns
+  regex(:email, ~r/\b[\w._%+-]+@[\w.-]+\.[A-Z|a-z]{2,}\b/)
+  
+  # Add middlewares
+  middleware(ExGram.Middleware.IgnoreUsername)
+  middleware(&my_middleware/2)
+  
+  # Init callback (optional)
+  def init(opts) do
+    # Setup before receiving updates
+    :ok
+  end
+  
+  # Handlers
+  def handle({:command, "start", _}, context) do
+    answer(context, "Hi!")
+  end
+end
+```
+
+## Supervision Tree
+
+```elixir
+children = [
+  ExGram,  # Must come first
+  {MyBot.Bot, [method: :polling, token: token]} 
+]
+```
+
+
 ## Handler Patterns
 
 ```elixir
@@ -101,39 +154,51 @@ end)
 {:file_content, binary_data, "filename.jpg"}
 ```
 
-## Inline Keyboards
+## Keyboards
 
 ```elixir
-# Simple keyboard
-markup = create_inline([
-  [
-    %{text: "Button 1", callback_data: "btn1"},
-    %{text: "Button 2", callback_data: "btn2"}
-  ],
-  [
-    %{text: "Button 3", callback_data: "btn3"}
-  ]
-])
+# Import the keyboard DSL
+import ExGram.Dsl.Keyboard
+
+# Simple inline keyboard
+markup = keyboard :inline do
+  row do
+    button "Button 1", callback_data: "btn1"
+    button "Button 2", callback_data: "btn2"
+  end
+  row do
+    button "Button 3", callback_data: "btn3"
+  end
+end
+
+# Use in different methods that accept reply_markup
+answer(context, "Choose:", reply_markup: markup)
 
 # With URL button
-markup = create_inline([
-  [create_inline_button("Visit", url: "https://example.com")]
-])
+keyboard :inlide do
+  row do
+    button "Visit", url: "https://example.com"
+  end
+end
 
-# Use in message
-answer(context, "Choose:", reply_markup: markup)
+# Reply keyboard (sticky keyboard)
+keyboard :reply, [is_persistent: true] do
+  row do
+    reply_button "Help", style: "success"
+  end
+end
 ```
 
 ## Context Extractors
 
 ```elixir
 # Chat/User info
-extract_id(context)           # Chat ID
+extract_id(context)           # Chat ID (User ID in private chats and Chat ID in groups)
 extract_user(context)         # User struct
 extract_chat(context)         # Chat struct
 
 # Message info
-extract_message_id(context)   # Message ID
+extract_message_id(context)   # Message id from any message type
 extract_message_type(context) # :text, :photo, :document, etc.
 
 # Query info
@@ -230,72 +295,12 @@ middleware({MyMiddleware, opts})
 # Built-in
 middleware(ExGram.Middleware.IgnoreUsername)
 
+# Add information to the extra field in `t:ExGram.Cnt.t/0`
+context |> ExGram.Middleware.add_extra(:key, value)
+context |> ExGram.Middleware.add_extra(%{key1: value1, key2: value2})
+
 # Halt processing
-context |> Map.put(:halted, true)
-```
-
-## Module Setup
-
-```elixir
-defmodule MyBot.Bot do
-  @bot :my_bot
-  
-  use ExGram.Bot,
-    name: @bot,
-    setup_commands: true
-  
-  # Declare commands
-  command("start")
-  command("help", description: "Show help")
-  
-  # Declare regex patterns
-  regex(:email, ~r/\b[\w._%+-]+@[\w.-]+\.[A-Z|a-z]{2,}\b/)
-  
-  # Add middlewares
-  middleware(ExGram.Middleware.IgnoreUsername)
-  middleware(&my_middleware/2)
-  
-  # Init callback (optional)
-  def init(opts) do
-    # Setup before receiving updates
-    :ok
-  end
-  
-  # Handlers
-  def handle({:command, "start", _}, context) do
-    answer(context, "Hi!")
-  end
-end
-```
-
-## Supervision Tree
-
-```elixir
-children = [
-  ExGram,  # Must come first
-  {MyBot.Bot, [method: :polling, token: token]}
-]
-```
-
-## Configuration
-
-```elixir
-# config/config.exs
-config :ex_gram,
-  token: "BOT_TOKEN",
-  adapter: ExGram.Adapter.Req
-
-# Polling
-config :ex_gram, :polling,
-  allowed_updates: ["message", "callback_query"]
-
-# Webhook
-config :ex_gram, :webhook,
-  url: "https://bot.example.com",
-  secret_token: "secret"
-
-# Test environment
-config :ex_gram, test_environment: true
+context |> ExGram.Middleware.halt()
 ```
 
 ## Common Patterns
@@ -329,18 +334,18 @@ end
 
 ```elixir
 defmodule AdminMiddleware do
-  @behaviour ExGram.Middleware
+  use ExGram.Middleware
   
   def call(context, opts) do
     user_id = ExGram.Dsl.extract_id(context)
     admin_ids = Keyword.get(opts, :admins, [])
     
     if user_id in admin_ids do
-      context
+      add_extra(context, :user_id, user_id)
     else
       context
       |> ExGram.Dsl.answer("⛔ Admin only")
-      |> Map.put(:halted, true)
+      |> halt()
     end
   end
 end
@@ -349,6 +354,8 @@ end
 ### Pagination
 
 ```elixir
+import ExGram.Dsl.Keyboard
+
 def handle({:command, "list", _}, context) do
   show_page(context, 1)
 end
@@ -364,13 +371,13 @@ end
 defp show_page(context, page) do
   items = get_items(page)
   
-  markup = create_inline([
-    [
-      %{text: "⬅️", callback_data: "page:#{page - 1}"},
-      %{text: "#{page}", callback_data: "current"},
-      %{text: "➡️", callback_data: "page:#{page + 1}"}
-    ]
-  ])
+  markup = keyboard :inline do
+    row do
+      button "⬅️", callback_data: "page:#{page - 1}"
+      button "#{page}", callback_data: "current"
+      button "➡️", callback_data: "page:#{page + 1}"
+    end
+  end
   
   edit(context, format_items(items), reply_markup: markup)
 end
@@ -414,6 +421,5 @@ assert result.responses != []
 
 ## Resources
 
-- [Telegram Bot API](https://core.telegram.org/bots/api)
 - [ExGram Hex Docs](https://hexdocs.pm/ex_gram)
-- [telegram_api_json](https://github.com/rockneurotiko/telegram_api_json)
+- [Telegram Bot API](https://core.telegram.org/bots/api)

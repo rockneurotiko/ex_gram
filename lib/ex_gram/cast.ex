@@ -1,6 +1,12 @@
 defmodule ExGram.Cast do
   @moduledoc """
   Helper module to convert plain values returned from Telegram to ExGram models.
+
+  This module handles the conversion of plain maps (JSON responses from the Telegram
+  Bot API) into strongly-typed ExGram model structs. It recursively processes nested
+  structures, arrays, and polymorphic types (subtypes).
+
+  See `ExGram.Model.Subtype` for how polymorphic types are handled.
   """
 
   alias ExGram.Model.Subtype
@@ -24,7 +30,7 @@ defmodule ExGram.Cast do
   @doc """
   Converts the given plain value to ExGram models.
 
-  Raises an error if the conversion fails. See cast/2 for more details.
+  Raises an error if the conversion fails. See `cast/2` for more details.
   """
   @spec cast!(any(), type_def()) :: any()
   def cast!(elem, type) do

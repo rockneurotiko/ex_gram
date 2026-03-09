@@ -98,7 +98,7 @@ def deps do
 end
 ```
 
-**2. Add ExGram.Plug to your router:**
+**2. Add `ExGram.Plug` to your router:**
 
 ```elixir
 defmodule MyApp.Router do

@@ -2,7 +2,9 @@ defmodule ExGram do
   @moduledoc """
   ExGram main supervisor that starts the bot's registry.
 
-  All the API calls are in this module. The API method's and models are auto generated and uses macros to build them.
+  All the API calls are in this module. The API methods and models are auto-generated
+  from the Telegram Bot API specification using the `ExGram.Macros` module. Model
+  definitions can be found in `ExGram.Model`.
   """
 
   use Supervisor

@@ -1,6 +1,12 @@
 defmodule ExGram.Dsl do
   @moduledoc """
-  Mini DSL to build answers based on the context easily.
+  Mini DSL to build answers based on the context (`ExGram.Cnt`) easily.
+
+  This module is automatically imported when using `ExGram.Bot`. Functions in this
+  module allow you to build responses declaratively by chaining operations on the
+  context. The responses are queued and executed after your handler returns.
+
+  See the [Sending Messages](sending-messages.md) guide for detailed usage examples.
   """
 
   alias ExGram.Cnt
@@ -121,7 +127,7 @@ defmodule ExGram.Dsl do
     end)
   end
 
-  @doc "Deprecated, use create_inline_keyboard/1 instead"
+  @doc "Deprecated, use `create_inline_keyboard/1` instead"
   def create_inline(data \\ [[]]), do: create_inline_keyboard(data)
 
   def create_inline_keyboard(data \\ [[]]) do

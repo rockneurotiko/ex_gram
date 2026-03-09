@@ -65,8 +65,8 @@ end
 - `use ExGram.Bot` - Imports the bot framework
 - `setup_commands: true` - Automatically registers commands with Telegram
 - `command/1-2` - Declares commands that your bot handles
-- `middleware/1` - Adds middleware to the processing pipeline
-- `handle/2` - Handles incoming updates
+- `middleware/1` - Adds middleware to the processing pipeline (see `ExGram.Middleware`)
+- `handle/2` - Handles incoming updates (callback from `c:ExGram.Handler.handle/2`)
 
 ## Configure Your Application
 
@@ -109,7 +109,7 @@ end
 
 **Key points:**
 - `ExGram` must be started before your bot 
-- `method: :polling` - Use polling to receive updates, learn more about how to get updates [in this guide](./polling-and-webhooks.md)
+- `method: :polling` - Use polling to receive updates, learn more about how to get updates [in this guide](polling-and-webhooks.md)
 - `token:` - Pass the token explicitly
 
 ## Run Your Bot
@@ -124,7 +124,7 @@ Open Telegram and send `/start` to your bot. It should reply with "Hi!"
 
 ## Token Configuration Options
 
-### 1. Global Config + Exlicit on bot
+### 1. Global Config + Explicit on bot
 
 If you just have one bot, this combination will allow you to use the DSL and the normal methods without any problem.
 
@@ -139,7 +139,7 @@ token = System.get_env("BOT_TOKEN") || Application.fetch_env!(:ex_gram, :token)
 
 ### 2. Only global config
 
-If you are just going to use the normal methods, no ExGram.Bot bots, then you can just configure the global token.
+If you are just going to use the normal methods, no `ExGram.Bot` bots, then you can just configure the global token.
 
 ```elixir
 # config/config.exs

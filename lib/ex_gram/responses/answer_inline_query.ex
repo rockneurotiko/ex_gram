@@ -1,6 +1,9 @@
 defmodule ExGram.Responses.AnswerInlineQuery do
   @moduledoc """
-  Answer inline query response
+  Answer inline query response using `ExGram.answer_inline_query/3`.
+
+  This is a helper response type used by `ExGram.Dsl` to respond to inline queries
+  with article results.
   """
 
   defstruct [:id, :articles, :ops]

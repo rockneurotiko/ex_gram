@@ -108,7 +108,9 @@ end
 ```
 
 
-NOTE: This sets the bot's name explicit (`bot_name: bot.bot_name`), this is done in order to allow to use the same bot module with different tokens, but it also implies that the name in the configuration is the one that will be used, and not the one setup in `use ExGram.Bot, name: <name>`, it only matters if you make direct calls to `ExGram` like `ExGram.send_message(..., bot: :bot_name)`, if you don't need to release different bots with the same bot's module, I recommend deleting that line.
+> #### Note {: .info }
+> NOTE: This sets the bot's name explicit (`bot_name: bot.bot_name`), this is done in order to allow to use the same bot module with different tokens.
+> But it also implies that the name in the configuration is the one that will be used, and not the one setup in `use ExGram.Bot, name: <name>`, it only matters if you make direct calls to ExGram like `ExGram.send_message/3` with `bot: :bot_name`, if you don't need to release different bots with the same bot's module, I recommend deleting that line.
 
 ## Using `context.name` for Direct API Calls
 
@@ -129,7 +131,7 @@ No additional configuration needed - the DSL knows which bot to use!
 
 ### Manual API Calls Require `bot:` Option
 
-When making direct `ExGram` method calls (outside the DSL), you **must** explicitly specify which bot to use. The `context.name` field contains the bot's name:
+When making direct ExGram method calls (outside the DSL), you **must** explicitly specify which bot to use. The `context.name` field contains the bot's name:
 
 ```elixir
 def handle({:command, "notify_admin", _}, context) do
@@ -146,6 +148,10 @@ def handle({:command, "notify_admin", _}, context) do
   answer(context, "Admin has been notified")
 end
 ```
+
+> #### Pro tip {: .tip}
+> Never hardcode the bot's name (`@name`) or use `MyBot.name()`, always use the `context.name` and pass it 
+> around if you need it, like that you will always do API calls with the correct bot
 
 ### Why This Matters
 

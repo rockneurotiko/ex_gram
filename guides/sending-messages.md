@@ -131,7 +131,7 @@ def handle({:command, "help", _}, context) do
 end
 ```
 
-**Options:** All the `ExGram.send_message` options, you can see them in [the documentation](https://hexdocs.pm/ex_gram/ExGram.html#send_message/3)
+**Options:** All the `ExGram.send_message/3` options, you can see them in [the documentation](https://hexdocs.pm/ex_gram/ExGram.html#send_message/3)
 
 ### Multiple Messages
 

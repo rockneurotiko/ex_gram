@@ -1,6 +1,15 @@
 defmodule ExGram.Middleware.Builder do
   @moduledoc """
-  Macros for building bot settings like middlewares, commands and regex
+  Macros for building bot middleware chains, commands, and regex patterns.
+
+  This module provides a DSL for declaratively configuring bot behavior using module
+  attributes. Use `use ExGram.Middleware.Builder` in your bot module to access the
+  `middleware/1-2`, `command/1-2`, and `regex/2-3` macros.
+
+  At compile time, these declarations are collected and exposed via `middlewares/0`,
+  `commands/0`, and `regexes/0` functions.
+
+  See the [Middlewares guide](middlewares.md) for usage examples.
   """
 
   defmacro __using__(_opts) do

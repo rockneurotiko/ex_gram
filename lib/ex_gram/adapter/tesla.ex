@@ -1,7 +1,12 @@
 if Code.ensure_loaded?(Tesla) do
   defmodule ExGram.Adapter.Tesla do
     @moduledoc """
-    HTTP Adapter that uses Tesla
+    HTTP adapter that uses [Tesla](https://hexdocs.pm/tesla) for Telegram Bot API requests.
+
+    This adapter supports multiple HTTP clients (Hackney, Finch, Gun, Mint, Httpc, Ibrowse)
+    and provides configurable middleware support.
+
+    See `ExGram.Adapter` behaviour for more details.
     """
 
     @behaviour ExGram.Adapter

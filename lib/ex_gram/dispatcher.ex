@@ -1,6 +1,10 @@
 defmodule ExGram.Dispatcher do
   @moduledoc """
-  Named process that receive the updates, apply the middlewares for the bot and call the bot's handler
+  Named GenServer process that receives updates, applies middlewares for the bot,
+  and calls the bot's `c:ExGram.Handler.handle/2` callback.
+
+  This module is started automatically by the bot's supervisor and shouldn't be
+  interacted with directly in most cases.
   """
 
   use GenServer

@@ -2,9 +2,9 @@
 
 Telegram supports two approaches for formatting messages: **parse modes** (MarkdownV2 / HTML) and **MessageEntity annotations**. 
 
-ExGram ships a composable DSL - `ExGram.Dsl.MessageEntityBuilder` - for the entity-based approach, and an optional `ExGram.Markdown` module that converts standard Markdown into entities using MDEx.
+ExGram ships a composable DSL - `ExGram.Dsl.MessageEntityBuilder` - for the entity-based approach, and an optional `ExGram.Markdown` module that converts standard Markdown into entities using [MDEx](https://hexdocs.pm/mdex).
 
-With entities, the plain text carries no formatting syntax. All formatting is expressed via `%ExGram.Model.MessageEntity{}` structs with UTF-16 offsets and lengths. This means:
+With entities, the plain text carries no formatting syntax. All formatting is expressed via `ExGram.Model.MessageEntity` structs with UTF-16 offsets and lengths. This means:
 
 - **No escaping headaches** - MarkdownV2 requires escaping many special characters (`_`, `*`, `[`, `]`, `(`, `)`, `~`, `` ` ``, `>`, `#`, `+`, `-`, `=`, `|`, `{`, `}`, `.`, `!`). With entities you send plain text.
 - **Longer effective messages** - Message entities doesn't consume characters from the message body, so you can fit more content within Telegram's message size limits (4096 UTF-16 characters)
@@ -358,7 +358,7 @@ end
 Both approaches accept the same options. The `answer/3` helper is just a
 convenience that extracts the chat ID from the context.
 
-## Converting Markdown with ExGram.Markdown
+## Converting Markdown with `ExGram.Markdown`
 
 If you already have Markdown content - from an API response, user input, or
 a template - `ExGram.Markdown` converts it directly into the same
@@ -366,7 +366,7 @@ a template - `ExGram.Markdown` converts it directly into the same
 
 ### Setup
 
-MDEx is an optional dependency of ExGram. Add it to your `mix.exs`:
+[MDEx](https://hexdocs.pm/mdex) is an optional dependency of ExGram. Add it to your `mix.exs`:
 
 ```elixir
 defp deps do

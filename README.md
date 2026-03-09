@@ -15,7 +15,7 @@
 - **Automatic API Generation** - Always up-to-date with the latest [Telegram Bot API](https://core.telegram.org/bots/api)
 - **Flexible DSL** - Build responses elegantly with the context-based DSL
 - **Polling & Webhooks** - Choose the update method that fits your needs
-- **Eays discovery of the API** - Complete typespecs and documentation for all methods and models
+- **Easy discovery of the API** - Complete typespecs and documentation for all methods and models
 - **Middleware System** - Add authentication, logging, and custom processing
 - **Message Entities Builder** - Easily format messages without Markdown/HTML escaping
 - **Multiple Bots** - Run multiple different bots, or instances of the same bot in a single application
@@ -211,7 +211,7 @@ message = ExGram.send_message!(chat_id, "Hello")  # Raises on error
 ```
 
 
-See the [Sending Messages](guides/sending-messages.md] guide for a complete reference or the  [Cheatsheet](guides/cheatsheet.md) for a quick overview.
+See the [Sending Messages](guides/sending-messages.md) guide for a complete reference or the [Cheatsheet](guides/cheatsheet.md) for a quick overview.
 
 ## Documentation
 

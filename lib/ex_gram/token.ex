@@ -1,6 +1,11 @@
 defmodule ExGram.Token do
   @moduledoc """
-  Helpers when dealing with bot's tokens
+  Helpers for working with bot tokens.
+
+  This module provides the `fetch/1` function to retrieve bot tokens from various
+  sources: explicit options, the bot registry, or application configuration.
+
+  See `ExGram.Bot` for how tokens are registered during bot startup.
   """
 
   require Logger
@@ -11,19 +16,20 @@ defmodule ExGram.Token do
   Main logic to extract the token of the bot.
 
   The options can have the following keys:
-  - token: Explicit token to be used, this ignore everything else and will use this one
-  - bot: Bot name to be used, the token will be retrieved from the registry
-  - registry: Optional. Registry to extract the bot's token. By default will use ExGram.Registry.
 
-  Usage:
+    * `:token` - Explicit token to be used (ignores everything else)
+    * `:bot` - Bot name (atom) to retrieve token from registry
+    * `:registry` - Optional. Registry to extract the bot's token (default: `Registry.ExGram`)
 
-  ExGram.Token.fetch() # Will take it from the config (config :ex_gram, token: "token")
+  ## Examples
 
-  ExGram.Token.fetch(token: "MyToken") # Will use the token
+      ExGram.Token.fetch() # From config :ex_gram, :token
 
-  ExGram.Token.fetch(bot: :my_bot) # Will look in ExGram.Registry for :my_bot token
+      ExGram.Token.fetch(token: "MyToken") # Explicit token
 
-  ExGram.Token.fetch(bot: :my_bot, registry: OtherRegistry) # Will look in OtherRegistry for :My_bot token
+      ExGram.Token.fetch(bot: :my_bot) # From Registry.ExGram
+
+      ExGram.Token.fetch(bot: :my_bot, registry: OtherRegistry)
   """
   @spec fetch(keyword) :: String.t() | nil
   def fetch(ops \\ []) when is_list(ops) do

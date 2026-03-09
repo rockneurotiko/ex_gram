@@ -28,7 +28,7 @@ defmodule ExGram.Adapter.Test do
         # calls = [{:post, :send_message, %{"chat_id" => 123, ...}}]
       end
 
-  You can learn mode in the [testing guide](https://hexdocs.pm/ex_gram/testing.html)
+  You can learn more in the [testing guide](https://hexdocs.pm/ex_gram/testing.html)
 
   ## API Methods
 
@@ -256,13 +256,13 @@ defmodule ExGram.Adapter.Test do
 
         # Check for unfulfilled catch-all expectations
         errors =
-          if meta.catch_all_expectations != [] do
+          if meta.catch_all_expectations == [] do
+            errors
+          else
             [
               "Catch-all expectations not fulfilled: #{length(meta.catch_all_expectations)} remaining"
               | errors
             ]
-          else
-            errors
           end
 
         if errors == [] do

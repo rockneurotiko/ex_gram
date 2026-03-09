@@ -1,6 +1,11 @@
 defmodule ExGram.Responses.EditInline do
   @moduledoc """
-  Edit inline message response. It will detect the message and use it accordingly to edit the normal or inline message.
+  Edit inline message response using `ExGram.edit_message_text/2`.
+
+  This response type edits the text content of either a regular message or an inline
+  message. It automatically detects which type based on the provided message identifiers.
+
+  Used by `ExGram.Dsl` for editing message responses.
   """
 
   defstruct [:text, :message_id, :chat_id, :inline_message_id, :ops]

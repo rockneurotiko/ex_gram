@@ -1,6 +1,12 @@
 defmodule ExGram.Middleware do
   @moduledoc """
-  Helper to make it easier to create middlewares
+  Behaviour for creating middlewares.
+
+  Middlewares receive the context (`ExGram.Cnt`) and can modify it before passing
+  it to the next middleware or handler. Use middlewares for authentication, logging,
+  rate limiting, or enriching the context with additional data.
+
+  See the [Middlewares](middlewares.md) guide for usage examples.
   """
 
   @type opts :: binary | tuple | atom | integer | float | [opts] | %{opts => opts}

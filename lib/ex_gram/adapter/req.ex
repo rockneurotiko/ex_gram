@@ -1,7 +1,12 @@
 if Code.ensure_loaded?(Req) do
   defmodule ExGram.Adapter.Req do
     @moduledoc """
-    HTTP Adapter that uses Req
+    HTTP adapter that uses [Req](https://hexdocs.pm/req) for Telegram Bot API requests.
+
+    This is the recommended HTTP adapter. It uses Finch under the hood for connection
+    pooling and provides sensible defaults for long polling.
+
+    See `ExGram.Adapter` behaviour for more details.
     """
     @behaviour ExGram.Adapter
 

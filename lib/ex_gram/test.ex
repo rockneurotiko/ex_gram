@@ -9,13 +9,12 @@ defmodule ExGram.Test do
 
   ExGram ships with a test adapter that intercepts Telegram API calls, making it easy
   to test bots without hitting real servers. The adapter supports per-process isolation
-  for async tests and provides stub/expect/verify semantics similar to Mox.
+  for async tests and provides stub/expect/verify semantics similar to [Mox](https://hexdocs.pm/mox).
 
   ## Quick Start
 
-  Configure your test environment:
+  Configure your test environment in `config/test.exs`:
 
-      # config/test.exs
       config :ex_gram,
         token: "test_token",
         adapter: ExGram.Adapter.Test,
@@ -26,7 +25,7 @@ defmodule ExGram.Test do
       {:ok, _} = ExGram.Adapter.Test.start_link()
       ExUnit.start()
 
-  Use `ExGram.Test` in your tests:
+  Use the testing conveniences from this module in your tests:
 
       defmodule MyBotTest do
         use ExUnit.Case, async: true
@@ -92,8 +91,7 @@ defmodule ExGram.Test do
 
       ExGram.Test.push_update(:my_bot, update)
 
-  See the [Testing guide](https://hexdocs.pm/ex_gram/testing.html) for more
-  examples and patterns.
+  See the [Testing guide](testing.md) for more examples and patterns.
   """
 
   # ---------------------------------------------------------------------------

@@ -1,6 +1,18 @@
 defmodule ExGram.Updates.Webhook do
   @moduledoc """
-  Updates implementation that uses webhook method
+  Updates implementation using the webhook method.
+
+  This GenServer receives updates pushed from Telegram via webhooks. On startup,
+  it automatically calls `ExGram.set_webhook/2` to register the webhook URL with
+  Telegram.
+
+  The webhook URL is constructed as `<base_url>/telegram/<token_hash>`, where
+  `token_hash` is a Base64-encoded SHA hash of the bot token.
+
+  Configured with `config :ex_gram, updates: ExGram.Updates.Webhook, webhook: [...]`.
+
+  See the [Polling and Webhooks guide](polling-and-webhooks.md) and `ExGram.Plug`
+  for more details.
   """
 
   use GenServer

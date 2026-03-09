@@ -1,6 +1,6 @@
 # Testing
 
-ExGram ships with a test adapter that intercepts Telegram API calls, making it easy to test bots without hitting real servers. The adapter supports per-process isolation for async tests and provides stub/expect/verify semantics similar to Mox and Req.Test
+ExGram ships with a test adapter that intercepts Telegram API calls, making it easy to test bots without hitting real servers. The adapter supports per-process isolation for async tests and provides stub/expect/verify semantics similar to [Mox](https://hexdocs.pm/mox) and [Req.Test](https://hexdocs.pm/req/Req.Test.html)
 
 ## Setup
 
@@ -22,7 +22,7 @@ This tells ExGram to:
 
 ### Starting the Adapter
 
-The test adapter uses `NimbleOwnership` for per-process isolation. You need to start it before running tests.
+The test adapter uses [NimbleOwnership](https://hexdocs.pm/nimble_ownership) for per-process isolation. You need to start it before running tests.
 
 **Option A: In your supervision tree (for applications)**
 
@@ -427,7 +427,7 @@ end
 
 ### How It Works
 
-The test adapter uses `NimbleOwnership` to provide per-process isolation. Each test process that calls `stub/2` or `expect/2` becomes an "owner" of its own stubs, expectations, and call recordings.
+The test adapter uses [NimbleOwnership](https://hexdocs.pm/nimble_ownership) to provide per-process isolation. Each test process that calls `stub/2` or `expect/2` becomes an "owner" of its own stubs, expectations, and call recordings.
 
 This is why `async: true` works - each test has completely isolated state:
 

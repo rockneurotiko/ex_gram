@@ -1,8 +1,12 @@
 defmodule ExGram.Dsl.Keyboard do
   @moduledoc """
-  Keyboard DSL to create inline keyboards easily
+  Keyboard DSL to create inline and reply keyboards easily.
 
-  Example:
+  This DSL provides a clean syntax for building `ExGram.Model.InlineKeyboardMarkup`
+  and `ExGram.Model.ReplyKeyboardMarkup` structures without manually constructing
+  nested button arrays.
+
+  ## Example
 
   ``` elixir
   keyb = keyboard :inline do
@@ -17,6 +21,8 @@ defmodule ExGram.Dsl.Keyboard do
     end
   end
   ```
+
+  See the [Sending Messages guide](sending-messages.md) for more examples.
   """
 
   # Macros:

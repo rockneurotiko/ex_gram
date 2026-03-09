@@ -1,6 +1,6 @@
 defmodule ExGram.Dsl.MessageEntityBuilder do
   @moduledoc """
-  Composable builder for Telegram `MessageEntity` formatted messages.
+  Composable builder for Telegram `ExGram.Model.MessageEntity` formatted messages.
 
   Instead of constructing MarkdownV2 strings with escape sequences, this module
   produces `{plain_text, [%ExGram.Model.MessageEntity{}]}` tuples. The plain text
@@ -9,11 +9,11 @@ defmodule ExGram.Dsl.MessageEntityBuilder do
 
   ## Core concept
 
-  Every builder function returns a `{text, entities}` tuple. Caller code
+  Every builder function returns a `{text, entities}` tuple (`t:t/0`). Caller code
   builds up message content by creating these tuples and then composing them
   with `concat/1` or `join/2`. Offsets in the entities are always relative to
-  the beginning of the text in that specific tuple; `concat/1` takes care of
-  adjusting offsets as tuples are combined.
+  the beginning of the text in that specific tuple; `concat/1` automatically
+  adjusts offsets as tuples are combined.
 
   ## Example
 
@@ -35,7 +35,7 @@ defmodule ExGram.Dsl.MessageEntityBuilder do
   @doc """
   Returns the number of UTF-16 code units in the given string.
 
-  This is what Telegram expects for `MessageEntity` `offset` and `length` fields.
+  This is what Telegram expects for `ExGram.Model.MessageEntity` `offset` and `length` fields.
   """
   @spec utf16_length(String.t()) :: non_neg_integer()
   def utf16_length(str) when is_binary(str) do
