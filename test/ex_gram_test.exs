@@ -1,6 +1,15 @@
 defmodule ExGramTest do
   use ExUnit.Case, async: true
 
+  alias ExGram.Model.BotCommand
+  alias ExGram.Model.Chat
+  alias ExGram.Model.InputPollOption
+  alias ExGram.Model.Location
+  alias ExGram.Model.Message
+  alias ExGram.Model.PhotoSize
+  alias ExGram.Model.Sticker
+  alias ExGram.Model.User
+
   doctest ExGram
 
   setup {ExGram.Test, :verify_on_exit!}
@@ -21,7 +30,7 @@ defmodule ExGramTest do
 
       {:ok, user} = ExGram.get_me()
 
-      assert %ExGram.Model.User{} = user
+      assert %User{} = user
       assert user.id == 123_456_789
       assert user.is_bot == true
       assert user.first_name == "TestBot"
@@ -52,9 +61,9 @@ defmodule ExGramTest do
       assert [update] = updates
       assert %ExGram.Model.Update{} = update
       assert update.update_id == 1
-      assert %ExGram.Model.Message{} = update.message
-      assert %ExGram.Model.User{} = update.message.from
-      assert %ExGram.Model.Chat{} = update.message.chat
+      assert %Message{} = update.message
+      assert %User{} = update.message.from
+      assert %Chat{} = update.message.chat
     end
   end
 
@@ -130,11 +139,11 @@ defmodule ExGramTest do
 
       {:ok, message} = ExGram.send_message(123, "Hello!")
 
-      assert %ExGram.Model.Message{} = message
+      assert %Message{} = message
       assert message.message_id == 100
-      assert %ExGram.Model.Chat{} = message.chat
+      assert %Chat{} = message.chat
       assert message.chat.id == 123
-      assert %ExGram.Model.User{} = message.from
+      assert %User{} = message.from
       assert message.from.id == 999
       assert message.text == "Hello!"
     end
@@ -176,11 +185,11 @@ defmodule ExGramTest do
 
       {:ok, message} = ExGram.forward_message(456, 123, 100)
 
-      assert %ExGram.Model.Message{} = message
+      assert %Message{} = message
       assert message.message_id == 102
       # MessageOrigin is polymorphic - can be MessageOriginUser, MessageOriginHiddenUser, etc.
       assert message.forward_origin.type == "user"
-      assert %ExGram.Model.User{} = message.forward_origin.sender_user
+      assert %User{} = message.forward_origin.sender_user
     end
   end
 
@@ -216,10 +225,10 @@ defmodule ExGramTest do
 
       {:ok, message} = ExGram.send_photo(123, "photo123")
 
-      assert %ExGram.Model.Message{} = message
+      assert %Message{} = message
       assert is_list(message.photo)
       [photo | _] = message.photo
-      assert %ExGram.Model.PhotoSize{} = photo
+      assert %PhotoSize{} = photo
       assert photo.file_id == "photo123"
     end
 
@@ -239,7 +248,7 @@ defmodule ExGramTest do
 
       {:ok, message} = ExGram.send_photo(123, {:file, "/tmp/test.jpg"})
 
-      assert %ExGram.Model.Message{} = message
+      assert %Message{} = message
       assert message.message_id == 105
     end
   end
@@ -265,7 +274,7 @@ defmodule ExGramTest do
 
       {:ok, message} = ExGram.send_audio(123, {:file_content, <<1, 2, 3>>, "test.mp3"})
 
-      assert %ExGram.Model.Message{} = message
+      assert %Message{} = message
       assert %ExGram.Model.Audio{} = message.audio
       assert message.audio.duration == 180
     end
@@ -287,7 +296,7 @@ defmodule ExGramTest do
 
       {:ok, message} = ExGram.send_document(123, "doc123")
 
-      assert %ExGram.Model.Message{} = message
+      assert %Message{} = message
       assert %ExGram.Model.Document{} = message.document
     end
   end
@@ -310,7 +319,7 @@ defmodule ExGramTest do
 
       {:ok, message} = ExGram.send_video(123, "video123")
 
-      assert %ExGram.Model.Message{} = message
+      assert %Message{} = message
       assert %ExGram.Model.Video{} = message.video
       assert message.video.width == 1920
     end
@@ -331,8 +340,8 @@ defmodule ExGramTest do
 
       {:ok, message} = ExGram.send_location(123, 40.7128, -74.0060)
 
-      assert %ExGram.Model.Message{} = message
-      assert %ExGram.Model.Location{} = message.location
+      assert %Message{} = message
+      assert %Location{} = message.location
       assert message.location.latitude == 40.7128
       assert message.location.longitude == -74.0060
     end
@@ -354,9 +363,9 @@ defmodule ExGramTest do
 
       {:ok, message} = ExGram.send_venue(123, 40.7128, -74.0060, "Test Venue", "123 Test St")
 
-      assert %ExGram.Model.Message{} = message
+      assert %Message{} = message
       assert %ExGram.Model.Venue{} = message.venue
-      assert %ExGram.Model.Location{} = message.venue.location
+      assert %Location{} = message.venue.location
       assert message.venue.title == "Test Venue"
     end
   end
@@ -376,7 +385,7 @@ defmodule ExGramTest do
 
       {:ok, message} = ExGram.send_contact(123, "+1234567890", "John")
 
-      assert %ExGram.Model.Message{} = message
+      assert %Message{} = message
       assert %ExGram.Model.Contact{} = message.contact
       assert message.contact.phone_number == "+1234567890"
     end
@@ -403,13 +412,13 @@ defmodule ExGramTest do
 
       # send_poll expects InputPollOption structs
       options = [
-        %ExGram.Model.InputPollOption{text: "Red"},
-        %ExGram.Model.InputPollOption{text: "Blue"}
+        %InputPollOption{text: "Red"},
+        %InputPollOption{text: "Blue"}
       ]
 
       {:ok, message} = ExGram.send_poll(123, "What is your favorite color?", options)
 
-      assert %ExGram.Model.Message{} = message
+      assert %Message{} = message
       assert %ExGram.Model.Poll{} = message.poll
       assert is_list(message.poll.options)
       assert length(message.poll.options) == 2
@@ -431,7 +440,7 @@ defmodule ExGramTest do
 
       {:ok, message} = ExGram.send_dice(123)
 
-      assert %ExGram.Model.Message{} = message
+      assert %Message{} = message
       assert %ExGram.Model.Dice{} = message.dice
       assert message.dice.emoji == "🎲"
       assert message.dice.value == 4
@@ -463,7 +472,7 @@ defmodule ExGramTest do
 
       {:ok, message} = ExGram.edit_message_text("Edited text", chat_id: 123, message_id: 100)
 
-      assert %ExGram.Model.Message{} = message
+      assert %Message{} = message
       assert message.text == "Edited text"
       assert message.edit_date == 1_700_000_100
     end
@@ -526,7 +535,7 @@ defmodule ExGramTest do
 
       # ChatMember is polymorphic - can be ChatMemberMember, ChatMemberAdministrator, etc.
       assert member.status == "member"
-      assert %ExGram.Model.User{} = member.user
+      assert %User{} = member.user
     end
   end
 
@@ -554,7 +563,7 @@ defmodule ExGramTest do
       assert length(admins) == 2
       # ChatMember is polymorphic, so we just check the common fields
       assert Enum.all?(admins, fn admin -> admin.status in ["administrator", "creator"] end)
-      assert Enum.all?(admins, fn admin -> match?(%ExGram.Model.User{}, admin.user) end)
+      assert Enum.all?(admins, fn admin -> match?(%User{}, admin.user) end)
     end
   end
 
@@ -642,8 +651,8 @@ defmodule ExGramTest do
 
       # set_my_commands expects BotCommand structs
       commands = [
-        %ExGram.Model.BotCommand{command: "start", description: "Start the bot"},
-        %ExGram.Model.BotCommand{command: "help", description: "Show help"}
+        %BotCommand{command: "start", description: "Start the bot"},
+        %BotCommand{command: "help", description: "Show help"}
       ]
 
       {:ok, result} = ExGram.set_my_commands(commands)
@@ -662,7 +671,7 @@ defmodule ExGramTest do
       {:ok, commands} = ExGram.get_my_commands()
 
       assert is_list(commands)
-      assert Enum.all?(commands, &match?(%ExGram.Model.BotCommand{}, &1))
+      assert Enum.all?(commands, &match?(%BotCommand{}, &1))
     end
   end
 
@@ -755,7 +764,7 @@ defmodule ExGramTest do
       assert photos.total_count == 2
       assert is_list(photos.photos)
       assert [[photo | _] | _] = photos.photos
-      assert %ExGram.Model.PhotoSize{} = photo
+      assert %PhotoSize{} = photo
     end
   end
 
@@ -781,8 +790,8 @@ defmodule ExGramTest do
 
       {:ok, message} = ExGram.send_sticker(123, "sticker123")
 
-      assert %ExGram.Model.Message{} = message
-      assert %ExGram.Model.Sticker{} = message.sticker
+      assert %Message{} = message
+      assert %Sticker{} = message.sticker
     end
   end
 
@@ -811,7 +820,7 @@ defmodule ExGramTest do
       assert sticker_set.name == "test_sticker_set"
       assert is_list(sticker_set.stickers)
       assert [sticker | _] = sticker_set.stickers
-      assert %ExGram.Model.Sticker{} = sticker
+      assert %Sticker{} = sticker
     end
   end
 
