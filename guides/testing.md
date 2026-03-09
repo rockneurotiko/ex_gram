@@ -99,15 +99,96 @@ defmodule MyApp.NotificationsTest do
     {verb, action, body} = hd(calls)
     assert verb == :post
     assert action == :send_message
-    assert body["chat_id"] == 123
-    assert body["text"] == "Your order has shipped!"
+    assert body[:chat_id] == 123
+    assert body[:text] == "Your order has shipped!"
   end
+end
+```
+
+## Expectations
+
+Expectations are the **recommended approach** for testing. They are like stubs, but they are **consumed** after being called. Use them when you want to verify that a call happens exactly N times or to coordinate flows.
+
+### Basic Expectations
+
+```elixir
+test "expects call exactly once" do
+  ExGram.Test.expect(:send_message, %{
+    message_id: 1,
+    chat: %{id: 123},
+    text: "Welcome!"
+  })
+
+  # First call - OK
+  {:ok, _msg} = ExGram.send_message(123, "Welcome!")
+
+  # Second call - Error! Expectation was already consumed
+  {:error, %ExGram.Error{message: msg}} = ExGram.send_message(123, "Again")
+  assert msg =~ "No stub or expectation"
+end
+```
+
+### Expectations with Counts
+
+Expect a call N times:
+
+```elixir
+test "expects call three times" do
+  ExGram.Test.expect(:send_message, 3, %{
+    message_id: 1,
+    text: "ok"
+  })
+
+  ExGram.send_message(123, "First")
+  ExGram.send_message(123, "Second")
+  ExGram.send_message(123, "Third")
+
+  # Fourth call fails
+  {:error, _} = ExGram.send_message(123, "Fourth")
+end
+```
+
+### Dynamic Expectations
+
+Use callbacks with expectations too:
+
+```elixir
+test "expects specific request body" do
+  ExGram.Test.expect(:send_message, fn body ->
+    # Assertions inside the callback!
+    assert body[:chat_id] == 123
+    assert body[:text] =~ "order #"
+    assert body[:parse_mode] == "HTML"
+
+    {:ok, %{message_id: 1, text: body[:text]}}
+  end)
+
+  ExGram.send_message(123, "Your order #42 has shipped!", parse_mode: "HTML")
+end
+```
+
+### Catch-All Expectations
+
+Like catch-all stubs, but consumed after being called:
+
+```elixir
+test "catch-all expectation" do
+  ExGram.Test.expect(2, fn action, body ->
+    assert action in [:send_message, :send_chat_action]
+    {:ok, true}
+  end)
+
+  ExGram.send_message(123, "Hello")      # Consumes 1/2
+  ExGram.send_chat_action(123, "typing") # Consumes 2/2
+
+  # Third call fails
+  {:error, _} = ExGram.get_me()
 end
 ```
 
 ## Stubbing Responses
 
-Stubs define responses for API calls. They remain active for all matching calls until the test ends.
+Stubs are useful when you don't care about verifying the exact number of calls. They define responses for API calls and remain active for all matching calls until the test ends.
 
 ### Static Responses
 
@@ -200,7 +281,7 @@ end
 
 ### Error Responses
 
-Stub errors with `sttub/2`:
+Stub errors with `stub/2`:
 
 ```elixir
 test "handles API errors" do
@@ -220,7 +301,7 @@ You can use it for in callbacks too:
 
 ```elixir
 ExGram.Test.stub(:send_message, fn body ->
-  if body["chat_id"] == 999 do
+  if body[:chat_id] == 999 do
     {:error, %ExGram.Error{message: "Forbidden: bot was blocked by the user"}}
   else
     {:ok, %{message_id: 1, text: "ok"}}
@@ -228,88 +309,7 @@ ExGram.Test.stub(:send_message, fn body ->
 end)
 ```
 
-## Expectations
-
-Expectations are like stubs, but they are **consumed** after being called. Use them when you want to verify that a call happens exactly N times or to coordinate flows.
-
-### Basic Expectations
-
-```elixir
-test "expects call exactly once" do
-  ExGram.Test.expect(:send_message, %{
-    message_id: 1,
-    chat: %{id: 123},
-    text: "Welcome!"
-  })
-
-  # First call - OK
-  {:ok, _msg} = ExGram.send_message(123, "Welcome!")
-
-  # Second call - Error! Expectation was already consumed
-  {:error, %ExGram.Error{message: msg}} = ExGram.send_message(123, "Again")
-  assert msg =~ "No stub or expectation"
-end
-```
-
-### Expectations with Counts
-
-Expect a call N times:
-
-```elixir
-test "expects call three times" do
-  ExGram.Test.expect(:send_message, 3, %{
-    message_id: 1,
-    text: "ok"
-  })
-
-  ExGram.send_message(123, "First")
-  ExGram.send_message(123, "Second")
-  ExGram.send_message(123, "Third")
-
-  # Fourth call fails
-  {:error, _} = ExGram.send_message(123, "Fourth")
-end
-```
-
-### Dynamic Expectations
-
-Use callbacks with expectations too:
-
-```elixir
-test "expects specific request body" do
-  ExGram.Test.expect(:send_message, fn body ->
-    # Assertions inside the callback!
-    assert body["chat_id"] == 123
-    assert body["text"] =~ "order #"
-    assert body["parse_mode"] == "HTML"
-
-    {:ok, %{message_id: 1, text: body["text"]}}
-  end)
-
-  ExGram.send_message(123, "Your order #42 has shipped!", parse_mode: "HTML")
-end
-```
-
-### Catch-All Expectations
-
-Like catch-all stubs, but consumed after being called:
-
-```elixir
-test "catch-all expectation" do
-  ExGram.Test.expect(2, fn action, body ->
-    assert action in [:send_message, :send_chat_action]
-    {:ok, true}
-  end)
-
-  ExGram.send_message(123, "Hello")      # Consumes 1/2
-  ExGram.send_chat_action(123, "typing") # Consumes 2/2
-
-  # Third call fails
-  {:error, _} = ExGram.get_me()
-end
-```
-
-### Priority Order
+## Priority Order
 
 When a call is made, the adapter checks in this order:
 
@@ -363,7 +363,7 @@ assert Enum.any?(calls, fn {_, action, _} -> action == :send_chat_action end)
 
 # Extract body of first matching call
 {_, _, body} = Enum.find(calls, fn {_, action, _} -> action == :edit_message_text end)
-assert body["message_id"] == 123
+assert body[:message_id] == 123
 
 # Assert no calls were made
 assert ExGram.Test.get_calls() == []
@@ -380,9 +380,7 @@ Register an `on_exit` callback that automatically calls `verify!/0` after each t
 defmodule MyApp.BotTest do
   use ExUnit.Case, async: true
 
-  import ExGram.Test, only: [verify_on_exit!: 1]
-
-  setup :verify_on_exit!  # Automatic verification!
+  setup {ExGram.Test, :verify_on_exit!}
 
   test "sends welcome message" do
     ExGram.Test.expect(:send_message, %{message_id: 1, text: "Welcome"})
@@ -498,7 +496,7 @@ end
 
 # In your test:
 test "worker sends messages" do
-  ExGram.Test.stub(:send_message, %{message_id: 1, text: "ok"})
+  ExGram.Test.expect(:send_message, %{message_id: 1, text: "ok"})
 
   {:ok, worker} = MyApp.Worker.start_link(test_owner: self())
 
@@ -514,15 +512,18 @@ If you absolutely cannot use `async: true`, you can use global mode where all pr
 defmodule MyApp.SyncTest do
   use ExUnit.Case, async: false  # Must be false
 
-  setup do
-    ExGram.Test.set_global()
-    on_exit(fn -> ExGram.Test.set_private() end)
-  end
+  setup {ExGram.Test, :set_global}
 
   test "uses global mode" do
     # All processes see the same stubs now
   end
 end
+```
+
+Or, if you want to let ExGram.Test decide the correct mode `set_from_context` will use private on async tests and global on sync tests:
+
+```elixir
+setup {ExGram.Test, :set_from_context}
 ```
 
 **Important:** Global mode is rarely needed. Use `allow/2` instead when possible.
@@ -633,14 +634,13 @@ defmodule MyApp.BotTest do
 
   setup {ExGram.Test, :verify_on_exit!}
 
-  setup do
-    # Start bot with unique name
+  setup context do
+    # Start bot with unique name for test isolation
     base = context.test |> Atom.to_string() |> String.replace(~r/[^a-z0-9]/i, "_")
     bot_name = String.to_atom("bot_#{base}")
-    module_name = Module.concat([__MODULE__, String.to_atom("M_#{base}")])
 
     {:ok, _pid} =
-      OpencodeTelegramBridge.Bot.start_link(
+      MyApp.Bot.start_link(
         name: module_name,
         bot_name: bot_name,
         method: :test,
@@ -648,8 +648,8 @@ defmodule MyApp.BotTest do
       )
 
     {:ok, bot_name: bot_name}
-
   end
+
 
   describe "commands" do
     test "responds to /start", %{bot_name: bot_name} do
@@ -657,7 +657,7 @@ defmodule MyApp.BotTest do
         assert body[:chat_id] == 123
         assert body[:text] =~ "Welcome"
 
-        {:ok, %{message_id: 1, chat: %{id: 123}, text: body["text"]}}
+        {:ok, %{message_id: 1, chat: %{id: 123}, text: body[:text]}}
       end)
 
       update = %Update{
@@ -703,7 +703,7 @@ defmodule MyApp.BotTest do
       ExGram.Test.expect(:answer_callback_query, true)
       ExGram.Test.expect(:send_message, fn body -> 
         assert body[:text] == "Action completed"
-        %{message_id: 3, text: "Action completed"}
+        {:ok, %{message_id: 3, text: "Action completed"}}
       end)
 
       update = %Update{

@@ -187,24 +187,16 @@ defmodule ExGram.TestFacadeTest do
     end
   end
 
-  describe "set_global/0 and set_private/0" do
-    test "delegates to Adapter.Test" do
-      # Just verify the functions exist and delegate
-      Test.set_global()
-      Test.set_private()
-    end
-  end
-
   describe "clean/0" do
     test "delegates to Adapter.Test.clean/0" do
       Test.stub(:send_message, %{message_id: 1, text: "ok"})
       ExGram.send_message(123, "Hello")
 
-      assert length(Test.get_calls()) == 1
+      assert [_] = Test.get_calls()
 
       Test.clean()
 
-      assert length(Test.get_calls()) == 0
+      assert [] == Test.get_calls()
     end
   end
 

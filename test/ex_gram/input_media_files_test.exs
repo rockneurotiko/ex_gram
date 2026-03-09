@@ -5,77 +5,56 @@ defmodule ExGram.InputMediaFilesTest do
 
   use ExUnit.Case, async: true
 
-  alias ExGram.Adapter.Test, as: TestAdapter
-  alias ExGram.Macros.Executer
   alias ExGram.Model.InputMediaDocument
   alias ExGram.Model.InputMediaPhoto
   alias ExGram.Model.InputMediaVideo
-  alias ExGram.Model.Message
 
   @token "test_token_123"
 
-  setup do
-    name = :"test_adapter_#{System.unique_integer([:positive, :monotonic])}"
-    {:ok, _pid} = TestAdapter.start_link(name: name)
-    TestAdapter.backdoor_request(:send_media_group, %{"result" => []}, name)
-    TestAdapter.backdoor_request(:edit_message_media, %{"result" => true}, name)
-    TestAdapter.backdoor_request(:send_paid_media, %{"result" => []}, name)
+  setup {ExGram.Test, :verify_on_exit!}
 
-    {:ok, adapter_name: name}
-  end
-
-  defp execute_send_media_group(media, context, opts \\ []) do
+  defp execute_send_media_group(media, opts \\ []) do
     chat_id = Keyword.get(opts, :chat_id, 123)
 
-    adapter_opts = [name: context.adapter_name]
+    ExGram.Test.expect(:send_media_group, %{"result" => []})
 
-    Executer.execute_method(
-      "sendMediaGroup",
-      :post,
-      [chat_id: chat_id, media: media],
-      [{:input_media, :media}],
-      {:array, Message},
-      [adapter: TestAdapter, token: @token, check_params: false, adapter_opts: adapter_opts],
-      [],
-      [],
-      []
-    )
+    ExGram.send_media_group!(chat_id, media, input_media: :media, token: @token)
 
-    context.adapter_name
-    |> TestAdapter.get_calls()
+    ExGram.Test.get_calls()
     |> List.last()
     |> elem(2)
   end
 
-  defp execute_edit_message_media(media, context) do
-    adapter_opts = [name: context.adapter_name]
+  defp execute_edit_message_media(media) do
+    ExGram.Test.expect(:edit_message_media, %{"result" => true})
 
-    Executer.execute_method(
-      "editMessageMedia",
-      :post,
-      [media: media],
-      [{:input_media, :media}],
-      [Message, true],
-      [adapter: TestAdapter, token: @token, check_params: false, adapter_opts: adapter_opts],
-      [chat_id: 123, message_id: 456],
-      [],
-      []
-    )
+    ExGram.edit_message_media!(media, chat_id: 123, message_id: 456, token: @token)
 
-    context.adapter_name
-    |> TestAdapter.get_calls()
+    # Executer.execute_method(
+    #   "editMessageMedia",
+    #   :post,
+    #   [media: media],
+    #   [{:input_media, :media}],
+    #   [Message, true],
+    #   [adapter: TestAdapter, token: @token, check_params: false],
+    #   [chat_id: 123, message_id: 456],
+    #   [],
+    #   []
+    # )
+
+    ExGram.Test.get_calls()
     |> List.last()
     |> elem(2)
   end
 
   describe "send_media_group with file uploads" do
-    test "produces multipart body when InputMedia contains {:file, path}", ctx do
+    test "produces multipart body when InputMedia contains {:file, path}" do
       media = [
         %InputMediaPhoto{type: "photo", media: {:file, "/tmp/photo1.jpg"}},
         %InputMediaPhoto{type: "photo", media: {:file, "/tmp/photo2.jpg"}}
       ]
 
-      body = execute_send_media_group(media, ctx)
+      body = execute_send_media_group(media)
 
       assert {:multipart, parts} = body
 
@@ -102,13 +81,13 @@ defmodule ExGram.InputMediaFilesTest do
       assert second["type"] == "photo"
     end
 
-    test "returns plain body when InputMedia contains only strings (file_ids/URLs)", ctx do
+    test "returns plain body when InputMedia contains only strings (file_ids/URLs)" do
       media = [
         %InputMediaPhoto{type: "photo", media: "AgACAgIAA_file_id_1"},
         %InputMediaPhoto{type: "photo", media: "https://example.com/photo.jpg"}
       ]
 
-      body = execute_send_media_group(media, ctx)
+      body = execute_send_media_group(media)
 
       # No files to upload, so body should be a plain map (not multipart)
       assert is_map(body)
@@ -116,7 +95,7 @@ defmodule ExGram.InputMediaFilesTest do
       assert body[:chat_id] == 123
     end
 
-    test "handles mixed file uploads and URLs", ctx do
+    test "handles mixed file uploads and URLs" do
       media = [
         %InputMediaPhoto{type: "photo", media: {:file, "/tmp/local.jpg"}, caption: "Local file"},
         %InputMediaPhoto{
@@ -126,7 +105,7 @@ defmodule ExGram.InputMediaFilesTest do
         }
       ]
 
-      body = execute_send_media_group(media, ctx)
+      body = execute_send_media_group(media)
 
       assert {:multipart, parts} = body
 
@@ -149,7 +128,7 @@ defmodule ExGram.InputMediaFilesTest do
       assert second["caption"] == "Remote URL"
     end
 
-    test "handles {:file_content, content, filename} tuples", ctx do
+    test "handles {:file_content, content, filename} tuples" do
       media = [
         %InputMediaPhoto{
           type: "photo",
@@ -157,7 +136,7 @@ defmodule ExGram.InputMediaFilesTest do
         }
       ]
 
-      body = execute_send_media_group(media, ctx)
+      body = execute_send_media_group(media)
 
       assert {:multipart, parts} = body
 
@@ -177,7 +156,7 @@ defmodule ExGram.InputMediaFilesTest do
       assert decoded_item["media"] == "attach://media_0_media"
     end
 
-    test "handles thumbnail file uploads on InputMediaVideo", ctx do
+    test "handles thumbnail file uploads on InputMediaVideo" do
       media = [
         %InputMediaVideo{
           type: "video",
@@ -186,7 +165,7 @@ defmodule ExGram.InputMediaFilesTest do
         }
       ]
 
-      body = execute_send_media_group(media, ctx)
+      body = execute_send_media_group(media)
 
       assert {:multipart, parts} = body
 
@@ -207,7 +186,7 @@ defmodule ExGram.InputMediaFilesTest do
       assert decoded_item["thumbnail"] == "attach://media_0_thumbnail"
     end
 
-    test "handles cover file uploads on InputMediaVideo", ctx do
+    test "handles cover file uploads on InputMediaVideo" do
       media = [
         %InputMediaVideo{
           type: "video",
@@ -216,7 +195,7 @@ defmodule ExGram.InputMediaFilesTest do
         }
       ]
 
-      body = execute_send_media_group(media, ctx)
+      body = execute_send_media_group(media)
 
       assert {:multipart, parts} = body
 
@@ -226,7 +205,7 @@ defmodule ExGram.InputMediaFilesTest do
       assert {:file, "media_0_cover", "/tmp/cover.jpg"} in file_parts
     end
 
-    test "handles InputMediaDocument with file uploads", ctx do
+    test "handles InputMediaDocument with file uploads" do
       media = [
         %InputMediaDocument{
           type: "document",
@@ -235,7 +214,7 @@ defmodule ExGram.InputMediaFilesTest do
         }
       ]
 
-      body = execute_send_media_group(media, ctx)
+      body = execute_send_media_group(media)
 
       assert {:multipart, parts} = body
 
@@ -245,12 +224,12 @@ defmodule ExGram.InputMediaFilesTest do
       assert {:file, "media_0_thumbnail", "/tmp/doc_thumb.jpg"} in file_parts
     end
 
-    test "preserves chat_id and other parameters in multipart body", ctx do
+    test "preserves chat_id and other parameters in multipart body" do
       media = [
         %InputMediaPhoto{type: "photo", media: {:file, "/tmp/photo.jpg"}}
       ]
 
-      body = execute_send_media_group(media, ctx)
+      body = execute_send_media_group(media)
 
       assert {:multipart, parts} = body
 
@@ -265,10 +244,10 @@ defmodule ExGram.InputMediaFilesTest do
   end
 
   describe "edit_message_media with file uploads" do
-    test "produces multipart body for single InputMedia with file", ctx do
+    test "produces multipart body for single InputMedia with file" do
       media = %InputMediaPhoto{type: "photo", media: {:file, "/tmp/new_photo.jpg"}}
 
-      body = execute_edit_message_media(media, ctx)
+      body = execute_edit_message_media(media)
 
       assert {:multipart, parts} = body
 
@@ -288,10 +267,10 @@ defmodule ExGram.InputMediaFilesTest do
       assert decoded["type"] == "photo"
     end
 
-    test "returns plain body when InputMedia has string media (file_id)", ctx do
+    test "returns plain body when InputMedia has string media (file_id)" do
       media = %InputMediaPhoto{type: "photo", media: "AgACAgIAA_file_id"}
 
-      body = execute_edit_message_media(media, ctx)
+      body = execute_edit_message_media(media)
 
       assert is_map(body)
       refute match?({:multipart, _}, body)

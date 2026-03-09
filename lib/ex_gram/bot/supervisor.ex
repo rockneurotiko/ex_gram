@@ -31,7 +31,7 @@ defmodule ExGram.Bot.Supervisor do
     {updates_worker, updates_worker_opts} = updates_worker(updates_method)
     updates_worker_opts = Map.merge(updates_worker_opts, %{bot: name, token: token})
 
-    # TODO: move this to handle_continue too after commands PR is merged
+    # move this to handle_continue too after commands PR is merged
     if opts[:setup_commands], do: setup_commands(module.commands(), token)
 
     extra_info = Keyword.get(opts, :extra_info, %{})

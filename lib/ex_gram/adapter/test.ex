@@ -11,29 +11,34 @@ defmodule ExGram.Adapter.Test do
       ExGram.Adapter.Test.start_link()
 
       # In your test
+      setup {ExGram.Test, :verify_on_exit!}
+
       test "my test" do
-        ExGram.Adapter.Test.stub(:send_message, %{"ok" => true})
-        ExGram.Adapter.Test.expect(:get_me, %{"id" => 1})
+        ExGram.Adapter.Test.stub(:get_me, %{id: 123, is_bot: true})
+        ExGram.Adapter.Test.expect(:send_message, fn body ->
+          assert body[:text] == "value"
+          {:ok, %{message_id: 1}}
+        end)
 
         # Make API calls
         ExGram.send_message(123, "Hello")
 
-        # Verify expectations and get calls (calls are recorded as atoms)
+        # You can get the calls if you want
         calls = ExGram.Adapter.Test.get_calls()
         # calls = [{:post, :send_message, %{"chat_id" => 123, ...}}]
-
-        ExGram.Adapter.Test.verify!()
       end
+
+  You can learn mode in the [testing guide](https://hexdocs.pm/ex_gram/testing.html)
 
   ## API Methods
 
-  All stub and expect functions accept either action atoms (`:send_message`) or
-  path strings (`"/sendMessage"`). Internally, paths are converted to atoms for
-  consistency. Callbacks receive action atoms.
+  All stub and expect functions accept action atoms (`:send_message`) that match the names of the
+  ExGram functions (ExGram.get_me -> :get_me)
   """
 
   @behaviour ExGram.Adapter
 
+  @timeout 30_000
   @ownership_key :ex_gram_adapter_test
   @ownership_server ExGram.Adapter.Test.Ownership
 
@@ -45,58 +50,6 @@ defmodule ExGram.Adapter.Test do
             catch_all_stub: nil,
             catch_all_expectations: [],
             unexpected_calls: []
-
-  # ---------------------------------------------------------------------------
-  # Conversion helpers
-  # ---------------------------------------------------------------------------
-
-  @doc """
-  Convert an atom action name to a Telegram API path string.
-
-  Examples:
-      iex> to_path(:send_message)
-      "/sendMessage"
-
-      iex> to_path(:get_me)
-      "/getMe"
-
-      iex> to_path("/sendMessage")
-      "/sendMessage"
-  """
-  def to_path(action) when is_atom(action) do
-    action
-    |> Atom.to_string()
-    |> camelize_first_lower()
-    |> then(&"/#{&1}")
-  end
-
-  def to_path(path) when is_binary(path), do: path
-
-  @doc """
-  Convert a Telegram API path string to an atom action name.
-
-  Examples:
-      iex> to_action("/sendMessage")
-      :send_message
-
-      iex> to_action(:send_message)
-      :send_message
-  """
-  def to_action(path) when is_binary(path) do
-    path
-    |> String.trim_leading("/")
-    |> Macro.underscore()
-    |> String.to_atom()
-  end
-
-  def to_action(action) when is_atom(action), do: action
-
-  # Convert snake_case string to lowerCamelCase
-  defp camelize_first_lower(string) do
-    string
-    |> Macro.camelize()
-    |> then(fn <<first::utf8, rest::binary>> -> String.downcase(<<first::utf8>>) <> rest end)
-  end
 
   # ---------------------------------------------------------------------------
   # Public API
@@ -160,9 +113,6 @@ defmodule ExGram.Adapter.Test do
       # Static response with atom
       stub(:send_message, %ExGram.Model.Message{...})
 
-      # Static response with path string
-      stub("/sendMessage", %ExGram.Model.Message{...})
-
       # Dynamic response based on body
       stub(:send_message, fn body ->
         assert body["text"] =~ "Hello"
@@ -170,11 +120,9 @@ defmodule ExGram.Adapter.Test do
       end)
 
   """
-  def stub(path_or_action, response) do
-    path = path_or_action |> to_path() |> clean_path()
-
+  def stub(action, response) do
     update_owner_metadata(fn meta ->
-      %{meta | responses: Map.put(meta.responses, path, response)}
+      %{meta | responses: Map.put(meta.responses, action, response)}
     end)
 
     :ok
@@ -184,11 +132,9 @@ defmodule ExGram.Adapter.Test do
   Stub an error for a Telegram API path or action atom. Always returns this error.
   Owned by the calling process.
   """
-  def stub_error(path_or_action, error) do
-    path = path_or_action |> to_path() |> clean_path()
-
+  def stub_error(action, error) do
     update_owner_metadata(fn meta ->
-      %{meta | errors: Map.put(meta.errors, path, error)}
+      %{meta | errors: Map.put(meta.errors, action, error)}
     end)
 
     :ok
@@ -257,12 +203,10 @@ defmodule ExGram.Adapter.Test do
       end)
 
   """
-  def expect(path_or_action, n \\ 1, response) when is_integer(n) and n > 0 do
-    path = path_or_action |> to_path() |> clean_path()
-
+  def expect(action, n \\ 1, response) when is_integer(n) and n > 0 do
     update_owner_metadata(fn meta ->
       expectations =
-        Map.update(meta.expectations, path, [{response, n}], fn existing ->
+        Map.update(meta.expectations, action, [{response, n}], fn existing ->
           existing ++ [{response, n}]
         end)
 
@@ -312,7 +256,7 @@ defmodule ExGram.Adapter.Test do
 
         # Check for unfulfilled catch-all expectations
         errors =
-          if length(meta.catch_all_expectations) > 0 do
+          if meta.catch_all_expectations != [] do
             [
               "Catch-all expectations not fulfilled: #{length(meta.catch_all_expectations)} remaining"
               | errors
@@ -327,16 +271,25 @@ defmodule ExGram.Adapter.Test do
           raise Enum.join(errors, "\n")
         end
 
-      _ ->
+      :error ->
+        # No metadata found - process may have already cleaned up, that's ok
         :ok
     end
   end
 
+  @doc """
+  Registers cleanup on test exit that verifies expectations were met.
+  Call this in your test's setup block via `setup {ExGram.Test, :verify_on_exit!}`.
+  """
   def verify_on_exit!(_context) do
     pid = self()
+
+    # Use manual cleanup to prevent auto-cleanup when test process dies.
+    # This ensures ownership persists through the on_exit callback so verify! can check it.
     NimbleOwnership.set_owner_to_manual_cleanup(@ownership_server, pid)
 
-    ExUnit.Callbacks.on_exit(Mox, fn ->
+    ExUnit.Callbacks.on_exit({:ex_gram_test, pid}, fn ->
+      # Verify expectations and clean up ownership
       verify!(pid)
       NimbleOwnership.cleanup_owner(@ownership_server, pid)
     end)
@@ -351,17 +304,46 @@ defmodule ExGram.Adapter.Test do
 
   @doc """
   Switch to global mode (one owner serves all callers).
+
+  ## Examples
+
+      setup {ExGram.Test, :set_global}
   """
-  def set_global do
+  def set_global(context \\ %{})
+
+  def set_global(%{async: true}) do
+    raise "ExGram.Test cannot be set to global mode when the ExUnit case is async. " <>
+            "If you want to use ExGram.Test in global mode, remove \"async: true\" when using ExUnit.Case"
+  end
+
+  def set_global(_) do
     NimbleOwnership.set_mode_to_shared(@ownership_server, self())
   end
 
   @doc """
   Switch to private mode (per-process isolation).
+
+  ## Examples
+
+      setup {ExGram.Test, :set_private}
   """
-  def set_private do
+  def set_private(_context \\ %{}) do
     NimbleOwnership.set_mode_to_private(@ownership_server)
   end
+
+  @doc """
+  Chooses the ExGram.Test mode based on context.
+
+  When `async: true` is used, `set_private/1` is called,
+  otherwise `set_global/1` is used.
+
+  ## Examples
+
+      setup {ExGram.Test, :set_from_context}
+  """
+  @spec set_from_context(term()) :: :ok
+  def set_from_context(%{async: true} = _context), do: set_private()
+  def set_from_context(_context), do: set_global()
 
   # ---------------------------------------------------------------------------
   # Backward-compatible wrappers (thin wrappers over new API)
@@ -399,14 +381,11 @@ defmodule ExGram.Adapter.Test do
     # Find the owner through the callers chain
     callers = [self() | Process.get(:"$callers", [])]
 
-    case NimbleOwnership.fetch_owner(@ownership_server, callers, @ownership_key) do
+    case fetch_owner_from_callers(callers) do
       {:ok, owner_pid} ->
         handle_request(owner_pid, verb, path, body)
 
-      {:shared_owner, owner_pid} ->
-        handle_request(owner_pid, verb, path, body)
-
-      :error ->
+      :no_expectation ->
         {:error, %ExGram.Error{code: 404, message: "No owner found for adapter test"}}
     end
   end
@@ -415,58 +394,97 @@ defmodule ExGram.Adapter.Test do
   # Private helpers
   # ---------------------------------------------------------------------------
 
-  defp handle_request(owner_pid, verb, path, body) do
-    path = clean_path(path)
-    action = to_action(path)
+  # Atomically fetch metadata and record the call to prevent race conditions.
+  # If ownership exists but get_and_update fails (race with cleanup_owner),
+  # this returns :error and the caller should handle appropriately.
+  defp fetch_owner_and_record(owner_pid, call) do
+    case get_and_update(owner_pid, fn
+           nil ->
+             # Ownership exists but metadata is nil - initialize and record
+             # This can happen on first call or after a reset
+             new_meta = %__MODULE__{calls: [call]}
+             {new_meta, new_meta}
 
-    # Record the call with action atom
-    record_call(owner_pid, {verb, action, body})
-
-    # Look up response (still uses path string for internal storage)
-    case fetch_owner_metadata(owner_pid) do
+           meta ->
+             # Ownership and metadata both exist - record the call
+             updated_meta = %{meta | calls: meta.calls ++ [call]}
+             {meta, updated_meta}
+         end) do
       {:ok, meta} ->
-        get_response(owner_pid, meta, path, action, body)
+        {:ok, meta}
+
+      {:error, %NimbleOwnership.Error{reason: {:not_shared_owner, actual_owner_pid}}} ->
+        fetch_owner_and_record(actual_owner_pid, call)
+
+      {:error, %NimbleOwnership.Error{}} ->
+        :error
+    end
+  end
+
+  defp handle_request(owner_pid, verb, path, body) do
+    action = path |> clean_path() |> to_action()
+
+    # Atomically fetch metadata and record call to prevent race conditions
+    case fetch_owner_and_record(owner_pid, {verb, action, body}) do
+      {:ok, meta} ->
+        get_response(owner_pid, meta, action, body)
 
       :error ->
         {:error, %ExGram.Error{code: 404, message: "Owner metadata not found"}}
     end
   end
 
-  defp record_call(owner_pid, call) do
-    update_owner_metadata(owner_pid, fn meta ->
-      %{meta | calls: meta.calls ++ [call]}
-    end)
+  defp get_response(owner_pid, meta, action, body) do
+    case get_response_from_expect_or_stub(owner_pid, meta, action, body) do
+      {:ok, response} ->
+        normalize_response(response)
+
+      :not_found ->
+        {:error, %ExGram.Error{code: 404, message: "No stub or expectation found for #{action}"}}
+    end
   end
 
-  defp get_response(owner_pid, meta, path, action, body) do
+  defp get_response_from_expect_or_stub(owner_pid, meta, action, body) do
     # Priority order:
     # 1. Path-specific expectations
     # 2. Catch-all expectations
     # 3. Path-specific stubs/errors
     # 4. Catch-all stub
-    case consume_expectation(owner_pid, meta, path, action, body) do
+    case consume_expect_expectation(owner_pid, meta, action, body) do
       {:ok, response} ->
-        response
+        {:ok, response}
 
       :not_found ->
-        case consume_catch_all_expectation(owner_pid, meta, action, body) do
-          {:ok, response} ->
-            response
-
-          :not_found ->
-            case check_stubs_and_errors(meta, path, action, body) do
-              :not_found ->
-                check_catch_all_stub(owner_pid, meta, path, action, body)
-
-              response ->
-                response
-            end
-        end
+        check_stub_expectation(owner_pid, meta, action, body)
     end
   end
 
-  defp consume_expectation(owner_pid, meta, path, action, body) do
-    case Map.get(meta.expectations, path) do
+  def consume_expect_expectation(owner_pid, meta, action, body) do
+    case consume_expectation(owner_pid, meta, action, body) do
+      {:ok, response} ->
+        {:ok, response}
+
+      :not_found ->
+        consume_catch_all_expectation(owner_pid, meta, action, body)
+    end
+  end
+
+  defp check_stub_expectation(owner_pid, meta, action, body) do
+    case check_stubs_and_errors(meta, action, body) do
+      :not_found ->
+        check_catch_all_stub(owner_pid, meta, action, body)
+
+      response ->
+        response
+    end
+  end
+
+  defp normalize_response({:ok, response}), do: {:ok, response}
+  defp normalize_response({:error, response}), do: {:error, response}
+  defp normalize_response(response), do: {:ok, response}
+
+  defp consume_expectation(owner_pid, meta, action, body) do
+    case Map.get(meta.expectations, action) do
       nil ->
         :not_found
 
@@ -474,9 +492,17 @@ defmodule ExGram.Adapter.Test do
         :not_found
 
       [{response, 1}] ->
-        # Last one - remove the path entirely
+        # Last one - remove the action entirely
         update_owner_metadata(owner_pid, fn m ->
-          %{m | expectations: Map.delete(m.expectations, path)}
+          %{m | expectations: Map.delete(m.expectations, action)}
+        end)
+
+        {:ok, invoke_response(response, action, body)}
+
+      [{response, 1} | rest] ->
+        # Last one but more in the list
+        update_owner_metadata(owner_pid, fn m ->
+          %{m | expectations: Map.put(m.expectations, action, rest)}
         end)
 
         {:ok, invoke_response(response, action, body)}
@@ -484,7 +510,7 @@ defmodule ExGram.Adapter.Test do
       [{response, n} | rest] when n > 1 ->
         # Decrement count
         update_owner_metadata(owner_pid, fn m ->
-          %{m | expectations: Map.put(m.expectations, path, [{response, n - 1} | rest])}
+          %{m | expectations: Map.put(m.expectations, action, [{response, n - 1} | rest])}
         end)
 
         {:ok, invoke_response(response, action, body)}
@@ -492,13 +518,12 @@ defmodule ExGram.Adapter.Test do
       [_ | rest] ->
         # Move to next expectation
         update_owner_metadata(owner_pid, fn m ->
-          %{m | expectations: Map.put(m.expectations, path, rest)}
+          %{m | expectations: Map.put(m.expectations, action, rest)}
         end)
 
         consume_expectation(
           owner_pid,
-          %{meta | expectations: Map.put(meta.expectations, path, rest)},
-          path,
+          %{meta | expectations: Map.put(meta.expectations, action, rest)},
           action,
           body
         )
@@ -541,21 +566,21 @@ defmodule ExGram.Adapter.Test do
     end
   end
 
-  defp check_stubs_and_errors(meta, path, action, body) do
+  defp check_stubs_and_errors(meta, action, body) do
     # Check errors first, then stubs
     cond do
-      Map.has_key?(meta.errors, path) ->
-        {:error, Map.get(meta.errors, path)}
+      Map.has_key?(meta.errors, action) ->
+        {:ok, {:error, Map.get(meta.errors, action)}}
 
-      Map.has_key?(meta.responses, path) ->
-        invoke_response(Map.get(meta.responses, path), action, body)
+      Map.has_key?(meta.responses, action) ->
+        {:ok, invoke_response(Map.get(meta.responses, action), action, body)}
 
       true ->
         :not_found
     end
   end
 
-  defp check_catch_all_stub(owner_pid, meta, path, action, body) do
+  defp check_catch_all_stub(owner_pid, meta, action, body) do
     case meta.catch_all_stub do
       nil ->
         # Record as unexpected call
@@ -563,10 +588,10 @@ defmodule ExGram.Adapter.Test do
           %{m | unexpected_calls: [{action, body} | m.unexpected_calls]}
         end)
 
-        {:error, %ExGram.Error{code: 404, message: "No stub or expectation for #{path}"}}
+        :not_found
 
       callback ->
-        invoke_response(callback, action, body)
+        {:ok, invoke_response(callback, action, body)}
     end
   end
 
@@ -593,7 +618,7 @@ defmodule ExGram.Adapter.Test do
   end
 
   defp fetch_owner_metadata(owner_pid) do
-    case NimbleOwnership.get_and_update(@ownership_server, owner_pid, @ownership_key, fn
+    case get_and_update(owner_pid, fn
            nil -> {nil, %__MODULE__{}}
            meta -> {meta, meta}
          end) do
@@ -608,19 +633,48 @@ defmodule ExGram.Adapter.Test do
   end
 
   defp update_owner_metadata(owner_pid, fun) do
-    case NimbleOwnership.get_and_update(@ownership_server, owner_pid, @ownership_key, fn
-           nil ->
-             new_meta = fun.(%__MODULE__{})
-             {new_meta, new_meta}
+    get_and_update!(owner_pid, fn
+      nil ->
+        new_meta = fun.(%__MODULE__{})
+        {new_meta, new_meta}
 
-           meta ->
-             new_meta = fun.(meta)
-             {new_meta, new_meta}
-         end) do
-      {:ok, meta} -> meta
-      {:error, _} -> %__MODULE__{}
+      meta ->
+        new_meta = fun.(meta)
+        {new_meta, new_meta}
+    end)
+  end
+
+  defp get_and_update(owner_pid, update_fun) do
+    NimbleOwnership.get_and_update(@ownership_server, owner_pid, @ownership_key, update_fun, @timeout)
+  end
+
+  defp get_and_update!(owner_pid, update_fun) do
+    case get_and_update(owner_pid, update_fun) do
+      {:ok, return} -> return
+      {:error, %NimbleOwnership.Error{} = error} -> raise error
     end
   end
+
+  defp fetch_owner_from_callers(caller_pids) do
+    # If the mock doesn't have an owner, it can't have expectations so we return :no_expectation.
+    case NimbleOwnership.fetch_owner(@ownership_server, caller_pids, @ownership_key, @timeout) do
+      {tag, owner_pid} when tag in [:shared_owner, :ok] -> {:ok, owner_pid}
+      :error -> :no_expectation
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Conversion helpers
+  # ---------------------------------------------------------------------------
+
+  defp to_action(path) when is_binary(path) do
+    path
+    |> String.trim_leading("/")
+    |> Macro.underscore()
+    |> String.to_atom()
+  end
+
+  defp to_action(action) when is_atom(action), do: action
 
   defp clean_path("/bot" <> _ = path) do
     "/" <> (path |> String.split("/") |> Enum.drop(2) |> Enum.join("/"))

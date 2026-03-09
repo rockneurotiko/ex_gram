@@ -255,6 +255,10 @@ defmodule ExGram.Dispatcher do
     {:location, location}
   end
 
+  defp extract_info(%Cnt{update: %{message: %{pinned_message: %{} = message}}}) do
+    {:pinned_message, message}
+  end
+
   defp extract_info(%Cnt{update: %{message: %{} = message}}) do
     {:message, message}
   end
