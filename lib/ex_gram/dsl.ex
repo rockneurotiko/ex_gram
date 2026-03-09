@@ -11,8 +11,10 @@ defmodule ExGram.Dsl do
 
   alias ExGram.Cnt
   alias ExGram.Model.Chat
-  alias ExGram.Model.InlineKeyboardButton
-  alias ExGram.Model.KeyboardButton
+  alias ExGram.Model.InlineKeyboardMarkup
+  alias ExGram.Model.InlineQueryResult
+  alias ExGram.Model.Message
+  alias ExGram.Model.ReplyKeyboardMarkup
   alias ExGram.Model.Update
   alias ExGram.Responses
   alias ExGram.Responses.Answer
@@ -25,6 +27,10 @@ defmodule ExGram.Dsl do
 
   require Logger
 
+  @spec answer(Cnt.t(), String.t()) :: Cnt.t()
+  @spec answer(Cnt.t(), String.t(), keyword()) :: Cnt.t()
+  @spec answer(Cnt.t(), Message.t(), String.t()) :: Cnt.t()
+  @spec answer(Cnt.t(), Message.t(), String.t(), keyword()) :: Cnt.t()
   def answer(cnt, text, ops \\ [])
 
   def answer(cnt, text, ops) when is_binary(text) and is_list(ops) do
@@ -37,31 +43,40 @@ defmodule ExGram.Dsl do
     Answer |> Responses.new(%{text: text, ops: ops}) |> Responses.set_msg(m) |> add_answer(cnt)
   end
 
+  @spec answer_callback(Cnt.t(), Message.t()) :: Cnt.t()
+  @spec answer_callback(Cnt.t(), Message.t(), keyword()) :: Cnt.t()
   def answer_callback(cnt, msg, ops \\ []) do
     AnswerCallback |> Responses.new(%{ops: ops}) |> Responses.set_msg(msg) |> add_answer(cnt)
   end
 
+  @spec answer_inline_query(Cnt.t(), [InlineQueryResult.t()]) :: Cnt.t()
+  @spec answer_inline_query(Cnt.t(), [InlineQueryResult.t()], keyword()) :: Cnt.t()
   def answer_inline_query(cnt, articles, ops \\ []) do
     AnswerInlineQuery |> Responses.new(%{articles: articles, ops: ops}) |> add_answer(cnt)
   end
 
   # /3
+  @spec edit(Cnt.t(), :inline, String.t()) :: Cnt.t()
   def edit(cnt, :inline, text) when is_binary(text), do: edit(cnt, :inline, text, [])
 
+  @spec edit(Cnt.t(), :markup, keyword()) :: Cnt.t()
   def edit(cnt, :markup, ops) when is_list(ops) do
     EditMarkup |> Responses.new(%{ops: ops}) |> add_answer(cnt)
   end
 
   # /4
+  @spec edit(Cnt.t(), :inline, String.t(), keyword()) :: Cnt.t()
   def edit(cnt, :inline, text, ops) when is_binary(text) do
     EditInline |> Responses.new(%{text: text, ops: ops}) |> add_answer(cnt)
   end
 
+  @spec edit(Cnt.t(), :markup, Message.t(), keyword()) :: Cnt.t()
   def edit(cnt, :markup, m, ops) do
     EditMarkup |> Responses.new(%{ops: ops}) |> Responses.set_msg(m) |> add_answer(cnt)
   end
 
   # /5
+  @spec edit(Cnt.t(), :inline, Message.t(), String.t(), keyword()) :: Cnt.t()
   def edit(cnt, :inline, m, text, ops) do
     EditInline
     |> Responses.new(%{text: text, ops: ops})
@@ -69,32 +84,39 @@ defmodule ExGram.Dsl do
     |> add_answer(cnt)
   end
 
+  @spec edit(Cnt.t(), :markup, Message.t(), String.t(), keyword()) :: Cnt.t()
   def edit(cnt, :markup, m, _, ops) do
     edit(cnt, :markup, m, ops)
   end
 
   def edit(_cnt, _, _, _, _), do: raise("Wrong params")
 
+  @spec delete(Cnt.t()) :: Cnt.t()
   def delete(cnt) do
     delete(cnt, extract_msg(cnt))
   end
 
+  @spec delete(Cnt.t(), Message.t() | nil) :: Cnt.t()
   def delete(cnt, nil), do: cnt
 
   def delete(cnt, msg) do
     delete(cnt, msg, [])
   end
 
+  @spec delete(Cnt.t(), Message.t(), keyword()) :: Cnt.t()
   def delete(cnt, msg, ops) do
     DeleteMessage |> Responses.new(%{ops: ops}) |> Responses.set_msg(msg) |> add_answer(cnt)
   end
 
+  @spec on_result(Cnt.t(), (response :: any(), name :: atom() -> any())) :: Cnt.t()
   def on_result(cnt, func) when is_function(func, 2) do
     add_on_result(cnt, func)
   end
 
   defguardp is_file(file) when is_binary(file) or (is_tuple(file) and elem(file, 0) == :file)
 
+  @spec answer_document(Cnt.t(), ExGram.File.file()) :: Cnt.t()
+  @spec answer_document(Cnt.t(), ExGram.File.file(), keyword()) :: Cnt.t()
   def answer_document(cnt, document, ops \\ [])
 
   def answer_document(cnt, document, ops) when is_file(document) and is_list(ops) do
@@ -103,9 +125,11 @@ defmodule ExGram.Dsl do
     |> add_answer(cnt)
   end
 
+  @spec answer_document(Cnt.t(), Message.t(), ExGram.File.file()) :: Cnt.t()
   def answer_document(cnt, msg, document) when is_map(msg) and is_file(document),
     do: answer_document(cnt, msg, document, [])
 
+  @spec answer_document(Cnt.t(), Message.t(), ExGram.File.file(), keyword()) :: Cnt.t()
   def answer_document(cnt, msg, document, ops) when is_map(msg) and is_file(document) do
     SendDocument
     |> Responses.new(%{document: document, ops: ops})
@@ -113,38 +137,22 @@ defmodule ExGram.Dsl do
     |> add_answer(cnt)
   end
 
-  def create_inline_button(row) do
-    Enum.map(row, fn
-      %InlineKeyboardButton{} = b -> b
-      ops -> struct!(InlineKeyboardButton, ops)
-    end)
-  end
-
-  def create_reply_button(row) do
-    Enum.map(row, fn
-      %KeyboardButton{} = b -> b
-      ops -> struct!(KeyboardButton, ops)
-    end)
-  end
-
   @doc "Deprecated, use `create_inline_keyboard/1` instead"
   def create_inline(data \\ [[]]), do: create_inline_keyboard(data)
 
+  @spec create_inline_keyboard([[map() | keyword()]]) :: InlineKeyboardMarkup.t()
   def create_inline_keyboard(data \\ [[]]) do
-    data = Enum.map(data, &create_inline_button/1)
-
-    %ExGram.Model.InlineKeyboardMarkup{inline_keyboard: data}
+    ExGram.Cast.cast!(%{inline_keyboard: data}, InlineKeyboardMarkup)
   end
 
+  @spec create_reply_keyboard([[map() | keyword()]], keyword()) :: ReplyKeyboardMarkup.t()
   def create_reply_keyboard(data \\ [[]], opts \\ []) do
-    data = Enum.map(data, &create_reply_button/1)
-
     opts = opts |> Map.new() |> Map.put(:keyboard, data)
 
-    struct!(ExGram.Model.ReplyKeyboardMarkup, opts)
+    ExGram.Cast.cast!(opts, ReplyKeyboardMarkup)
   end
 
-  @spec extract_id(Update.t()) :: {:ok, integer()} | -1
+  @spec extract_id(Update.t() | Message.t()) :: {:ok, integer()} | -1
   def extract_id(u) do
     case extract_chat(u) do
       {:ok, %{id: cid}} ->
@@ -158,7 +166,7 @@ defmodule ExGram.Dsl do
     end
   end
 
-  @spec extract_user(Update.t()) :: {:ok, ExGram.Model.User.t()} | :error
+  @spec extract_user(Update.t() | Message.t()) :: {:ok, ExGram.Model.User.t()} | :error
   def extract_user(%{from: u}) when not is_nil(u), do: {:ok, u}
   def extract_user(%{message: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(%{edited_message: m}) when not is_nil(m), do: extract_user(m)
@@ -180,7 +188,7 @@ defmodule ExGram.Dsl do
   def extract_user(%{chat_join_request: m}) when not is_nil(m), do: extract_user(m)
   def extract_user(_), do: :error
 
-  @spec extract_group(Update.t()) :: {:ok, Chat.t()} | :error
+  @spec extract_group(Update.t() | Message.t()) :: {:ok, Chat.t()} | :error
   def extract_group(update) do
     Logger.warning("extract_group/1 is deprecated, use extract_chat/1 instead")
     extract_chat(update)
@@ -314,7 +322,7 @@ defmodule ExGram.Dsl do
           | :invoice
           | :successful_payment
           | :giveaway
-  @spec extract_message_type(ExGram.Model.Message.t()) :: {:ok, message_type()} | :error
+  @spec extract_message_type(Message.t()) :: {:ok, message_type()} | :error
   def extract_message_type(%{text: m}) when not is_nil(m), do: {:ok, :text}
   def extract_message_type(%{animation: m}) when not is_nil(m), do: {:ok, :animation}
   def extract_message_type(%{audio: m}) when not is_nil(m), do: {:ok, :audio}
@@ -342,6 +350,7 @@ defmodule ExGram.Dsl do
 
   def extract_inline_id_params(%{inline_message_id: mid}), do: %{inline_message_id: mid}
 
+  @spec send_answers(Cnt.t()) :: Cnt.t()
   def send_answers(%Cnt{halted: true} = cnt), do: cnt
 
   def send_answers(%Cnt{answers: answers, name: name, halted: false} = cnt) do

@@ -497,6 +497,20 @@ defmodule ExGram.Dsl.MessageEntityBuilder do
       # Recalculate the actual cut based on what slice_utf16 produced
       # (it may have backed up to avoid splitting a surrogate pair).
       actual_cut = current + utf16_length(part_text)
+
+      # If slice_utf16 backed up from a surrogate pair producing "",
+      # force progress by taking the next full Unicode scalar.
+      {part_text, actual_cut} =
+        if actual_cut == current do
+          # Take the next full codepoint starting at `current` UTF-16 offset.
+          # A surrogate pair (the only case where backing up to empty happens)
+          # is exactly 2 UTF-16 units. Requesting 2 units will capture it.
+          next_cp = slice_utf16(text, current, 2)
+          {next_cp, current + utf16_length(next_cp)}
+        else
+          {part_text, actual_cut}
+        end
+
       part_entities = clip_entities_in_window(entities, current, actual_cut)
       part = {part_text, part_entities}
 

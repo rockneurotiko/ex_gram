@@ -16,8 +16,15 @@ defmodule ExGram.Updates.Test do
   defstruct [:pid, :token]
 
   def child_spec(opts) do
+    id =
+      if bot = opts[:bot] do
+        Module.concat(__MODULE__, bot)
+      else
+        __MODULE__
+      end
+
     %{
-      id: __MODULE__,
+      id: id,
       start: {__MODULE__, :start_link, [opts]},
       type: :worker,
       restart: :permanent,

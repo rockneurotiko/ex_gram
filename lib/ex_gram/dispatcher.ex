@@ -24,6 +24,7 @@ defmodule ExGram.Dispatcher do
           | {:callback_query, Model.CallbackQuery.t()}
           | {:inline_query, Model.InlineQuery.t()}
           | {:edited_message, Model.Message.t()}
+          | {:pinned_message, Model.Message.t()}
           | {:update, Model.Update.t()}
 
   @type t() :: %__MODULE__{

@@ -172,9 +172,12 @@ answer_inline_query(context, results)
 ```elixir
 context
 |> answer("Important message!")
-|> on_result(fn {:ok, message} ->
-  ExGram.pin_chat_message(message.chat.id, message.message_id, bot: context.name)
-  :ok
+|> on_result(fn 
+  {:ok, message}, name ->
+    ExGram.pin_chat_message(message.chat.id, message.message_id, bot: name)
+    
+  error, _name ->
+    error
 end)
 ```
 

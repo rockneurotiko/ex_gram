@@ -175,7 +175,7 @@ end
 answer(context, "Choose:", reply_markup: markup)
 
 # With URL button
-keyboard :inlide do
+keyboard :inline do
   row do
     button "Visit", url: "https://example.com"
   end

@@ -39,7 +39,7 @@ defmodule ExGram.Mixfile do
       maintainers: ["Miguel Garcia / Rock Neurotiko"],
       licenses: ["Beerware"],
       links: %{"GitHub" => "https://github.com/rockneurotiko/ex_gram"},
-      files: ~w(lib guides templates mix.exs README.md)
+      files: ~w(lib guides templates mix.exs README.md CHANGELOG.md LICENSE)
     ]
   end
 
@@ -50,7 +50,7 @@ defmodule ExGram.Mixfile do
   defp deps do
     [
       # Tesla adapter
-      {:tesla, "~> 1.2", optional: true},
+      {:tesla, "~> 1.16", optional: true},
       {:gun, "~> 2.0", optional: true},
       {:hackney, "~> 1.20", optional: true},
       {:req, "~> 0.5.0", optional: true},

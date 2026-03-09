@@ -545,6 +545,14 @@ defmodule ExGram.Adapter.Test do
 
         {:ok, invoke_response(callback, action, body)}
 
+      [{callback, 1} | rest] ->
+        # Last one - remove it
+        update_owner_metadata(owner_pid, fn m ->
+          %{m | catch_all_expectations: rest}
+        end)
+
+        {:ok, invoke_response(callback, action, body)}
+
       [{callback, n} | rest] when n > 1 ->
         # Decrement count
         update_owner_metadata(owner_pid, fn m ->

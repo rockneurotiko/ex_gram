@@ -94,7 +94,7 @@ defmodule ExGram.Cast do
 
   defp process_type(elem, _t), do: {:ok, elem}
 
-  defp process_struct(t, %t{} = elem), do: elem
+  defp process_struct(t, %t{} = elem), do: {:ok, elem}
 
   defp process_struct(t, elem) when is_map(elem) do
     with {:ok, decode_as} <- struct_decode_as(t),

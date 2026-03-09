@@ -357,8 +357,6 @@ defmodule ExGram.Test do
 
         ExGram.Test.push_update(:my_bot, update)
 
-        Process.sleep(50)
-
         calls = ExGram.Test.get_calls()
         assert length(calls) == 1
       end

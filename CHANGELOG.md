@@ -2,7 +2,7 @@
 
 ## Unreleased
 - Clean README.md and separate content in different guides in [./guides](./guides)
-- Added ExGram.Dsl.MessageEntityBuilder to build messages with MessageEntity instead of markdon or html
+- Added ExGram.Dsl.MessageEntityBuilder to build messages with MessageEntity instead of markdown or html
 - If `MDEx` is installed as a dependency, a module `ExGram.Markdown` will be provided to transform from markdown to MessageEntities. 
 - Improved ExGram.Dsl.Keyboard macros and helpers
 - Improved `ExGram.Adapter.Test` to enable actually real and useful tests 

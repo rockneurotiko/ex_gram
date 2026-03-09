@@ -226,7 +226,7 @@ Use a callback to assert on the body or compute responses based on the request b
 ```elixir
 test "dynamic response based on request" do
   ExGram.Test.stub(:send_message, fn body ->
-    assert body[:text] == "......"
+    assert body[:text] in ["First", "Second"]
     
     # Echo back the text that was sent
     {:ok, %{
@@ -584,7 +584,7 @@ defmodule MyApp.TestHelpers do
       text: "Hello"
     }
 
-    ExGram.Cast.cast(Map.merge(defaults, attrs), ExGram.Model.Message)
+    cast(defaults, attrs, ExGram.Model.Message)
   end
 
   def build_update(attrs \\ %{}) do
@@ -593,7 +593,7 @@ defmodule MyApp.TestHelpers do
       message: build_message()
     }
 
-    ExGram.Cast.cast(Map.merge(defaults, attrs), ExGram.Model.Update)
+    cast(defaults, attrs, ExGram.Model.Update)
   end
 
   def build_callback_query(attrs \\ %{}) do
@@ -604,7 +604,13 @@ defmodule MyApp.TestHelpers do
       data: "button_action"
     }
 
-    ExGram.Cast.cast(Map.merge(defaults, attrs), ExGram.Model.CallbackQuery)
+    cast(defaults, attrs, ExGram.Model.CallbackQuery)
+  end
+  
+  defp cast(defaults, attrs, type) do
+   defaults
+   |> Map.merge(Map.new(attrs))
+   |> ExGram.Cast.cast(type)
   end
 end
 

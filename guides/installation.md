@@ -49,8 +49,8 @@ config :ex_gram, adapter: ExGram.Adapter.Req
 **Add to deps:**
 
 ```elixir
-{:tesla, "~> 1.2"},
-{:hackney, "~> 1.12"}  # Default client
+{:tesla, "~> 1.16"},
+{:hackney, "~> 3.2"}  # Default client
 ```
 
 **Add to config:**
@@ -73,8 +73,8 @@ Tesla supports several HTTP clients. The default is Hackney, but you can use:
 
 ```elixir
 # In deps
-{:tesla, "~> 1.2"},
-{:gun, "~> 1.3"}
+{:tesla, "~> 1.16"},
+{:gun, "~> 2.0"}
 
 # In config
 config :tesla, adapter: Tesla.Adapter.Gun

@@ -584,6 +584,17 @@ defmodule ExGram.MarkdownTest do
       assert extracted == "bold line 2"
     end
 
+    test "skip_blockquotes adjusts entity length for multi-line entities" do
+      # Bold entity spans two lines inside the blockquote
+      markdown = "> **bold\n> text**"
+      {text, entities} = Markdown.to_entities(markdown, skip_blockquotes: true)
+
+      bold = Enum.find(entities, &(&1.type == "bold"))
+      assert bold
+      extracted = B.slice_utf16(text, bold.offset, bold.length)
+      assert extracted == "bold\n  text"
+    end
+
     test "Bug #3: from_entities rejects partial entity overlaps" do
       text = "hello world"
       # Create partially overlapping entities (neither fully contains the other)

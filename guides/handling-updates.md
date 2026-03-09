@@ -192,7 +192,7 @@ end
 Catches any message that doesn't match other patterns.
 
 ```elixir
-def handle({:message, update}, context) do
+def handle({:message, message}, context) do
   cond do
     message.photo ->
       answer(context, "Nice photo!")

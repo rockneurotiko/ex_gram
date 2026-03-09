@@ -11,12 +11,12 @@ defmodule ExGram.Dsl.Keyboard do
   ``` elixir
   keyb = keyboard :inline do
     row do
-      button "A", callback_data: "a", style: "green"
+      button "A", callback_data: "a", style: "success"
       button "B", switch_inline_query_current_chat: "b"
     end
 
     row do
-      button "C", callback_data: "C", style: "red"
+      button "C", callback_data: "C", style: "danger"
       button "D", copy_text: "D"
     end
   end

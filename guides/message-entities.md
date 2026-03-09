@@ -43,7 +43,7 @@ Notice the escaped dots (`\\.`) and ampersand (`\\&`) in the URL, and the escape
 ```elixir
 alias ExGram.Dsl.MessageEntityBuilder, as: B
 
-# We can create blocks indepently
+# We can create blocks independently
 deployment_status = 
   B.join([
     B.join(["Environment:", B.code("production")]),

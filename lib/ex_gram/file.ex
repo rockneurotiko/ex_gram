@@ -8,6 +8,8 @@ defmodule ExGram.File do
 
   @base_url "https://api.telegram.org/file"
 
+  @type file :: String.t() | {:file, String.t()} | {:file_content, iodata() | File.Stream.t(), String.t()}
+
   @doc """
   Generate the full file URL ready to be downloaded.
 

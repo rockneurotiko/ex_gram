@@ -574,6 +574,43 @@ defmodule ExGram.Dsl.MessageEntityBuilderTest do
       full_text = Enum.map_join(parts, fn {t, _} -> t end)
       assert full_text == "function_with_very_long_name"
     end
+
+    test "handles max_length smaller than a surrogate pair without infinite loop" do
+      # Emoji U+1F600 is 2 UTF-16 units; max_length=1 would cause
+      # slice_utf16 to back up to empty, previously causing infinite recursion
+      msg = B.concat([B.bold("\u{1F600}"), B.bold("ab")])
+      parts = B.split(msg, 1)
+
+      # Should terminate and produce parts (emoji takes one full part of 2 units)
+      assert length(parts) >= 2
+      full_text = Enum.map_join(parts, fn {t, _} -> t end)
+      assert full_text == "\u{1F600}ab"
+
+      # Verify first part contains the full emoji (forced to 2 UTF-16 units despite max_length=1)
+      {first_text, _} = hd(parts)
+      assert first_text == "\u{1F600}"
+      assert B.utf16_length(first_text) == 2
+    end
+
+    test "handles multiple surrogate pairs with tiny max_length" do
+      # Multiple emoji, each 2 UTF-16 units, with max_length=1
+      # Each emoji should be kept intact (not split into invalid surrogates)
+      msg = {"\u{1F600}\u{1F601}\u{1F602}", []}
+      parts = B.split(msg, 1)
+
+      # Should produce 3 parts, each with one complete emoji
+      assert length(parts) == 3
+
+      # Each part should have valid UTF-8 and be a complete emoji
+      Enum.each(parts, fn {text, _} ->
+        assert String.valid?(text)
+        assert B.utf16_length(text) == 2
+      end)
+
+      # Concatenation should match original
+      full_text = Enum.map_join(parts, fn {t, _} -> t end)
+      assert full_text == "\u{1F600}\u{1F601}\u{1F602}"
+    end
   end
 
   describe "trim_leading/1" do

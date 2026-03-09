@@ -54,7 +54,7 @@ if Code.ensure_loaded?(MDEx) do
       try do
         doc = MDEx.parse_document!(markdown, @parse_opts)
         ctx = %{skip_blockquotes: skip_blockquotes, list_type: nil, list_depth: 0}
-        render_nodes(doc.nodes, ctx)
+        doc.nodes |> render_nodes(ctx) |> B.trim()
       rescue
         _ -> B.text(markdown)
       end
@@ -101,7 +101,6 @@ if Code.ensure_loaded?(MDEx) do
       nodes
       |> Enum.map(&render_node(&1, ctx))
       |> B.concat()
-      |> B.trim()
     end
 
     # Document root: just recurse
@@ -184,25 +183,30 @@ if Code.ensure_loaded?(MDEx) do
       indented_lines = Enum.map(lines, &(indent <> &1))
       indented = Enum.join(indented_lines, "\n")
 
-      # Adjust each entity's offset based on which line it appears on
+      # Adjust each entity's offset and length for per-line indentation
+      indent_utf16_len = B.utf16_length(indent)
+
       adjusted_entities =
         Enum.map(inner_entities, fn entity ->
-          # Calculate which line this entity starts on
+          # How many lines precede this entity's start
           line_num = count_newlines_before(inner_text, entity.offset)
-          # Add 2 spaces for each line including the current one
-          extra_offset = (line_num + 1) * 2
-          %{entity | offset: entity.offset + extra_offset}
+          # Shift offset by indent added to each preceding line + current line
+          extra_offset = (line_num + 1) * indent_utf16_len
+
+          # How many newlines are inside this entity's span
+          newlines_inside = count_newlines_in_span(inner_text, entity.offset, entity.length)
+          # Each interior newline gains an indent in the output
+          extra_length = newlines_inside * indent_utf16_len
+
+          %{entity | offset: entity.offset + extra_offset, length: entity.length + extra_length}
         end)
 
       {indented <> "\n", adjusted_entities}
     end
 
     defp render_node(%MDEx.BlockQuote{nodes: nodes}, ctx) do
-      inner = render_nodes(nodes, ctx)
-      {inner_text, _} = inner
-      trimmed = String.trim_trailing(inner_text, "\n")
-      inner_trimmed = {trimmed, elem(inner, 1)}
-      B.concat([B.blockquote(inner_trimmed), B.text("\n\n")])
+      inner = nodes |> render_nodes(ctx) |> B.trim()
+      B.concat([B.blockquote(inner), B.text("\n\n")])
     end
 
     # Lists
@@ -232,9 +236,7 @@ if Code.ensure_loaded?(MDEx) do
     defp render_node(%MDEx.TaskItem{checked: checked, nodes: nodes}, ctx) do
       prefix = if checked, do: "☑ ", else: "☐ "
       indent = String.duplicate("  ", max(ctx.list_depth - 1, 0))
-      inner = render_nodes(nodes, ctx)
-      {inner_text, inner_entities} = inner
-      trimmed = String.trim(inner_text)
+      {trimmed, inner_entities} = nodes |> render_nodes(ctx) |> B.trim()
 
       prefix_text = indent <> prefix
 
@@ -317,8 +319,7 @@ if Code.ensure_loaded?(MDEx) do
         end)
         |> B.concat()
 
-      {inline_text, inline_entities} = inline_content
-      trimmed = String.trim(inline_text)
+      {trimmed, inline_entities} = B.trim(inline_content)
       offset = B.utf16_length(prefix_str)
       adjusted_entities = B.offset_entities(inline_entities, offset)
 
@@ -371,6 +372,14 @@ if Code.ensure_loaded?(MDEx) do
       text_before = B.slice_utf16(text, 0, utf16_offset)
 
       text_before
+      |> String.graphemes()
+      |> Enum.count(&(&1 == "\n"))
+    end
+
+    # Count newlines within a UTF-16 span (offset, length)
+    defp count_newlines_in_span(text, utf16_offset, utf16_length) do
+      text
+      |> B.slice_utf16(utf16_offset, utf16_length)
       |> String.graphemes()
       |> Enum.count(&(&1 == "\n"))
     end

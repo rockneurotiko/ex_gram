@@ -13,7 +13,8 @@ defmodule ExGram.Encoder do
     @moduledoc """
     Compiled encoder engine module.
 
-    By default returns `nil`, which causes the default engine to be used.
+    This module is recompiled at compile time to return the configured engine.
+    The initial `nil` return value is a placeholder before recompilation.
     """
 
     def engine, do: nil

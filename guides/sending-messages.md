@@ -209,7 +209,7 @@ end
 
 ### Reply keyboards
 
-This are the keyboards that pop up at the botton of the screen. You can create them also with the DSL.
+These are the keyboards that pop up at the bottom of the screen. You can also create them with the DSL.
 
 ```elixir
 keyboard :reply do
@@ -348,6 +348,7 @@ end
 # Delete specific message
 def handle({:command, "cleanup", _}, context) do
   chat_id = extract_id(context)
+  message_id = "some_message_id"
   msg = %{chat_id: chat_id, message_id: message_id}
   delete(context, msg)
 end
@@ -365,10 +366,13 @@ The callback receives two parameters:
 def handle({:command, "pin", _}, context) do
   context
   |> answer("Important announcement!")
-  |> on_result(fn {:ok, %{message_id: msg_id}} ->
-    # Pin the message we just sent
-    ExGram.pin_chat_message(extract_id(context), msg_id)
-    :ok
+  |> on_result(fn 
+    {:ok, %{message_id: msg_id}}, name ->
+      # Pin the message we just sent
+      ExGram.pin_chat_message(extract_id(context), msg_id, bot: name)
+      
+    error, _name -> 
+      error
   end)
 end
 

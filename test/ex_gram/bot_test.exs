@@ -223,14 +223,14 @@ defmodule ExGram.BotTest do
       @moduledoc false
       use ExGram.Bot, name: :callback_test_bot
 
-      def handle({:callback_query, %{data: "action:" <> action} = query}, context) do
+      def handle({:callback_query, %{data: "action:" <> action} = message}, context) do
         context
-        |> answer_callback(query, text: "Processing #{action}")
+        |> answer_callback(message, text: "Processing #{action}")
         |> answer("Action: #{action}")
       end
 
-      def handle({:callback_query, %{data: data} = query}, context) do
-        answer_callback(context, query, text: "Unknown: #{data}")
+      def handle({:callback_query, %{data: data} = message}, context) do
+        answer_callback(context, message, text: "Unknown: #{data}")
       end
 
       def handle(_, context), do: context
