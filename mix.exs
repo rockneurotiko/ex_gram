@@ -65,7 +65,7 @@ defmodule ExGram.Mixfile do
       # For Markdown to MessageEntity convert
       {:mdex, "~> 0.11", optional: true},
       # Test adapter uses NimbleOwnership for per-process isolation
-      {:nimble_ownership, "~> 1.0"},
+      {:nimble_ownership, "~> 1.0", only: :test},
       # Development
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false, warn_if_outdated: true},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
