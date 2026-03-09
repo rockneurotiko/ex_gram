@@ -16,6 +16,12 @@ defmodule ExGram.Bot.SetupCommands do
   alias ExGram.Model.BotCommandScopeDefault
 
   def setup(commands, token) do
+    Enum.each(build(commands), fn {cmds, opts} ->
+      ExGram.set_my_commands(cmds, [{:token, token} | opts])
+    end)
+  end
+
+  def build(commands) do
     commands_with_description = Enum.filter(commands, & &1[:opts][:description])
     used_scopes = collect_used_scopes(commands_with_description)
 
@@ -24,11 +30,11 @@ defmodule ExGram.Bot.SetupCommands do
       |> Enum.flat_map(&expand_command(&1, used_scopes))
       |> Enum.group_by(fn {scope, lang, _cmd} -> {scope, lang} end, fn {_scope, _lang, cmd} -> cmd end)
 
-    Enum.each(grouped, fn {{scope, lang}, cmds} ->
+    Enum.map(grouped, fn {{scope, lang}, cmds} ->
       cmds = if lang, do: merge_with_base(grouped, scope, cmds), else: cmds
-      api_opts = [scope: scope, token: token]
+      api_opts = [scope: scope]
       api_opts = if lang, do: Keyword.put(api_opts, :language_code, lang), else: api_opts
-      ExGram.set_my_commands(cmds, api_opts)
+      {cmds, api_opts}
     end)
   end
 
