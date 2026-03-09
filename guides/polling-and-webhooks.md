@@ -228,10 +228,10 @@ children = [
 ]
 ```
 
-See [Multiple Bots](multiple_bots.md) for more details.
+See [Multiple Bots](multiple-bots.md) for more details.
 
 ## Next Steps
 
 - [Sending Messages](sending-messages.md) - Learn the DSL for building responses
-- [Multiple Bots](multiple_bots.md) - Run multiple bots in one application
+- [Multiple Bots](multiple-bots.md) - Run multiple bots in one application
 - [Fly.io Deployment](flyio.md) - Deploy your webhook bot to production

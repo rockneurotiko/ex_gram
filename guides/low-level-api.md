@@ -289,5 +289,5 @@ end
 
 ## Next Steps
 
-- [Multiple Bots](multiple_bots.md) - Using `bot:` option effectively
+- [Multiple Bots](multiple-bots.md) - Using `bot:` option effectively
 - [Testing](testing.md) - Test adapter for low-level API calls

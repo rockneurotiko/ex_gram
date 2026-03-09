@@ -1,6 +1,8 @@
 if Code.ensure_loaded?(Plug) do
   defmodule ExGram.Plug do
-    @moduledoc false
+    @moduledoc """
+    A Plug to handle incoming Telegram updates in webhook mode. It checks for the secret token (if configured) and processes the update accordingly.
+    """
     @behaviour Plug
 
     import Plug.Conn

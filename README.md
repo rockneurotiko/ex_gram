@@ -121,9 +121,9 @@ The ExGram DSL builds actions on the context that execute after your handler ret
 ### Sending Messages
 
 ```elixir
-context |> 
-answer("Hello!")
-|> answer_document(document_id)
+context 
+|> answer("Hello!")
+|> answer_document({:file, "/path/to/file.pdf"})
 ```
 
 ### Inline Keyboards
@@ -146,7 +146,7 @@ answer(context, "Choose:", reply_markup: markup)
 - With a helper method
 
 ```elixir
-markup = create_inline([
+markup = create_inline_keyboard([
   [%{text: "Button", callback_data: "button"}]
 ])
 answer(context, "Choose:", reply_markup: markup)
@@ -188,40 +188,7 @@ extract_update_type(context)  # Update type
 extract_message_type(context) # Message type
 ```
 
-See the [Cheatsheet](guides/cheatsheet.md) for a complete reference.
-
-## Documentation
-
-### Getting Started
-
-- [Installation](guides/installation.md) - HTTP adapters, JSON engines, configuration
-- [Getting Started](guides/getting-started.md) - Create your first bot
-- [Polling and Webhooks](guides/polling-and-webhooks.md) - Configure update methods
-
-### Building Bots
-
-- [Handling Updates](guides/handling-updates.md) - Process commands, messages, and callbacks
-- [Sending Messages](guides/sending-messages.md) - DSL philosophy and response building
-- [Define commands](guides/commands.md) - Clearly define you bot's commands, with options for different scopes and languages
-- [Message Entities](guides/message_entities.md) - Format messages without dealing with MarkdownV2 or HTML
-- [Middlewares](guides/middlewares.md) - Add preprocessing logic
-
-### Advanced
-
-- [Low-Level API](guides/low-level-api.md) - Direct API calls for complex scenarios
-- [Multiple Bots](guides/multiple_bots.md) - Run multiple bots in one application
-- [Testing](guides/testing.md) - Test your bots
-
-### Deployment
-
-- [Fly.io](guides/flyio.md) - Deploy your bot to production
-
-### Reference
-
-- [Cheatsheet](guides/cheatsheet.md) - Quick reference for common patterns
-- [HexDocs](https://hexdocs.pm/ex_gram) - Complete API documentation
-
-## Low-Level API
+### Low-Level API
 
 Use ExGram as a library without the framework:
 
@@ -242,6 +209,40 @@ All methods return `{:ok, result} | {:error, ExGram.Error.t()}` and have bang va
 {:ok, message} = ExGram.send_message(chat_id, "Hello")
 message = ExGram.send_message!(chat_id, "Hello")  # Raises on error
 ```
+
+
+See the [Sending Messages](guides/sending-messages.md] guide for a complete reference or the  [Cheatsheet](guides/cheatsheet.md) for a quick overview.
+
+## Documentation
+
+### Getting Started
+
+- [Installation](guides/installation.md) - HTTP adapters, JSON engines, configuration
+- [Getting Started](guides/getting-started.md) - Create your first bot
+
+### Building Bots
+
+- [Handling Updates](guides/handling-updates.md) - Process commands, messages, and other updates
+- [Sending Messages](guides/sending-messages.md) - DSL philosophy and response building
+- [Define commands](guides/commands.md) - Clearly define you bot's commands, with options for different scopes and languages
+- [Message Entities](guides/message-entities.md) - Format messages without dealing with MarkdownV2 or HTML
+- [Middlewares](guides/middlewares.md) - Add preprocessing logic
+
+### Advanced
+
+- [Polling and Webhooks](guides/polling-and-webhooks.md) - Configure update methods
+- [Low-Level API](guides/low-level-api.md) - Direct API calls for complex scenarios
+- [Multiple Bots](guides/multiple-bots.md) - Run multiple bots in one application
+- [Testing](guides/testing.md) - Test your bots
+
+### Deployment
+
+- [Fly.io](guides/flyio.md) - Deploy your bot to production
+
+### Reference
+
+- [Cheatsheet](guides/cheatsheet.md) - Quick reference for common patterns
+- [HexDocs](https://hexdocs.pm/ex_gram) - Complete API documentation
 
 ## Contributing
 

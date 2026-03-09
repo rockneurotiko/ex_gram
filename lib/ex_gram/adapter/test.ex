@@ -277,6 +277,8 @@ defmodule ExGram.Adapter.Test do
     end
   end
 
+  # We need to ignore warnings because ExUnit is not loaded
+  @dialyzer {:nowarn_function, verify_on_exit!: 1}
   @doc """
   Registers cleanup on test exit that verifies expectations were met.
   Call this in your test's setup block via `setup {ExGram.Test, :verify_on_exit!}`.

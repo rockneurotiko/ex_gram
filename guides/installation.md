@@ -147,4 +147,6 @@ config :ex_gram, json_engine: Poison
 ## Next Steps
 
 - [Getting Started](getting-started.md) - Create your first bot
-- [Polling and Webhooks](polling-and-webhooks.md) - Choose your update method
+- [Handling Updates](handling-updates.md) - Learn about different update types
+- [Sending Messages](sending-messages.md) - Explore the DSL for building responses
+- [Polling and Webhooks](polling-and-webhooks.md) - Configure how your bot receives updates
