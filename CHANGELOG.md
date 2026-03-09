@@ -3,6 +3,7 @@
 ## Unreleased
 - Simplified the Macros.Helper, now it's easier to deal with params AST
 - Added parameters description to models and methods @doc field
+- Added `:scopes` and `:lang` options to the `command` macro ( #202 by @txssu )
 
 ## [0.58.0]
 - Update to version 9.5
