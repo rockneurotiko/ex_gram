@@ -52,14 +52,43 @@ defmodule ExGram.Dsl.Keyboard do
     end
   end
 
+  @doc """
+  Builds an inline keyboard markup from a list of button rows.
+  
+  Filters out `nil` and empty rows from `rows` before constructing an `InlineKeyboardMarkup`.
+  
+  ## Parameters
+  
+    - rows: A list of rows where each row is a list of `InlineKeyboardButton` structs; `nil` or empty rows will be ignored.
+    - _opts: Keyword options (currently ignored).
+  
+  ## Returns
+  
+    - An `ExGram.Model.InlineKeyboardMarkup` representing the inline keyboard.
+  """
   @spec build_keyboard(:inline, [[InlineKeyboardButton.t()] | nil], keyword()) ::
-          ExGram.Model.InlineKeyboardMarkup.t()
+            ExGram.Model.InlineKeyboardMarkup.t()
   def build_keyboard(:inline, rows, _) do
     rows |> Enum.reject(&(is_nil(&1) or Enum.empty?(&1))) |> ExGram.Dsl.create_inline_keyboard()
   end
 
+  @doc """
+  Builds a reply keyboard markup from a list of button rows.
+  
+  Filters out `nil` or empty rows before constructing the reply keyboard. The `opts`
+  are forwarded to the reply keyboard creator to control keyboard behaviour.
+  
+  ## Parameters
+  
+    - rows: a list of rows, each row being a list of `KeyboardButton` structs; `nil` or empty rows are ignored.
+    - opts: keyword list of options forwarded to the reply keyboard creator.
+  
+  ## Returns
+  
+  An `ExGram.Model.ReplyKeyboardMarkup` struct representing the assembled reply keyboard.
+  """
   @spec build_keyboard(:reply, [[KeyboardButton.t()] | nil], keyword()) ::
-          ExGram.Model.ReplyKeyboardMarkup.t()
+            ExGram.Model.ReplyKeyboardMarkup.t()
   def build_keyboard(:reply, rows, opts) do
     rows |> Enum.reject(&(is_nil(&1) or Enum.empty?(&1))) |> ExGram.Dsl.create_reply_keyboard(opts)
   end
@@ -75,23 +104,56 @@ defmodule ExGram.Dsl.Keyboard do
 
   # Other public methods:
 
+  @doc """
+  Creates a ReplyKeyboardRemove struct that tells Telegram to remove the current reply keyboard.
+  
+  ## Parameters
+  
+    - selective?: When `true`, instructs Telegram to remove the keyboard for specific users only; when `false` or `nil`, no selective flag is set and the removal is not limited to specific users.
+  """
   @spec remove_keyboard(:reply, boolean() | nil) :: ReplyKeyboardRemove.t()
   def remove_keyboard(:reply, selective? \\ nil) do
     %ReplyKeyboardRemove{remove_keyboard: true, selective: selective?}
   end
 
   # Here for backwards compatibility
+  @doc """
+  Creates an inline keyboard button with the given text label.
+  
+  The `opts` keyword list may include additional button fields (for example `:callback_data`, `:url`, etc.).
+  """
   @spec button(String.t(), keyword()) :: InlineKeyboardButton.t()
   def button(text, opts \\ []) do
     inline_button(text, opts)
   end
 
+  @doc """
+  Constructs an InlineKeyboardButton with the given display text and additional fields.
+  
+  ## Parameters
+  
+    - text: The label shown on the button.
+    - opts: Keyword list of additional button fields (for example `:url`, `:callback_data`, etc.) to set on the resulting `InlineKeyboardButton`.
+  """
   @spec inline_button(String.t(), keyword()) :: InlineKeyboardButton.t()
   def inline_button(text, opts \\ []) do
     opts = opts |> Map.new() |> Map.put(:text, text)
     struct!(InlineKeyboardButton, opts)
   end
 
+  @doc """
+  Creates a KeyboardButton with the given display text and additional options.
+  
+  ## Parameters
+  
+    - opts: keyword list of KeyboardButton fields, e.g. `:request_contact`, `:request_location`.
+  
+  ## Examples
+  
+      iex> reply_button("Share contact", request_contact: true)
+      %KeyboardButton{text: "Share contact", request_contact: true}
+  
+  """
   @spec reply_button(String.t(), keyword()) :: KeyboardButton.t()
   def reply_button(text, opts \\ []) do
     opts = opts |> Map.new() |> Map.put(:text, text)

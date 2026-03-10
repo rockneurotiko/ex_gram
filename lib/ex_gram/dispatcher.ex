@@ -53,11 +53,40 @@ defmodule ExGram.Dispatcher do
             handler: nil,
             error_handler: nil
 
+  @doc """
+  Create a new Dispatcher struct, applying the given overrides to the default fields.
+  
+  ## Parameters
+  
+    - overrides: an enumerable (typically a map) with keys and values to override in the returned %ExGram.Dispatcher{} struct.
+  
+  ## Returns
+  
+  The constructed %ExGram.Dispatcher{} with defaults merged with `overrides`.
+  """
   @spec new(Enumerable.t()) :: t()
   def new(overrides \\ %{}) do
     struct!(__MODULE__, overrides)
   end
 
+  @doc """
+  Constructs the initial Dispatcher state for a bot.
+  
+  Creates a %ExGram.Dispatcher{} populated from the provided name, bot module, init options, and extra info. If `opts[:username]` is present, `bot_info` is initialized to a bot user with that username. The returned state contains prepared commands, configured regexes and middlewares from the module, and default handler/error_handler pairs pointing to the module's `:handle` and `:handle_error` functions.
+  
+  ## Parameters
+  
+    - name: Registered name (atom) for the dispatcher.
+    - module: Bot module implementing command/regex/middleware callbacks.
+    - opts: Initialization options; recognized keys include:
+      - `:username` — when present, used to seed `bot_info` as a bot user.
+      - `:setup_commands` — stored in the state for later initialization steps.
+    - extra_info: Arbitrary map stored on the dispatcher state.
+  
+  ## Returns
+  
+    - A fully populated `t()` dispatcher struct ready for GenServer initialization.
+  """
   @spec init_state(atom(), module(), init_opts(), map()) :: t()
   def init_state(name, module, opts, extra_info) when is_atom(name) and is_atom(module) do
     bot_info = if username = opts[:username], do: %Model.User{username: username, is_bot: true}
@@ -103,11 +132,21 @@ defmodule ExGram.Dispatcher do
   end
 
   @impl GenServer
+  @doc """
+  Initializes the dispatcher GenServer state and requests a continuation to perform bot initialization.
+  
+  Returns the given dispatcher state and signals a `:continue` with `:initialize_bot` so initialization that requires external resources (token fetch, bot setup) runs in handle_continue/2.
+  """
+  @spec init(t()) :: {:ok, t(), {:continue, :initialize_bot}}
   def init(%__MODULE__{} = state) do
     {:ok, state, {:continue, :initialize_bot}}
   end
 
   @impl GenServer
+  @doc """
+  Performs continuation-based initialization for the dispatcher: obtains the bot token, calls the bot module's `init/1`, resolves the bot's user info, optionally registers bot commands, and updates the dispatcher state with the retrieved bot info.
+  """
+  @spec handle_continue(:initialize_bot, t()) :: {:noreply, t()}
   def handle_continue(:initialize_bot, %__MODULE__{} = state) do
     token = ExGram.Token.fetch(bot: state.name)
 
@@ -131,6 +170,12 @@ defmodule ExGram.Dispatcher do
   end
 
   @impl GenServer
+  @doc """
+  Handles an `{:update, update}` GenServer call by building a dispatcher context, running the middleware pipeline, and—if the context is not halted—extracting the parsed info and invoking the bot handler asynchronously.
+  
+  The function always replies `:ok` to the caller and leaves the dispatcher state unchanged.
+  """
+  @spec handle_call({:update, any()}, GenServer.from(), t()) :: {:reply, :ok, t()}
   def handle_call({:update, update}, _from, %__MODULE__{} = state) do
     cnt = %{default_context(state) | update: update}
     cnt = apply_middlewares(cnt)
@@ -144,6 +189,12 @@ defmodule ExGram.Dispatcher do
   end
 
   @impl GenServer
+  @doc """
+  Processes a raw update synchronously: runs it through the middleware pipeline and, unless halted, extracts parsed information and invokes the bot handler.
+  
+  The GenServer call always replies `:ok`.
+  """
+  @spec handle_call({:sync_update, any()}, GenServer.from(), t()) :: {:reply, :ok, t()}
   def handle_call({:sync_update, update}, _from, %__MODULE__{} = state) do
     cnt = %{default_context(state) | update: update}
     cnt = apply_middlewares(cnt)
@@ -156,6 +207,10 @@ defmodule ExGram.Dispatcher do
     {:reply, :ok, state}
   end
 
+  @doc """
+  Handles a synchronous GenServer call containing a bot-originated message: builds a dispatcher context, runs middlewares, and either returns `:halted` if processing was stopped or forwards the message to the bot handler and returns its response.
+  """
+  @spec handle_call({:message, term(), term()}, term(), t()) :: {:reply, term(), t()}
   def handle_call({:message, origin, msg}, from, %__MODULE__{} = state) do
     bot_message = {:bot_message, origin, msg}
 

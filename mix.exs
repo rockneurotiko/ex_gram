@@ -4,6 +4,12 @@ defmodule ExGram.Mixfile do
   @source_url "https://github.com/rockneurotiko/ex_gram"
   @version "0.58.0"
 
+  @doc """
+  Defines the Mix project configuration for the ExGram application.
+  
+  The returned keyword list contains project metadata and build configuration such as `:app`, `:version`, `:package`, `:description`, `:source_url`, Elixir requirement, compile paths, dependency list, Dialyzer and Xref options, documentation settings, and flags that enable embedded builds and permanent starts when the environment is `:prod`.
+  """
+  @spec project() :: Keyword.t()
   def project do
     [
       app: :ex_gram,

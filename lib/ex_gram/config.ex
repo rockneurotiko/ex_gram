@@ -53,10 +53,22 @@ defmodule ExGram.Config do
     end
   end
 
+  
+  
   @doc """
-  Same as `get/3`, but returns the result as an integer.
-
-  If the value cannot be converted to an integer, the default is returned instead.
+  Fetches the configured value for `key` and returns it as an integer.
+  
+  If the stored value is already an integer it is returned. If the stored value is a string that can be parsed as an integer, the parsed integer is returned. If the value is missing or cannot be converted, the provided `default` is returned.
+  
+  ## Parameters
+  
+    - app: OTP application name.
+    - key: configuration key.
+    - default: integer or `nil` returned when the value is absent or not convertible to an integer.
+  
+  ## Returns
+  
+  The integer value from configuration or `default` when absent or non-convertible.
   """
   @spec get_integer(atom(), atom(), integer() | nil) :: integer
   def get_integer(app, key, default \\ nil) do

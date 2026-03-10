@@ -19,6 +19,21 @@ defmodule ExGram.Updates.Polling do
 
   @polling_timeout 100
 
+  @doc """
+  Start the polling GenServer for a specific bot.
+  
+  ## Parameters
+  
+    - opts: a map that must include:
+      - `:bot` — the bot process PID that will receive updates.
+      - `:token` — the bot token used to contact the Telegram API.
+      Additional keys in the map are treated as configuration options for polling.
+  
+  ## Returns
+  
+    - `{:ok, pid}` on successful start, `{:error, reason}` otherwise.
+  """
+  @spec start_link(%{bot: pid(), token: any()} | map()) :: GenServer.on_start()
   def start_link(%{bot: pid, token: token} = opts) do
     opts = Map.drop(opts, [:bot, :token])
     GenServer.start_link(__MODULE__, {:ok, pid, token, opts})

@@ -10,23 +10,30 @@ defmodule ExGram.Encoder do
   alias __MODULE__.Engine
 
   defmodule Engine do
-    @moduledoc """
-    Compiled encoder engine module.
+    @doc """
+Returns the configured JSON engine module or a placeholder.
 
-    This module is recompiled at compile time to return the configured engine.
-    The initial `nil` return value is a placeholder before recompilation.
-    """
+This function yields the module used for JSON encoding/decoding; it may be `nil` before the engine is compiled into the module.
+"""
+@spec engine() :: module() | nil
 
     def engine, do: nil
   end
 
   defmodule EngineCompiler do
-    @moduledoc """
-    Dynamically compiles the `ExGram.Encoder.Engine` module with the selected engine.
-
-    This allows the engine backend to be defined at compile time without reading from
-    application config on every call.
+    @doc """
+    Compile the ExGram.Encoder.Engine module to use the given JSON engine at compile time.
+    
+    Generates a concrete Elixir.ExGram.Encoder.Engine module whose `engine/0` returns the provided `engine` module, embedding the selected backend into compiled code.
+    
+    ## Parameters
+    
+      - engine: Module that implements the JSON encoder/decoder API used by ExGram (e.g., `Jason`).
+    
+    @returns
+      - `:ok` on success.
     """
+    @spec compile(module()) :: :ok
 
     def compile(engine) do
       Code.compiler_options(ignore_module_conflict: true)
