@@ -66,7 +66,7 @@ defmodule ExGram.Adapter.Test do
 
   @doc """
   Starts the NimbleOwnership server used to track per-test ownership for ExGram.Adapter.Test.
-  
+
   Accepts the same options as NimbleOwnership.start_link/1. By default sets the `:name` option to the module's ownership server name so the server can be referenced globally; call this once (for example from test_helper.exs or your application supervision tree).
   """
   @spec start_link(Keyword.t()) :: {:ok, pid()} | {:error, term()}
@@ -77,11 +77,11 @@ defmodule ExGram.Adapter.Test do
 
   @doc """
   Provide a child specification for supervising the test ownership server.
-  
+
   Parameters
-  
+
     - opts: Keyword list of options forwarded to start_link/1.
-  
+
   The returned map is a child specification suitable for use in a supervision tree.
   """
   @spec child_spec(Keyword.t()) :: Supervisor.child_spec()
@@ -97,22 +97,22 @@ defmodule ExGram.Adapter.Test do
 
   @doc """
   Register a catch-all stub callback for the current owner to handle requests that have no path-specific stub.
-  
+
   The provided `callback` will be invoked with the action (an atom) and the request body when no action-specific stub or expectation matches; its return value is used as the response (for example `{:ok, value}` or `{:error, reason}`).
-  
+
   ## Parameters
-  
+
     - callback: a function of arity 2 receiving `(action :: atom(), body :: any())`.
-  
+
   ## Example
-  
+
       stub(fn action, body ->
         case action do
           :send_message -> {:ok, %ExGram.Model.Message{...}}
           :send_chat_action -> {:ok, true}
         end
       end)
-  
+
   """
   @spec stub((atom(), any() -> any())) :: :ok
   def stub(callback) when is_function(callback, 2) do
