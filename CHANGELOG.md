@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.60.0]
 - Clean README.md and separate content in different guides in [./guides](./guides)
 - Added `:scopes` and `:lang` options to the `command` macro ( #202 by @txssu )
 - Added ExGram.Dsl.MessageEntityBuilder to build messages with MessageEntity instead of markdown or html
@@ -12,6 +14,8 @@
 - Added parameters description to models and methods @doc field
 - Fix Tesla and Req adapters to return proper Telegram errors
 - Added the possibility to pass `chat_id` and `message_id` directly to delete and edit DSL helpers
+- Fix ignore username middleware not working when the message has a newline after the command `"/command\nhey"` (#200)
+- `extract_info` looks at phono's `caption` to check for commands/regex (#201)
 
 ## [0.58.0]
 - Update to version 9.5
