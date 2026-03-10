@@ -162,7 +162,7 @@ config :ex_gram, token: "TOKEN"
 
 **DO NOT** hardcode any token in any configuration file or source code. It's the most common reason people publish secret tokens by mistake.
 
-The easiest way to avoid this it's to have a `config/runtime.exs`
+The easiest way to avoid this is to have a `config/runtime.exs`
 
 ```elixir
 # config/runtime.exs
