@@ -10,19 +10,7 @@ defmodule <%= app_module %>.Bot do
 
   middleware(ExGram.Middleware.IgnoreUsername)
 
-  @doc """
-Handles the `/start` command by sending "Hi!" to the user and returning the updated context.
-
-## Parameters
-
-  - context: the handler context used to send the reply and continue processing.
-
-## Returns
-
-  - `{:ok, context}` with the updated context.
-"""
-@spec handle({:command, :start, any()}, map()) :: {:ok, map()}
-def handle({:command, :start, _msg}, context) do
+  def handle({:command, :start, _msg}, context) do
     answer(context, "Hi!")
   end
 

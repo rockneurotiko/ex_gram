@@ -124,33 +124,26 @@ defmodule ExGram.Adapter.Test do
   end
 
   @doc """
-  Register a path- or action-specific stub response for the current owner.
-  
-  The provided response will be used whenever a request matches the given action and is stored in the calling process's metadata.
-  
-  Accepted response forms:
-  - a static value (non-tuple values are wrapped as `{:ok, value}`)
-  - a function of arity 1 receiving the request body
-  - a function of arity 2 receiving the action and the request body
-  
-  ## Parameters
-  
-    - action: an action atom or API path string to match incoming requests.
-    - response: a static response or responder function as described above.
-  
+  Stub a response for a Telegram API path or action atom. Always returns this response.
+  Owned by the calling process.
+
+  The response can be:
+  - A static value (will be wrapped in `{:ok, value}` if not already a tuple)
+  - An arity-1 function that receives the request body
+  - An arity-2 function that receives path and body (use `stub/1` instead for catch-all)
+
   ## Examples
-  
+
       # Static response with atom
       stub(:send_message, %ExGram.Model.Message{...})
-  
+
       # Dynamic response based on body
       stub(:send_message, fn body ->
         assert body["text"] =~ "Hello"
         {:ok, %ExGram.Model.Message{...}}
       end)
-  
+
   """
-  @spec stub(term(), term()) :: :ok
   def stub(action, response) do
     update_owner_metadata(fn meta ->
       %{meta | responses: Map.put(meta.responses, action, response)}
@@ -160,17 +153,9 @@ defmodule ExGram.Adapter.Test do
   end
 
   @doc """
-  Configure a persistent error response for a Telegram API path or action for the current owner.
-  
-  This records an error that will be returned whenever a request matches the given `action`. The configuration is stored for the calling process (owner) and persists until cleared or the owner is reset.
-  
-  ## Parameters
-  
-    - action: a binary path (e.g., "/sendMessage") or an action atom used to match requests.
-    - error: the error value to return when the action is invoked.
-  
+  Stub an error for a Telegram API path or action atom. Always returns this error.
+  Owned by the calling process.
   """
-  @spec stub_error(binary() | atom(), any()) :: :ok
   def stub_error(action, error) do
     update_owner_metadata(fn meta ->
       %{meta | errors: Map.put(meta.errors, action, error)}
@@ -180,39 +165,32 @@ defmodule ExGram.Adapter.Test do
   end
 
   @doc """
-  Register a catch-all expectation callback that will be consumed once.
-  
-  The callback is invoked for any action and receives the action atom and the request body; it should return a response in the same shapes accepted by the adapter (e.g., `{:ok, response}` or `{:error, reason}`).
-  
-  ## Parameters
-  
-    - callback: a function of arity 2 that accepts `(action :: atom, body :: any)` and returns a response.
-  
+  Expect a catch-all response with a callback that receives action atom and body.
+  Consumed after the first call (n=1).
+
   ## Example
-  
+
       expect(fn action, body ->
         assert action == :send_message
         {:ok, %ExGram.Model.Message{...}}
       end)
-  
+
   """
-  @spec expect((any, any -> any)) :: :ok
   def expect(callback) when is_function(callback, 2) do
     expect(1, callback)
   end
 
   @doc """
-  Registers a catch-all expectation that will be consumed after `n` matching requests.
-  
-  The provided `callback` is invoked with the action (`atom`) and the request body when a request does not match a path-specific expectation or stub. The expectation is removed after it has been used `n` times.
-  
-  ## Parameters
-  
-    - `n`: positive integer number of times the expectation should be consumed.
-    - `callback`: a function of arity 2 called as `callback.(action, body)` where `action` is an atom and `body` is the request payload.
-  
+  Expect a catch-all response with a callback that receives action atom and body.
+  Consumed after n calls.
+
+  ## Example
+
+      expect(2, fn action, body ->
+        {:ok, %ExGram.Model.Message{...}}
+      end)
+
   """
-  @spec expect(pos_integer(), (atom(), any() -> any())) :: :ok
   def expect(n, callback) when is_integer(n) and n > 0 and is_function(callback, 2) do
     update_owner_metadata(fn meta ->
       %{meta | catch_all_expectations: meta.catch_all_expectations ++ [{callback, n}]}
@@ -222,30 +200,33 @@ defmodule ExGram.Adapter.Test do
   end
 
   @doc """
-  Register an expectation for the given action that will be consumed after n calls.
-  
-  Expectations are checked before stubs. The provided response will be returned when the action is requested and the expectation is matched; each registration is consumed after its remaining count reaches zero and then removed.
-  
-  Response forms:
-    - A static value (will be normalized to `{:ok, value}`).
-    - A function of arity 1 that receives the request body.
-    - A function of arity 2 that receives the action and the request body.
-  
-  ## Parameters
-  
-    - action: An action atom (the path/action to expect).
-    - n: Positive integer for how many times the expectation should be consumed (default: 1).
-    - response: The response value or callback invoked when the expectation matches.
-  
+  Expect a response for a path or action atom. Consumed after n calls, then removed.
+  Expectations are checked before stubs.
+
+  The response can be:
+  - A static value (will be wrapped in `{:ok, value}` if not already a tuple)
+  - An arity-1 function that receives the request body
+
   ## Examples
-  
+
+      # Static response with atom, default n=1
       expect(:send_message, %ExGram.Model.Message{...})
+
+      # Static response with count
       expect(:send_message, 2, %ExGram.Model.Message{...})
-      expect(:send_message, fn body -> {:ok, %ExGram.Model.Message{...}} end)
-      expect(:send_message, 2, fn _action, body -> {:ok, %ExGram.Model.Message{...}} end)
-  
+
+      # Dynamic response based on body
+      expect(:send_message, fn body ->
+        assert body["text"] =~ "Welcome"
+        {:ok, %ExGram.Model.Message{...}}
+      end)
+
+      # Dynamic response with count
+      expect(:send_message, 2, fn body ->
+        {:ok, %ExGram.Model.Message{...}}
+      end)
+
   """
-  @spec expect(atom(), pos_integer(), any()) :: :ok
   def expect(action, n \\ 1, response) when is_integer(n) and n > 0 do
     update_owner_metadata(fn meta ->
       expectations =
@@ -260,11 +241,8 @@ defmodule ExGram.Adapter.Test do
   end
 
   @doc """
-  Retrieve the list of calls recorded for the current owner.
-  
-  Returns a list of recorded calls for the current owner; returns an empty list if no owner metadata is present.
+  Get all calls recorded for the current owner.
   """
-  @spec get_calls() :: list()
   def get_calls do
     case fetch_owner_metadata() do
       {:ok, meta} -> meta.calls
@@ -273,16 +251,9 @@ defmodule ExGram.Adapter.Test do
   end
 
   @doc """
-  Verify that all registered expectations were consumed for the given owner process.
-  
-  Checks for unexpected calls, unfulfilled path-specific expectations, and unfulfilled catch-all expectations; raises an error with details if any remain.
-  
-  ## Parameters
-  
-    - pid: PID of the owner process to verify (defaults to the current process).
-  
+  Verify all expectations were consumed.
+  Raises if any expectations remain.
   """
-  @spec verify!(pid()) :: :ok
   def verify!(pid \\ self()) do
     case fetch_owner_metadata(pid) do
       {:ok, meta} ->
@@ -333,11 +304,9 @@ defmodule ExGram.Adapter.Test do
   # We need to ignore warnings because ExUnit is not loaded
   @dialyzer {:nowarn_function, verify_on_exit!: 1}
   @doc """
-  Registers an on-exit hook that verifies expectations and cleans up adapter ownership for the current test process.
-  
-  Sets the test process to manual cleanup so ownership remains available inside the on-exit callback, then registers an exit callback that calls `verify!/1` for the process and removes its ownership. Call from a test setup block as `setup {ExGram.Test, :verify_on_exit!}`.
+  Registers cleanup on test exit that verifies expectations were met.
+  Call this in your test's setup block via `setup {ExGram.Test, :verify_on_exit!}`.
   """
-  @spec verify_on_exit!(term()) :: :ok
   def verify_on_exit!(_context) do
     pid = self()
 
@@ -353,147 +322,77 @@ defmodule ExGram.Adapter.Test do
   end
 
   @doc """
-  Allows another process to use the stubs and expectations owned by `owner_pid`.
-  
-  ## Parameters
-  
-    - owner_pid: PID of the owner process whose stubs and expectations will be shared.
-    - allowed_pid: PID of the process being granted access.
+  Allow another process to use this process's stubs.
   """
-  @spec allow(pid(), pid()) :: :ok | {:error, term()}
   def allow(owner_pid, allowed_pid) do
     NimbleOwnership.allow(@ownership_server, owner_pid, allowed_pid, @ownership_key)
   end
 
   @doc """
-Set the adapter to global mode so a single owner serves all callers.
+  Switch to global mode (one owner serves all callers).
 
-When invoked with a test context that has `:async` set to `true`, this call will fail (global mode is not allowed in async tests).
+  ## Examples
 
-## Parameters
-
-  - context: Test context map used to detect async tests (defaults to `%{}`).
-
-## Examples
-
-    setup {ExGram.Test, :set_global}
-
-"""
-@spec set_global(map()) :: :ok
+      setup {ExGram.Test, :set_global}
+  """
   def set_global(context \\ %{})
 
-  @doc """
-  Prevent switching ExGram.Test to global mode in async test contexts.
-  
-  Raises a `RuntimeError` when the provided `context` has `:async` set to `true`,
-  with instructions to remove `async: true` from the ExUnit case in order to use global mode.
-  """
-  @spec set_global(map()) :: :ok
   def set_global(%{async: true}) do
     raise "ExGram.Test cannot be set to global mode when the ExUnit case is async. " <>
             "If you want to use ExGram.Test in global mode, remove \"async: true\" when using ExUnit.Case"
   end
 
-  @doc """
-  Switches the test ownership server to shared (global) mode for the current process.
-  
-  This makes the current process's stubs, expectations, and recorded calls accessible to other processes via the ownership server.
-  """
-  @spec set_global(term()) :: :ok
   def set_global(_) do
     NimbleOwnership.set_mode_to_shared(@ownership_server, self())
   end
 
   @doc """
-  Switches the ownership server to private mode, enabling per-process isolation.
-  
+  Switch to private mode (per-process isolation).
+
   ## Examples
-  
+
       setup {ExGram.Test, :set_private}
   """
-  @spec set_private(term()) :: :ok
   def set_private(_context \\ %{}) do
     NimbleOwnership.set_mode_to_private(@ownership_server)
   end
 
-  
-  
   @doc """
-Selects private or global test mode based on the context's :async flag.
+  Chooses the ExGram.Test mode based on context.
 
-If `context` is a map containing `:async` set to `true`, the function enables private per-process mode; otherwise it enables global/shared mode.
+  When `async: true` is used, `set_private/1` is called,
+  otherwise `set_global/1` is used.
 
-## Parameters
+  ## Examples
 
-  - context: a map (typically the test context) where the `:async` boolean controls mode selection.
-
-@returns
-
-  - `:ok`
-"""
-@spec set_from_context(term()) :: :ok
-def set_from_context(%{async: true} = _context), do: set_private()
-  @doc """
-Switches the adapter to global (shared) mode when the provided test context does not require private mode.
-
-If the context indicates an async test (`%{async: true}`), other clauses handle selecting private mode; this clause falls back to enabling global mode.
-
-## Parameters
-
-  - context: Test context map or term used to decide global vs private mode (commonly includes `:async`).
-
-@spec set_from_context(term()) :: :ok
-"""
-def set_from_context(_context), do: set_global()
+      setup {ExGram.Test, :set_from_context}
+  """
+  @spec set_from_context(term()) :: :ok
+  def set_from_context(%{async: true} = _context), do: set_private()
+  def set_from_context(_context), do: set_global()
 
   # ---------------------------------------------------------------------------
   # Backward-compatible wrappers (thin wrappers over new API)
   # ---------------------------------------------------------------------------
 
   @doc """
-Registers a stubbed response for the given API path using the legacy backdoor API.
-
-The third `name` argument is ignored (isolation is per-process); use `path` and `response` to configure the stub.
-"""
-@spec backdoor_request(binary() | atom(), term(), term()) :: term()
+  Backward-compatible wrapper. The name parameter is ignored - isolation is now per-process.
+  """
   def backdoor_request(path, response, _name \\ nil), do: stub(path, response)
 
   @doc """
-Backward-compatible alias for stubbing an error for a given API path; the `name` argument is ignored.
-
-Delegates to `stub_error/2`. Provided for compatibility with older test code that passed a `name` argument; isolation is managed per-process and the third argument has no effect.
-
-## Parameters
-
-  - path: API path (string) or action atom to stub.
-  - error: value or structure that should be returned as an error for the given path.
-  - _name: ignored (kept for backward compatibility).
-
-"""
-@spec backdoor_error(binary() | atom(), any(), any()) :: :ok
+  Backward-compatible wrapper. The name parameter is ignored - isolation is now per-process.
+  """
   def backdoor_error(path, error, _name \\ nil), do: stub_error(path, error)
 
   @doc """
-Compatibility wrapper that retrieves recorded calls for the current owner. The `name` argument is ignored.
-
-## Parameters
-
-  - name: Ignored; present for backward compatibility.
-
-## Returns
-
-  - A list of recorded calls.
-"""
-@spec get_calls(term()) :: list()
+  Backward-compatible wrapper. The name parameter is ignored.
+  """
   def get_calls(_name), do: get_calls()
 
   @doc """
-  Resets the current owner's test adapter state to a fresh, empty state.
-  
-  Replaces any recorded responses, errors, expectations, calls, and catch-all stubs/expectations for the current owner.
-  
+  Backward-compatible wrapper. Cleans the current owner's state.
   """
-  @spec clean(term()) :: :ok
   def clean(_name \\ nil) do
     update_owner_metadata(fn _meta -> %__MODULE__{} end)
     :ok
@@ -504,12 +403,6 @@ Compatibility wrapper that retrieves recorded calls for the current owner. The `
   # ---------------------------------------------------------------------------
 
   @impl ExGram.Adapter
-  @doc """
-  Dispatches a request to the test owner that owns the current caller chain and returns the owner's configured response.
-  
-  Resolves the owning process for the current caller chain, converts the request path into an action, and delegates handling to that owner. Raises UnexpectedCallError if no owner has an expectation or stub for the action.
-  """
-  @spec request(term(), String.t(), term(), term()) :: {:ok, term()} | {:error, term()}
   def request(verb, path, body, _opts) do
     # Find the owner through the callers chain
     callers = [self() | caller_pids()]
@@ -621,10 +514,6 @@ Compatibility wrapper that retrieves recorded calls for the current owner. The `
     end
   end
 
-  @doc """
-  Attempt to consume a path-specific expectation for the given action; if none is available, try to consume a catch-all expectation.
-  """
-  @spec consume_expect_expectation(pid(), map(), atom(), any()) :: {:ok, any()} | :not_found
   def consume_expect_expectation(owner_pid, meta, action, body) do
     case consume_expectation(owner_pid, meta, action, body) do
       {:ok, response} ->

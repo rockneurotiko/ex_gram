@@ -100,23 +100,6 @@ defmodule ExGram.Test do
 
   alias ExGram.Adapter.Test
 
-  @doc """
-  Creates and starts a uniquely named test bot process for the given bot module and returns its registered bot name and module.
-  
-  Merges sensible test defaults (test adapter, test token/username, disabled setup commands) with the provided `opts`. The merged options include `:extra_info` augmented with the current test process PID under the `:test_pid` key, then are passed to `bot_module.start_link/1`.
-  
-  ## Parameters
-  
-    - context: The ExUnit test context (map) used to derive a deterministic base name for the test bot.
-    - bot_module: The bot module to start (module atom).
-    - opts: Keyword list of options to override or extend defaults. Recognized key:
-      - `:extra_info` — map of extra info that will be merged and augmented with `:test_pid`.
-  
-  ## Returns
-  
-    - A tuple `{bot_name, module_name}` where `bot_name` is the generated registered name (atom) and `module_name` is the generated module identifier used when starting the bot.
-  """
-  @spec start_bot(map(), module(), keyword()) :: {atom(), module()}
   def start_bot(context, bot_module, opts \\ []) do
     base = context.test |> Atom.to_string() |> String.replace(~r/[^a-z0-9]/i, "_")
     bot_name = String.to_atom("test_bot_#{base}_#{System.unique_integer([:positive])}")
@@ -142,43 +125,37 @@ defmodule ExGram.Test do
   end
 
   @doc """
-  Stubs an adapter response for the given action or path.
-  
-  Response may be a static value (for example `{:ok, value}`) or a callback of arity 1 that receives the request body and returns the response.
-  
-  ## Parameters
-  
-    - action: Atom or string identifying the adapter action/path to stub.
-    - response: Static response or a function `(body -> response)` that will be invoked with the request body.
-  
+  Stub a response for a specific action or path.
+
+  The response can be a static value (wrapped in `{:ok, value}`) or a callback
+  that receives the request body.
+
   ## Examples
-  
-      ExGram.Test.stub(:send_message, {:ok, %{message_id: 1, text: "ok"}})
-  
+
+      ExGram.Test.stub(:send_message, %{message_id: 1, text: "ok"})
+
       ExGram.Test.stub(:send_message, fn body ->
         {:ok, %{message_id: 1, chat_id: body["chat_id"], text: "ok"}}
       end)
+
   """
-  @spec stub(atom() | String.t(), any()) :: any()
   def stub(action, response) when is_atom(action) or is_binary(action) do
     Test.stub(action, response)
   end
 
   @doc """
-  Sets a catch-all response stub.
-  
-  The provided callback is invoked with the request `action` and `body` and should return the adapter response to use.
-  
-  ## Examples
-  
+  Stub a catch-all response with a callback that receives action and body.
+
+  ## Example
+
       ExGram.Test.stub(fn action, body ->
         case action do
           :send_message -> {:ok, %{message_id: 1, text: "ok"}}
           :get_me -> {:ok, %{id: 1, is_bot: true}}
         end
       end)
+
   """
-  @spec stub((any(), any() -> any())) :: any()
   def stub(callback) when is_function(callback, 2) do
     Test.stub(callback)
   end
@@ -214,57 +191,35 @@ defmodule ExGram.Test do
   end
 
   @doc """
-  Sets an expectation for a specific API action that is removed after one matching call.
-  
-  The `response` may be:
-    - a static value returned when the action is called, or
-    - a function to be invoked with the request body which should return the response.
-  
+  Expect a response for a specific action, consumed after 1 call.
+
   ## Examples
-  
+
       ExGram.Test.expect(:send_message, %{message_id: 1, text: "ok"})
-  
+
       ExGram.Test.expect(:send_message, fn body ->
         assert body[:text] == "Hello"
         {:ok, %{message_id: 1, text: "ok"}}
       end)
+
   """
-  @spec expect(atom() | binary(), term()) :: :ok
   def expect(action, response) when is_atom(action) or is_binary(action) do
     Test.expect(action, 1, response)
   end
 
   # Catch-all with count (no separate doc - covered by arity-1 catch-all above)
-  @doc """
-  Registers a catch-all expectation that will be consumed after it has matched the specified number of calls.
-  
-  The expectation uses `callback` for handling each matching request; the callback is invoked with two arguments: the action (atom or binary) and the request body. The expectation is removed after it has been matched `n` times.
-  
-  ## Parameters
-  
-    - n: Positive integer number of times the expectation should be consumed.
-    - callback: A function with arity 2 receiving `(action, body)` and returning the stubbed response.
-  
-  @returns
-    - `:ok` on successful registration.
-  """
-  @spec expect(integer, (term, term -> any)) :: :ok
   def expect(n, callback) when is_integer(n) and n > 0 and is_function(callback, 2) do
     Test.expect(n, callback)
   end
 
   @doc """
-  Sets an expectation for a specific API action that is consumed after N matching calls.
-  
-  - action: action name (atom or string) to match.
-  - n: positive integer specifying how many matching calls consume the expectation.
-  - response: the value to return for each matched call.
-  
+  Expect a response for a specific action, consumed after N calls.
+
   ## Example
-  
+
       ExGram.Test.expect(:send_message, 3, %{message_id: 1, text: "ok"})
+
   """
-  @spec expect(atom() | String.t(), pos_integer(), any()) :: :ok
   def expect(action, n, response) when (is_atom(action) or is_binary(action)) and is_integer(n) and n > 0 do
     Test.expect(action, n, response)
   end

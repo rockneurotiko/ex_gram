@@ -22,31 +22,15 @@ defmodule ExGram.Cast do
   """
   @type type_def :: atom() | {:array, type_def()} | [type_def()] | nil
 
-  @doc """
-  Cast a JSON-like value into the specified ExGram type definition.
-  
-  ## Parameters
-  
-    - elem: The input value (usually a map, list, or primitive) to be converted.
-    - type: A `type_def()` describing the target shape; can be an atom (struct), `{:array, type_def()}`, a list of alternative `type_def()`s, or `nil` for no constraint.
-  
-  ## Returns
-  
-    - `{:ok, value}` with the converted value when casting succeeds.
-    - `{:error, %ExGram.Error{}}` when casting fails with a descriptive error.
-  
-  """
   @spec cast(any(), type_def()) :: {:ok, any()} | {:error, ExGram.Error.t()}
   def cast(elem, type) do
     process_type(elem, type)
   end
 
-  
-  
   @doc """
-  Converts a value to the specified ExGram model and returns the converted value.
-  
-  Raises ExGram.Error with the conversion error message if the conversion fails.
+  Converts the given plain value to ExGram models.
+
+  Raises an error if the conversion fails. See `cast/2` for more details.
   """
   @spec cast!(any(), type_def()) :: any()
   def cast!(elem, type) do

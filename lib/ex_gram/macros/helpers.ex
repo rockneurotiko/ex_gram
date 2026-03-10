@@ -102,21 +102,8 @@ defmodule ExGram.Macros.Helpers do
 
   def type_to_spec(:string), do: {{:., [], [{:__aliases__, [alias: false], [:String]}, :t]}, [], []}
 
-  @doc """
-Produces the AST representing the `Enum.t()` type specification.
+  def type_to_spec(:enum), do: {{:., [], [{:__aliases__, [alias: false], [:Enum]}, :t]}, [], []}
 
-@returns
-  - AST node for `Enum.t()`.
-"""
-@spec type_to_spec(:enum) :: Macro.t()
-def type_to_spec(:enum), do: {{:., [], [{:__aliases__, [alias: false], [:Enum]}, :t]}, [], []}
-
-  @doc """
-  Builds the type-spec AST for a `:file` parameter.
-  
-  The resulting AST represents a union of a `{:file, String.t()}` tuple type and the `:file_content` type specification.
-  """
-  @spec type_to_spec(atom()) :: Macro.t()
   def type_to_spec(:file) do
     or_t(
       {:file, type_to_spec(:string)},
@@ -124,33 +111,15 @@ def type_to_spec(:enum), do: {{:., [], [{:__aliases__, [alias: false], [:Enum]},
     )
   end
 
-  @doc """
-  Builds a quoted type specification for `:file_content` values.
-  
-  The returned AST represents the tuple `{:file_content, file_data_spec, string_spec}` where `file_data_spec` is the spec produced for `:file_data` and `string_spec` is the spec produced for `:string`.
-  """
-  @spec type_to_spec(:file_content) :: Macro.t()
   def type_to_spec(:file_content) do
     {:{}, [], [:file_content, type_to_spec(:file_data), type_to_spec(:string)]}
   end
 
-  @doc """
-  Produce the type specification used for file data parameters.
-  
-  An AST representing the union of the `:iodata` and `:enum` type specifications.
-  """
-  @spec type_to_spec(:file_data) :: Macro.t()
   def type_to_spec(:file_data) do
     or_t(type_to_spec(:iodata), type_to_spec(:enum))
   end
 
-  @doc """
-Converts an `{:array, t}` type AST into an Elixir list type specification AST.
-
-t is the element type AST; the result is a Macro AST representing a list of that element type (i.e., `{:list, [], [element_spec]}`).
-"""
-@spec type_to_spec({:array, Macro.t()}) :: Macro.t()
-def type_to_spec({:array, t}), do: {:list, [], [type_to_spec(t)]}
+  def type_to_spec({:array, t}), do: {:list, [], [type_to_spec(t)]}
   def type_to_spec(:integer), do: {:integer, [], []}
   def type_to_spec(:boolean), do: {:boolean, [], []}
   def type_to_spec(true), do: true
@@ -264,21 +233,7 @@ def type_to_spec({:array, t}), do: {:list, [], [type_to_spec(t)]}
     struct_type_specs(acc)
   end
 
-  @doc """
-Builds type-spec entries for a struct from a list of parameter descriptors.
-
-Takes a list of analyzed parameter entries (each typically in the form [id, types, _] or [id, types, _, :optional]) and returns an accumulated list of `{id, type_spec}` pairs suitable for inclusion in a struct type specification. This is a convenience wrapper that initializes the accumulator and delegates to the two-argument `struct_type_specs/2`.
-
-## Parameters
-
-  - initial: List of parameter descriptor tuples or lists to convert into `{id, type_spec}` entries.
-
-## Returns
-
-  - A list of `{id, type_spec}` entries.
-"""
-@spec struct_type_specs(list()) :: list()
-def struct_type_specs(initial), do: struct_type_specs(initial, [])
+  def struct_type_specs(initial), do: struct_type_specs(initial, [])
 
   defp or_t({:|, _, [x, y]}, z), do: or_t(x, or_t(y, z))
   defp or_t(x, y), do: {:|, [], [x, y]}

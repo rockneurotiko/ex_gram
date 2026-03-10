@@ -44,17 +44,8 @@ if Code.ensure_loaded?(MDEx) do
       ]
     ]
 
-    
-    
     @doc """
-    Convert a Markdown string into a MessageEntityBuilder containing plain text and Telegram message entities.
-    
-    Parses CommonMark/GFM via MDEx and walks the AST to produce plain text with MessageEntity annotations (offset and length measured in UTF-16 code units). On parse failure the original markdown is returned as plain text with no entities.
-    
-    ## Options
-    
-      - :skip_blockquotes (boolean) — when true, render blockquotes as indented plain text instead of producing a blockquote entity. Defaults to `false`.
-    
+    Converts a Markdown string into a `t:ExGram.Dsl.MessageEntityBuilder.t/0` ready to be used.
     """
     @spec to_entities(String.t(), keyword()) :: B.t()
     def to_entities(markdown, opts \\ []) when is_binary(markdown) do

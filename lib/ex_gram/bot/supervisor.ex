@@ -10,17 +10,6 @@ defmodule ExGram.Bot.Supervisor do
   """
   alias ExGram.Dispatcher
 
-  @doc """
-  Builds a supervision child specification for the given bot module using the provided options.
-  
-  The resulting map includes:
-    - :id — `opts[:id]` or the `module` when no id is provided.
-    - :start — `{ExGram.Bot.Supervisor, :start_link, [opts, module]}`.
-    - :type — `:supervisor`.
-    - :restart — `:permanent`.
-    - :shutdown — `500` (milliseconds).
-  """
-  @spec child_spec(Keyword.t(), module()) :: map()
   def child_spec(opts, module) do
     %{
       id: opts[:id] || module,
@@ -37,22 +26,6 @@ defmodule ExGram.Bot.Supervisor do
     Supervisor.start_link(ExGram.Bot.Supervisor, params, name: supervisor_name)
   end
 
-  @doc """
-  Initializes the bot supervisor by registering the bot, preparing the Dispatcher and updates worker child specifications, and starting a one_for_one supervision tree.
-  
-  Required options in `opts`:
-    - `:method` - updates method identifier or module (required)
-    - `:token` - bot token (required)
-    - `:module` - bot module implementing handlers (required)
-  
-  Optional keys read from `opts`:
-    - `:bot_name` - overrides the bot name (defaults to `module.name()`)
-    - `:extra_info` - map merged into dispatcher state
-    - `:username`, `:setup_commands` - passed to the dispatcher via init options
-  
-  @spec init(keyword()) :: {:ok, term()}
-  @throws KeyError if `:method`, `:token`, or `:module` are not present in `opts`.
-  """
   def init(opts) do
     updates_method = Keyword.fetch!(opts, :method)
     token = Keyword.fetch!(opts, :token)

@@ -15,21 +15,6 @@ defmodule ExGram.Bot.SetupCommands do
   alias ExGram.Model.BotCommandScopeChatMember
   alias ExGram.Model.BotCommandScopeDefault
 
-  @doc """
-  Register the provided bot commands with Telegram for the given bot token.
-  
-  Builds the final command groups from `commands` and sends each group to Telegram using the specified `token`.
-  
-  ## Parameters
-  
-    - commands: List of command definitions (as produced/validated by this module's expected format).
-    - token: Bot token string used to authenticate with the Telegram API.
-  
-  ## Returns
-  
-    - `:ok` after all command groups have been sent.
-  """
-  @spec setup(list(), String.t()) :: :ok
   def setup(commands, token) do
     commands
     |> build()
@@ -38,23 +23,6 @@ defmodule ExGram.Bot.SetupCommands do
     end)
   end
 
-  @doc """
-  Constructs grouped command lists and corresponding API options for registration with Telegram.
-  
-  Filters the provided command definitions to those that include a description, expands each command across the required scopes and language variants, groups resulting commands by scope and language, ensures base (untranslated) commands are present when translations exist, and returns the final lists ready for the Telegram API.
-  
-  ## Parameters
-  
-    - commands: a list of command definition maps. Each map is expected to include `:opts` with `:description` and may include `:scopes` and `:lang` translation overrides.
-  
-  ## Returns
-  
-  A list of `{cmds, api_opts}` tuples:
-    - `cmds` — a list of command maps/structs prepared for the Telegram API for that scope/language.
-    - `api_opts` — a keyword list with `:scope` and, when applicable, `:language_code`.
-  
-  """
-  @spec build(list(map())) :: list({list(map()), keyword()})
   def build(commands) do
     commands_with_description = Enum.filter(commands, & &1[:opts][:description])
     used_scopes = collect_used_scopes(commands_with_description)
@@ -120,15 +88,7 @@ defmodule ExGram.Bot.SetupCommands do
     lang_cmd_pairs ++ untranslated
   end
 
-  @doc """
-Normalize a nil scopes value to the provided list of used scopes.
-
-When the first argument is `nil`, this forwards to `expand_scopes/2` using
-`used_scopes` as the scopes list so that absent scope configuration is
-treated as the set of scopes already in use.
-"""
-@spec expand_scopes(nil, list()) :: list()
-def expand_scopes(nil, used_scopes), do: expand_scopes(used_scopes, used_scopes)
+  def expand_scopes(nil, used_scopes), do: expand_scopes(used_scopes, used_scopes)
   def expand_scopes([], used_scopes), do: expand_scopes([:default], used_scopes)
 
   def expand_scopes(scopes, _used_scopes) when is_list(scopes) do

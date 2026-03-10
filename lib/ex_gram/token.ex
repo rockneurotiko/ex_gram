@@ -12,26 +12,23 @@ defmodule ExGram.Token do
 
   @registry Registry.ExGram
 
-  
-  
   @doc """
-  Retrieve a Telegram bot token from provided options, the registry, or application config.
-  
-  Options:
-    * `:token` - explicit token to use (takes precedence)
-    * `:bot` - atom name of a registered bot to lookup in a registry
-    * `:registry` - optional registry to query (defaults to `Registry.ExGram`)
-  
-  Returns the first available token found from these sources in precedence order: explicit `:token`, registry lookup for `:bot`, then application config `:ex_gram` `:token`.
-  
+  Main logic to extract the token of the bot.
+
+  The options can have the following keys:
+
+    * `:token` - Explicit token to be used (ignores everything else)
+    * `:bot` - Bot name (atom) to retrieve token from registry
+    * `:registry` - Optional. Registry to extract the bot's token (default: `Registry.ExGram`)
+
   ## Examples
-  
+
       ExGram.Token.fetch() # From config :ex_gram, :token
-  
+
       ExGram.Token.fetch(token: "MyToken") # Explicit token
-  
+
       ExGram.Token.fetch(bot: :my_bot) # From Registry.ExGram
-  
+
       ExGram.Token.fetch(bot: :my_bot, registry: OtherRegistry)
   """
   @spec fetch(keyword) :: String.t() | nil
