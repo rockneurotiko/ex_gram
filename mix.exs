@@ -16,10 +16,7 @@ defmodule ExGram.Mixfile do
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      dialyzer: [
-        plt_add_deps: :app_tree,
-        plt_add_apps: [:tesla, :mix, :eex]
-      ],
+      dialyzer: [plt_add_apps: [:mix, :eex]],
       xref: [exclude: [EEx]],
       docs: docs()
     ]
@@ -42,7 +39,7 @@ defmodule ExGram.Mixfile do
       maintainers: ["Miguel Garcia / Rock Neurotiko"],
       licenses: ["Beerware"],
       links: %{"GitHub" => "https://github.com/rockneurotiko/ex_gram"},
-      files: ~w(lib templates mix.exs README.md)
+      files: ~w(lib guides templates mix.exs README.md CHANGELOG.md LICENSE)
     ]
   end
 
@@ -53,7 +50,7 @@ defmodule ExGram.Mixfile do
   defp deps do
     [
       # Tesla adapter
-      {:tesla, "~> 1.2", optional: true},
+      {:tesla, "~> 1.16", optional: true},
       {:gun, "~> 2.0", optional: true},
       {:hackney, "~> 1.20", optional: true},
       {:req, "~> 0.5.0", optional: true},
@@ -62,11 +59,15 @@ defmodule ExGram.Mixfile do
       {:poison, ">= 1.0.0", optional: true},
       # Webhook adapter
       {:plug, "~> 1.14", optional: true},
+      # For Markdown to MessageEntity convert
+      {:mdex, "~> 0.11", optional: true},
+      # Test adapter uses NimbleOwnership for per-process isolation
+      {:nimble_ownership, "~> 1.0"},
       # Development
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false},
+      {:credo, "~> 1.7", only: [:dev, :test], runtime: false, warn_if_outdated: true},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.39", only: :dev, runtime: false, warn_if_outdated: true},
-      {:styler, "~> 1.9", only: [:dev, :test], runtime: false}
+      {:ex_doc, "~> 0.40", only: :dev, runtime: false, warn_if_outdated: true},
+      {:styler, "~> 1.11", only: [:dev, :test], runtime: false, warn_if_outdated: true}
     ]
   end
 
@@ -80,11 +81,12 @@ defmodule ExGram.Mixfile do
       extras: extras(),
       groups_for_extras: groups_for_extras(),
       groups_for_modules: [
-        Updates: ~r/ExGram\.Updates.*/,
-        Adapters: ~r/ExGram\.Adapter.*/,
         DSL: ~r/ExGram\.Dsl.*/,
         Middlewares: ~r/ExGram\.Middleware.*/,
         Responses: ~r/ExGram\.Responses.*/,
+        Test: [~r/ExGram\.Test/, ~r/ExGram\..*\.Test/],
+        Updates: ~r/ExGram\.Updates.*/,
+        Adapters: ~r/ExGram\.Adapter.*/,
         Encoder: ~r/ExGram\.Encoder.*/,
         Macros: ~r/ExGram\.Macros.*/,
         Models: ~r/ExGram\.Model.*/
@@ -92,18 +94,24 @@ defmodule ExGram.Mixfile do
     ]
   end
 
+  @guides "guides" |> File.ls!() |> Enum.filter(&String.ends_with?(&1, ".md")) |> Enum.map(&"guides/#{&1}")
+
   defp extras do
     [
       "README.md",
-      "guides/multiple_bots.md",
-      "guides/flyio.md",
-      "CHANGELOG.md"
-    ]
+      "CHANGELOG.md",
+      "LICENSE"
+    ] ++ @guides
   end
 
   defp groups_for_extras do
     [
-      "How-To's": ~r/guides\/.?/
+      Cheatsheet: "guides/cheatsheet.md",
+      Basic: ~r/guides\/(installation|getting-started|handling-updates|commands|sending-messages)\.md/,
+      Intermediate: ~r/guides\/(polling-and-webhooks|message-entities|middlewares|low-level-api)\.md/,
+      Advanced: ~r/guides\/(multiple-bots|flyio|)\.md/,
+      Testing: "guides/testing.md",
+      "Other Guides": ~r/guides\/.*/
     ]
   end
 end

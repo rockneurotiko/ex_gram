@@ -1,6 +1,9 @@
 defmodule ExGram.Responses.Answer do
   @moduledoc """
-  Simple text answer, it uses `send_message`
+  Simple text answer response using `ExGram.send_message/3`.
+
+  This is a helper response type used by `ExGram.Dsl` to send text messages as
+  command handler responses.
   """
 
   defstruct [:id, :text, :ops]

@@ -1,10 +1,14 @@
 defmodule ExGram.Bot.Supervisor do
   @moduledoc """
-  Bot supervisor that starts the dispatcher and updates processes and tie them together
+  Bot supervisor that starts the `ExGram.Dispatcher` and Updates processes.
+
+  This supervisor coordinates the lifecycle of a bot's core components: the dispatcher
+  (which handles incoming updates) and the updates worker (which fetches or receives
+  updates from Telegram via polling, webhooks, or test mode).
+
+  See the [Polling and Webhooks guide](polling-and-webhooks.md) for more details about different updates methods and the [testing guide](testing.md) for using the test updates worker in your tests.
   """
-  alias ExGram.Bot.SetupCommands
   alias ExGram.Dispatcher
-  alias ExGram.Model.User
 
   def child_spec(opts, module) do
     %{
@@ -33,11 +37,9 @@ defmodule ExGram.Bot.Supervisor do
     {updates_worker, updates_worker_opts} = updates_worker(updates_method)
     updates_worker_opts = Map.merge(updates_worker_opts, %{bot: name, token: token})
 
-    if opts[:setup_commands], do: SetupCommands.setup(module.commands(), token)
-
-    bot_info = get_bot_info(opts[:username], token)
     extra_info = Keyword.get(opts, :extra_info, %{})
-    dispatcher_opts = Dispatcher.init_state(name, bot_info, module, extra_info)
+    dispatcher_init_opts = Keyword.take(opts, [:username, :setup_commands])
+    dispatcher_opts = Dispatcher.init_state(name, module, dispatcher_init_opts, extra_info)
 
     children =
       [
@@ -63,13 +65,4 @@ defmodule ExGram.Bot.Supervisor do
   defp updates_worker_module(:polling), do: ExGram.Updates.Polling
   defp updates_worker_module(:test), do: ExGram.Updates.Test
   defp updates_worker_module(module) when is_atom(module), do: module
-
-  defp get_bot_info(username, _token) when is_binary(username), do: %User{username: username, is_bot: true}
-
-  defp get_bot_info(_username, token) do
-    case ExGram.get_me(token: token) do
-      {:ok, bot} -> bot
-      _ -> nil
-    end
-  end
 end

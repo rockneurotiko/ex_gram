@@ -25,13 +25,13 @@ defmodule ExGram.Bot do
   end
   ```
 
-  - Add ExGram and your bots to your application childrens
+  - Add `ExGram` and your bots to your application children
 
   ``` elixir
   children = [
     # ...
     ExGram,
-    {MyBot, [method: :polling, token: "bot_token]}
+    {MyBot, [method: :polling, token: "bot_token"]}
   ]
   ```
   """
@@ -54,12 +54,16 @@ defmodule ExGram.Bot do
       def name, do: unquote(name)
 
       def child_spec(opts) do
-        opts = Keyword.merge(opts, unquote(module_opts))
+        opts = Keyword.merge(unquote(module_opts), opts)
         ExGram.Bot.Supervisor.child_spec(opts, __MODULE__)
       end
 
-      @type init_opts :: [bot: atom() | String.t(), token: String.t()]
-      @spec init(init_opts) :: :ok
+      def start_link(opts) do
+        opts = Keyword.merge(unquote(module_opts), opts)
+        ExGram.Bot.Supervisor.start_link(opts, __MODULE__)
+      end
+
+      @impl ExGram.Handler
       def init(_opts) do
         :ok
       end
@@ -84,7 +88,6 @@ defmodule ExGram.Bot do
       end
 
       defoverridable ExGram.Handler
-      defoverridable init: 1
     end
   end
 end

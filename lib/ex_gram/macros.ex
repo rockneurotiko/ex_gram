@@ -1,6 +1,6 @@
 defmodule ExGram.Macros do
   @moduledoc """
-  `model/2` and `method/4` macros to build the API
+  `model/3` and `method/5` macros to build the API
   """
 
   import __MODULE__.Helpers
@@ -21,7 +21,7 @@ defmodule ExGram.Macros do
         @moduledoc """
         #{unquote(description)}
 
-        Check the documentation of this model in https://core.telegram.org/bots/api##{unquote(name) |> inspect() |> String.split(".") |> Enum.at(-1) |> String.downcase()}
+        Check the [documentation of this model on Telegram Bot API](https://core.telegram.org/bots/api##{unquote(name) |> inspect() |> String.split(".") |> Enum.at(-1) |> String.downcase()})
 
         #{Enum.map_join(unquote(params_descriptions), "\n", fn {k, v} -> "- `#{k}`: #{v}" end)}
         """
@@ -56,6 +56,7 @@ defmodule ExGram.Macros do
     types_opt_spec = optional_type_specs(analyzed)
 
     {mandatory_parameters, mandatory_body} = mandatory_parameters(analyzed)
+    n_parameters = length(mandatory_parameters) + 1
 
     {opt_par, opt_par_types} = optional_parameters(analyzed)
 
@@ -70,7 +71,7 @@ defmodule ExGram.Macros do
       @doc """
       #{unquote(description)}
 
-      Check the documentation of this method in https://core.telegram.org/bots/api##{String.downcase(unquote(name))}
+      Check the [documentation of this method on Telegram Bot API](https://core.telegram.org/bots/api##{String.downcase(unquote(name))})
 
       #{Enum.map_join(unquote(params_descriptions), "\n", fn {k, v} -> "- `#{k}`: #{v}" end)}
       """
@@ -102,11 +103,11 @@ defmodule ExGram.Macros do
 
       # Unsafe method
       @doc """
-      Unsafe version of #{unquote(fname)}. It will return the response or raise in case of error.
+      Unsafe version of `#{unquote(fname)}/#{unquote(n_parameters)}`. It will return the response or raise in case of error.
 
       #{unquote(description)}
 
-      Check the documentation of this method in https://core.telegram.org/bots/api##{String.downcase(unquote(name))}
+      Check the [documentation of this method on Telegram Bot API](https://core.telegram.org/bots/api##{String.downcase(unquote(name))})
       """
       @spec unquote(fname_exception)(
               unquote_splicing(types_mand_spec),

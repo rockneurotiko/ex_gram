@@ -1,7 +1,12 @@
 if Code.ensure_loaded?(Req) do
   defmodule ExGram.Adapter.Req do
     @moduledoc """
-    HTTP Adapter that uses Req
+    HTTP adapter that uses [Req](https://hexdocs.pm/req) for Telegram Bot API requests.
+
+    This is the recommended HTTP adapter. It uses Finch under the hood for connection
+    pooling and provides sensible defaults for long polling.
+
+    See `ExGram.Adapter` behaviour for more details.
     """
     @behaviour ExGram.Adapter
 
@@ -107,6 +112,16 @@ if Code.ensure_loaded?(Req) do
       {:ok, body}
     end
 
+    defp handle_result(
+           {_req, %Req.Response{body: %{ok: false, description: description, error_code: error_code} = body}}
+         ) do
+      parameters = maybe_error_parameters(body)
+
+      error = %ExGram.Error{code: error_code, message: description, metadata: %{parameters: parameters}}
+
+      {:error, error}
+    end
+
     defp handle_result({_req, %Req.Response{body: body} = _response}) do
       {:error, %ExGram.Error{code: :response_status_not_match, message: ExGram.Adapter.encode(body)}}
     end
@@ -114,5 +129,14 @@ if Code.ensure_loaded?(Req) do
     defp handle_result({_req, exception}) do
       {:error, %ExGram.Error{code: exception, message: "Request failed with exception: #{inspect(exception)}"}}
     end
+
+    defp maybe_error_parameters(%{parameters: parameters}) do
+      case ExGram.Cast.cast(parameters, {:array, ExGram.Model.ResponseParameters}) do
+        {:ok, parameters} -> parameters
+        _ -> []
+      end
+    end
+
+    defp maybe_error_parameters(_), do: []
   end
 end

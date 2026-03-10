@@ -1,15 +1,27 @@
 defmodule ExGram.Config do
   @moduledoc """
-  This module handles fetching values from the config with some additional niceties
+  Configuration helper with environment variable support.
+
+  This module provides `get/3` and `get_integer/3` functions that fetch values from
+  application config, with special handling for `{:system, "VAR"}` tuples to read
+  from environment variables.
+
+  ## Example
+
+      # In config.exs
+      config :ex_gram, token: {:system, "BOT_TOKEN"}
+
+      # At runtime
+      ExGram.Config.get(:ex_gram, :token) # Reads from $BOT_TOKEN env var
   """
 
   @doc """
-  Fetches a value from the config, or from the environment if {:system, "VAR"}
+  Fetches a value from the config, or from the environment if `{:system, "VAR"}`
   is provided.
 
   An optional default value can be provided if desired.
 
-  ## Example
+  ## Examples
 
       iex> {test_var, expected_value} = System.get_env |> Enum.take(1) |> List.first
       ...> Application.put_env(:myapp, :test_var, {:system, test_var})
@@ -42,9 +54,9 @@ defmodule ExGram.Config do
   end
 
   @doc """
-  Same as get/3, but returns the result as an integer.
-  If the value cannot be converted to an integer, the
-  default is returned instead.
+  Same as `get/3`, but returns the result as an integer.
+
+  If the value cannot be converted to an integer, the default is returned instead.
   """
   @spec get_integer(atom(), atom(), integer() | nil) :: integer
   def get_integer(app, key, default \\ nil) do

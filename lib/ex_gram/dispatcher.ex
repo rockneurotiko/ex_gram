@@ -1,6 +1,10 @@
 defmodule ExGram.Dispatcher do
   @moduledoc """
-  Named process that receive the updates, apply the middlewares for the bot and call the bot's handler
+  Named GenServer process that receives updates, applies middlewares for the bot,
+  and calls the bot's `c:ExGram.Handler.handle/2` callback.
+
+  This module is started automatically by the bot's supervisor and shouldn't be
+  interacted with directly in most cases.
   """
 
   use GenServer
@@ -9,6 +13,7 @@ defmodule ExGram.Dispatcher do
   alias ExGram.Cnt
   alias ExGram.Model
 
+  @type init_opts() :: [username: String.t() | nil, setup_commands: boolean()]
   @type custom_key() :: any()
 
   @type parsed_message() ::
@@ -20,6 +25,7 @@ defmodule ExGram.Dispatcher do
           | {:callback_query, Model.CallbackQuery.t()}
           | {:inline_query, Model.InlineQuery.t()}
           | {:edited_message, Model.Message.t()}
+          | {:pinned_message, Model.Message.t()}
           | {:update, Model.Update.t()}
 
   @type t() :: %__MODULE__{
@@ -27,6 +33,7 @@ defmodule ExGram.Dispatcher do
           bot_info: Model.User.t() | nil,
           dispatcher_name: atom(),
           extra_info: map(),
+          init_opts: init_opts(),
           commands: %{String.t() => map()},
           regex: [Regex.t()],
           middlewares: [Bot.middleware()],
@@ -39,6 +46,7 @@ defmodule ExGram.Dispatcher do
             bot_module: nil,
             dispatcher_name: __MODULE__,
             extra_info: %{},
+            init_opts: [username: nil, setup_commands: false],
             commands: %{},
             regex: [],
             middlewares: [],
@@ -50,15 +58,17 @@ defmodule ExGram.Dispatcher do
     struct!(__MODULE__, overrides)
   end
 
-  @spec init_state(atom(), Model.User.t() | nil, module()) :: t()
-  @spec init_state(atom(), Model.User.t() | nil, module(), map()) :: t()
-  def init_state(name, bot_info, module, extra_info \\ %{}) when is_atom(name) and is_atom(module) do
+  @spec init_state(atom(), module(), init_opts(), map()) :: t()
+  def init_state(name, module, opts, extra_info) when is_atom(name) and is_atom(module) do
+    bot_info = if username = opts[:username], do: %Model.User{username: username, is_bot: true}
+
     %__MODULE__{
       name: name,
       bot_info: bot_info,
       bot_module: module,
       dispatcher_name: name,
       extra_info: extra_info,
+      init_opts: opts,
       commands: prepare_commands(module.commands()),
       regex: module.regexes(),
       middlewares: module.middlewares(),
@@ -94,9 +104,30 @@ defmodule ExGram.Dispatcher do
 
   @impl GenServer
   def init(%__MODULE__{} = state) do
-    state.bot_module.init(bot: state.name, token: ExGram.Token.fetch(bot: state.name))
+    {:ok, state, {:continue, :initialize_bot}}
+  end
 
-    {:ok, state}
+  @impl GenServer
+  def handle_continue(:initialize_bot, %__MODULE__{} = state) do
+    token = ExGram.Token.fetch(bot: state.name)
+
+    state.bot_module.init(bot: state.name, token: token, extra_info: state.extra_info)
+
+    bot_info = get_bot_info(state, token)
+
+    # We have to use bot_module.commands() to get the raw commands definitions
+    if state.init_opts[:setup_commands], do: Bot.SetupCommands.setup(state.bot_module.commands(), token)
+
+    {:noreply, %{state | bot_info: bot_info}}
+  end
+
+  defp get_bot_info(%__MODULE__{bot_info: %Model.User{} = bot_info}, _token), do: bot_info
+
+  defp get_bot_info(%__MODULE__{}, token) do
+    case ExGram.get_me(token: token) do
+      {:ok, bot} -> bot
+      _ -> nil
+    end
   end
 
   @impl GenServer
@@ -107,6 +138,19 @@ defmodule ExGram.Dispatcher do
     if !(cnt.halted || cnt.middleware_halted) do
       info = extract_info(cnt)
       spawn(fn -> call_handler(info, cnt, state) end)
+    end
+
+    {:reply, :ok, state}
+  end
+
+  @impl GenServer
+  def handle_call({:sync_update, update}, _from, %__MODULE__{} = state) do
+    cnt = %{default_context(state) | update: update}
+    cnt = apply_middlewares(cnt)
+
+    if !(cnt.halted || cnt.middleware_halted) do
+      info = extract_info(cnt)
+      call_handler(info, cnt, state)
     end
 
     {:reply, :ok, state}
@@ -242,6 +286,10 @@ defmodule ExGram.Dispatcher do
 
   defp extract_info(%Cnt{update: %{message: %{location: %{} = location}}}) do
     {:location, location}
+  end
+
+  defp extract_info(%Cnt{update: %{message: %{pinned_message: %{} = message}}}) do
+    {:pinned_message, message}
   end
 
   defp extract_info(%Cnt{update: %{message: %{} = message}}) do

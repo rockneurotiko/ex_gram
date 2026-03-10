@@ -1,6 +1,6 @@
 defmodule ExGram.Responses.SendDocument do
   @moduledoc """
-  Simple text answer, it uses `send_message`
+  Send document response, it uses `ExGram.send_document/3`
   """
 
   defstruct [:id, :document, :ops]

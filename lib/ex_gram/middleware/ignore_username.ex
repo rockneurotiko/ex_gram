@@ -1,8 +1,20 @@
 defmodule ExGram.Middleware.IgnoreUsername do
   @moduledoc """
-  Middleware that ignore the username in the command parameter.
+  Middleware that strips the bot username from commands.
 
-  `/command@bot_username` will be transformed to `/command` before handling the message
+  Transforms `/command@bot_username` to `/command` before the message is handled.
+  This is useful when your bot is used in group chats where commands may be
+  explicitly targeted at your bot to avoid ambiguity with other bots.
+
+  ## Example
+
+      defmodule MyBot do
+        use ExGram.Bot, name: :my_bot
+
+        middleware ExGram.Middleware.IgnoreUsername
+      end
+
+  See the [Middlewares guide](middlewares.md) for more details.
   """
 
   use ExGram.Middleware

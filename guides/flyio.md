@@ -152,10 +152,12 @@ For that, first we need to change the config files, I want to keep `polling` on 
 ``` elixir
 import Config
 
-config :ex_gram,
+config :ex_gram, adapter: ExGram.Adapter.Req
+
+config :my_bot, MyBot.Bot,
+  token: "YOUR_BOT_TOKEN",
   method: :polling,
-  adapter: ExGram.Adapter.Tesla,
-  polling: [allowed_updates: []]
+  polling: [allowed_updates: []] 
 
 import_config "#{config_env()}.exs"
 ```
@@ -166,6 +168,11 @@ import_config "#{config_env()}.exs"
 import Config
 
 config :ex_gram, token: "YOUR_BOT_TOKEN"
+
+config :my_bot, MyBot.Bot,
+  token: "YOUR_BOT_TOKEN",
+  method: :polling,
+  polling: [allowed_updates: []]
 ```
 
 - `config/prod.exs`
@@ -180,10 +187,11 @@ import Config
 import Config
 
 if config_env() == :prod do
-  config :ex_gram,
+  config :ex_gram, token: System.get_env("BOT_TOKEN")
+    
+  config :my_bot, MyBot.Bot,
     token: System.get_env("BOT_TOKEN"),
     method: :webhook,
-    adapter: ExGram.Adapter.Tesla,
     webhook: [
       allowed_updates: [],
       drop_pending_updates: false,
@@ -199,12 +207,18 @@ end
 ``` elixir
 import Config
 
-config :ex_gram, token: "NOTHING", adapter: ExGram.Adapter.Test, updates: ExGram.Updates.Test
+config :ex_gram, token: "NOTHING", adapter: ExGram.Adapter.Test
+
+config :my_bot, MyBot.Bot, 
+  token: "test_token",
+  method: :test,
+  username: "testbot",
+  setup_commands: false
 ```
 
 The webhook configuration is on `runtime.exs`, and we can see that we are using two environment variables, let's set them up in our Fly application:
 
-``` shen
+``` shell
 fly secrets set BOT_TOKEN=YOUR_BOT_TOKEN --stage
 fly secrets set WEBHOOK_SECRET_TOKEN=WHATEVER_SECRET_TOKEN_YOU_WANT --stage
 ```
@@ -243,7 +257,7 @@ defmodule MyBot.Router do
 end
 ```
 
-And finally we just need to update our `application.ex` to add the router and get the new config
+And finally we just need to update our `application.ex` to add the router and get the new bot config
 
 - `lib/my_bot/application.ex`
 
@@ -251,12 +265,11 @@ And finally we just need to update our `application.ex` to add the router and ge
 
   @impl true
   def start(_type, _args) do
-    token = Application.get_env(:ex_gram, :token)
-    method = Application.get_env(:ex_gram, :method)
+    bot_config = Application.get_env(:my_bot, MyBot.Bot)
 
     children = [
       ExGram,
-      {MyBot.Bot, method: method, token: token},
+      {MyBot.Bot, bot_config},
       {Plug.Cowboy, scheme: :http, plug: MyBot.Router, port: 8080}
     ]
 

@@ -1,7 +1,12 @@
 if Code.ensure_loaded?(Tesla) do
   defmodule ExGram.Adapter.Tesla do
     @moduledoc """
-    HTTP Adapter that uses Tesla
+    HTTP adapter that uses [Tesla](https://hexdocs.pm/tesla) for Telegram Bot API requests.
+
+    This adapter supports multiple HTTP clients (Hackney, Finch, Gun, Mint, Httpc, Ibrowse)
+    and provides configurable middleware support.
+
+    See `ExGram.Adapter` behaviour for more details.
     """
 
     @behaviour ExGram.Adapter
@@ -50,6 +55,14 @@ if Code.ensure_loaded?(Tesla) do
       {:ok, body}
     end
 
+    defp handle_result({:ok, %{body: %{ok: false, description: description, error_code: error_code} = body}}) do
+      parameters = maybe_error_parameters(body)
+
+      error = %ExGram.Error{code: error_code, message: description, metadata: %{parameters: parameters}}
+
+      {:error, error}
+    end
+
     defp handle_result({:ok, %{body: body}}) do
       {:error, %ExGram.Error{code: :response_status_not_match, message: ExGram.Adapter.encode(body)}}
     end
@@ -57,6 +70,15 @@ if Code.ensure_loaded?(Tesla) do
     defp handle_result({:error, reason}) do
       {:error, %ExGram.Error{code: reason}}
     end
+
+    defp maybe_error_parameters(%{parameters: parameters}) do
+      case ExGram.Cast.cast(parameters, {:array, ExGram.Model.ResponseParameters}) do
+        {:ok, parameters} -> parameters
+        _ -> []
+      end
+    end
+
+    defp maybe_error_parameters(_), do: []
 
     defp encode_body(body) when is_map(body) do
       Map.new(body, fn {key, value} -> {key, ExGram.Adapter.encode(value)} end)

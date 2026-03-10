@@ -1,13 +1,20 @@
 defmodule ExGram.Encoder do
   @moduledoc """
-  Helper module to encode/decode json
+  JSON encoder/decoder abstraction with pluggable engine support.
+
+  By default uses [Jason](https://hexdocs.pm/jason). The engine is compiled at
+  compile time for performance. Provides `encode/1-2`, `encode!/1-2`, `decode/1-2`,
+  and `decode!/1-2` functions that delegate to the selected engine.
   """
 
   alias __MODULE__.Engine
 
   defmodule Engine do
     @moduledoc """
-    By default we will return nil, which will cause to use the default engine
+    Compiled encoder engine module.
+
+    This module is recompiled at compile time to return the configured engine.
+    The initial `nil` return value is a placeholder before recompilation.
     """
 
     def engine, do: nil
@@ -15,10 +22,10 @@ defmodule ExGram.Encoder do
 
   defmodule EngineCompiler do
     @moduledoc """
-    This will reload the ExGram.Encoder.Engine module with the engine selected.
+    Dynamically compiles the `ExGram.Encoder.Engine` module with the selected engine.
 
-    With this we allow to define dynamically the engine backend while not having
-    to read it from the Application every time.
+    This allows the engine backend to be defined at compile time without reading from
+    application config on every call.
     """
 
     def compile(engine) do

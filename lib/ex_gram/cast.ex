@@ -1,6 +1,12 @@
 defmodule ExGram.Cast do
   @moduledoc """
   Helper module to convert plain values returned from Telegram to ExGram models.
+
+  This module handles the conversion of plain maps (JSON responses from the Telegram
+  Bot API) into strongly-typed ExGram model structs. It recursively processes nested
+  structures, arrays, and polymorphic types (subtypes).
+
+  See `ExGram.Model.Subtype` for how polymorphic types are handled.
   """
 
   alias ExGram.Model.Subtype
@@ -14,7 +20,9 @@ defmodule ExGram.Cast do
     iex> ExGram.Cast.cast(true, ExGram.Model.Message)
     {:error, %ExGram.Error{message: "Expected a map for type ExGram.Model.Message, got: true"}}
   """
-  @spec cast(any, atom) :: {:ok, any} | {:error, ExGram.Error.t()}
+  @type type_def :: atom() | {:array, type_def()} | [type_def()] | nil
+
+  @spec cast(any(), type_def()) :: {:ok, any()} | {:error, ExGram.Error.t()}
   def cast(elem, type) do
     process_type(elem, type)
   end
@@ -22,9 +30,9 @@ defmodule ExGram.Cast do
   @doc """
   Converts the given plain value to ExGram models.
 
-  Raises an error if the conversion fails. See cast/2 for more details.
+  Raises an error if the conversion fails. See `cast/2` for more details.
   """
-  @spec cast!(any, atom) :: any
+  @spec cast!(any(), type_def()) :: any()
   def cast!(elem, type) do
     case cast(elem, type) do
       {:ok, casted} ->
@@ -39,6 +47,8 @@ defmodule ExGram.Cast do
   defp process_type(elem, nil), do: {:ok, elem}
 
   defp process_type(list, [t]) when is_list(list), do: process_type(list, {:array, t})
+
+  defp process_type([], {:array, _}), do: {:ok, []}
 
   defp process_type(list, {:array, t}) when is_list(list) do
     list
@@ -84,6 +94,8 @@ defmodule ExGram.Cast do
 
   defp process_type(elem, _t), do: {:ok, elem}
 
+  defp process_struct(t, %t{} = elem), do: {:ok, elem}
+
   defp process_struct(t, elem) when is_map(elem) do
     with {:ok, decode_as} <- struct_decode_as(t),
          {:ok, decoded_elem} <- decode_struct_elements(elem, decode_as) do
@@ -92,7 +104,11 @@ defmodule ExGram.Cast do
   end
 
   defp process_struct(t, elem) do
-    {:error, %ExGram.Error{message: "Expected a map for type #{inspect(t)}, got: #{inspect(elem)}"}}
+    if Keyword.keyword?(elem) do
+      process_struct(t, Map.new(elem))
+    else
+      {:error, %ExGram.Error{message: "Expected a map for type #{inspect(t)}, got: #{inspect(elem)}"}}
+    end
   end
 
   defp decode_struct_elements(elem, decode_as) do

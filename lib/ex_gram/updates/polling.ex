@@ -1,6 +1,16 @@
 defmodule ExGram.Updates.Polling do
   @moduledoc """
-  Updates implementation that uses polling method
+  Updates implementation using the polling method.
+
+  This GenServer continuously polls the Telegram Bot API for new updates using
+  `ExGram.get_updates!/1` with long polling (50 second timeout by default).
+
+  Automatically deletes any existing webhook on startup (configurable with
+  `:delete_webhook` option).
+
+  Configured with `config :ex_gram, updates: ExGram.Updates.Polling, polling: [...]`.
+
+  See the [Polling and Webhooks guide](polling-and-webhooks.md) for more details.
   """
 
   use GenServer
@@ -11,7 +21,6 @@ defmodule ExGram.Updates.Polling do
 
   def start_link(%{bot: pid, token: token} = opts) do
     opts = Map.drop(opts, [:bot, :token])
-    # Logger.debug "START WORKER"
     GenServer.start_link(__MODULE__, {:ok, pid, token, opts})
   end
 
