@@ -866,7 +866,7 @@ defmodule MyApp.Bot do
         send(test_pid, :init)
         
         receive do
-            :contitue -> :ok
+            :continue -> :ok
         end
     end
   end
