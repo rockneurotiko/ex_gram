@@ -195,18 +195,6 @@ The `inline_button` accepts all the options that the `ExGram.Model.InlineKeyboar
 inline_button "Visit website", url: "https://example.com", style: "success"
 ```
 
-#### Handling Callback Queries
-
-Just as a reminder, the callback_data it's handled in the bot with the `:callback_query` handler
-
-```elixir
-def handle({:callback_query, %{data: "option_a"}}, context) do
-  context
-  |> answer_callback("You chose A!")
-  |> edit("You selected Option A")
-end
-```
-
 ### Reply keyboards
 
 These are the keyboards that pop up at the bottom of the screen. You can also create them with the DSL.
@@ -230,6 +218,91 @@ keyboard :reply, [is_persistent: true, one_time_keyboard: true, resize_keyboard:
 end
 ```
 
+### Dynamic building
+
+This keyboards might look static, but you can actually do things like this to dynamically build your keyboards:
+
+```elixir
+keyboard :inline do
+    # Returning rows will make each element it's own row
+    Enum.map(1..3, fn index ->
+        row do
+            button to_string(index), callback_data: "index:#{index}"
+        end
+    end)
+
+    # Returning buttons will make all the elements be the same row
+    Enum.map(4..6, fn index -> 
+        # Without a row block, buttons are placed in a single row
+        button to_string(index), callback_data: "index:#{index}"
+    end)
+    
+    # Optional rows and buttons
+    if some_thing?() do
+        row do
+           button "Some thing happens", url: "https://something.com"
+        end
+    end
+end
+```
+
+### Inspecting Keyboards
+
+Keyboard models implement the `Inspect` protocol, so when you inspect them in IEx or logs, you see a visual layout instead of a wall of struct fields:
+
+```elixir
+iex> markup = keyboard :inline do
+...>   row do
+...>     button "1", callback_data: "one"
+...>     button "2", callback_data: "two"
+...>     button "3", url: "https://example.com"
+...>   end
+...>   row do
+...>     button "Back", callback_data: "back"
+...>     button "Next", callback_data: "next"
+...>   end
+...> end
+#InlineKeyboardMarkup<
+  [ 1 (cb) ][ 2 (cb) ][ 3 (url) ]
+  [ Back (cb) ][ Next (cb) ]
+>
+```
+
+Each button shows its action type in parentheses: `cb` for `callback_data`, `url` for `url`, `web_app`, `pay`, etc.
+
+To see the actual action values, pass `verbose: true` via `custom_options`:
+
+```elixir
+iex> inspect(markup, custom_options: [verbose: true])
+#InlineKeyboardMarkup<
+  [ 1 (cb: "one") ][ 2 (cb: "two") ][ 3 (url: "https://example.com") ]
+  [ Back (cb: "back") ][ Next (cb: "next") ]
+>
+```
+
+Reply keyboards show their options at the top:
+
+```elixir
+iex> keyboard :reply, [resize_keyboard: true, one_time_keyboard: true] do
+...>   row do
+...>     reply_button "Help"
+...>     reply_button "Settings"
+...>   end
+...> end
+#ReplyKeyboardMarkup<resize: true, one_time: true,
+  [ Help ][ Settings ]
+>
+```
+
+Individual buttons also have compact inspect output, showing only non-nil fields:
+
+```elixir
+iex> %ExGram.Model.InlineKeyboardButton{text: "OK", callback_data: "ok"}
+#InlineKeyboardButton<"OK" callback_data: "ok">
+
+iex> %ExGram.Model.KeyboardButton{text: "Share Location", request_location: true}
+#KeyboardButton<"Share Location" request_location: true>
+```
 
 ## Callback Queries
 
