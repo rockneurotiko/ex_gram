@@ -18,7 +18,7 @@ defmodule ExGram.Inspect.InlineKeyboardMarkupTest do
 
       assert inspect(markup) == """
              #InlineKeyboardMarkup<
-               [ 1 ][ 2 ][ 3 ]
+               [ [ 1 ][ 2 ][ 3 ] ]
              >\
              """
     end
@@ -39,8 +39,8 @@ defmodule ExGram.Inspect.InlineKeyboardMarkupTest do
 
       assert inspect(markup) == """
              #InlineKeyboardMarkup<
-               [ 1 ][ 2 ]
-               [ Back ][ Next ]
+               [ [ 1 ][ 2 ] ]
+               [ [ Back ][ Next ] ]
              >\
              """
     end
@@ -57,7 +57,7 @@ defmodule ExGram.Inspect.InlineKeyboardMarkupTest do
 
       assert inspect(markup) == """
              #InlineKeyboardMarkup<
-               [ OK (cb) ][ Cancel (cb) ]
+               [ [ OK (cb) ][ Cancel (cb) ] ]
              >\
              """
     end
@@ -71,7 +71,7 @@ defmodule ExGram.Inspect.InlineKeyboardMarkupTest do
 
       assert inspect(markup) == """
              #InlineKeyboardMarkup<
-               [ Visit (url) ]
+               [ [ Visit (url) ] ]
              >\
              """
     end
@@ -89,7 +89,7 @@ defmodule ExGram.Inspect.InlineKeyboardMarkupTest do
 
       assert inspect(markup) == """
              #InlineKeyboardMarkup<
-               [ 1 ][ 2 (cb) ][ 3 (url) ]
+               [ [ 1 ][ 2 (cb) ][ 3 (url) ] ]
              >\
              """
     end
@@ -108,7 +108,7 @@ defmodule ExGram.Inspect.InlineKeyboardMarkupTest do
 
       assert inspect(markup, custom_options: [verbose: true]) == """
              #InlineKeyboardMarkup<
-               [ OK (cb: "ok_pressed") ][ Cancel (cb: "cancel_action") ]
+               [ [ OK (cb: "ok_pressed") ][ Cancel (cb: "cancel_action") ] ]
              >\
              """
     end
@@ -122,7 +122,7 @@ defmodule ExGram.Inspect.InlineKeyboardMarkupTest do
 
       assert inspect(markup, custom_options: [verbose: true]) == """
              #InlineKeyboardMarkup<
-               [ Visit (url: "https://example.com") ]
+               [ [ Visit (url: "https://example.com") ] ]
              >\
              """
     end
@@ -136,7 +136,7 @@ defmodule ExGram.Inspect.InlineKeyboardMarkupTest do
 
       assert inspect(markup, custom_options: [verbose: true]) == """
              #InlineKeyboardMarkup<
-               [ Pay now (pay: true) ]
+               [ [ Pay now (pay: true) ] ]
              >\
              """
     end
@@ -150,7 +150,7 @@ defmodule ExGram.Inspect.InlineKeyboardMarkupTest do
 
       assert inspect(markup, custom_options: [verbose: true]) == """
              #InlineKeyboardMarkup<
-               [ Open App (web_app: WebAppInfo) ]
+               [ [ Open App (web_app: WebAppInfo) ] ]
              >\
              """
     end
@@ -164,7 +164,7 @@ defmodule ExGram.Inspect.InlineKeyboardMarkupTest do
 
       assert inspect(markup, custom_options: [verbose: true]) == """
              #InlineKeyboardMarkup<
-               [ 1 ][ 2 ]
+               [ [ 1 ][ 2 ] ]
              >\
              """
     end

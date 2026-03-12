@@ -73,7 +73,7 @@ defmodule ExGram.Dsl.KeyboardTest do
   end
 
   # ---------------------------------------------------------------------------
-  # Inline keyboard – dynamic rows (the bug fix)
+  # Inline keyboard – dynamic rows
   # ---------------------------------------------------------------------------
 
   describe "keyboard :inline – dynamic rows via Enum.map" do
@@ -118,7 +118,10 @@ defmodule ExGram.Dsl.KeyboardTest do
       kb =
         keyboard :inline do
           Enum.map([{"A", "a"}, {"B", "b"}], fn {label, data} ->
-            [inline_btn(label, callback_data: data), inline_btn("x", callback_data: "x")]
+            row do
+              inline_btn(label, callback_data: data)
+              inline_btn("x", callback_data: "x")
+            end
           end)
         end
 
@@ -128,6 +131,50 @@ defmodule ExGram.Dsl.KeyboardTest do
                  [%InlineKeyboardButton{text: "B"}, %InlineKeyboardButton{text: "x"}]
                ]
              } = kb
+    end
+
+    test "Enum.flat_map with rows flattens" do
+      kb =
+        keyboard :inline do
+          Enum.flat_map([{"A", "a"}, {"B", "b"}], fn {label, data} ->
+            row do
+              button label, callback_data: data
+              button "x", callback_data: "x"
+            end
+          end)
+        end
+
+      assert %InlineKeyboardMarkup{
+               inline_keyboard: [
+                 [
+                   %InlineKeyboardButton{text: "A", callback_data: "a"},
+                   %InlineKeyboardButton{text: "x", callback_data: "x"},
+                   %InlineKeyboardButton{text: "B", callback_data: "b"},
+                   %InlineKeyboardButton{text: "x", callback_data: "x"}
+                 ]
+               ]
+             } == kb
+    end
+
+    test "Enum.map with filter" do
+      kb =
+        keyboard :inline do
+          Enum.map(1..6, fn i ->
+            if rem(i, 2) == 0 do
+              row do
+                button to_string(i), callback_data: to_string(i)
+              end
+            end
+          end)
+        end
+
+      assert %InlineKeyboardMarkup{
+               inline_keyboard: [
+                 [%InlineKeyboardButton{text: "2", callback_data: "2"}],
+                 [%InlineKeyboardButton{text: "4", callback_data: "4"}],
+                 [%InlineKeyboardButton{text: "6", callback_data: "6"}]
+               ]
+             } == kb
     end
 
     test "mixed static row and dynamic Enum.map" do
@@ -200,7 +247,7 @@ defmodule ExGram.Dsl.KeyboardTest do
   end
 
   # ---------------------------------------------------------------------------
-  # Reply keyboard – dynamic rows (the bug fix)
+  # Reply keyboard – dynamic rows
   # ---------------------------------------------------------------------------
 
   describe "keyboard :reply – dynamic rows via Enum.map" do

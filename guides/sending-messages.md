@@ -233,7 +233,7 @@ keyboard :inline do
 
     # Returning buttons will make all the elements be the same row
     Enum.map(4..6, fn index -> 
-        # Now row means all it's the same row
+        # Without a row block, buttons are placed in a single row
         button to_string(index), callback_data: "index:#{index}"
     end)
     

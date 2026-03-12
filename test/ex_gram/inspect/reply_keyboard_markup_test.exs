@@ -17,7 +17,7 @@ defmodule ExGram.Inspect.ReplyKeyboardMarkupTest do
 
       assert inspect(markup) == """
              #ReplyKeyboardMarkup<
-               [ Option A ][ Option B ]
+               [ [ Option A ][ Option B ] ]
              >\
              """
     end
@@ -32,8 +32,8 @@ defmodule ExGram.Inspect.ReplyKeyboardMarkupTest do
 
       assert inspect(markup) == """
              #ReplyKeyboardMarkup<
-               [ Option A ][ Option B ]
-               [ Option C ]
+               [ [ Option A ][ Option B ] ]
+               [ [ Option C ] ]
              >\
              """
     end
@@ -46,7 +46,7 @@ defmodule ExGram.Inspect.ReplyKeyboardMarkupTest do
 
       assert inspect(markup) == """
              #ReplyKeyboardMarkup<resize: true,
-               [ Go ]
+               [ [ Go ] ]
              >\
              """
     end
@@ -60,7 +60,7 @@ defmodule ExGram.Inspect.ReplyKeyboardMarkupTest do
 
       assert inspect(markup) == """
              #ReplyKeyboardMarkup<resize: true, one_time: true,
-               [ Go ]
+               [ [ Go ] ]
              >\
              """
     end
@@ -73,7 +73,7 @@ defmodule ExGram.Inspect.ReplyKeyboardMarkupTest do
 
       assert inspect(markup) == """
              #ReplyKeyboardMarkup<persistent: true,
-               [ Go ]
+               [ [ Go ] ]
              >\
              """
     end
@@ -86,7 +86,87 @@ defmodule ExGram.Inspect.ReplyKeyboardMarkupTest do
 
       assert inspect(markup) == """
              #ReplyKeyboardMarkup<placeholder: "Type here...",
-               [ Go ]
+               [ [ Go ] ]
+             >\
+             """
+    end
+  end
+
+  describe "Inspect ReplyKeyboardMarkup with verbose: true" do
+    test "plain buttons show no extra info when no optional fields set" do
+      markup = %ReplyKeyboardMarkup{
+        keyboard: [[%KeyboardButton{text: "Help"}, %KeyboardButton{text: "Settings"}]]
+      }
+
+      assert inspect(markup, custom_options: [verbose: true]) == """
+             #ReplyKeyboardMarkup<
+               [ [ Help ][ Settings ] ]
+             >\
+             """
+    end
+
+    test "shows request_contact when verbose" do
+      markup = %ReplyKeyboardMarkup{
+        keyboard: [[%KeyboardButton{text: "Share Contact", request_contact: true}]]
+      }
+
+      assert inspect(markup, custom_options: [verbose: true]) == """
+             #ReplyKeyboardMarkup<
+               [ [ Share Contact (request_contact: true) ] ]
+             >\
+             """
+    end
+
+    test "shows request_location when verbose" do
+      markup = %ReplyKeyboardMarkup{
+        keyboard: [[%KeyboardButton{text: "Share Location", request_location: true}]]
+      }
+
+      assert inspect(markup, custom_options: [verbose: true]) == """
+             #ReplyKeyboardMarkup<
+               [ [ Share Location (request_location: true) ] ]
+             >\
+             """
+    end
+
+    test "shows style when verbose" do
+      markup = %ReplyKeyboardMarkup{
+        keyboard: [[%KeyboardButton{text: "Cancel", style: "danger"}]]
+      }
+
+      assert inspect(markup, custom_options: [verbose: true]) == """
+             #ReplyKeyboardMarkup<
+               [ [ Cancel (style: "danger") ] ]
+             >\
+             """
+    end
+
+    test "shows multiple button fields when verbose" do
+      markup = %ReplyKeyboardMarkup{
+        keyboard: [
+          [
+            %KeyboardButton{text: "Go", request_location: true},
+            %KeyboardButton{text: "Contact", request_contact: true}
+          ]
+        ]
+      }
+
+      assert inspect(markup, custom_options: [verbose: true]) == """
+             #ReplyKeyboardMarkup<
+               [ [ Go (request_location: true) ][ Contact (request_contact: true) ] ]
+             >\
+             """
+    end
+
+    test "combines markup options with verbose button detail" do
+      markup = %ReplyKeyboardMarkup{
+        keyboard: [[%KeyboardButton{text: "Share", request_contact: true}]],
+        resize_keyboard: true
+      }
+
+      assert inspect(markup, custom_options: [verbose: true]) == """
+             #ReplyKeyboardMarkup<resize: true,
+               [ [ Share (request_contact: true) ] ]
              >\
              """
     end

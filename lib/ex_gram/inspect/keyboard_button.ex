@@ -18,15 +18,15 @@ defimpl Inspect, for: ExGram.Model.KeyboardButton do
       |> Enum.filter(fn field -> Map.get(button, field) not in [nil, false] end)
       |> Enum.map(fn field -> concat([string(Atom.to_string(field) <> ": "), to_doc(Map.get(button, field), opts)]) end)
 
-    quoted_text = "\"#{button.text}\""
+    quoted_text = to_doc(button.text, opts)
 
     inner =
       case parts do
         [] ->
-          string(quoted_text)
+          quoted_text
 
         parts ->
-          concat([string(quoted_text <> " "), fold_doc(parts, fn a, b -> glue(concat(a, ","), b) end)])
+          concat([quoted_text, string(" "), fold_doc(parts, fn a, b -> glue(concat(a, ","), b) end)])
       end
 
     concat(["#KeyboardButton<", inner, ">"])

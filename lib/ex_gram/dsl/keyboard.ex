@@ -111,24 +111,26 @@ defmodule ExGram.Dsl.Keyboard do
   #   - A list of lists (each inner list being a row) is unnested one level,
   #     so Enum.map returning [button(...)] per element yields one row per element
   defp normalize_rows(rows) do
-    rows
-    |> Enum.reject(&is_nil/1)
-    |> Enum.flat_map(fn
-      %InlineKeyboardButton{} = btn ->
-        [[btn]]
-
-      %KeyboardButton{} = btn ->
-        [[btn]]
-
-      row when is_list(row) ->
-        case row do
-          # List of lists → each inner list is its own row
-          [inner | _] when is_list(inner) -> row
-          # Flat list of buttons (or empty) → single row
-          _ -> [row]
-        end
-    end)
+    Enum.flat_map(rows, &normalize_row/1)
   end
+
+  defp normalize_row(nil), do: []
+  defp normalize_row(%InlineKeyboardButton{} = btn), do: [[btn]]
+  defp normalize_row(%KeyboardButton{} = btn), do: [[btn]]
+
+  defp normalize_row(row) when is_list(row) do
+    row = Enum.reject(row, &is_nil/1)
+
+    if Enum.all?(row, &button?/1) do
+      [row]
+    else
+      normalize_rows(row)
+    end
+  end
+
+  defp button?(%InlineKeyboardButton{}), do: true
+  defp button?(%KeyboardButton{}), do: true
+  defp button?(_), do: false
 
   defp wrap_block({:__block__, _, exprs}), do: exprs
   defp wrap_block(single), do: [single]

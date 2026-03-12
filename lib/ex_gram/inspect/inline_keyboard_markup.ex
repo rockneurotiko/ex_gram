@@ -31,9 +31,12 @@ defimpl Inspect, for: ExGram.Model.InlineKeyboardMarkup do
   end
 
   defp render_row(buttons, verbose) do
-    buttons
-    |> Enum.map(&render_button(&1, verbose))
-    |> concat()
+    row =
+      buttons
+      |> Enum.map(&render_button(&1, verbose))
+      |> concat()
+
+    concat(["[ ", row, " ]"])
   end
 
   defp render_button(button, verbose) do

@@ -31,15 +31,15 @@ defimpl Inspect, for: ExGram.Model.InlineKeyboardButton do
 
     all_parts = other_parts ++ action_parts
 
-    quoted_text = "\"#{button.text}\""
+    quoted_text = to_doc(button.text, opts)
 
     inner =
       case all_parts do
         [] ->
-          string(quoted_text)
+          quoted_text
 
         parts ->
-          concat([string(quoted_text <> " "), fold_doc(parts, fn a, b -> glue(concat(a, ","), b) end)])
+          concat([quoted_text, string(" "), fold_doc(parts, fn a, b -> glue(concat(a, ","), b) end)])
       end
 
     concat(["#InlineKeyboardButton<", inner, ">"])
