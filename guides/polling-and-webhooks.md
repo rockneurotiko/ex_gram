@@ -110,7 +110,7 @@ defmodule MyApp.Router do
 end
 ```
 
-The webhook endpoint will be at `/telegram/<bot_token_hash>`.
+The webhook endpoint will be at `/telegram/<bot_token_hash>` or you can configure your custom path in the configuration, see Webhook Configuration section
 
 **3. Configure your bot:**
 
@@ -125,9 +125,12 @@ children = [
 
 #### In Config File
 
+If you configure your webhook options globally, all your bots using webhook will use the same configuration, but they will be independent.
+
 ```elixir
 config :ex_gram, :webhook,
   url: "https://bot.example.com",
+  path: "/your/own/path",
   allowed_updates: ["message", "callback_query"],
   certificate: "priv/cert/selfsigned.pem",
   drop_pending_updates: false,
@@ -138,9 +141,15 @@ config :ex_gram, :webhook,
 
 #### In Supervision Tree
 
+You can configure it on the supervision tree instead of the global config, to have different configurations per bot for example. 
+
+If you configure it this way, and setup a custom path, you have to also configure the plug to use that path.
+
 ```elixir
+# application.ex
 webhook_options = [
   url: "https://bot.example.com",
+  path: "/custom/path",
   allowed_updates: ["message", "callback_query"],
   secret_token: System.get_env("WEBHOOK_SECRET")
 ]
@@ -149,6 +158,9 @@ children = [
   ExGram,
   {MyBot, [method: {:webhook, webhook_options}, token: "YOUR_TOKEN"]}
 ]
+
+# router.ex
+plug ExGram.Plug, path: "/custom/path"
 ```
 
 ### Webhook Options
@@ -156,6 +168,7 @@ children = [
 | Option | Type | Description |
 |--------|------|-------------|
 | `url` | String | **Required.** Your bot's public HTTPS URL (with scheme and optional port) |
+| `path` | String | The path that will be used as a callback. If not provided `"/telegram"` is used. |
 | `allowed_updates` | List of strings | Update types to receive (same as polling) |
 | `certificate` | String | Path to self-signed certificate file |
 | `drop_pending_updates` | Boolean | Drop updates that arrived while bot was down |
@@ -224,7 +237,8 @@ You can run different bots with different update methods:
 children = [
   ExGram,
   {MyBot.DevBot, [method: :polling, token: dev_token]},
-  {MyBot.ProdBot, [method: :webhook, token: prod_token]}
+  {MyBot.ProdBot, [method: :webhook, token: prod_token]},
+  {MyBot.OtherBot, [method: :webhook, token: other_token]}
 ]
 ```
 

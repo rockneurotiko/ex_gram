@@ -400,7 +400,7 @@ defmodule ExGramTest do
         from: %{id: 999, is_bot: true, first_name: "Bot"},
         poll: %{
           id: "poll123",
-          question: %{text: "What is your favorite color?"},
+          question: "What is your favorite color?",
           options: [
             %{text: "Red", voter_count: 0},
             %{text: "Blue", voter_count: 0}
