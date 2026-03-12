@@ -152,8 +152,7 @@ defmodule ExGram.Dsl.KeyboardTest do
     test "the original bug report example – produces one row per number" do
       kb =
         keyboard :inline do
-          [1, 2, 3, 4]
-          |> Enum.map(fn x -> [button(to_string(x), callback_data: to_string(x))] end)
+          Enum.map([1, 2, 3, 4], fn x -> [button(to_string(x), callback_data: to_string(x))] end)
         end
 
       assert %InlineKeyboardMarkup{inline_keyboard: rows} = kb

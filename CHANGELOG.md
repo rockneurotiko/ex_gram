@@ -2,7 +2,7 @@
 
 ## Unreleased
 - Keyboards detect row of rows and unwraps them, allowing for dynamic building of rows
-- Custom inspect for keybord
+- Custom inspect for keyboard
 
 ## [0.60.0]
 - Clean README.md and separate content in different guides in [./guides](./guides)
