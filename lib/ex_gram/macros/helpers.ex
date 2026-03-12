@@ -121,6 +121,7 @@ defmodule ExGram.Macros.Helpers do
 
   def type_to_spec({:array, t}), do: {:list, [], [type_to_spec(t)]}
   def type_to_spec(:integer), do: {:integer, [], []}
+  def type_to_spec(:float), do: {:float, [], []}
   def type_to_spec(:boolean), do: {:boolean, [], []}
   def type_to_spec(true), do: true
 
@@ -180,7 +181,10 @@ defmodule ExGram.Macros.Helpers do
   def params_to_decode_as(params) do
     params
     |> Stream.map(fn [k, v | _] -> {k, v} end)
-    |> Stream.map(fn {k, [v | _]} -> {k, param_to_decode_as(v)} end)
+    |> Stream.map(fn
+      {k, [v]} -> {k, param_to_decode_as(v)}
+      {k, types} when is_list(types) -> {k, Enum.map(types, &param_to_decode_as/1)}
+    end)
     |> Enum.filter(fn {_k, v} -> not is_nil(v) end)
   end
 
@@ -202,7 +206,7 @@ defmodule ExGram.Macros.Helpers do
     end
   end
 
-  defp param_to_decode_as(_other), do: nil
+  defp param_to_decode_as(type), do: type
 
   def params_descriptions(params) do
     params

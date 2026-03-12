@@ -197,7 +197,8 @@ if config_env() == :prod do
       drop_pending_updates: false,
       max_connections: 50,
       secret_token: System.get_env("WEBHOOK_SECRET_TOKEN"),
-      url: "https://#{System.get_env("FLY_APP_NAME")}.fly.dev/"
+      url: "https://#{System.get_env("FLY_APP_NAME")}.fly.dev/",
+      # path: "/custom/path"  # Optional: customize the webhook path (default: "/telegram")
     ]
 end
 ```
@@ -247,6 +248,8 @@ We need to create a router, and plug the `ExGram.Plug` to route the updates:
 defmodule MyBot.Router do
   use Plug.Router
 
+  # If you configured a custom path in the webhook options, pass it here too:
+  # plug(ExGram.Plug, path: "/custom/path")
   plug(ExGram.Plug)
 
   plug(:match)

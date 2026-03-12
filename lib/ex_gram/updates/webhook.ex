@@ -6,10 +6,12 @@ defmodule ExGram.Updates.Webhook do
   it automatically calls `ExGram.set_webhook/2` to register the webhook URL with
   Telegram.
 
-  The webhook URL is constructed as `<base_url>/telegram/<token_hash>`, where
+  The webhook URL is constructed as `<base_url>/<path>/<token_hash>`, where
   `token_hash` is a Base64-encoded SHA hash of the bot token.
 
-  Configured with `config :ex_gram, updates: ExGram.Updates.Webhook, webhook: [...]`.
+  The default <path> is `/telegram`, but it can be customized via the `:path` option in the configuration.
+
+  Configure the webhook with `config :ex_gram, updates: ExGram.Updates.Webhook, webhook: [...]`.
 
   See the [Polling and Webhooks guide](polling-and-webhooks.md) and `ExGram.Plug`
   for more details.
@@ -43,14 +45,15 @@ defmodule ExGram.Updates.Webhook do
 
   def init({:ok, pid, token, opts}) do
     set_webhook(token, opts)
+    state = %{pid: pid, token: token}
 
-    {:ok, {pid, token}}
+    {:ok, state}
   end
 
-  def handle_cast({:update, update}, {pid, token}) do
+  def handle_cast({:update, update}, %{pid: pid} = state) do
     GenServer.call(pid, {:update, update})
 
-    {:noreply, {pid, token}}
+    {:noreply, state}
   end
 
   def handle_info(unknown_message, state) do
@@ -77,7 +80,8 @@ defmodule ExGram.Updates.Webhook do
         :allowed_updates,
         :secret_token,
         :drop_pending_updates,
-        :ip_address
+        :ip_address,
+        :path
       ])
       |> Keyword.new()
 
@@ -87,7 +91,8 @@ defmodule ExGram.Updates.Webhook do
     case valid_url(config[:url]) do
       {:ok, webhook_url} ->
         params = Keyword.put(params, :token, token)
-        url = "#{webhook_url}/telegram/#{token_hash(token)}"
+        base_path = config[:path] || "/telegram"
+        url = Path.join([webhook_url, base_path, token_hash(token)])
         {:ok, true} = ExGram.set_webhook(url, params)
 
       {:error, error} ->
@@ -124,6 +129,7 @@ defmodule ExGram.Updates.Webhook do
   end
 
   defp webhook_params([{:url, _} | tl], params), do: webhook_params(tl, params)
+  defp webhook_params([{:path, _} | tl], params), do: webhook_params(tl, params)
 
   defp webhook_params([{:max_connections, max_connections} | tl], params) when is_integer(max_connections) do
     webhook_params(tl, [{:max_connections, max_connections} | params])

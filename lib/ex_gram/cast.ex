@@ -64,9 +64,49 @@ defmodule ExGram.Cast do
     end
   end
 
-  defp process_type(elem, :integer), do: {:ok, elem}
-  defp process_type(elem, :string), do: {:ok, elem}
+  defp process_type(elem, :integer) when is_integer(elem), do: {:ok, elem}
+
+  defp process_type(elem, :integer) do
+    error_type_mismatch(:integer, elem)
+  end
+
+  defp process_type(elem, :float) when is_float(elem), do: {:ok, elem}
+
+  defp process_type(elem, :float) do
+    error_type_mismatch(:float, elem)
+  end
+
+  defp process_type(elem, :string) when is_binary(elem), do: {:ok, elem}
+
+  defp process_type(elem, :string) do
+    error_type_mismatch(:string, elem)
+  end
+
+  defp process_type(elem, :boolean) when is_boolean(elem), do: {:ok, elem}
+
+  defp process_type(elem, :boolean) do
+    error_type_mismatch(:boolean, elem)
+  end
+
+  defp process_type(elem, :file) when is_binary(elem), do: {:ok, elem}
+  defp process_type({:file, _} = elem, :file), do: {:ok, elem}
+  defp process_type({:file_content, _, _} = elem, :file), do: {:ok, elem}
+
+  defp process_type(elem, :file) do
+    error_type_mismatch(:file, elem)
+  end
+
+  defp process_type({:file_content, _, _} = elem, :file_content), do: {:ok, elem}
+
+  defp process_type(elem, :file_content) do
+    error_type_mismatch(:file_content, elem)
+  end
+
   defp process_type(true, true), do: {:ok, true}
+
+  defp process_type(elem, true) do
+    error_type_mismatch(true, elem)
+  end
 
   defp process_type(elem, t) when is_atom(t) do
     if subtype?(t) do
@@ -118,6 +158,10 @@ defmodule ExGram.Cast do
         {:error, reason} -> {:halt, {:error, reason}}
       end
     end)
+  end
+
+  defp error_type_mismatch(expected, got) do
+    {:error, %ExGram.Error{message: "Expected #{expected}, got: #{inspect(got)}"}}
   end
 
   defp struct_decode_as(t) do

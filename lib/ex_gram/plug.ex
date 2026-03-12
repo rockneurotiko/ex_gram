@@ -11,16 +11,21 @@ if Code.ensure_loaded?(Plug) do
 
     import Plug.Conn
 
+    alias ExGram.Model.Update
     alias Plug.Conn
 
     require Logger
 
     @impl true
-    def init(opts), do: opts
+    def init(opts) do
+      path = opts[:path] || ExGram.Config.get(:ex_gram, :webhook)[:path] || "/telegram"
+      path_parts = String.split(path, "/", trim: true)
+      [path_parts: path_parts]
+    end
 
     @impl true
-    def call(%Conn{method: "POST"} = conn, _) do
-      if "telegram" in conn.path_info do
+    def call(%Conn{method: "POST"} = conn, opts) do
+      if path_match?(conn, opts) do
         handle_update(conn)
       else
         conn
@@ -28,6 +33,17 @@ if Code.ensure_loaded?(Plug) do
     end
 
     def call(conn, _), do: conn
+
+    defp path_match?(%Conn{path_info: path_info}, opts) do
+      path_parts = Keyword.fetch!(opts, :path_parts)
+      path_parts_length = length(path_parts)
+
+      # path can be /a/b/c, we should check if all the first parts match,
+      # and there's only one extra part (the token hash)
+
+      Enum.take(path_info, path_parts_length) == path_parts and
+        length(path_info) == path_parts_length + 1
+    end
 
     defp handle_update(conn) do
       {:ok, body, conn} = Conn.read_body(conn)
@@ -49,14 +65,18 @@ if Code.ensure_loaded?(Plug) do
     defp handle_update(conn, {:ok, update}) do
       token_hash = token_hash(conn.path_info)
 
-      update
-      |> ExGram.Cast.cast!(ExGram.Model.Update)
-      |> ExGram.Updates.Webhook.update(token_hash)
+      case ExGram.Cast.cast(update, Update) do
+        {:ok, update} ->
+          ExGram.Updates.Webhook.update(update, token_hash)
+          {200, %{ok: true}}
 
-      {200, %{ok: true}}
+        {:error, error} ->
+          Logger.error("Failed to cast update: #{Exception.message(error)}")
+          {400, %{ok: false, error: "Body is not a valid Telegram update"}}
+      end
     end
 
-    defp handle_update(_conn, {:error, error}), do: {400, %{error: error}}
+    defp handle_update(_conn, {:error, error}), do: {400, %{error: Exception.message(error)}}
 
     defp check_secret_token([]) do
       Logger.debug(
