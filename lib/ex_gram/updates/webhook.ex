@@ -45,7 +45,7 @@ defmodule ExGram.Updates.Webhook do
 
   def init({:ok, pid, token, opts}) do
     set_webhook(token, opts)
-    state = %{pid: pid, token: token}
+    state = %{pid: pid}
 
     {:ok, state}
   end
