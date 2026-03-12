@@ -89,10 +89,11 @@ defmodule ExGram.Updates.Webhook do
     params = webhook_params(config)
 
     case valid_url(config[:url]) do
-      {:ok, webhook_url} ->
+      {:ok, webhook_uri} ->
         params = Keyword.put(params, :token, token)
         base_path = config[:path] || "/telegram"
-        url = Path.join([webhook_url, base_path, token_hash(token)])
+        path = Path.join([webhook_uri.path || "/", base_path, token_hash(token)])
+        url = URI.to_string(%{webhook_uri | path: path})
         {:ok, true} = ExGram.set_webhook(url, params)
 
       {:error, error} ->
@@ -111,7 +112,7 @@ defmodule ExGram.Updates.Webhook do
 
   defp do_valid_url(%URI{host: nil}), do: {:error, :host_not_set}
 
-  defp do_valid_url(%URI{scheme: scheme, host: host, port: port}), do: {:ok, "#{scheme}://#{host}:#{port}"}
+  defp do_valid_url(%URI{} = uri), do: {:ok, uri}
 
   defp webhook_params(_, params \\ [])
   defp webhook_params([], params), do: params

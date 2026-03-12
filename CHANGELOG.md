@@ -3,6 +3,8 @@
 ## Unreleased
 - Keyboards detect row of rows and unwraps them, allowing for dynamic building of rows
 - Custom inspect for keyboard
+- Support for custom webhook paths in production deployments (default: "/telegram")
+- Improved Cast.cast with type checking in more types
 
 ## [0.60.0]
 - Clean README.md and separate content in different guides in [./guides](./guides)

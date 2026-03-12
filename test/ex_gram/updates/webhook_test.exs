@@ -233,20 +233,26 @@ defmodule ExGram.Updates.WebhookTest do
   # --- update/2 dispatch ---
 
   describe "update/2" do
+    defmodule NotifyingReceiver do
+      @moduledoc false
+      use GenServer
+
+      def start_link(notify_pid), do: GenServer.start_link(__MODULE__, notify_pid)
+      def init(notify_pid), do: {:ok, notify_pid}
+
+      def handle_call({:update, update}, _from, notify_pid) do
+        send(notify_pid, {:received_update, update})
+        {:reply, :ok, notify_pid}
+      end
+    end
+
     test "dispatches an update to the bot process" do
       Application.put_env(:ex_gram, :webhook, url: "https://bot.example.com")
       ExGram.Test.stub(:set_webhook, true)
 
       test_pid = self()
 
-      receiver_pid =
-        spawn(fn ->
-          receive do
-            {:"$gen_call", from, {:update, update}} ->
-              send(test_pid, {:received_update, update})
-              GenServer.reply(from, :ok)
-          end
-        end)
+      {:ok, receiver_pid} = NotifyingReceiver.start_link(test_pid)
 
       start_supervised!(%{
         id: {Webhook, @token},
