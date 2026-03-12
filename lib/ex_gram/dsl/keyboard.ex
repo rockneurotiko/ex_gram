@@ -55,13 +55,16 @@ defmodule ExGram.Dsl.Keyboard do
   @spec build_keyboard(:inline, [[InlineKeyboardButton.t()] | nil], keyword()) ::
           ExGram.Model.InlineKeyboardMarkup.t()
   def build_keyboard(:inline, rows, _) do
-    rows |> Enum.reject(&(is_nil(&1) or Enum.empty?(&1))) |> ExGram.Dsl.create_inline_keyboard()
+    rows |> normalize_rows() |> Enum.reject(&Enum.empty?/1) |> ExGram.Dsl.create_inline_keyboard()
   end
 
   @spec build_keyboard(:reply, [[KeyboardButton.t()] | nil], keyword()) ::
           ExGram.Model.ReplyKeyboardMarkup.t()
   def build_keyboard(:reply, rows, opts) do
-    rows |> Enum.reject(&(is_nil(&1) or Enum.empty?(&1))) |> ExGram.Dsl.create_reply_keyboard(opts)
+    rows
+    |> normalize_rows()
+    |> Enum.reject(&Enum.empty?/1)
+    |> ExGram.Dsl.create_reply_keyboard(opts)
   end
 
   @spec row(do: any()) :: Macro.t()
@@ -96,6 +99,35 @@ defmodule ExGram.Dsl.Keyboard do
   def reply_button(text, opts \\ []) do
     opts = opts |> Map.new() |> Map.put(:text, text)
     struct!(KeyboardButton, opts)
+  end
+
+  # Normalizes the rows list at runtime, allowing dynamic expressions (e.g. Enum.map)
+  # to produce multiple rows by returning a list of button lists.
+  #
+  # Rules:
+  #   - nil entries are dropped
+  #   - A bare button struct is wrapped into a single-button row
+  #   - A list of button structs is kept as a single row (one row, N buttons)
+  #   - A list of lists (each inner list being a row) is unnested one level,
+  #     so Enum.map returning [button(...)] per element yields one row per element
+  defp normalize_rows(rows) do
+    rows
+    |> Enum.reject(&is_nil/1)
+    |> Enum.flat_map(fn
+      %InlineKeyboardButton{} = btn ->
+        [[btn]]
+
+      %KeyboardButton{} = btn ->
+        [[btn]]
+
+      row when is_list(row) ->
+        case row do
+          # List of lists → each inner list is its own row
+          [inner | _] when is_list(inner) -> row
+          # Flat list of buttons (or empty) → single row
+          _ -> [row]
+        end
+    end)
   end
 
   defp wrap_block({:__block__, _, exprs}), do: exprs

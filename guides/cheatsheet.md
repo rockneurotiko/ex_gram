@@ -187,6 +187,19 @@ keyboard :reply, [is_persistent: true] do
     reply_button "Help", style: "success"
   end
 end
+
+# Keyboards inspect as a visual layout
+# #InlineKeyboardMarkup<
+#   [ Button 1 (cb) ][ Button 2 (cb) ]
+#   [ Button 3 (url) ]
+# >
+
+# Verbose mode shows action values
+inspect(markup, custom_options: [verbose: true])
+# #InlineKeyboardMarkup<
+#   [ Button 1 (cb: "btn1") ][ Button 2 (cb: "btn2") ]
+#   [ Button 3 (url: "https://example.com") ]
+# >
 ```
 
 ## Context Extractors
@@ -398,6 +411,18 @@ def handle(update, context) do
   Logger.debug("Received: #{inspect(update)}")
   context
 end
+
+# Keyboards display as visual layouts in logs automatically
+Logger.debug("Keyboard: #{inspect(markup)}")
+# => Keyboard: #InlineKeyboardMarkup<
+#      [ OK (cb) ][ Cancel (cb) ]
+#    >
+
+# Use verbose for action values
+Logger.debug("Keyboard: #{inspect(markup, custom_options: [verbose: true])}")
+# => Keyboard: #InlineKeyboardMarkup<
+#      [ OK (cb: "ok_pressed") ][ Cancel (cb: "cancel_action") ]
+#    >
 ```
 
 ## Testing
