@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.61.0]
 - Keyboards detect row of rows and unwraps them, allowing for dynamic building of rows
 - Custom inspect for keyboard
 - Support for custom webhook paths in production deployments (default: "/telegram")
