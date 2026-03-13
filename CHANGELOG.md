@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Add :telemetry integration
 
 ## [0.61.0]
 - Keyboards detect row of rows and unwraps them, allowing for dynamic building of rows

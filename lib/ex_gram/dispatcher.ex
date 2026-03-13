@@ -132,12 +132,28 @@ defmodule ExGram.Dispatcher do
 
   @impl GenServer
   def handle_call({:update, update}, _from, %__MODULE__{} = state) do
-    cnt = %{default_context(state) | update: update}
-    cnt = apply_middlewares(cnt)
+    start_meta = %{bot: state.name, update: update}
+    start_time = ExGram.Telemetry.start(:update, start_meta)
 
-    if !(cnt.halted || cnt.middleware_halted) do
-      info = extract_info(cnt)
-      spawn(fn -> call_handler(info, cnt, state) end)
+    try do
+      cnt = %{default_context(state) | update: update}
+      cnt = apply_middlewares(cnt)
+
+      if !(cnt.halted || cnt.middleware_halted) do
+        info = extract_info(cnt)
+        spawn(fn -> call_handler(info, cnt, state) end)
+      end
+
+      stop_meta = %{bot: state.name, context: cnt, halted: cnt.halted || cnt.middleware_halted}
+      ExGram.Telemetry.stop(:update, start_time, stop_meta)
+    rescue
+      e ->
+        ExGram.Telemetry.exception(:update, start_time, :error, e, __STACKTRACE__, start_meta)
+        reraise e, __STACKTRACE__
+    catch
+      kind, reason ->
+        ExGram.Telemetry.exception(:update, start_time, kind, reason, __STACKTRACE__, start_meta)
+        :erlang.raise(kind, reason, __STACKTRACE__)
     end
 
     {:reply, :ok, state}
@@ -145,12 +161,28 @@ defmodule ExGram.Dispatcher do
 
   @impl GenServer
   def handle_call({:sync_update, update}, _from, %__MODULE__{} = state) do
-    cnt = %{default_context(state) | update: update}
-    cnt = apply_middlewares(cnt)
+    start_meta = %{bot: state.name, update: update}
+    start_time = ExGram.Telemetry.start(:update, start_meta)
 
-    if !(cnt.halted || cnt.middleware_halted) do
-      info = extract_info(cnt)
-      call_handler(info, cnt, state)
+    try do
+      cnt = %{default_context(state) | update: update}
+      cnt = apply_middlewares(cnt)
+
+      if !(cnt.halted || cnt.middleware_halted) do
+        info = extract_info(cnt)
+        call_handler(info, cnt, state)
+      end
+
+      stop_meta = %{bot: state.name, context: cnt, halted: cnt.halted || cnt.middleware_halted}
+      ExGram.Telemetry.stop(:update, start_time, stop_meta)
+    rescue
+      e ->
+        ExGram.Telemetry.exception(:update, start_time, :error, e, __STACKTRACE__, start_meta)
+        reraise e, __STACKTRACE__
+    catch
+      kind, reason ->
+        ExGram.Telemetry.exception(:update, start_time, kind, reason, __STACKTRACE__, start_meta)
+        :erlang.raise(kind, reason, __STACKTRACE__)
     end
 
     {:reply, :ok, state}
@@ -322,17 +354,64 @@ defmodule ExGram.Dispatcher do
   defp apply_middlewares(%Cnt{middleware_halted: true} = cnt), do: cnt
 
   defp apply_middlewares(%Cnt{middlewares: [{fun, opts} | rest]} = cnt) when is_function(fun, 2) do
-    %{cnt | middlewares: rest}
-    |> fun.(opts)
-    |> apply_middlewares()
+    start_meta = %{bot: cnt.name, middleware: fun, context: cnt}
+    start_time = ExGram.Telemetry.start(:middleware, start_meta)
+
+    result_cnt =
+      try do
+        result = fun.(%{cnt | middlewares: rest}, opts)
+
+        stop_meta = %{
+          bot: cnt.name,
+          middleware: fun,
+          context: result,
+          halted: result.halted || result.middleware_halted
+        }
+
+        ExGram.Telemetry.stop(:middleware, start_time, stop_meta)
+        result
+      rescue
+        e ->
+          ExGram.Telemetry.exception(:middleware, start_time, :error, e, __STACKTRACE__, start_meta)
+          reraise e, __STACKTRACE__
+      catch
+        kind, reason ->
+          ExGram.Telemetry.exception(:middleware, start_time, kind, reason, __STACKTRACE__, start_meta)
+          :erlang.raise(kind, reason, __STACKTRACE__)
+      end
+
+    apply_middlewares(result_cnt)
   end
 
   defp apply_middlewares(%Cnt{middlewares: [{module, opts} | rest]} = cnt) when is_atom(module) do
-    init_opts = module.init(opts)
+    start_meta = %{bot: cnt.name, middleware: module, context: cnt}
+    start_time = ExGram.Telemetry.start(:middleware, start_meta)
 
-    %{cnt | middlewares: rest}
-    |> module.call(init_opts)
-    |> apply_middlewares()
+    result_cnt =
+      try do
+        init_opts = module.init(opts)
+        result = module.call(%{cnt | middlewares: rest}, init_opts)
+
+        stop_meta = %{
+          bot: cnt.name,
+          middleware: module,
+          context: result,
+          halted: result.halted || result.middleware_halted
+        }
+
+        ExGram.Telemetry.stop(:middleware, start_time, stop_meta)
+        result
+      rescue
+        e ->
+          ExGram.Telemetry.exception(:middleware, start_time, :error, e, __STACKTRACE__, start_meta)
+          reraise e, __STACKTRACE__
+      catch
+        kind, reason ->
+          ExGram.Telemetry.exception(:middleware, start_time, kind, reason, __STACKTRACE__, start_meta)
+          :erlang.raise(kind, reason, __STACKTRACE__)
+      end
+
+    apply_middlewares(result_cnt)
   end
 
   defp apply_middlewares(%Cnt{middlewares: [_ | rest]} = cnt) do
@@ -340,13 +419,29 @@ defmodule ExGram.Dispatcher do
   end
 
   defp call_handler(info, cnt, %__MODULE__{handler: {module, method}} = state) do
-    case apply(module, method, [info, cnt]) do
-      %Cnt{} = cnt ->
-        %Cnt{responses: responses} = ExGram.Dsl.send_answers(cnt)
-        handle_responses(responses, state)
+    start_meta = %{bot: state.name, handler: module, context: cnt}
+    start_time = ExGram.Telemetry.start(:handler, start_meta)
 
-      _ ->
-        :noop
+    try do
+      result = apply(module, method, [info, cnt])
+      ExGram.Telemetry.stop(:handler, start_time, Map.put(start_meta, :result_context, result))
+
+      case result do
+        %Cnt{} = cnt ->
+          %Cnt{responses: responses} = ExGram.Dsl.send_answers(cnt)
+          handle_responses(responses, state)
+
+        _ ->
+          :noop
+      end
+    rescue
+      e ->
+        ExGram.Telemetry.exception(:handler, start_time, :error, e, __STACKTRACE__, start_meta)
+        reraise e, __STACKTRACE__
+    catch
+      kind, reason ->
+        ExGram.Telemetry.exception(:handler, start_time, kind, reason, __STACKTRACE__, start_meta)
+        :erlang.raise(kind, reason, __STACKTRACE__)
     end
   end
 

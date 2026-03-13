@@ -61,6 +61,8 @@ defmodule ExGram.Mixfile do
       {:plug, "~> 1.14", optional: true},
       # For Markdown to MessageEntity convert
       {:mdex, "~> 0.11", optional: true},
+      # Telemetry
+      {:telemetry, "~> 0.4.3 or ~> 1.0"},
       # Test adapter uses NimbleOwnership for per-process isolation
       {:nimble_ownership, "~> 1.0"},
       # Development
@@ -108,7 +110,7 @@ defmodule ExGram.Mixfile do
     [
       Cheatsheet: "guides/cheatsheet.md",
       Basic: ~r/guides\/(installation|getting-started|handling-updates|commands|sending-messages)\.md/,
-      Intermediate: ~r/guides\/(polling-and-webhooks|message-entities|middlewares|low-level-api)\.md/,
+      Intermediate: ~r/guides\/(polling-and-webhooks|message-entities|middlewares|low-level-api|telemetry)\.md/,
       Advanced: ~r/guides\/(multiple-bots|flyio|)\.md/,
       Testing: "guides/testing.md",
       "Other Guides": ~r/guides\/.*/
