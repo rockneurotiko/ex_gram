@@ -68,22 +68,21 @@ defmodule ExGram.TelemetryTest do
 
       ExGram.Test.push_update(bot_name, update)
 
-      assert_receive {:telemetry, [:ex_gram, :request, :start], start_measurements, start_meta},
+      assert_receive {:telemetry, [:ex_gram, :request, :start], start_measurements,
+                      %{method: "sendMessage"} = start_meta},
                      500
 
       assert is_integer(start_measurements.system_time)
       assert is_integer(start_measurements.monotonic_time)
-      assert start_meta.method == "sendMessage"
       assert start_meta.request_type == :post
       assert is_map(start_meta.body)
       assert start_meta.bot == bot_name
 
-      assert_receive {:telemetry, [:ex_gram, :request, :stop], stop_measurements, stop_meta},
+      assert_receive {:telemetry, [:ex_gram, :request, :stop], stop_measurements, %{method: "sendMessage"} = stop_meta},
                      500
 
       assert is_integer(stop_measurements.duration)
       assert stop_measurements.duration >= 0
-      assert stop_meta.method == "sendMessage"
       assert stop_meta.request_type == :post
       assert {:ok, _} = stop_meta.result
     end
@@ -107,7 +106,9 @@ defmodule ExGram.TelemetryTest do
 
       ExGram.Test.push_update(bot_name, update)
 
-      assert_receive {:telemetry, [:ex_gram, :request, :stop], _measurements, stop_meta}, 500
+      assert_receive {:telemetry, [:ex_gram, :request, :stop], _measurements, %{method: "sendMessage"} = stop_meta},
+                     500
+
       assert {:error, %ExGram.Error{}} = stop_meta.result
     end
 
@@ -128,7 +129,9 @@ defmodule ExGram.TelemetryTest do
 
       ExGram.Test.push_update(bot_name, update)
 
-      assert_receive {:telemetry, [:ex_gram, :request, :start], _m, meta}, 500
+      assert_receive {:telemetry, [:ex_gram, :request, :start], _m, %{method: "sendMessage"} = meta},
+                     500
+
       assert meta.bot == bot_name
     end
 
@@ -148,7 +151,9 @@ defmodule ExGram.TelemetryTest do
 
       ExGram.Test.push_update(bot_name, update)
 
-      assert_receive {:telemetry, [:ex_gram, :request, :start], _m, meta}, 500
+      assert_receive {:telemetry, [:ex_gram, :request, :start], _m, %{method: "sendMessage"} = meta},
+                     500
+
       refute Map.has_key?(meta, :token)
       refute Map.has_key?(meta.body, :token)
     end
