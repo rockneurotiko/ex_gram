@@ -78,7 +78,14 @@ defmodule ExGram.Test do
 
   ## Testing Bots
 
-  Push updates to your bot using `push_update/2`:
+  Start an isolated bot instance for each test with `start_bot/3`, then push updates
+  using `push_update/2`. By default `start_bot/3` sets `handler_mode: :sync`, so
+  `push_update/2` only returns after the bot's handler has fully executed - no sleeps
+  or polling needed.
+
+      {bot_name, _} = ExGram.Test.start_bot(context, MyApp.Bot)
+
+      ExGram.Test.expect(:send_message, %{message_id: 1, text: "Welcome!"})
 
       update = %ExGram.Model.Update{
         update_id: 1,
@@ -89,7 +96,8 @@ defmodule ExGram.Test do
         }
       }
 
-      ExGram.Test.push_update(:my_bot, update)
+      # Blocks until the handler completes; expectation is consumed when this returns
+      ExGram.Test.push_update(bot_name, update)
 
   See the [Testing guide](testing.md) for more examples and patterns.
   """
@@ -100,19 +108,58 @@ defmodule ExGram.Test do
 
   alias ExGram.Adapter.Test
 
+  @doc """
+  Start an isolated bot instance for a test.
+
+  Creates a uniquely named bot process derived from the test name so that multiple
+  tests can run concurrently without colliding. The bot is started under a unique
+  module name and registered under a unique atom (`bot_name`), which is also the
+  name passed to `push_update/2`.
+
+  Returns `{bot_name, module_name}`, where `bot_name` is the Dispatcher's registered name, the process that will handle all the updates and `module_name` is the name of the Supervisor, it's typically not needed but can be useful for debugging.
+
+  ## Options
+
+  The following options are merged on top of the test defaults:
+
+    * `:method` - Updates source, defaults to `:test` (`ExGram.Updates.Test`)
+    * `:token` - Bot token, defaults to `"test_token"`
+    * `:username` - Bot username, defaults to `"test_bot"` (skips the `get_me` call)
+    * `:setup_commands` - Whether to register commands on startup, defaults to `false`
+    * `:handler_mode` - How the dispatcher executes the handler. `:sync` (default)
+      runs the handler inline so `push_update/2` blocks until it completes. `:async`
+      spawns a new process (the production default) and returns immediately.
+    * `:extra_info` - Map of extra data passed to the bot's context. The test process
+      PID is always injected as `:test_pid`.
+
+  ## Example
+
+      setup context do
+        {bot_name, _} = ExGram.Test.start_bot(context, MyApp.Bot)
+        {:ok, bot_name: bot_name}
+      end
+
+      test "responds to /start", %{bot_name: bot_name} do
+        ExGram.Test.expect(:send_message, %{message_id: 1, text: "Welcome!"})
+        ExGram.Test.push_update(bot_name, build_update("/start"))
+      end
+
+  """
   def start_bot(context, bot_module, opts \\ []) do
     base = context.test |> Atom.to_string() |> String.replace(~r/[^a-z0-9]/i, "_")
     bot_name = String.to_atom("test_bot_#{base}_#{System.unique_integer([:positive])}")
     module_name = Module.concat([bot_module, String.to_atom("Bot_#{bot_name}")])
     extra_info = opts |> Keyword.get(:extra_info, %{}) |> Map.put(:test_pid, self())
+    method = opts[:method] || :test
 
     base_opts = [
-      method: :test,
+      method: method,
       name: module_name,
       bot_name: bot_name,
       token: "test_token",
       username: "test_bot",
       setup_commands: false,
+      handler_mode: :sync,
       extra_info: extra_info
     ]
 
@@ -367,12 +414,23 @@ defmodule ExGram.Test do
   Push a test update to a bot's dispatcher.
 
   This simulates an incoming update from Telegram and automatically allows
-  the bot process to access your test's stubs.
+  the bot process to access your test's stubs via `allow/2`.
+
+  When the bot was started with `handler_mode: :sync` (the default from `start_bot/3`),
+  this call blocks until the bot's handler has fully executed, including all API calls.
+  Expectations are consumed and calls are recorded by the time this function returns,
+  so you can assert on results immediately after.
+
+  When the bot was started with `handler_mode: :async`, the update is enqueued and
+  this function returns before the handler runs.
 
   ## Example
 
-      test "bot responds to /start" do
-        ExGram.Test.stub(:send_message, %{message_id: 1, text: "Welcome!"})
+      test "bot responds to /start", %{bot_name: bot_name} do
+        ExGram.Test.expect(:send_message, fn body ->
+          assert body[:text] =~ "Welcome"
+          {:ok, %{message_id: 1, chat: %{id: 123, type: "private"}, text: "Welcome!"}}
+        end)
 
         update = %ExGram.Model.Update{
           update_id: 1,
@@ -384,10 +442,8 @@ defmodule ExGram.Test do
           }
         }
 
-        ExGram.Test.push_update(:my_bot, update)
-
-        calls = ExGram.Test.get_calls()
-        assert length(calls) == 1
+        # With handler_mode: :sync (default), the handler has run by the time this returns
+        ExGram.Test.push_update(bot_name, update)
       end
 
   """

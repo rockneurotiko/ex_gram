@@ -38,7 +38,7 @@ defmodule ExGram.Bot.Supervisor do
     updates_worker_opts = Map.merge(updates_worker_opts, %{bot: name, token: token})
 
     extra_info = Keyword.get(opts, :extra_info, %{})
-    dispatcher_init_opts = Keyword.take(opts, [:username, :setup_commands])
+    dispatcher_init_opts = Keyword.take(opts, [:username, :setup_commands, :handler_mode])
     dispatcher_opts = Dispatcher.init_state(name, module, dispatcher_init_opts, extra_info)
 
     children =

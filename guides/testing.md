@@ -129,9 +129,8 @@ defmodule MyApp.NotificationsTest do
       end)
 
       update = build_command_update("/start")
-      # Push it just like if it were a real update
-      # using the unique bot_name
-      ExGram.Test.push_update(bot_name, update) 
+      # push_update is synchronous by default - when it returns the handler has already run
+      ExGram.Test.push_update(bot_name, update)
     end
   end
   
@@ -651,16 +650,18 @@ setup {ExGram.Test, :set_from_context}
 
 ## Testing a Bot
 
-### Pushing Updates
+### Sending Updates
 
-Use `ExGram.Test.push_update/2` to simulate incoming updates from Telegram:
+Use `ExGram.Test.push_update/2` to simulate incoming updates from Telegram.
+
+By default, `ExGram.Test.start_bot/3` starts the bot with `handler_mode: :sync`. This means `push_update/2` is fully synchronous - when it returns, the bot's handler has already run to completion, including all API calls. You can assert on calls and results immediately after `push_update/2` returns, with no sleeps or polling needed.
 
 ```elixir
 test "bot responds to /start command", context do
-  # Start an instance of your bot with a random name
+  # Start an isolated bot instance - defaults to handler_mode: :sync
   {bot_name, _} = ExGram.Test.start_bot(context, MyApp.Bot)
 
-  # Expect the call
+  # Set up the expectation before pushing the update
   ExGram.Test.expect(:send_message, fn body -> 
     assert body[:text] =~ "Welcome"
     
@@ -683,12 +684,27 @@ test "bot responds to /start command", context do
     }
   }
 
-  # Push the update to the bot
+  # Push the update - returns only after the handler has fully executed
   ExGram.Test.push_update(bot_name, update)
+  # At this point the :send_message expectation has already been consumed
 end
 ```
 
 **Notice:** `push_update/2` automatically calls `allow/2` for you, so the bot process has access to your stubs.
+
+### Handler Mode
+
+The `handler_mode` option controls how the dispatcher executes your bot's handler:
+
+- `:sync` - The handler runs inline within the dispatcher's process. `push_update/2` blocks until the handler and all its API calls complete. **This is the default when using `ExGram.Test.start_bot/3`.**
+- `:async` - The handler is spawned in a separate process. `push_update/2` returns immediately after the update is enqueued. This is the default in production.
+
+You can override the mode when starting a bot:
+
+```elixir
+# Force async mode (the production default) in a test
+{bot_name, _} = ExGram.Test.start_bot(context, MyApp.Bot, handler_mode: :async)
+```
 
 ### Building Model Structs
 
@@ -761,6 +777,8 @@ defmodule MyApp.BotTest do
 
   setup {ExGram.Test, :verify_on_exit!}
 
+  # Each test starts its own isolated bot instance with handler_mode: :sync (the default).
+  # push_update/2 blocks until the handler has fully run, so no sleeps or polling needed.
   setup context do
     {bot_name, _} = ExGram.Test.start_bot(context, MyApp.Bot)
 
@@ -788,6 +806,7 @@ defmodule MyApp.BotTest do
         }
       }
 
+      # Returns only after the handler has completed - expectation is already consumed
       ExGram.Test.push_update(bot_name, update)
     end
 
