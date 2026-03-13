@@ -5,6 +5,29 @@ defmodule ExGram.Dispatcher do
 
   This module is started automatically by the bot's supervisor and shouldn't be
   interacted with directly in most cases.
+
+  ## Handler Mode
+
+  The `handler_mode` option controls how the handler is executed after an update
+  arrives:
+
+    * `:async` (default in production) - the handler is spawned in a separate process.
+      The dispatcher returns immediately after receiving the update, and the handler
+      runs concurrently.
+    * `:sync` - the handler runs inline inside the dispatcher's `handle_call`. The
+      caller blocks until the full pipeline (middlewares + handler + API calls) has
+      completed. **`ExGram.Test.start_bot/3` defaults to `:sync`** so that
+      `ExGram.Test.push_update/2` is fully synchronous in tests.
+
+  The `handler_mode` can be set as a bot startup option:
+
+      # In production (default)
+      MyApp.Bot.start_link(handler_mode: :async)
+
+      # In tests via ExGram.Test.start_bot/3 (default)
+      ExGram.Test.start_bot(context, MyApp.Bot)
+      # equivalent to:
+      ExGram.Test.start_bot(context, MyApp.Bot, handler_mode: :sync)
   """
 
   use GenServer
@@ -38,6 +61,7 @@ defmodule ExGram.Dispatcher do
           regex: [Regex.t()],
           middlewares: [Bot.middleware()],
           handler: {module(), atom()},
+          handler_mode: :sync | :async,
           error_handler: {module(), atom()}
         }
 
@@ -51,6 +75,7 @@ defmodule ExGram.Dispatcher do
             regex: [],
             middlewares: [],
             handler: nil,
+            handler_mode: :async,
             error_handler: nil
 
   @spec new(Enumerable.t()) :: t()
@@ -61,6 +86,7 @@ defmodule ExGram.Dispatcher do
   @spec init_state(atom(), module(), init_opts(), map()) :: t()
   def init_state(name, module, opts, extra_info) when is_atom(name) and is_atom(module) do
     bot_info = if username = opts[:username], do: %Model.User{username: username, is_bot: true}
+    handler_mode = opts[:handler_mode] || :async
 
     %__MODULE__{
       name: name,
@@ -73,6 +99,7 @@ defmodule ExGram.Dispatcher do
       regex: module.regexes(),
       middlewares: module.middlewares(),
       handler: {module, :handle},
+      handler_mode: handler_mode,
       error_handler: {module, :handle_error}
     }
   end
@@ -132,35 +159,6 @@ defmodule ExGram.Dispatcher do
 
   @impl GenServer
   def handle_call({:update, update}, _from, %__MODULE__{} = state) do
-    start_meta = %{bot: state.name, update: update}
-    start_time = ExGram.Telemetry.start(:update, start_meta)
-
-    try do
-      cnt = %{default_context(state) | update: update}
-      cnt = apply_middlewares(cnt)
-
-      if !(cnt.halted || cnt.middleware_halted) do
-        info = extract_info(cnt)
-        spawn(fn -> call_handler(info, cnt, state) end)
-      end
-
-      stop_meta = %{bot: state.name, context: cnt, halted: cnt.halted || cnt.middleware_halted}
-      ExGram.Telemetry.stop(:update, start_time, stop_meta)
-    rescue
-      e ->
-        ExGram.Telemetry.exception(:update, start_time, :error, e, __STACKTRACE__, start_meta)
-        reraise e, __STACKTRACE__
-    catch
-      kind, reason ->
-        ExGram.Telemetry.exception(:update, start_time, kind, reason, __STACKTRACE__, start_meta)
-        :erlang.raise(kind, reason, __STACKTRACE__)
-    end
-
-    {:reply, :ok, state}
-  end
-
-  @impl GenServer
-  def handle_call({:sync_update, update}, _from, %__MODULE__{} = state) do
     start_meta = %{bot: state.name, update: update}
     start_time = ExGram.Telemetry.start(:update, start_meta)
 
@@ -418,7 +416,14 @@ defmodule ExGram.Dispatcher do
     apply_middlewares(%{cnt | middlewares: rest})
   end
 
-  defp call_handler(info, cnt, %__MODULE__{handler: {module, method}} = state) do
+  defp call_handler(info, cnt, state) do
+    case state.handler_mode do
+      :async -> spawn(fn -> do_call_handler(info, cnt, state) end)
+      _ -> do_call_handler(info, cnt, state)
+    end
+  end
+
+  defp do_call_handler(info, cnt, %__MODULE__{handler: {module, method}} = state) do
     start_meta = %{bot: state.name, handler: module, context: cnt}
     start_time = ExGram.Telemetry.start(:handler, start_meta)
 

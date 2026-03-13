@@ -1,5 +1,5 @@
 defmodule ExGram.TelemetryTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   import ExGram.TestHelpers
 
@@ -216,18 +216,25 @@ defmodule ExGram.TelemetryTest do
       assert stop_meta.halted == false
     end
 
-    test "stop event reports halted: true when middleware halts", %{bot_name: bot_name} do
+    test "stop event reports halted: false when no middleware halts", %{bot_name: bot_name} do
       test_pid = self()
 
       attach_telemetry(test_pid, [[:ex_gram, :update, :stop]])
 
-      # Dynamically inject a halting middleware into the bot's dispatcher state
-      # by using a separate bot with a halting middleware
-      _ = bot_name
+      ExGram.Test.expect(:send_message, fn _body ->
+        {:ok, %{message_id: 1, chat: %{id: 123, type: "private"}, date: 0, text: "got it"}}
+      end)
 
-      # We test the halted flag via a bot that uses a halting middleware below
-      # in the HaltingMiddlewareBot describe block - skip assertion here
-      refute_receive {:telemetry, [:ex_gram, :update, :stop], _, %{halted: true}}, 100
+      update =
+        build_update(%{
+          message: build_message(%{chat: build_chat(%{id: 123}), text: "hello"})
+        })
+
+      ExGram.Test.push_update(bot_name, update)
+
+      assert_receive {:telemetry, [:ex_gram, :update, :stop], _measurements, meta}, 500
+      assert meta.halted == false
+      assert meta.bot == bot_name
     end
   end
 
@@ -504,7 +511,18 @@ defmodule ExGram.TelemetryTest do
   # ---------------------------------------------------------------------------
 
   describe "[:ex_gram, :polling, ...]" do
-    test "emits start and stop events on each polling cycle" do
+    defmodule ParrotBot do
+      @moduledoc false
+      use ExGram.Bot, name: :telemetry_parrot_bot
+
+      def handle({:text, text, _}, context) do
+        answer(context, text)
+      end
+
+      def handle(_, context), do: context
+    end
+
+    test "emits start and stop events on each polling cycle", context do
       test_pid = self()
 
       attach_telemetry(test_pid, [
@@ -512,46 +530,59 @@ defmodule ExGram.TelemetryTest do
         [:ex_gram, :polling, :stop]
       ])
 
-      bot_name = :telemetry_polling_test_bot
-
       # Stub get_updates to return one update, then empty (to stop)
-      ExGram.Test.stub(:get_updates, fn _body ->
+      ExGram.Test.expect(:get_updates, 2, fn _body ->
+        send(test_pid, :get_updates_called)
+        assert_receive :continue, 1000
+
         {:ok,
          [
            build_update(%{
-             message: build_message(%{chat: build_chat(%{id: 123}), text: "poll test"})
+             message: build_message(%{chat: build_chat(%{id: 123}), text: "ping"})
            })
          ]}
       end)
 
-      ExGram.Test.stub(:send_message, fn _body ->
-        {:ok, %{message_id: 1, chat: %{id: 123, type: "private"}, date: 0, text: "poll test"}}
+      ExGram.Test.stub(:send_message, fn body ->
+        assert body.text == "ping"
+        {:ok, %{message_id: 1, chat: %{id: 123, type: "private"}, date: 0, text: "ping"}}
       end)
 
-      # We can't start a full polling bot easily in tests since polling uses
-      # the Polling GenServer. Instead, we call the polling handle_info directly
-      # by testing via start_bot with polling if possible, or test the module
-      # function directly.
-      #
-      # The easiest approach: just invoke the telemetry functions directly to
-      # verify the event shape is correct, as integration with polling is
-      # covered by the instrumentation in polling.ex.
-      start_time = ExGram.Telemetry.start(:polling, %{bot: bot_name})
-      ExGram.Telemetry.stop(:polling, start_time, %{bot: bot_name, updates_count: 3})
+      {bot_name, _} = ExGram.Test.start_bot(context, ParrotBot)
 
-      assert_receive {:telemetry, [:ex_gram, :polling, :start], start_measurements, start_meta},
-                     500
+      ExGram.Test.allow(test_pid, Process.whereis(bot_name))
+
+      {:ok, polling_pid} =
+        ExGram.Updates.Polling.start_link(%{
+          bot: bot_name,
+          token: "fake-token",
+          get_updates_opts: [timeout: 30_000],
+          delete_webhook: false
+        })
+
+      ExGram.Test.allow(self(), polling_pid)
+
+      assert_receive :get_updates_called, 500
+
+      assert_receive {:telemetry, [:ex_gram, :polling, :start], start_measurements, start_meta}, 500
 
       assert is_integer(start_measurements.system_time)
       assert is_integer(start_measurements.monotonic_time)
       assert start_meta.bot == bot_name
 
-      assert_receive {:telemetry, [:ex_gram, :polling, :stop], stop_measurements, stop_meta},
-                     500
+      refute_received {:telemetry, [:ex_gram, :polling, :stop], _, _}
+
+      send(polling_pid, :continue)
+
+      assert_receive {:telemetry, [:ex_gram, :polling, :stop], stop_measurements, stop_meta}, 500
 
       assert is_integer(stop_measurements.duration)
       assert stop_meta.bot == bot_name
-      assert stop_meta.updates_count == 3
+      assert stop_meta.updates_count == 1
+
+      assert_receive :get_updates_called, 500
+
+      Process.exit(polling_pid, :normal)
     end
   end
 
