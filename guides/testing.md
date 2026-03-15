@@ -581,7 +581,7 @@ end
 
 ### How It Works
 
-    The test adapter uses [NimbleOwnership](https://hexdocs.pm/nimble_ownership) to provide per-process isolation. Each test process that calls `ExGram.Test.stub/2` or `ExGram.Test.expect/2` becomes an "owner" of its own stubs, expectations, and call recordings.
+The test adapter uses [NimbleOwnership](https://hexdocs.pm/nimble_ownership) to provide per-process isolation. Each test process that calls `ExGram.Test.stub/2` or `ExGram.Test.expect/2` becomes an "owner" of its own stubs, expectations, and call recordings.
 
 This is why `async: true` works - each test has completely isolated state:
 

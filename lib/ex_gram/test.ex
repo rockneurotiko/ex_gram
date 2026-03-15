@@ -153,10 +153,20 @@ defmodule ExGram.Test do
         test_pid: test_pid,
         bot_name: bot_name
       }) do
-    if metadata.bot == bot_name do
+    if same_bot?(Map.get(metadata, :bot), bot_name) do
       ExGram.Test.allow(test_pid, self())
     end
   end
+
+  defp same_bot?(metadata_bot, bot_name) when is_pid(metadata_bot) and not is_pid(bot_name) do
+    Process.whereis(bot_name) == metadata_bot
+  end
+
+  defp same_bot?(metadata_bot, bot_name) when not is_pid(metadata_bot) and is_pid(bot_name) do
+    bot_name == Process.whereis(metadata_bot)
+  end
+
+  defp same_bot?(metadata_bot, bot_name), do: metadata_bot == bot_name
 
   # We need to ignore warnings because ExUnit is not loaded
   @dialyzer {:nowarn_function, start_bot: 2, start_bot: 3}
@@ -225,12 +235,17 @@ defmodule ExGram.Test do
 
     handler_id = "ex_gram_test_allow_#{bot_name}"
 
-    :telemetry.attach_many(
-      handler_id,
-      [[:ex_gram, :bot, :init, :start], [:ex_gram, :updates, :init, :start]],
-      &ExGram.Test.handle_event_allow_pid/4,
-      %{test_pid: test_pid, bot_name: bot_name}
-    )
+    :ok =
+      :telemetry.attach_many(
+        handler_id,
+        [[:ex_gram, :bot, :init, :start], [:ex_gram, :updates, :init, :start]],
+        &ExGram.Test.handle_event_allow_pid/4,
+        %{test_pid: test_pid, bot_name: bot_name}
+      )
+
+    ExUnit.Callbacks.on_exit({__MODULE__, bot_name}, fn ->
+      :telemetry.detach(handler_id)
+    end)
 
     base_opts = [
       method: method,
@@ -247,10 +262,6 @@ defmodule ExGram.Test do
 
     {:ok, _pid} =
       bot_module.start_link(bot_opts)
-
-    ExUnit.Callbacks.on_exit({__MODULE__, bot_name}, fn ->
-      :telemetry.detach(handler_id)
-    end)
 
     {bot_name, module_name}
   end

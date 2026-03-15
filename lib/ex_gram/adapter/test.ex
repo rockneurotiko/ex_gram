@@ -340,18 +340,22 @@ defmodule ExGram.Adapter.Test do
 
   @doc false
   def ensure_owner(pid \\ self()) do
-    NimbleOwnership.get_and_update(
-      @ownership_server,
-      pid,
-      @ownership_key,
-      fn
-        nil -> {nil, %__MODULE__{}}
-        existing -> {existing, existing}
-      end,
-      @timeout
-    )
+    case get_and_update(
+           pid,
+           fn
+             nil -> {nil, %__MODULE__{}}
+             existing -> {existing, existing}
+           end
+         ) do
+      {:ok, _} ->
+        :ok
 
-    :ok
+      {:error, %NimbleOwnership.Error{reason: {:not_shared_owner, actual_owner_pid}}} ->
+        ensure_owner(actual_owner_pid)
+
+      {:error, %NimbleOwnership.Error{}} ->
+        raise "Failed to ensure ownership for #{format_process()}"
+    end
   end
 
   @doc """

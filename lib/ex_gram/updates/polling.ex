@@ -97,8 +97,8 @@ defmodule ExGram.Updates.Polling do
     end
   end
 
-  defp send_updates(updates, pid) do
-    Enum.map(updates, &GenServer.call(pid, {:update, &1}))
+  defp send_updates(updates, bot) do
+    Enum.map(updates, &GenServer.call(bot, {:update, &1}))
   end
 
   defp next_pid(actual, []), do: actual

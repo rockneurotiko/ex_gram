@@ -20,7 +20,7 @@ defmodule ExGram.Updates.Test do
 
   use GenServer
 
-  defstruct [:pid, :token]
+  defstruct [:bot, :token]
 
   def child_spec(opts) do
     id =
@@ -39,24 +39,24 @@ defmodule ExGram.Updates.Test do
     }
   end
 
-  def start_link(%{bot: pid, token: token} = opts) do
+  def start_link(%{bot: bot, token: token} = opts) do
     if name = opts[:name] do
-      GenServer.start_link(__MODULE__, {:ok, pid, token}, name: name)
+      GenServer.start_link(__MODULE__, {:ok, bot, token}, name: name)
     else
-      GenServer.start_link(__MODULE__, {:ok, pid, token})
+      GenServer.start_link(__MODULE__, {:ok, bot, token})
     end
   end
 
-  def init({:ok, pid, token}) do
+  def init({:ok, bot, token}) do
     Process.flag(:trap_exit, true)
-    start_time = ExGram.Telemetry.start([:updates, :init], %{bot: pid, method: :test})
-    state = %__MODULE__{pid: pid, token: token}
-    ExGram.Telemetry.stop([:updates, :init], start_time, %{bot: pid, method: :test})
+    start_time = ExGram.Telemetry.start([:updates, :init], %{bot: bot, method: :test})
+    state = %__MODULE__{bot: bot, token: token}
+    ExGram.Telemetry.stop([:updates, :init], start_time, %{bot: bot, method: :test})
     {:ok, state}
   end
 
-  def terminate(_reason, %__MODULE__{pid: pid}) do
-    ExGram.Telemetry.emit([:updates, :shutdown], %{bot: pid, method: :test})
+  def terminate(_reason, %__MODULE__{bot: bot}) do
+    ExGram.Telemetry.emit([:updates, :shutdown], %{bot: bot, method: :test})
   end
 
   @doc """
