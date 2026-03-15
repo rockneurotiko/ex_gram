@@ -213,7 +213,7 @@ defmodule ExGram.Telemetry do
 
   Emitted as a span around the bot dispatcher's initialization phase.
 
-  - `:start` fires synchronously inside `GenServer.init/1`, before `start_link/1` returns.
+  - `:start` fires synchronously inside `c:GenServer.init/1`, before `start_link/1` returns.
     At this point the process is registered but the bot has not yet called `get_me`,
     `setup_commands`, or the bot module's `init/1`.
   - `:stop` fires at the end of `handle_continue(:initialize_bot, ...)`, after all
@@ -270,7 +270,7 @@ defmodule ExGram.Telemetry do
   Emitted as a span around an updates worker's initialization phase (polling,
   webhook, noup, or test).
 
-  - `:start` fires at the beginning of `GenServer.init/1`, before any startup work
+  - `:start` fires at the beginning of `c:GenServer.init/1`, before any startup work
     such as setting or deleting the webhook.
   - `:stop` fires just before `{:ok, state}` is returned from `init/1`, once the
     worker is ready to receive or fetch updates.
