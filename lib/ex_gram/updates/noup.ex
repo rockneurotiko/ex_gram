@@ -13,6 +13,12 @@ defmodule ExGram.Updates.Noup do
   end
 
   def init({:ok, pid, token}) do
+    Process.flag(:trap_exit, true)
+    ExGram.Telemetry.emit([:updates, :init], %{bot: pid, method: :noup})
     {:ok, {pid, token}}
+  end
+
+  def terminate(_reason, {pid, _token}) do
+    ExGram.Telemetry.emit([:updates, :shutdown], %{bot: pid, method: :noup})
   end
 end

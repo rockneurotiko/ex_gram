@@ -165,7 +165,8 @@ ExGram.get_me(debug: true)
 body: %{}
 ```
 
-**Warning:** Do not use this in production, it will log your bot's tokens
+> #### Warning {: .warning }
+> Do not use this in production, it will log your bot's tokens
 
 ## Common Use Cases
 

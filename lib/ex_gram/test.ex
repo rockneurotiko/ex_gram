@@ -25,23 +25,49 @@ defmodule ExGram.Test do
       {:ok, _} = ExGram.Adapter.Test.start_link()
       ExUnit.start()
 
-  Use the testing conveniences from this module in your tests:
+  The recommended way to use this module is via `use ExGram.Test` in your test module.
+  This sets up `set_from_context` and `verify_on_exit!` automatically:
 
       defmodule MyBotTest do
         use ExUnit.Case, async: true
-        import ExGram.Test, only: [verify_on_exit!: 1]
+        use ExGram.Test
 
-        setup :verify_on_exit!
+        setup context do
+          {bot_name, _} = ExGram.Test.start_bot(context, MyApp.Bot)
+          {:ok, bot_name: bot_name}
+        end
 
-        test "sends welcome message" do
-          ExGram.Test.stub(:send_message, %{message_id: 1, text: "Welcome!"})
-
-          MyBot.send_welcome(123)
-
-          calls = ExGram.Test.get_calls()
-          assert length(calls) == 1
+        test "sends welcome message", %{bot_name: bot_name} do
+          ExGram.Test.expect(:send_message, %{message_id: 1, text: "Welcome!"})
+          ExGram.Test.push_update(bot_name, build_update("/start"))
         end
       end
+
+  ## `use ExGram.Test`
+
+  Calling `use ExGram.Test` in your test module registers a `setup` callback that:
+
+  - Calls `set_from_context/1` to automatically pick private or global mode based on
+    whether the test is `async: true` or `async: false`.
+  - Calls `verify_on_exit!/1` so expectations are verified automatically when the test exits.
+
+  Options:
+
+    * `:set_from_context` - whether to call `set_from_context/1` in setup (default: `true`)
+    * `:verify_on_exit` - whether to call `verify_on_exit!/1` in setup (default: `true`)
+
+  ## Process isolation and `start_bot/3`
+
+  `start_bot/3` creates an isolated, uniquely named bot for the current test. It also
+  ensures the bot's Dispatcher and Updates worker processes are immediately allowed to
+  use the test's stubs, without any manual `allow/2` call.
+
+  This works by subscribing to the `[:ex_gram, :bot, :init]` and `[:ex_gram, :updates, :init]`
+  telemetry events emitted synchronously during process startup. When those events fire,
+  the processes are automatically allowed under the calling test's ownership. The telemetry
+  handler is scoped to the specific `bot_name` so concurrent async tests never cross-allow
+  each other's processes. The handler is detached automatically via `on_exit` when the test
+  exits.
 
   ## Stubbing
 
@@ -108,6 +134,30 @@ defmodule ExGram.Test do
 
   alias ExGram.Adapter.Test
 
+  defmacro __using__(opts) do
+    set_from_context? = Keyword.get(opts, :set_from_context, true)
+    verify? = Keyword.get(opts, :verify_on_exit, true)
+
+    quote do
+      require ExUnit.Callbacks
+
+      ExUnit.Callbacks.setup context do
+        if unquote(set_from_context?), do: ExGram.Test.set_from_context(context)
+        if unquote(verify?), do: ExGram.Test.verify_on_exit!(context)
+        :ok
+      end
+    end
+  end
+
+  def handle_event_allow_pid([:ex_gram, _step, :init], _measurements, metadata, %{
+        test_pid: test_pid,
+        bot_name: bot_name
+      }) do
+    if metadata.bot == bot_name do
+      ExGram.Test.allow(test_pid, self())
+    end
+  end
+
   @doc """
   Start an isolated bot instance for a test.
 
@@ -116,7 +166,20 @@ defmodule ExGram.Test do
   module name and registered under a unique atom (`bot_name`), which is also the
   name passed to `push_update/2`.
 
-  Returns `{bot_name, module_name}`, where `bot_name` is the Dispatcher's registered name, the process that will handle all the updates and `module_name` is the name of the Supervisor, it's typically not needed but can be useful for debugging.
+  Returns `{bot_name, module_name}`, where `bot_name` is the Dispatcher's registered
+  name (the process that handles all updates) and `module_name` is the Supervisor's
+  name (typically not needed, but useful for debugging or stopping the bot).
+
+  ## Process isolation
+
+  `start_bot/3` automatically allows the bot's Dispatcher and Updates worker processes
+  to use the calling test's stubs and expectations. This is done by subscribing to the
+  `[:ex_gram, :bot, :init]` and `[:ex_gram, :updates, :init]` telemetry events, which
+  fire synchronously during startup. The telemetry handler is scoped to this bot's name,
+  so concurrent tests never accidentally allow each other's processes. The handler is
+  detached automatically on test exit.
+
+  No manual `allow/2` call is needed for the standard `push_update/2` workflow.
 
   ## Options
 
@@ -146,11 +209,25 @@ defmodule ExGram.Test do
 
   """
   def start_bot(context, bot_module, opts \\ []) do
-    base = context.test |> Atom.to_string() |> String.replace(~r/[^a-z0-9]/i, "_")
-    bot_name = String.to_atom("test_bot_#{base}_#{System.unique_integer([:positive])}")
+    bot_name = unique_name_from_context("test_bot", context)
     module_name = Module.concat([bot_module, String.to_atom("Bot_#{bot_name}")])
     extra_info = opts |> Keyword.get(:extra_info, %{}) |> Map.put(:test_pid, self())
     method = opts[:method] || :test
+    test_pid = self()
+
+    # Ensure the test process is registered as a NimbleOwnership owner before
+    # the bot starts, so that allow(test_pid, bot_pid) calls from the telemetry
+    # handler succeed even when no stub/expect has been called yet.
+    Test.ensure_owner(test_pid)
+
+    handler_id = "ex_gram_test_allow_#{bot_name}"
+
+    :telemetry.attach_many(
+      handler_id,
+      [[:ex_gram, :bot, :init], [:ex_gram, :updates, :init]],
+      &ExGram.Test.handle_event_allow_pid/4,
+      %{test_pid: test_pid, bot_name: bot_name}
+    )
 
     base_opts = [
       method: method,
@@ -167,6 +244,10 @@ defmodule ExGram.Test do
 
     {:ok, _pid} =
       bot_module.start_link(bot_opts)
+
+    ExUnit.Callbacks.on_exit({__MODULE__, bot_name}, fn ->
+      :telemetry.detach(handler_id)
+    end)
 
     {bot_name, module_name}
   end
@@ -413,8 +494,9 @@ defmodule ExGram.Test do
   @doc """
   Push a test update to a bot's dispatcher.
 
-  This simulates an incoming update from Telegram and automatically allows
-  the bot process to access your test's stubs via `allow/2`.
+  Simulates an incoming update from Telegram. The bot's processes are already
+  allowed to use the test's stubs from `start_bot/3`, so no additional `allow/2`
+  call is needed before calling this function.
 
   When the bot was started with `handler_mode: :sync` (the default from `start_bot/3`),
   this call blocks until the bot's handler has fully executed, including all API calls.
@@ -448,4 +530,9 @@ defmodule ExGram.Test do
 
   """
   defdelegate push_update(bot_name, update), to: ExGram.Updates.Test
+
+  def unique_name_from_context(prefix, context) do
+    base = context.test |> Atom.to_string() |> String.replace(~r/[^a-z0-9]/i, "_")
+    String.to_atom("#{prefix}_#{base}_#{System.unique_integer([:positive])}")
+  end
 end

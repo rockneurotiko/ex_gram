@@ -15,6 +15,10 @@ defmodule ExGram.Telemetry do
       :telemetry.attach_many(
         "my-app-ex-gram-handler",
         [
+          [:ex_gram, :bot, :init],
+          [:ex_gram, :bot, :shutdown],
+          [:ex_gram, :updates, :init],
+          [:ex_gram, :updates, :shutdown],
           [:ex_gram, :request, :start],
           [:ex_gram, :request, :stop],
           [:ex_gram, :request, :exception],
@@ -200,6 +204,83 @@ defmodule ExGram.Telemetry do
   | `:kind` | atom | `:error`, `:exit`, or `:throw` |
   | `:reason` | term | The exception or reason |
   | `:stacktrace` | list | Stacktrace |
+
+  ---
+
+  ### `[:ex_gram, :bot, :init]`
+
+  Emitted once when the bot dispatcher initializes and is ready to process
+  updates. This fires after `handle_continue(:initialize_bot, ...)` completes.
+
+  #### measurements
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:system_time` | integer | `System.system_time/0` at the time of the event |
+
+  #### metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+
+  ---
+
+  ### `[:ex_gram, :bot, :shutdown]`
+
+  Emitted once when the bot dispatcher is shutting down (e.g. the supervisor
+  stops the process).
+
+  #### measurements
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:system_time` | integer | `System.system_time/0` at the time of the event |
+
+  #### metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+
+  ---
+
+  ### `[:ex_gram, :updates, :init]`
+
+  Emitted once when an updates worker (polling, webhook, noup, or test) starts
+  and is ready to receive or fetch updates.
+
+  #### measurements
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:system_time` | integer | `System.system_time/0` at the time of the event |
+
+  #### metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+  | `:method` | atom | Updates method - `:polling`, `:webhook`, `:noup`, or `:test` |
+
+  ---
+
+  ### `[:ex_gram, :updates, :shutdown]`
+
+  Emitted once when an updates worker shuts down.
+
+  #### measurements
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:system_time` | integer | `System.system_time/0` at the time of the event |
+
+  #### metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+  | `:method` | atom | Updates method - `:polling`, `:webhook`, `:noup`, or `:test` |
   """
 
   @doc false
@@ -253,5 +334,11 @@ defmodule ExGram.Telemetry do
   @doc false
   def span(event, start_metadata, fun) do
     :telemetry.span([:ex_gram | List.wrap(event)], start_metadata, fun)
+  end
+
+  @doc false
+  def emit(event, meta \\ %{}) do
+    measurements = %{system_time: System.system_time()}
+    :telemetry.execute([:ex_gram | List.wrap(event)], measurements, meta)
   end
 end

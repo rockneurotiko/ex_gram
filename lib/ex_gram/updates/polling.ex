@@ -25,6 +25,8 @@ defmodule ExGram.Updates.Polling do
   end
 
   def init({:ok, bot, token, opts}) do
+    Process.flag(:trap_exit, true)
+    ExGram.Telemetry.emit([:updates, :init], %{bot: bot, method: :polling})
     opts = :ex_gram |> ExGram.Config.get(:polling, []) |> Keyword.merge(Keyword.new(opts))
 
     if Keyword.get(opts, :delete_webhook, true) do
@@ -34,6 +36,10 @@ defmodule ExGram.Updates.Polling do
 
     Process.send_after(self(), {:fetch, :update_id}, @polling_timeout)
     {:ok, {bot, token, -1, opts}}
+  end
+
+  def terminate(_reason, {bot, _token, _uid, _opts}) do
+    ExGram.Telemetry.emit([:updates, :shutdown], %{bot: bot, method: :polling})
   end
 
   def handle_cast({:fetch, :update_id} = m, state), do: handle_info(m, state)

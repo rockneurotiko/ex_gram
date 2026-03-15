@@ -102,19 +102,53 @@ ExUnit.start()
 ```
 
 
+### `use ExGram.Test`
+
+The recommended way to set up your test module is with `use ExGram.Test`. Adding it to your module registers a `setup` callback that runs before each test and does two things automatically:
+
+1. **`set_from_context/1`** - Activates per-process isolation (`:private` mode) when `async: true`, or global mode when `async: false`. This makes stubs and expectations visible only to the owning test process in async tests.
+2. **`verify_on_exit!/1`** - Registers an `on_exit` callback that verifies all expectations were consumed and no unexpected calls were made when the test exits.
+
+```elixir
+defmodule MyApp.BotTest do
+  use ExUnit.Case, async: true
+  use ExGram.Test  # sets up set_from_context and verify_on_exit! automatically
+
+  # ...
+end
+```
+
+**Options** (both default to `true`):
+
+| Option | Default | Description |
+|---|---|---|
+| `:set_from_context` | `true` | Setup `set_from_context/1` |
+| `:verify_on_exit` | `true` | Setup `verify_on_exit!/1` |
+
+You can disable either if you need manual control:
+
+```elixir
+# Only auto-verify, skip set_from_context (e.g. you call it manually)
+use ExGram.Test, set_from_context: false
+
+# Only set_from_context, skip auto-verify (e.g. you call verify! manually)
+use ExGram.Test, verify_on_exit: false
+```
+
 ### A Minimal Test
 
-Here's a complete working test to test your Bot's logic asynchronous and isolated.
+Here's a complete working test to test your Bot's logic asynchronously and in isolation.
 
 ```elixir
 defmodule MyApp.NotificationsTest do
   use ExUnit.Case, async: true
-  
-  setup {ExGram.Test, :verify_on_exit!}
+  use ExGram.Test
   
   describe "handle start command" do
     setup context do
-      # Start an isolated instance of your bot with an unique name
+      # Start an isolated instance of your bot with a unique name.
+      # The bot's Dispatcher and Updates worker are automatically allowed to use
+      # this test's stubs - no manual allow/2 call needed.
       {bot_name, _} = ExGram.Test.start_bot(context, MyApp.Bot)
         
       {:ok, bot_name: bot_name}
@@ -129,7 +163,8 @@ defmodule MyApp.NotificationsTest do
       end)
 
       update = build_command_update("/start")
-      # push_update is synchronous by default - when it returns the handler has already run
+      # Using start_bot by default your bot will be in "sync" mode
+      # after push_update returns the handler has already run
       ExGram.Test.push_update(bot_name, update)
     end
   end
@@ -156,8 +191,7 @@ For testing modules (for example, business logic modules) that just do calls wit
 ```elixir
 defmodule MyApp.NotificationsTest do
   use ExUnit.Case, async: true
-  
-  setup {ExGram.Test, :verify_on_exit!}
+  use ExGram.Test
 
   test "sends notification message" do
     # Stub the API response
@@ -547,7 +581,7 @@ end
 
 ### How It Works
 
-The test adapter uses [NimbleOwnership](https://hexdocs.pm/nimble_ownership) to provide per-process isolation. Each test process that calls `stub/2` or `expect/2` becomes an "owner" of its own stubs, expectations, and call recordings.
+    The test adapter uses [NimbleOwnership](https://hexdocs.pm/nimble_ownership) to provide per-process isolation. Each test process that calls `ExGram.Test.stub/2` or `ExGram.Test.expect/2` becomes an "owner" of its own stubs, expectations, and call recordings.
 
 This is why `async: true` works - each test has completely isolated state:
 
@@ -631,8 +665,12 @@ If you absolutely cannot use `async: true`, you can use global mode where all pr
 ```elixir
 defmodule MyApp.SyncTest do
   use ExUnit.Case, async: false  # Must be false
+  
+  # This will automatically set global mode if async is false
+  use ExGram.Test
 
-  setup {ExGram.Test, :set_global}
+  # Or, you can do it exlicitly with:
+  # setup {ExGram.Test, :set_global}
 
   test "uses global mode" do
     # All processes see the same stubs now
@@ -690,7 +728,8 @@ test "bot responds to /start command", context do
 end
 ```
 
-**Notice:** `push_update/2` automatically calls `allow/2` for you, so the bot process has access to your stubs.
+> #### Note {: .info }
+> `ExGram.Test.start_bot/3` automatically calls `ExGram.Test.allow/2` for the bot's Dispatcher and Updates worker processes, so they have access to your expects and stubs from the moment the bot starts.
 
 ### Handler Mode
 
@@ -772,10 +811,9 @@ Here's a complete example showing bot testing, with isolated bots started on eve
 ```elixir
 defmodule MyApp.BotTest do
   use ExUnit.Case, async: true
+  use ExGram.Test  # sets up verify_on_exit! and set_from_context automatically
 
   alias ExGram.Model.{Update, Message, User, Chat, CallbackQuery}
-
-  setup {ExGram.Test, :verify_on_exit!}
 
   # Each test starts its own isolated bot instance with handler_mode: :sync (the default).
   # push_update/2 blocks until the handler has fully run, so no sleeps or polling needed.
@@ -864,37 +902,16 @@ end
 
 ### Testing the initial calls
 
-Up until now, we skipped the initial `get_me` call and the set commands calls, they are executed on bot's startup, so it's cumbersome to setup it up in every test.
+Up until now, we skipped the initial `get_me` call and the setup commands calls, because `ExGram.Test.start_bot/3` sets `username: "testbot"` and `setup_commands: false`. If you want to test that your bot registers its commands correctly on startup, you can opt in to those calls.
 
-I recommend to not bother testing this, but if you want to test it anyway, this is how you do it:
+The trick is:
 
-(You can also find a working test like this in `test/ex_gram/bot_test.exs` called `"Register commands on startup"`)
+1. Pass `username: nil` so the bot calls `get_me` to fetch its username.
+2. Pass `setup_commands: true` so the bot registers commands.
+3. Set up `:get_me` and/or `:set_my_commands` expectations before calling `ExGram.Test.start_bot/3`.
+4. Start your bot with `ExGram.Test.start_bot/3`
 
-- First, in your bot's `init/1` callback, you have to notify the test that you are starting, so the test can allow the bot's PID to use the mocks, and it has to wait:
-
-```elixir
-# lib/my_app/bot.ex
-defmodule MyApp.Bot do
-  use ExGram.Bot, name: :my_bot
-  
-  # .....
-  
-  def init(opts) do
-    if opts[:extra_info][:test_init] do
-        test_pid = opts[:extra_info][:test_pid]
-        send(test_pid, :init)
-        
-        receive do
-            :continue -> :ok
-        end
-    end
-  end
-  
-  # .....
-end
-```
-
-- Then, in your test, you need to start the bot passing that extra information, waiting for the `:init` and allowing the process:
+(You can also find a working example in `test/ex_gram/bot_test.exs`, test `"Register commands on startup"`)
 
 ```elixir
 # test/my_app/bot_test.exs
@@ -913,7 +930,8 @@ test "Register commands on startup", context do
     {:ok, true}
   end)
 
-  # There can be more than one command depending on the scopes/languages
+  # There can be more than one set_my_commands call depending on scopes/languages.
+  # The last one sends a message to the test so we know initialization finished.
   ExGram.Test.expect(:set_my_commands, fn body ->
     assert body[:scope] == %{type: "default"}
     assert body[:language_code] == "es"
@@ -921,39 +939,17 @@ test "Register commands on startup", context do
     assert Enum.any?(body[:commands], fn cmd -> cmd[:command] == "start" end)
     assert Enum.any?(body[:commands], fn cmd -> cmd[:command] == "ayuda" end)
 
-    # Final message to the test, to know we are done with the initialization
     send(test_pid, :commands_set)
     {:ok, true}
   end)
 
-  # Important here! We send `username: nil` to do the initial `get_me` and `setup_commands: true` to setup on start
-  # We also use the extra_info to pass :test_init, so the bot knows it has to do the test workflow
-  # The test_pid is already injected by the `ExGram.Test.start_bot/3` method
-  bot_opts = [username: nil, setup_commands: true, extra_info: %{test_init: true}]
-  {bot_name, _} = ExGram.Test.start_bot(context, SetupCommandBot, bot_opts)
+  # username: nil triggers get_me; setup_commands: true registers commands on start.
+  # start_bot/3 automatically allows the bot processes to use your stubs.
+  ExGram.Test.start_bot(context, SetupCommandBot, username: nil, setup_commands: true)
 
-  # Allow the bot to access the `ExGram.Test` mocks
-  # In normal tests you don't need this, because when you do a `ExGram.Test.push_update/2`
-  # it's done automatically, but since this is on startup we have to manually allow it
-  
-  allow_dispatcher(bot_name)
-  
-  # Let the initialization continue
-  send(Process.whereis(bot_name), :continue)
-
-  # We now finished the initialization with the last set commands
+  # We wait until this message sent from the expect, because the get_me and set_my_commands
+  # are executed after initialization, so we need to wait until the expects are called
   assert_receive :commands_set, 1000
-  
-  # Now the bot is fully initialize!
-end
-
-defp allow_dispatcher(bot_name) do
-    receive do
-      :init ->
-        if pid = Process.whereis(bot_name) do
-          ExGram.Test.allow(self(), pid)
-        end
-    end
 end
 ```
 

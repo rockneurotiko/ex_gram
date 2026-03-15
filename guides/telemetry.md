@@ -10,13 +10,19 @@ the `:telemetry` protocol - including Prometheus (via
 
 | Event | Description |
 |---|---|
+| `[:ex_gram, :bot, :init]` | Bot dispatcher initialized and ready |
+| `[:ex_gram, :bot, :shutdown]` | Bot dispatcher shutting down |
+| `[:ex_gram, :updates, :init]` | Updates worker started (polling, webhook, noup, test) |
+| `[:ex_gram, :updates, :shutdown]` | Updates worker shutting down |
 | `[:ex_gram, :request, :start\|:stop\|:exception]` | Outbound Telegram API call |
 | `[:ex_gram, :update, :start\|:stop\|:exception]` | Incoming update dispatched to the bot |
 | `[:ex_gram, :handler, :start\|:stop\|:exception]` | Your `handle/2` callback invocation |
 | `[:ex_gram, :middleware, :start\|:stop\|:exception]` | Each middleware in the pipeline |
 | `[:ex_gram, :polling, :start\|:stop\|:exception]` | One polling cycle (fetch + dispatch) |
 
-All durations are in `:native` time units. Convert to milliseconds with:
+The lifecycle events (`[:ex_gram, :bot, ...]` and `[:ex_gram, :updates, ...]`) are
+point-in-time and carry a `system_time` measurement. All other events are spans
+and carry `duration` in `:native` time units. Convert to milliseconds with:
 
 ```elixir
 System.convert_time_unit(duration, :native, :millisecond)
@@ -38,6 +44,10 @@ defmodule MyApp.Telemetry do
     :telemetry.attach_many(
       "my-app-ex-gram",
       [
+        [:ex_gram, :bot, :init],
+        [:ex_gram, :bot, :shutdown],
+        [:ex_gram, :updates, :init],
+        [:ex_gram, :updates, :shutdown],
         [:ex_gram, :request, :start],
         [:ex_gram, :request, :stop],
         [:ex_gram, :request, :exception],
@@ -64,6 +74,29 @@ end
 
 Call `MyApp.Telemetry.setup/0` in your `Application.start/2` before starting
 your supervision tree.
+
+## Tracking bot and updates lifecycle
+
+The `:init` and `:shutdown` events let you log when bots and their updates
+workers come up or go down - useful for auditing restarts in production:
+
+```elixir
+def handle_event([:ex_gram, :bot, :init], _measurements, metadata, _) do
+  Logger.info("[ExGram] bot started bot=#{metadata.bot}")
+end
+
+def handle_event([:ex_gram, :bot, :shutdown], _measurements, metadata, _) do
+  Logger.warning("[ExGram] bot stopping bot=#{metadata.bot}")
+end
+
+def handle_event([:ex_gram, :updates, :init], _measurements, metadata, _) do
+  Logger.info("[ExGram] updates worker started bot=#{metadata.bot} method=#{metadata.method}")
+end
+
+def handle_event([:ex_gram, :updates, :shutdown], _measurements, metadata, _) do
+  Logger.warning("[ExGram] updates worker stopping bot=#{metadata.bot} method=#{metadata.method}")
+end
+```
 
 ## Logging API requests
 
@@ -139,6 +172,14 @@ defmodule MyApp.Telemetry do
 
   def metrics do
     [
+      # Count bot starts and stops
+      counter("ex_gram.bot.init.count", tags: [:bot]),
+      counter("ex_gram.bot.shutdown.count", tags: [:bot]),
+
+      # Count updates worker starts and stops
+      counter("ex_gram.updates.init.count", tags: [:bot, :method]),
+      counter("ex_gram.updates.shutdown.count", tags: [:bot, :method]),
+
       # Count every API call
       counter("ex_gram.request.stop.count",
         tags: [:method, :bot]

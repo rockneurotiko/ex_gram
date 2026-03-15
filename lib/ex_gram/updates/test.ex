@@ -48,14 +48,18 @@ defmodule ExGram.Updates.Test do
   end
 
   def init({:ok, pid, token}) do
-    {:ok, %__MODULE__{pid: pid, token: token}}
+    Process.flag(:trap_exit, true)
+    ExGram.Telemetry.emit([:updates, :init], %{bot: pid, method: :test})
+    state = %__MODULE__{pid: pid, token: token}
+    {:ok, state}
+  end
+
+  def terminate(_reason, %__MODULE__{pid: pid}) do
+    ExGram.Telemetry.emit([:updates, :shutdown], %{bot: pid, method: :test})
   end
 
   @doc """
   Push an update through the bot's `ExGram.Dispatcher` pipeline.
-
-  Automatically allows the Dispatcher process to use the caller's test adapter stubs
-  via [NimbleOwnership](https://hexdocs.pm/nimble_ownership).
 
   The update is delivered via `GenServer.call/2`, so the dispatcher always receives it
   synchronously. Whether this call blocks until the handler finishes depends on the
@@ -66,6 +70,10 @@ defmodule ExGram.Updates.Test do
       pipeline has executed and all API calls have been made.
     * `:async` - the handler is spawned in a separate process; this function returns as
       soon as the dispatcher has enqueued the update.
+
+  Process isolation is handled automatically by `ExGram.Test.start_bot/3`, which allows
+  the Dispatcher and Updates worker to use the test's stubs from startup. No manual
+  `allow/2` call is needed before calling this function.
 
   ## Parameters
 
@@ -83,12 +91,6 @@ defmodule ExGram.Updates.Test do
       ExGram.Updates.Test.push_update(:my_bot, update)
   """
   def push_update(bot_name, %ExGram.Model.Update{} = update) do
-    # Allow the Dispatcher process to access caller's adapter stubs.
-    # The Dispatcher is registered under bot_name.
-    if pid = Process.whereis(bot_name) do
-      ExGram.Adapter.Test.allow(self(), pid)
-    end
-
     GenServer.call(bot_name, {:update, update})
   end
 end

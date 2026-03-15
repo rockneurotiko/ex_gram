@@ -3,6 +3,8 @@ defmodule ExGram.TelemetryTest do
 
   import ExGram.TestHelpers
 
+  alias ExGram.Updates.Polling
+
   setup {ExGram.Test, :set_from_context}
   setup {ExGram.Test, :verify_on_exit!}
 
@@ -553,7 +555,7 @@ defmodule ExGram.TelemetryTest do
       ExGram.Test.allow(test_pid, Process.whereis(bot_name))
 
       {:ok, polling_pid} =
-        ExGram.Updates.Polling.start_link(%{
+        Polling.start_link(%{
           bot: bot_name,
           token: "fake-token",
           get_updates_opts: [timeout: 30_000],
@@ -583,6 +585,156 @@ defmodule ExGram.TelemetryTest do
       assert_receive :get_updates_called, 500
 
       Process.exit(polling_pid, :normal)
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Bot lifecycle events
+  # ---------------------------------------------------------------------------
+
+  describe "[:ex_gram, :bot, :init/:shutdown]" do
+    defmodule LifecycleBot do
+      @moduledoc false
+      use ExGram.Bot, name: :telemetry_lifecycle_bot
+
+      def handle(_, context), do: context
+    end
+
+    test "emits init event when bot starts", context do
+      test_pid = self()
+
+      attach_telemetry(test_pid, [[:ex_gram, :bot, :init]])
+
+      {bot_name, _} = ExGram.Test.start_bot(context, LifecycleBot)
+
+      assert_receive {:telemetry, [:ex_gram, :bot, :init], measurements, meta}, 500
+
+      assert is_integer(measurements.system_time)
+      assert meta.bot == bot_name
+    end
+
+    test "emits shutdown event when bot stops", context do
+      test_pid = self()
+
+      attach_telemetry(test_pid, [[:ex_gram, :bot, :shutdown]])
+
+      {bot_name, sup_name} = ExGram.Test.start_bot(context, LifecycleBot)
+
+      Process.exit(Process.whereis(sup_name), :shutdown)
+
+      assert_receive {:telemetry, [:ex_gram, :bot, :shutdown], measurements, meta}, 500
+
+      assert is_integer(measurements.system_time)
+      assert meta.bot == bot_name
+    end
+  end
+
+  # ---------------------------------------------------------------------------
+  # Updates lifecycle events
+  # ---------------------------------------------------------------------------
+
+  describe "[:ex_gram, :updates, :init/:shutdown]" do
+    defmodule UpdatesLifecycleBot do
+      @moduledoc false
+      use ExGram.Bot, name: :telemetry_updates_lifecycle_bot
+
+      def handle(_, context), do: context
+    end
+
+    test "emits init event when updates worker starts", context do
+      test_pid = self()
+
+      attach_telemetry(test_pid, [[:ex_gram, :updates, :init]])
+
+      {bot_name, _} = ExGram.Test.start_bot(context, UpdatesLifecycleBot)
+
+      assert_receive {:telemetry, [:ex_gram, :updates, :init], measurements, meta}, 500
+
+      assert is_integer(measurements.system_time)
+      assert meta.bot == bot_name
+      assert meta.method == :test
+    end
+
+    test "emits shutdown event when updates worker stops", context do
+      test_pid = self()
+
+      attach_telemetry(test_pid, [[:ex_gram, :updates, :shutdown]])
+
+      {bot_name, sup_name} = ExGram.Test.start_bot(context, UpdatesLifecycleBot)
+
+      Process.exit(Process.whereis(sup_name), :shutdown)
+
+      assert_receive {:telemetry, [:ex_gram, :updates, :shutdown], measurements, meta}, 500
+
+      assert is_integer(measurements.system_time)
+      assert meta.bot == bot_name
+      assert meta.method == :test
+    end
+
+    test "emits init event for polling worker", context do
+      test_pid = self()
+
+      {bot_name, _} = ExGram.Test.start_bot(context, UpdatesLifecycleBot)
+
+      ExGram.Test.allow(test_pid, Process.whereis(bot_name))
+
+      ExGram.Test.stub(:get_updates, fn _body ->
+        Process.sleep(:infinity)
+        {:ok, []}
+      end)
+
+      # Attach telemetry after the :test updates worker is already started
+      # to avoid catching its :init event
+      attach_telemetry(test_pid, [[:ex_gram, :updates, :init]])
+
+      {:ok, polling_pid} =
+        Polling.start_link(%{
+          bot: bot_name,
+          token: "fake-token",
+          delete_webhook: false
+        })
+
+      ExGram.Test.allow(self(), polling_pid)
+
+      assert_receive {:telemetry, [:ex_gram, :updates, :init], measurements, meta}, 500
+
+      assert is_integer(measurements.system_time)
+      assert meta.bot == bot_name
+      assert meta.method == :polling
+
+      Process.exit(polling_pid, :normal)
+    end
+
+    test "emits shutdown event for polling worker", context do
+      test_pid = self()
+
+      attach_telemetry(test_pid, [[:ex_gram, :updates, :shutdown]])
+
+      {bot_name, _} = ExGram.Test.start_bot(context, UpdatesLifecycleBot)
+
+      ExGram.Test.allow(test_pid, Process.whereis(bot_name))
+
+      ExGram.Test.stub(:get_updates, fn _body ->
+        Process.sleep(:infinity)
+        {:ok, []}
+      end)
+
+      {:ok, polling_pid} =
+        Polling.start_link(%{
+          bot: bot_name,
+          token: "fake-token",
+          delete_webhook: false
+        })
+
+      ExGram.Test.allow(self(), polling_pid)
+
+      Process.exit(polling_pid, :normal)
+
+      assert_receive {:telemetry, [:ex_gram, :updates, :shutdown], measurements, meta}, 500
+
+      assert is_integer(measurements.system_time)
+      assert meta.bot == bot_name
+      assert meta.method == :polling
     end
   end
 
@@ -646,6 +798,18 @@ defmodule ExGram.TelemetryTest do
       assert meta.kind == :error
       assert %RuntimeError{message: "oops"} = meta.reason
       assert meta.stacktrace == stack
+    end
+
+    test "emit/2 emits a point-in-time event with system_time measurement" do
+      test_pid = self()
+
+      attach_telemetry(test_pid, [[:ex_gram, :bot, :init]])
+
+      ExGram.Telemetry.emit([:bot, :init], %{bot: :my_bot})
+
+      assert_receive {:telemetry, [:ex_gram, :bot, :init], measurements, meta}, 500
+      assert is_integer(measurements.system_time)
+      assert meta.bot == :my_bot
     end
   end
 end

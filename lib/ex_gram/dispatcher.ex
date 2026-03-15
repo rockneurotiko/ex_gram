@@ -36,7 +36,7 @@ defmodule ExGram.Dispatcher do
   alias ExGram.Cnt
   alias ExGram.Model
 
-  @type init_opts() :: [username: String.t() | nil, setup_commands: boolean()]
+  @type init_opts() :: [username: String.t() | nil, setup_commands: boolean(), handler_mode: :sync | :async | nil]
   @type custom_key() :: any()
 
   @type parsed_message() ::
@@ -86,7 +86,13 @@ defmodule ExGram.Dispatcher do
   @spec init_state(atom(), module(), init_opts(), map()) :: t()
   def init_state(name, module, opts, extra_info) when is_atom(name) and is_atom(module) do
     bot_info = if username = opts[:username], do: %Model.User{username: username, is_bot: true}
-    handler_mode = opts[:handler_mode] || :async
+
+    handler_mode =
+      case Keyword.get(opts, :handler_mode, :async) do
+        :async -> :async
+        :sync -> :sync
+        other -> raise ArgumentError, "Invalid handler_mode: #{inspect(other)}. Expected :async or :sync."
+      end
 
     %__MODULE__{
       name: name,
@@ -131,6 +137,8 @@ defmodule ExGram.Dispatcher do
 
   @impl GenServer
   def init(%__MODULE__{} = state) do
+    Process.flag(:trap_exit, true)
+    ExGram.Telemetry.emit([:bot, :init], %{bot: state.name})
     {:ok, state, {:continue, :initialize_bot}}
   end
 
@@ -146,6 +154,11 @@ defmodule ExGram.Dispatcher do
     if state.init_opts[:setup_commands], do: Bot.SetupCommands.setup(state.bot_module.commands(), token)
 
     {:noreply, %{state | bot_info: bot_info}}
+  end
+
+  @impl GenServer
+  def terminate(_reason, %__MODULE__{} = state) do
+    ExGram.Telemetry.emit([:bot, :shutdown], %{bot: state.name})
   end
 
   defp get_bot_info(%__MODULE__{bot_info: %Model.User{} = bot_info}, _token), do: bot_info
