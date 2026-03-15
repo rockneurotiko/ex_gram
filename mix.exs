@@ -16,7 +16,7 @@ defmodule ExGram.Mixfile do
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      dialyzer: [plt_add_apps: [:mix, :eex]],
+      dialyzer: dialyzer(),
       xref: [exclude: [EEx]],
       docs: docs()
     ]
@@ -28,6 +28,13 @@ defmodule ExGram.Mixfile do
   def application do
     # Don't need to write all applications thanks of new feature on elixir 1.4
     [extra_applications: [:logger]]
+  end
+
+  defp dialyzer do
+    [
+      plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
+      plt_add_apps: [:iex, :mix, :eex]
+    ]
   end
 
   defp description do
@@ -61,6 +68,8 @@ defmodule ExGram.Mixfile do
       {:plug, "~> 1.14", optional: true},
       # For Markdown to MessageEntity convert
       {:mdex, "~> 0.11", optional: true},
+      # Telemetry
+      {:telemetry, "~> 0.4.3 or ~> 1.0"},
       # Test adapter uses NimbleOwnership for per-process isolation
       {:nimble_ownership, "~> 1.0"},
       # Development
@@ -108,7 +117,7 @@ defmodule ExGram.Mixfile do
     [
       Cheatsheet: "guides/cheatsheet.md",
       Basic: ~r/guides\/(installation|getting-started|handling-updates|commands|sending-messages)\.md/,
-      Intermediate: ~r/guides\/(polling-and-webhooks|message-entities|middlewares|low-level-api)\.md/,
+      Intermediate: ~r/guides\/(polling-and-webhooks|message-entities|middlewares|low-level-api|telemetry)\.md/,
       Advanced: ~r/guides\/(multiple-bots|flyio|)\.md/,
       Testing: "guides/testing.md",
       "Other Guides": ~r/guides\/.*/

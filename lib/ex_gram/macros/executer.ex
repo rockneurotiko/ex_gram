@@ -39,12 +39,35 @@ defmodule ExGram.Macros.Executer do
 
       adapter_opts = Keyword.get(ops, :adapter_opts, [])
 
-      case adapter.request(verb, path, body, adapter_opts) do
-        {:ok, body} ->
-          process_result(body, returned_type)
+      meta = %{
+        method: name,
+        request_type: verb,
+        body: body,
+        bot: Keyword.get(ops, :bot)
+      }
 
-        {:error, error} ->
-          {:error, error}
+      start_time = ExGram.Telemetry.start(:request, meta)
+
+      try do
+        result =
+          case adapter.request(verb, path, body, adapter_opts) do
+            {:ok, body} ->
+              process_result(body, returned_type)
+
+            {:error, error} ->
+              {:error, error}
+          end
+
+        ExGram.Telemetry.stop(:request, start_time, Map.put(meta, :result, result))
+        result
+      rescue
+        e ->
+          ExGram.Telemetry.exception(:request, start_time, :error, e, __STACKTRACE__, meta)
+          reraise e, __STACKTRACE__
+      catch
+        kind, reason ->
+          ExGram.Telemetry.exception(:request, start_time, kind, reason, __STACKTRACE__, meta)
+          :erlang.raise(kind, reason, __STACKTRACE__)
       end
     else
       {:token, _} ->

@@ -19,12 +19,14 @@ defmodule ExGram.Updates.Polling do
 
   @polling_timeout 100
 
-  def start_link(%{bot: pid, token: token} = opts) do
+  def start_link(%{bot: bot, token: token} = opts) do
     opts = Map.drop(opts, [:bot, :token])
-    GenServer.start_link(__MODULE__, {:ok, pid, token, opts})
+    GenServer.start_link(__MODULE__, {:ok, bot, token, opts})
   end
 
-  def init({:ok, pid, token, opts}) do
+  def init({:ok, bot, token, opts}) do
+    Process.flag(:trap_exit, true)
+    start_time = ExGram.Telemetry.start([:updates, :init], %{bot: bot, method: :polling})
     opts = :ex_gram |> ExGram.Config.get(:polling, []) |> Keyword.merge(Keyword.new(opts))
 
     if Keyword.get(opts, :delete_webhook, true) do
@@ -33,20 +35,40 @@ defmodule ExGram.Updates.Polling do
     end
 
     Process.send_after(self(), {:fetch, :update_id}, @polling_timeout)
-    {:ok, {pid, token, -1, opts}}
+    ExGram.Telemetry.stop([:updates, :init], start_time, %{bot: bot, method: :polling})
+    {:ok, {bot, token, -1, opts}}
+  end
+
+  def terminate(_reason, {bot, _token, _uid, _opts}) do
+    ExGram.Telemetry.emit([:updates, :shutdown], %{bot: bot, method: :polling})
   end
 
   def handle_cast({:fetch, :update_id} = m, state), do: handle_info(m, state)
 
   def handle_info(:timeout, state), do: handle_info({:fetch, :update_id}, state)
 
-  def handle_info({:fetch, :update_id}, {pid, token, uid, opts}) do
-    updates = get_updates(token, uid, opts)
-    send_updates(updates, pid)
+  def handle_info({:fetch, :update_id}, {bot, token, uid, opts}) do
+    start_meta = %{bot: bot}
+    start_time = ExGram.Telemetry.start(:polling, start_meta)
 
-    nid = next_pid(uid, updates)
+    try do
+      updates = get_updates(token, uid, opts)
+      send_updates(updates, bot)
 
-    {:noreply, {pid, token, nid, opts}, @polling_timeout}
+      nid = next_pid(uid, updates)
+
+      ExGram.Telemetry.stop(:polling, start_time, %{bot: bot, updates_count: length(updates)})
+
+      {:noreply, {bot, token, nid, opts}, @polling_timeout}
+    rescue
+      e ->
+        ExGram.Telemetry.exception(:polling, start_time, :error, e, __STACKTRACE__, start_meta)
+        reraise e, __STACKTRACE__
+    catch
+      kind, reason ->
+        ExGram.Telemetry.exception(:polling, start_time, kind, reason, __STACKTRACE__, start_meta)
+        :erlang.raise(kind, reason, __STACKTRACE__)
+    end
   end
 
   def handle_info(unknown_message, state) do
@@ -75,8 +97,8 @@ defmodule ExGram.Updates.Polling do
     end
   end
 
-  defp send_updates(updates, pid) do
-    Enum.map(updates, &GenServer.call(pid, {:update, &1}))
+  defp send_updates(updates, bot) do
+    Enum.map(updates, &GenServer.call(bot, {:update, &1}))
   end
 
   defp next_pid(actual, []), do: actual

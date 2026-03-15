@@ -1,19 +1,8 @@
 defmodule ExGram.BotTest do
   use ExUnit.Case, async: true
+  use ExGram.Test
 
   import ExGram.TestHelpers
-
-  setup {ExGram.Test, :set_from_context}
-  setup {ExGram.Test, :verify_on_exit!}
-
-  defp allow_dispatcher(bot_name) do
-    receive do
-      :init ->
-        if pid = Process.whereis(bot_name) do
-          ExGram.Test.allow(self(), pid)
-        end
-    end
-  end
 
   # --- Command Handling ---
 
@@ -24,15 +13,6 @@ defmodule ExGram.BotTest do
 
       command("start", description: "Start the bot")
       command("help", description: "Get help information", lang: [es: [command: "ayuda"]])
-
-      def init(opts) do
-        test_pid = opts[:extra_info][:test_pid]
-        send(test_pid, :init)
-
-        receive do
-          :continue -> :ok
-        end
-      end
     end
 
     test "Register commands on startup", context do
@@ -60,10 +40,7 @@ defmodule ExGram.BotTest do
         {:ok, true}
       end)
 
-      {bot_name, _} = ExGram.Test.start_bot(context, SetupCommandBot, username: nil, setup_commands: true)
-
-      allow_dispatcher(bot_name)
-      send(Process.whereis(bot_name), :continue)
+      ExGram.Test.start_bot(context, SetupCommandBot, username: nil, setup_commands: true)
 
       assert_receive :commands_set, 1000
     end

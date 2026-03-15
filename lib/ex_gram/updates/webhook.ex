@@ -32,7 +32,7 @@ defmodule ExGram.Updates.Webhook do
     |> GenServer.cast({:update, update})
   end
 
-  def start_link(%{bot: pid, token: token} = opts) do
+  def start_link(%{bot: bot, token: token} = opts) do
     opts = Map.drop(opts, [:bot, :token])
 
     name =
@@ -40,18 +40,26 @@ defmodule ExGram.Updates.Webhook do
       |> token_hash()
       |> process_name()
 
-    GenServer.start_link(__MODULE__, {:ok, pid, token, opts}, name: name)
+    GenServer.start_link(__MODULE__, {:ok, bot, token, opts}, name: name)
   end
 
-  def init({:ok, pid, token, opts}) do
-    set_webhook(token, opts)
-    state = %{pid: pid}
+  def init({:ok, bot, token, opts}) do
+    Process.flag(:trap_exit, true)
+    start_time = ExGram.Telemetry.start([:updates, :init], %{bot: bot, method: :webhook})
 
+    set_webhook(token, opts)
+    state = %{bot: bot}
+
+    ExGram.Telemetry.stop([:updates, :init], start_time, %{bot: bot, method: :webhook})
     {:ok, state}
   end
 
-  def handle_cast({:update, update}, %{pid: pid} = state) do
-    GenServer.call(pid, {:update, update})
+  def terminate(_reason, %{bot: bot}) do
+    ExGram.Telemetry.emit([:updates, :shutdown], %{bot: bot, method: :webhook})
+  end
+
+  def handle_cast({:update, update}, %{bot: bot} = state) do
+    GenServer.call(bot, {:update, update})
 
     {:noreply, state}
   end

@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Add :telemetry integration
+- Improve testing capabilities using :telemetry to automatically call ExGram.Test.allow on the bot's dispatcher and updates
 
 ## [0.61.0]
 - Keyboards detect row of rows and unwraps them, allowing for dynamic building of rows

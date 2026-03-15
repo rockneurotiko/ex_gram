@@ -5,27 +5,37 @@ defmodule ExGram.Adapter.Test do
   Supports both private mode (per-process stubs for async tests) and global mode
   (shared stubs for synchronous tests).
 
+  This module implements the low-level adapter. In tests you typically interact
+  with it through `ExGram.Test`, which provides a cleaner interface and handles
+  process isolation automatically via `start_bot/3`.
+
   ## Usage
 
-      # In test_helper.exs or application
+      # In test_helper.exs or application supervision tree
       ExGram.Adapter.Test.start_link()
 
-      # In your test
-      setup {ExGram.Test, :verify_on_exit!}
+      # In your test module - use ExGram.Test for the full setup
+      defmodule MyBotTest do
+        use ExUnit.Case, async: true
+        use ExGram.Test   # sets up verify_on_exit! and set_from_context automatically
 
-      test "my test" do
-        ExGram.Adapter.Test.stub(:get_me, %{id: 123, is_bot: true})
-        ExGram.Adapter.Test.expect(:send_message, fn body ->
-          assert body[:text] == "value"
-          {:ok, %{message_id: 1}}
-        end)
+        setup context do
+          {bot_name, _} = ExGram.Test.start_bot(context, MyApp.Bot)
+          {:ok, bot_name: bot_name}
+        end
 
-        # Make API calls
-        ExGram.send_message(123, "Hello")
+        test "my test", %{bot_name: bot_name} do
+          ExGram.Test.expect(:send_message, fn body ->
+            assert body[:text] == "value"
+            {:ok, %{message_id: 1}}
+          end)
 
-        # You can get the calls if you want
-        calls = ExGram.Adapter.Test.get_calls()
-        # calls = [{:post, :send_message, %{"chat_id" => 123, ...}}]
+          ExGram.Test.push_update(bot_name, update)
+
+          # You can inspect calls after the fact
+          calls = ExGram.Test.get_calls()
+          # calls = [{:post, :send_message, %{chat_id: 123, ...}}]
+        end
       end
 
   You can learn more in the [testing guide](https://hexdocs.pm/ex_gram/testing.html)
@@ -33,7 +43,7 @@ defmodule ExGram.Adapter.Test do
   ## API Methods
 
   All stub and expect functions accept action atoms (`:send_message`) that match the names of the
-  ExGram functions (ExGram.get_me -> :get_me)
+  ExGram functions (`ExGram.get_me` -> `:get_me`).
   """
 
   @behaviour ExGram.Adapter
@@ -326,6 +336,26 @@ defmodule ExGram.Adapter.Test do
   """
   def allow(owner_pid, allowed_pid) do
     NimbleOwnership.allow(@ownership_server, owner_pid, allowed_pid, @ownership_key)
+  end
+
+  @doc false
+  def ensure_owner(pid \\ self()) do
+    case get_and_update(
+           pid,
+           fn
+             nil -> {nil, %__MODULE__{}}
+             existing -> {existing, existing}
+           end
+         ) do
+      {:ok, _} ->
+        :ok
+
+      {:error, %NimbleOwnership.Error{reason: {:not_shared_owner, actual_owner_pid}}} ->
+        ensure_owner(actual_owner_pid)
+
+      {:error, %NimbleOwnership.Error{}} ->
+        raise "Failed to ensure ownership for #{format_process()}"
+    end
   end
 
   @doc """
