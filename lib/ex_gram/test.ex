@@ -158,6 +158,9 @@ defmodule ExGram.Test do
     end
   end
 
+  # We need to ignore warnings because ExUnit is not loaded
+  @dialyzer {:nowarn_function, start_bot: 2, start_bot: 3}
+
   @doc """
   Start an isolated bot instance for a test.
 
