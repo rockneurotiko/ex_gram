@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.62.0]
 - Add :telemetry integration
 - Improve testing capabilities using :telemetry to automatically call ExGram.Test.allow on the bot's dispatcher and updates
 
