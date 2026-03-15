@@ -16,7 +16,7 @@ defmodule ExGram.Mixfile do
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      dialyzer: [plt_add_apps: [:mix, :eex]],
+      dialyzer: dialyzer(),
       xref: [exclude: [EEx]],
       docs: docs()
     ]
@@ -28,6 +28,13 @@ defmodule ExGram.Mixfile do
   def application do
     # Don't need to write all applications thanks of new feature on elixir 1.4
     [extra_applications: [:logger]]
+  end
+
+  defp dialyzer do
+    [
+      plt_file: {:no_warn, "priv/plts/dialyzer.plt"},
+      plt_add_apps: [:iex, :mix, :eex]
+    ]
   end
 
   defp description do
