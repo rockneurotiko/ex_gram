@@ -584,7 +584,7 @@ defmodule ExGram.TelemetryTest do
 
       assert_receive :get_updates_called, 500
 
-      Process.exit(polling_pid, :normal)
+      Process.exit(polling_pid, :shutdown)
     end
   end
 
@@ -600,16 +600,31 @@ defmodule ExGram.TelemetryTest do
       def handle(_, context), do: context
     end
 
-    test "emits init event when bot starts", context do
+    test "emits init :start event when bot starts", context do
       test_pid = self()
 
-      attach_telemetry(test_pid, [[:ex_gram, :bot, :init]])
+      attach_telemetry(test_pid, [[:ex_gram, :bot, :init, :start]])
 
       {bot_name, _} = ExGram.Test.start_bot(context, LifecycleBot)
 
-      assert_receive {:telemetry, [:ex_gram, :bot, :init], measurements, meta}, 500
+      assert_receive {:telemetry, [:ex_gram, :bot, :init, :start], measurements, meta}, 500
 
       assert is_integer(measurements.system_time)
+      assert is_integer(measurements.monotonic_time)
+      assert meta.bot == bot_name
+    end
+
+    test "emits init :stop event when bot finishes initializing", context do
+      test_pid = self()
+
+      attach_telemetry(test_pid, [[:ex_gram, :bot, :init, :stop]])
+
+      {bot_name, _} = ExGram.Test.start_bot(context, LifecycleBot)
+
+      assert_receive {:telemetry, [:ex_gram, :bot, :init, :stop], measurements, meta}, 500
+
+      assert is_integer(measurements.duration)
+      assert measurements.duration >= 0
       assert meta.bot == bot_name
     end
 
@@ -641,16 +656,32 @@ defmodule ExGram.TelemetryTest do
       def handle(_, context), do: context
     end
 
-    test "emits init event when updates worker starts", context do
+    test "emits init :start event when updates worker starts", context do
       test_pid = self()
 
-      attach_telemetry(test_pid, [[:ex_gram, :updates, :init]])
+      attach_telemetry(test_pid, [[:ex_gram, :updates, :init, :start]])
 
       {bot_name, _} = ExGram.Test.start_bot(context, UpdatesLifecycleBot)
 
-      assert_receive {:telemetry, [:ex_gram, :updates, :init], measurements, meta}, 500
+      assert_receive {:telemetry, [:ex_gram, :updates, :init, :start], measurements, meta}, 500
 
       assert is_integer(measurements.system_time)
+      assert is_integer(measurements.monotonic_time)
+      assert meta.bot == bot_name
+      assert meta.method == :test
+    end
+
+    test "emits init :stop event when updates worker finishes initializing", context do
+      test_pid = self()
+
+      attach_telemetry(test_pid, [[:ex_gram, :updates, :init, :stop]])
+
+      {bot_name, _} = ExGram.Test.start_bot(context, UpdatesLifecycleBot)
+
+      assert_receive {:telemetry, [:ex_gram, :updates, :init, :stop], measurements, meta}, 500
+
+      assert is_integer(measurements.duration)
+      assert measurements.duration >= 0
       assert meta.bot == bot_name
       assert meta.method == :test
     end
@@ -671,7 +702,7 @@ defmodule ExGram.TelemetryTest do
       assert meta.method == :test
     end
 
-    test "emits init event for polling worker", context do
+    test "emits init :start event for polling worker", context do
       test_pid = self()
 
       {bot_name, _} = ExGram.Test.start_bot(context, UpdatesLifecycleBot)
@@ -685,7 +716,7 @@ defmodule ExGram.TelemetryTest do
 
       # Attach telemetry after the :test updates worker is already started
       # to avoid catching its :init event
-      attach_telemetry(test_pid, [[:ex_gram, :updates, :init]])
+      attach_telemetry(test_pid, [[:ex_gram, :updates, :init, :start]])
 
       {:ok, polling_pid} =
         Polling.start_link(%{
@@ -696,9 +727,10 @@ defmodule ExGram.TelemetryTest do
 
       ExGram.Test.allow(self(), polling_pid)
 
-      assert_receive {:telemetry, [:ex_gram, :updates, :init], measurements, meta}, 500
+      assert_receive {:telemetry, [:ex_gram, :updates, :init, :start], measurements, meta}, 500
 
       assert is_integer(measurements.system_time)
+      assert is_integer(measurements.monotonic_time)
       assert meta.bot == bot_name
       assert meta.method == :polling
 
@@ -803,11 +835,11 @@ defmodule ExGram.TelemetryTest do
     test "emit/2 emits a point-in-time event with system_time measurement" do
       test_pid = self()
 
-      attach_telemetry(test_pid, [[:ex_gram, :bot, :init]])
+      attach_telemetry(test_pid, [[:ex_gram, :bot, :shutdown]])
 
-      ExGram.Telemetry.emit([:bot, :init], %{bot: :my_bot})
+      ExGram.Telemetry.emit([:bot, :shutdown], %{bot: :my_bot})
 
-      assert_receive {:telemetry, [:ex_gram, :bot, :init], measurements, meta}, 500
+      assert_receive {:telemetry, [:ex_gram, :bot, :shutdown], measurements, meta}, 500
       assert is_integer(measurements.system_time)
       assert meta.bot == :my_bot
     end

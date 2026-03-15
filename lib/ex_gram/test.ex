@@ -62,12 +62,12 @@ defmodule ExGram.Test do
   ensures the bot's Dispatcher and Updates worker processes are immediately allowed to
   use the test's stubs, without any manual `allow/2` call.
 
-  This works by subscribing to the `[:ex_gram, :bot, :init]` and `[:ex_gram, :updates, :init]`
-  telemetry events emitted synchronously during process startup. When those events fire,
-  the processes are automatically allowed under the calling test's ownership. The telemetry
-  handler is scoped to the specific `bot_name` so concurrent async tests never cross-allow
-  each other's processes. The handler is detached automatically via `on_exit` when the test
-  exits.
+  This works by subscribing to the `[:ex_gram, :bot, :init, :start]` and
+  `[:ex_gram, :updates, :init, :start]` telemetry events emitted synchronously during process
+  startup. When those events fire, the processes are automatically allowed under the calling
+  test's ownership. The telemetry handler is scoped to the specific `bot_name` so concurrent
+  async tests never cross-allow each other's processes. The handler is detached automatically
+  via `on_exit` when the test exits.
 
   ## Stubbing
 
@@ -149,7 +149,7 @@ defmodule ExGram.Test do
     end
   end
 
-  def handle_event_allow_pid([:ex_gram, _step, :init], _measurements, metadata, %{
+  def handle_event_allow_pid([:ex_gram, _step, :init, :start], _measurements, metadata, %{
         test_pid: test_pid,
         bot_name: bot_name
       }) do
@@ -177,10 +177,10 @@ defmodule ExGram.Test do
 
   `start_bot/3` automatically allows the bot's Dispatcher and Updates worker processes
   to use the calling test's stubs and expectations. This is done by subscribing to the
-  `[:ex_gram, :bot, :init]` and `[:ex_gram, :updates, :init]` telemetry events, which
-  fire synchronously during startup. The telemetry handler is scoped to this bot's name,
-  so concurrent tests never accidentally allow each other's processes. The handler is
-  detached automatically on test exit.
+  `[:ex_gram, :bot, :init, :start]` and `[:ex_gram, :updates, :init, :start]` telemetry
+  events, which fire synchronously during startup. The telemetry handler is scoped to this
+  bot's name, so concurrent tests never accidentally allow each other's processes. The
+  handler is detached automatically on test exit.
 
   No manual `allow/2` call is needed for the standard `push_update/2` workflow.
 
@@ -227,7 +227,7 @@ defmodule ExGram.Test do
 
     :telemetry.attach_many(
       handler_id,
-      [[:ex_gram, :bot, :init], [:ex_gram, :updates, :init]],
+      [[:ex_gram, :bot, :init, :start], [:ex_gram, :updates, :init, :start]],
       &ExGram.Test.handle_event_allow_pid/4,
       %{test_pid: test_pid, bot_name: bot_name}
     )

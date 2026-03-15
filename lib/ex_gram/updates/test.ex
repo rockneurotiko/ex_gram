@@ -49,8 +49,9 @@ defmodule ExGram.Updates.Test do
 
   def init({:ok, pid, token}) do
     Process.flag(:trap_exit, true)
-    ExGram.Telemetry.emit([:updates, :init], %{bot: pid, method: :test})
+    start_time = ExGram.Telemetry.start([:updates, :init], %{bot: pid, method: :test})
     state = %__MODULE__{pid: pid, token: token}
+    ExGram.Telemetry.stop([:updates, :init], start_time, %{bot: pid, method: :test})
     {:ok, state}
   end
 

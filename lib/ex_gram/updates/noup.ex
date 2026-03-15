@@ -14,7 +14,8 @@ defmodule ExGram.Updates.Noup do
 
   def init({:ok, pid, token}) do
     Process.flag(:trap_exit, true)
-    ExGram.Telemetry.emit([:updates, :init], %{bot: pid, method: :noup})
+    start_time = ExGram.Telemetry.start([:updates, :init], %{bot: pid, method: :noup})
+    ExGram.Telemetry.stop([:updates, :init], start_time, %{bot: pid, method: :noup})
     {:ok, {pid, token}}
   end
 

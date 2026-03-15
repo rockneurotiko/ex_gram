@@ -138,12 +138,12 @@ defmodule ExGram.Dispatcher do
   @impl GenServer
   def init(%__MODULE__{} = state) do
     Process.flag(:trap_exit, true)
-    ExGram.Telemetry.emit([:bot, :init], %{bot: state.name})
-    {:ok, state, {:continue, :initialize_bot}}
+    start_time = ExGram.Telemetry.start([:bot, :init], %{bot: state.name})
+    {:ok, state, {:continue, {:initialize_bot, start_time}}}
   end
 
   @impl GenServer
-  def handle_continue(:initialize_bot, %__MODULE__{} = state) do
+  def handle_continue({:initialize_bot, start_time}, %__MODULE__{} = state) do
     token = ExGram.Token.fetch(bot: state.name)
 
     state.bot_module.init(bot: state.name, token: token, extra_info: state.extra_info)
@@ -153,6 +153,7 @@ defmodule ExGram.Dispatcher do
     # We have to use bot_module.commands() to get the raw commands definitions
     if state.init_opts[:setup_commands], do: Bot.SetupCommands.setup(state.bot_module.commands(), token)
 
+    ExGram.Telemetry.stop([:bot, :init], start_time, %{bot: state.name})
     {:noreply, %{state | bot_info: bot_info}}
   end
 

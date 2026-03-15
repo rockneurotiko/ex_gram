@@ -10,9 +10,9 @@ the `:telemetry` protocol - including Prometheus (via
 
 | Event | Description |
 |---|---|
-| `[:ex_gram, :bot, :init]` | Bot dispatcher initialized and ready |
+| `[:ex_gram, :bot, :init, :start\|:stop]` | Bot dispatcher initialization span |
 | `[:ex_gram, :bot, :shutdown]` | Bot dispatcher shutting down |
-| `[:ex_gram, :updates, :init]` | Updates worker started (polling, webhook, noup, test) |
+| `[:ex_gram, :updates, :init, :start\|:stop]` | Updates worker initialization span (polling, webhook, noup, test) |
 | `[:ex_gram, :updates, :shutdown]` | Updates worker shutting down |
 | `[:ex_gram, :request, :start\|:stop\|:exception]` | Outbound Telegram API call |
 | `[:ex_gram, :update, :start\|:stop\|:exception]` | Incoming update dispatched to the bot |
@@ -20,9 +20,8 @@ the `:telemetry` protocol - including Prometheus (via
 | `[:ex_gram, :middleware, :start\|:stop\|:exception]` | Each middleware in the pipeline |
 | `[:ex_gram, :polling, :start\|:stop\|:exception]` | One polling cycle (fetch + dispatch) |
 
-The lifecycle events (`[:ex_gram, :bot, ...]` and `[:ex_gram, :updates, ...]`) are
-point-in-time and carry a `system_time` measurement. All other events are spans
-and carry `duration` in `:native` time units. Convert to milliseconds with:
+All events are spans and carry `duration` in `:native` time units on the `:stop` event.
+The `:shutdown` events are point-in-time and carry `system_time`. Convert to milliseconds with:
 
 ```elixir
 System.convert_time_unit(duration, :native, :millisecond)
@@ -44,9 +43,11 @@ defmodule MyApp.Telemetry do
     :telemetry.attach_many(
       "my-app-ex-gram",
       [
-        [:ex_gram, :bot, :init],
+        [:ex_gram, :bot, :init, :start],
+        [:ex_gram, :bot, :init, :stop],
         [:ex_gram, :bot, :shutdown],
-        [:ex_gram, :updates, :init],
+        [:ex_gram, :updates, :init, :start],
+        [:ex_gram, :updates, :init, :stop],
         [:ex_gram, :updates, :shutdown],
         [:ex_gram, :request, :start],
         [:ex_gram, :request, :stop],
@@ -77,20 +78,31 @@ your supervision tree.
 
 ## Tracking bot and updates lifecycle
 
-The `:init` and `:shutdown` events let you log when bots and their updates
-workers come up or go down - useful for auditing restarts in production:
+The `:init` span and `:shutdown` events let you log when bots and their updates
+workers come up or go down - useful for auditing restarts in production. The `:stop`
+event carries a `duration` measurement so you can alert on slow startups:
 
 ```elixir
-def handle_event([:ex_gram, :bot, :init], _measurements, metadata, _) do
-  Logger.info("[ExGram] bot started bot=#{metadata.bot}")
+def handle_event([:ex_gram, :bot, :init, :start], _measurements, metadata, _) do
+  Logger.info("[ExGram] bot initializing bot=#{metadata.bot}")
+end
+
+def handle_event([:ex_gram, :bot, :init, :stop], measurements, metadata, _) do
+  duration_ms = System.convert_time_unit(measurements.duration, :native, :millisecond)
+  Logger.info("[ExGram] bot ready bot=#{metadata.bot} init_ms=#{duration_ms}")
 end
 
 def handle_event([:ex_gram, :bot, :shutdown], _measurements, metadata, _) do
   Logger.warning("[ExGram] bot stopping bot=#{metadata.bot}")
 end
 
-def handle_event([:ex_gram, :updates, :init], _measurements, metadata, _) do
-  Logger.info("[ExGram] updates worker started bot=#{metadata.bot} method=#{metadata.method}")
+def handle_event([:ex_gram, :updates, :init, :start], _measurements, metadata, _) do
+  Logger.info("[ExGram] updates worker initializing bot=#{metadata.bot} method=#{metadata.method}")
+end
+
+def handle_event([:ex_gram, :updates, :init, :stop], measurements, metadata, _) do
+  duration_ms = System.convert_time_unit(measurements.duration, :native, :millisecond)
+  Logger.info("[ExGram] updates worker ready bot=#{metadata.bot} method=#{metadata.method} init_ms=#{duration_ms}")
 end
 
 def handle_event([:ex_gram, :updates, :shutdown], _measurements, metadata, _) do
@@ -173,11 +185,17 @@ defmodule MyApp.Telemetry do
   def metrics do
     [
       # Count bot starts and stops
-      counter("ex_gram.bot.init.count", tags: [:bot]),
+      counter("ex_gram.bot.init.stop.count", tags: [:bot]),
       counter("ex_gram.bot.shutdown.count", tags: [:bot]),
 
+      # Distribution of bot initialization duration
+      distribution("ex_gram.bot.init.stop.duration",
+        unit: {:native, :millisecond},
+        tags: [:bot]
+      ),
+
       # Count updates worker starts and stops
-      counter("ex_gram.updates.init.count", tags: [:bot, :method]),
+      counter("ex_gram.updates.init.stop.count", tags: [:bot, :method]),
       counter("ex_gram.updates.shutdown.count", tags: [:bot, :method]),
 
       # Count every API call

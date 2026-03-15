@@ -45,11 +45,12 @@ defmodule ExGram.Updates.Webhook do
 
   def init({:ok, bot, token, opts}) do
     Process.flag(:trap_exit, true)
-    ExGram.Telemetry.emit([:updates, :init], %{bot: bot, method: :webhook})
+    start_time = ExGram.Telemetry.start([:updates, :init], %{bot: bot, method: :webhook})
 
     set_webhook(token, opts)
     state = %{bot: bot}
 
+    ExGram.Telemetry.stop([:updates, :init], start_time, %{bot: bot, method: :webhook})
     {:ok, state}
   end
 

@@ -15,9 +15,11 @@ defmodule ExGram.Telemetry do
       :telemetry.attach_many(
         "my-app-ex-gram-handler",
         [
-          [:ex_gram, :bot, :init],
+          [:ex_gram, :bot, :init, :start],
+          [:ex_gram, :bot, :init, :stop],
           [:ex_gram, :bot, :shutdown],
-          [:ex_gram, :updates, :init],
+          [:ex_gram, :updates, :init, :start],
+          [:ex_gram, :updates, :init, :stop],
           [:ex_gram, :updates, :shutdown],
           [:ex_gram, :request, :start],
           [:ex_gram, :request, :stop],
@@ -207,18 +209,36 @@ defmodule ExGram.Telemetry do
 
   ---
 
-  ### `[:ex_gram, :bot, :init]`
+  ### `[:ex_gram, :bot, :init, :start | :stop]`
 
-  Emitted once when the bot dispatcher initializes and is ready to process
-  updates. This fires after `handle_continue(:initialize_bot, ...)` completes.
+  Emitted as a span around the bot dispatcher's initialization phase.
 
-  #### measurements
+  - `:start` fires synchronously inside `GenServer.init/1`, before `start_link/1` returns.
+    At this point the process is registered but the bot has not yet called `get_me`,
+    `setup_commands`, or the bot module's `init/1`.
+  - `:stop` fires at the end of `handle_continue(:initialize_bot, ...)`, after all
+    startup work completes and the bot is ready to process updates.
+
+  #### `:start` measurements
 
   | Key | Type | Description |
   |-----|------|-------------|
-  | `:system_time` | integer | `System.system_time/0` at the time of the event |
+  | `:system_time` | integer | `System.system_time/0` at start |
+  | `:monotonic_time` | integer | `System.monotonic_time/0` at start |
 
-  #### metadata
+  #### `:start` metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+
+  #### `:stop` measurements
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:duration` | integer | Elapsed time in `:native` units from `:start` to `:stop` |
+
+  #### `:stop` metadata
 
   | Key | Type | Description |
   |-----|------|-------------|
@@ -245,18 +265,37 @@ defmodule ExGram.Telemetry do
 
   ---
 
-  ### `[:ex_gram, :updates, :init]`
+  ### `[:ex_gram, :updates, :init, :start | :stop]`
 
-  Emitted once when an updates worker (polling, webhook, noup, or test) starts
-  and is ready to receive or fetch updates.
+  Emitted as a span around an updates worker's initialization phase (polling,
+  webhook, noup, or test).
 
-  #### measurements
+  - `:start` fires at the beginning of `GenServer.init/1`, before any startup work
+    such as setting or deleting the webhook.
+  - `:stop` fires just before `{:ok, state}` is returned from `init/1`, once the
+    worker is ready to receive or fetch updates.
+
+  #### `:start` measurements
 
   | Key | Type | Description |
   |-----|------|-------------|
-  | `:system_time` | integer | `System.system_time/0` at the time of the event |
+  | `:system_time` | integer | `System.system_time/0` at start |
+  | `:monotonic_time` | integer | `System.monotonic_time/0` at start |
 
-  #### metadata
+  #### `:start` metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+  | `:method` | atom | Updates method - `:polling`, `:webhook`, `:noup`, or `:test` |
+
+  #### `:stop` measurements
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:duration` | integer | Elapsed time in `:native` units from `:start` to `:stop` |
+
+  #### `:stop` metadata
 
   | Key | Type | Description |
   |-----|------|-------------|
