@@ -43,7 +43,7 @@ Available options:
 
 A typical update produces this span tree:
 
-```
+```text
 {prefix}.update
   {prefix}.middleware   (one per middleware)
   {prefix}.handler
