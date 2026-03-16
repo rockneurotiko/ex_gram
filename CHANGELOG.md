@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.63.0]
 - Spawn on handler attaching opentelemetry context if provided
 - Add opentelemetry guide
 
