@@ -19,7 +19,7 @@ end
 
 ## Setup
 
-Call `OpentelemetryExGram.setup/1` once during application startup, before your bots are started:
+Call `OpentelemetryExGram.setup/0` once during application startup, before your bots are started:
 
 ```elixir
 def start(_type, _args) do
@@ -29,6 +29,8 @@ def start(_type, _args) do
   Supervisor.start_link(children, strategy: :one_for_one)
 end
 ```
+
+You can also configure it using `OpentelemetryExGram.setup/1`. 
 
 Available options:
 
@@ -64,7 +66,7 @@ setup context do
 end
 ```
 
-> #### More information {: .info}
+> ### More information {: .info}
 >
 > For full documentation — span attributes, advanced options, and testing with
 > [`opentelemetry_test_processor`](https://hex.pm/packages/opentelemetry_test_processor) — see the
