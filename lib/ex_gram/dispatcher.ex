@@ -35,6 +35,7 @@ defmodule ExGram.Dispatcher do
   alias ExGram.Bot
   alias ExGram.Cnt
   alias ExGram.Model
+  alias OpentelemetryExGram.Propagator
 
   @type init_opts() :: [username: String.t() | nil, setup_commands: boolean(), handler_mode: :sync | :async | nil]
   @type custom_key() :: any()
@@ -238,7 +239,7 @@ defmodule ExGram.Dispatcher do
     cnt = build_context_with_middlewares(state, message)
 
     if !cnt.halted do
-      spawn(fn -> call_handler(message, cnt, state) end)
+      call_handler(message, cnt, state)
     end
 
     {:noreply, state}
@@ -432,8 +433,14 @@ defmodule ExGram.Dispatcher do
 
   defp call_handler(info, cnt, state) do
     case state.handler_mode do
-      :async -> spawn(fn -> do_call_handler(info, cnt, state) end)
-      _ -> do_call_handler(info, cnt, state)
+      :async ->
+        # Propagator.spawn/1 captures the current OTel context
+        # and attaches it inside the spawned process, so spans created
+        # by the handler are correctly linked to the parent update span.
+        Propagator.spawn(fn -> do_call_handler(info, cnt, state) end)
+
+      _ ->
+        do_call_handler(info, cnt, state)
     end
   end
 

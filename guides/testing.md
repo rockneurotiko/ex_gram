@@ -96,7 +96,7 @@ If you don't start your bot on the application tree (for example, you can decide
 
 ```elixir
 # test/test_helper.exs
-{:ok, _} = ExGram.Test.start_link()
+{:ok, _} = ExGram.Adapter.Test.start_link()
 
 ExUnit.start()
 ```

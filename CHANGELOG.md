@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Spawn on handler attaching opentelemetry context if provided
+- Add opentelemetry guide
 
 ## [0.62.0]
 - Add :telemetry integration

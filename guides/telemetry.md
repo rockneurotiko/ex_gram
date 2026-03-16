@@ -6,6 +6,15 @@ the `:telemetry` protocol - including Prometheus (via
 [`TelemetryMetrics`](https://hexdocs.pm/telemetry_metrics)),
 [`OpenTelemetry`](https://opentelemetry.io/), or simple structured logging.
 
+> ### OpenTelemetry {: .tip}
+>
+> To have OpenTelemetry traces and spans in your bots, use the [`OpentelemetryExGram`](https://hex.pm/packages/opentelemetry_ex_gram) library. 
+> It attaches to the events below and creates OTel spans automatically, with full
+> context propagation across GenServer and spawn boundaries.
+>
+> See the [OpenTelemetry guide](opentelemetry.md) for setup instructions and
+> available spans.
+
 ## Events overview
 
 | Event | Description |
