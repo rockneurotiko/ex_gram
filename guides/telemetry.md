@@ -6,6 +6,15 @@ the `:telemetry` protocol - including Prometheus (via
 [`TelemetryMetrics`](https://hexdocs.pm/telemetry_metrics)),
 [`OpenTelemetry`](https://opentelemetry.io/), or simple structured logging.
 
+> #### OpenTelemetry {: .tip}
+>
+> ExGram ships with built-in OpenTelemetry support via `ExGram.Opentelemetry`. It
+> attaches to the events below and creates OTel spans automatically, with full
+> context propagation across GenServer and spawn boundaries.
+>
+> See the [OpenTelemetry guide](opentelemetry.md) for setup instructions and
+> available spans.
+
 ## Events overview
 
 | Event | Description |

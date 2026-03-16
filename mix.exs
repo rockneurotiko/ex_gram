@@ -70,6 +70,8 @@ defmodule ExGram.Mixfile do
       {:mdex, "~> 0.11", optional: true},
       # Telemetry
       {:telemetry, "~> 0.4.3 or ~> 1.0"},
+      # For opentelemetry
+      {:opentelemetry_api, "~> 1.2", optional: true},
       # Test adapter uses NimbleOwnership for per-process isolation
       {:nimble_ownership, "~> 1.0"},
       # Development
@@ -117,7 +119,8 @@ defmodule ExGram.Mixfile do
     [
       Cheatsheet: "guides/cheatsheet.md",
       Basic: ~r/guides\/(installation|getting-started|handling-updates|commands|sending-messages)\.md/,
-      Intermediate: ~r/guides\/(polling-and-webhooks|message-entities|middlewares|low-level-api|telemetry)\.md/,
+      Intermediate: ~r/guides\/(polling-and-webhooks|message-entities|middlewares|low-level-api)\.md/,
+      Observability: ~r/guides\/(telemetry|opentelemetry)\.md/,
       Advanced: ~r/guides\/(multiple-bots|flyio|)\.md/,
       Testing: "guides/testing.md",
       "Other Guides": ~r/guides\/.*/
