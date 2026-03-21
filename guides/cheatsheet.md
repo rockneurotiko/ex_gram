@@ -316,6 +316,51 @@ context |> ExGram.Middleware.add_extra(%{key1: value1, key2: value2})
 context |> ExGram.Middleware.halt()
 ```
 
+## Bot Init Hooks
+
+```elixir
+defmodule MyApp.Bot do
+  use ExGram.Bot, name: :my_bot
+
+  # Declare hooks - run once on startup before handling updates
+  on_bot_init(MyApp.SetupHook)
+  on_bot_init(MyApp.CacheHook, ttl: 300)
+end
+
+defmodule MyApp.SetupHook do
+  @behaviour ExGram.BotInit
+
+  @impl ExGram.BotInit
+  def on_bot_init(opts) do
+    token = opts[:token]           # bot token
+    bot = opts[:bot]               # bot registered name
+    extra = opts[:extra_info]      # data from previous hooks
+
+    case MyApp.Config.fetch(token) do
+      {:ok, config} -> {:ok, %{app_config: config}}  # merged into context.extra
+      {:error, _} -> :ok                              # no extra data
+      {:error, reason} -> {:error, reason}            # stops startup
+    end
+  end
+end
+
+# Access in handlers via context.extra
+def handle({:command, :status, _}, context) do
+  answer(context, "Config: #{inspect(context.extra[:app_config])}")
+end
+```
+
+Built-in hooks controlled via startup options:
+
+```elixir
+# get_me: true (default) - fetches bot identity via getMe, available as context.bot_info
+# get_me: false - skips the API call (default in tests)
+{MyBot.Bot, [method: :polling, token: token, get_me: false]}
+
+# setup_commands: true - registers declared commands with Telegram at startup
+{MyBot.Bot, [method: :polling, token: token, setup_commands: true]}
+```
+
 ## Common Patterns
 
 ### Multi-step Conversation

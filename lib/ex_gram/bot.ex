@@ -42,7 +42,7 @@ defmodule ExGram.Bot do
 
   defmacro __using__(opts) do
     name = Keyword.get(opts, :name) || raise ArgumentError, "name parameter is mandatory"
-    module_opts = Keyword.take(opts, [:username, :setup_commands])
+    module_opts = Keyword.take(opts, [:username, :setup_commands, :get_me])
 
     quote location: :keep do
       @behaviour ExGram.Handler

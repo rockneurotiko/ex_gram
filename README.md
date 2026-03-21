@@ -246,6 +246,7 @@ See the [Sending Messages](guides/sending-messages.md) guide for a complete refe
 - [Polling and Webhooks](guides/polling-and-webhooks.md) - Configure update methods
 - [Low-Level API](guides/low-level-api.md) - Direct API calls for complex scenarios
 - [Multiple Bots](guides/multiple-bots.md) - Run multiple bots in one application
+- [Bot Init Hooks](guides/bot-init-hooks.md) - Run custom code during bot startup
 - [Testing](guides/testing.md) - Test your bots
 
 ### Deployment

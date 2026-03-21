@@ -37,7 +37,14 @@ defmodule ExGram.Dispatcher do
   alias ExGram.Model
   alias OpentelemetryExGram.Propagator
 
-  @type init_opts() :: [username: String.t() | nil, setup_commands: boolean(), handler_mode: :sync | :async | nil]
+  require Logger
+
+  @type init_opts() :: [
+          username: String.t() | nil,
+          setup_commands: boolean(),
+          handler_mode: :sync | :async | nil,
+          get_me: boolean()
+        ]
   @type custom_key() :: any()
 
   @type parsed_message() ::
@@ -55,12 +62,14 @@ defmodule ExGram.Dispatcher do
   @type t() :: %__MODULE__{
           name: atom(),
           bot_info: Model.User.t() | nil,
+          bot_module: module() | nil,
           dispatcher_name: atom(),
           extra_info: map(),
           init_opts: init_opts(),
           commands: %{String.t() => map()},
           regex: [Regex.t()],
           middlewares: [Bot.middleware()],
+          bot_inits: [{module(), keyword()}],
           handler: {module(), atom()},
           handler_mode: :sync | :async,
           error_handler: {module(), atom()}
@@ -75,6 +84,7 @@ defmodule ExGram.Dispatcher do
             commands: %{},
             regex: [],
             middlewares: [],
+            bot_inits: [],
             handler: nil,
             handler_mode: :async,
             error_handler: nil
@@ -86,8 +96,6 @@ defmodule ExGram.Dispatcher do
 
   @spec init_state(atom(), module(), init_opts(), map()) :: t()
   def init_state(name, module, opts, extra_info) when is_atom(name) and is_atom(module) do
-    bot_info = if username = opts[:username], do: %Model.User{username: username, is_bot: true}
-
     handler_mode =
       case Keyword.get(opts, :handler_mode, :async) do
         :async -> :async
@@ -97,7 +105,6 @@ defmodule ExGram.Dispatcher do
 
     %__MODULE__{
       name: name,
-      bot_info: bot_info,
       bot_module: module,
       dispatcher_name: name,
       extra_info: extra_info,
@@ -105,6 +112,7 @@ defmodule ExGram.Dispatcher do
       commands: prepare_commands(module.commands()),
       regex: module.regexes(),
       middlewares: module.middlewares(),
+      bot_inits: build_framework_inits(module, opts) ++ module.bot_inits(),
       handler: {module, :handle},
       handler_mode: handler_mode,
       error_handler: {module, :handle_error}
@@ -147,15 +155,41 @@ defmodule ExGram.Dispatcher do
   def handle_continue({:initialize_bot, start_time}, %__MODULE__{} = state) do
     token = ExGram.Token.fetch(bot: state.name)
 
-    state.bot_module.init(bot: state.name, token: token, extra_info: state.extra_info)
+    result =
+      Enum.reduce_while(state.bot_inits, {:ok, state.extra_info}, fn {module, hook_opts}, {:ok, acc_extra} ->
+        init_opts = [bot: state.name, token: token, extra_info: acc_extra] ++ hook_opts
 
-    bot_info = get_bot_info(state, token)
+        case module.on_bot_init(init_opts) do
+          :ok ->
+            {:cont, {:ok, acc_extra}}
 
-    # We have to use bot_module.commands() to get the raw commands definitions
-    if state.init_opts[:setup_commands], do: Bot.SetupCommands.setup(state.bot_module.commands(), token)
+          {:ok, extra} when is_map(extra) ->
+            {:cont, {:ok, Map.merge(acc_extra, extra)}}
 
-    ExGram.Telemetry.stop([:bot, :init], start_time, %{bot: state.name})
-    {:noreply, %{state | bot_info: bot_info}}
+          {:error, reason} ->
+            {:halt, {:error, module, reason}}
+        end
+      end)
+
+    case result do
+      {:error, module, reason} ->
+        Logger.error(
+          "ExGram: on_bot_init hook #{inspect(module)} failed for bot " <>
+            "#{inspect(state.name)}: #{inspect(reason)}"
+        )
+
+        {:stop, {:shutdown, {:on_bot_init_failed, module, reason}}, state}
+
+      {:ok, extra_info} ->
+        state = %{state | extra_info: extra_info}
+
+        state.bot_module.init(bot: state.name, token: token, extra_info: extra_info)
+
+        {bot_info, clean_extra_info} = Map.pop(extra_info, :bot_info)
+
+        ExGram.Telemetry.stop([:bot, :init], start_time, %{bot: state.name})
+        {:noreply, %{state | bot_info: bot_info, extra_info: clean_extra_info}}
+    end
   end
 
   @impl GenServer
@@ -163,13 +197,17 @@ defmodule ExGram.Dispatcher do
     ExGram.Telemetry.emit([:bot, :shutdown], %{bot: state.name})
   end
 
-  defp get_bot_info(%__MODULE__{bot_info: %Model.User{} = bot_info}, _token), do: bot_info
+  defp build_framework_inits(module, opts) do
+    inits = []
 
-  defp get_bot_info(%__MODULE__{}, token) do
-    case ExGram.get_me(token: token) do
-      {:ok, bot} -> bot
-      _ -> nil
-    end
+    inits =
+      if Keyword.get(opts, :setup_commands, false),
+        do: [{ExGram.BotInit.SetupCommands, [bot_module: module]} | inits],
+        else: inits
+
+    inits = if Keyword.get(opts, :get_me, true), do: [{ExGram.BotInit.GetMe, []} | inits], else: inits
+    # Result: GetMe first (prepended last), then SetupCommands, then user hooks
+    inits
   end
 
   @impl GenServer

@@ -4,6 +4,8 @@ defmodule ExGram.BotTest do
 
   import ExGram.TestHelpers
 
+  @moduletag :capture_log
+
   # --- Command Handling ---
 
   describe "setup commands call" do
@@ -40,7 +42,7 @@ defmodule ExGram.BotTest do
         {:ok, true}
       end)
 
-      ExGram.Test.start_bot(context, SetupCommandBot, username: nil, setup_commands: true)
+      ExGram.Test.start_bot(context, SetupCommandBot, get_me: true, setup_commands: true)
 
       assert_receive :commands_set, 1000
     end
@@ -866,6 +868,276 @@ defmodule ExGram.BotTest do
       assert body1[:text] == "First message"
       assert body2[:text] == "Second message"
       assert body3[:text] == "Third message"
+    end
+  end
+
+  # --- Bot Init Hooks ---
+
+  describe "on_bot_init hooks" do
+    defmodule OkHook do
+      @moduledoc false
+      @behaviour ExGram.BotInit
+
+      @impl true
+      def on_bot_init(_opts), do: :ok
+    end
+
+    defmodule OkBot do
+      @moduledoc false
+      use ExGram.Bot, name: :ok_hook_bot
+
+      on_bot_init(OkHook)
+
+      command("start")
+
+      def handle({:command, :start, _}, context) do
+        answer(context, "Hello")
+      end
+    end
+
+    test "hook returning :ok - bot starts and handles updates normally", context do
+      ExGram.Test.expect(:send_message, %{message_id: 1})
+
+      {bot_name, _} = ExGram.Test.start_bot(context, OkBot)
+
+      ExGram.Test.push_update(
+        bot_name,
+        build_update(%{message: build_message(%{chat: build_chat(%{id: 1}), text: "/start"})})
+      )
+
+      calls = ExGram.Test.get_calls()
+      send_calls = Enum.filter(calls, fn {_, action, _} -> action == :send_message end)
+      assert length(send_calls) == 1
+    end
+
+    defmodule ExtraHook do
+      @moduledoc false
+      @behaviour ExGram.BotInit
+
+      @impl true
+      def on_bot_init(_opts), do: {:ok, %{injected_key: "injected_value"}}
+    end
+
+    defmodule ExtraBot do
+      @moduledoc false
+      use ExGram.Bot, name: :extra_hook_bot
+
+      on_bot_init(ExtraHook)
+
+      command("check")
+
+      def handle({:command, :check, _}, %{extra: extra} = context) do
+        answer(context, extra[:injected_key] || "missing")
+      end
+    end
+
+    test "hook returning {:ok, map} - map is merged into extra_info and flows into context.extra", context do
+      ExGram.Test.expect(:send_message, fn body ->
+        assert body[:text] == "injected_value"
+        {:ok, %{message_id: 2}}
+      end)
+
+      {bot_name, _} = ExGram.Test.start_bot(context, ExtraBot)
+
+      ExGram.Test.push_update(
+        bot_name,
+        build_update(%{message: build_message(%{chat: build_chat(%{id: 1}), text: "/check"})})
+      )
+
+      calls = ExGram.Test.get_calls()
+      send_calls = Enum.filter(calls, fn {_, action, _} -> action == :send_message end)
+      assert length(send_calls) == 1
+    end
+
+    defmodule ErrorHook do
+      @moduledoc false
+      @behaviour ExGram.BotInit
+
+      @impl true
+      def on_bot_init(_opts), do: {:error, :intentional_failure}
+    end
+
+    defmodule ErrorBot do
+      @moduledoc false
+      use ExGram.Bot, name: :error_hook_bot
+
+      on_bot_init(ErrorHook)
+    end
+
+    test "hook returning {:error, reason} - dispatcher stops with shutdown reason", context do
+      log =
+        ExUnit.CaptureLog.capture_log(fn ->
+          {bot_name, sup_name} = ExGram.Test.start_bot(context, ErrorBot)
+
+          # Unlink from the supervisor before it shuts down so the exit signal
+          # does not kill the test process
+          sup_pid = Process.whereis(sup_name)
+          if sup_pid, do: Process.unlink(sup_pid)
+
+          dispatcher_pid = Process.whereis(bot_name)
+          ref = if dispatcher_pid, do: Process.monitor(dispatcher_pid)
+
+          if ref do
+            receive do
+              {:DOWN, ^ref, :process, ^dispatcher_pid, _reason} -> :ok
+            after
+              2000 -> flunk("Dispatcher did not go down within 2000ms")
+            end
+          end
+        end)
+
+      assert log =~ "on_bot_init hook"
+      assert log =~ "ExGram.BotTest.ErrorHook"
+      assert log =~ ":intentional_failure"
+    end
+
+    defmodule FirstHook do
+      @moduledoc false
+      @behaviour ExGram.BotInit
+
+      @impl true
+      def on_bot_init(_opts), do: {:ok, %{from_first: "first"}}
+    end
+
+    defmodule SecondHook do
+      @moduledoc false
+      @behaviour ExGram.BotInit
+
+      @impl true
+      def on_bot_init(opts) do
+        # Second hook sees extra_info accumulated from FirstHook
+        prior = opts[:extra_info][:from_first]
+        {:ok, %{from_second: "second", saw_first: prior}}
+      end
+    end
+
+    defmodule AccumulateBot do
+      @moduledoc false
+      use ExGram.Bot, name: :accumulate_hook_bot
+
+      on_bot_init(FirstHook)
+      on_bot_init(SecondHook)
+
+      command("info")
+
+      def handle({:command, :info, _}, %{extra: extra} = context) do
+        answer(context, "#{extra[:from_first]},#{extra[:from_second]},#{extra[:saw_first]}")
+      end
+    end
+
+    test "multiple hooks accumulate extra_info in declaration order", context do
+      ExGram.Test.expect(:send_message, fn body ->
+        assert body[:text] == "first,second,first"
+        {:ok, %{message_id: 4}}
+      end)
+
+      {bot_name, _} = ExGram.Test.start_bot(context, AccumulateBot)
+
+      ExGram.Test.push_update(
+        bot_name,
+        build_update(%{message: build_message(%{chat: build_chat(%{id: 1}), text: "/info"})})
+      )
+
+      calls = ExGram.Test.get_calls()
+      send_calls = Enum.filter(calls, fn {_, action, _} -> action == :send_message end)
+      assert length(send_calls) == 1
+    end
+
+    defmodule OptsHook do
+      @moduledoc false
+      @behaviour ExGram.BotInit
+
+      @impl true
+      def on_bot_init(opts) do
+        value = Keyword.get(opts, :custom_key, "default")
+        {:ok, %{hook_opt_value: value}}
+      end
+    end
+
+    defmodule OptsBot do
+      @moduledoc false
+      use ExGram.Bot, name: :opts_hook_bot
+
+      on_bot_init(OptsHook, custom_key: "passed_value")
+
+      command("opt")
+
+      def handle({:command, :opt, _}, %{extra: extra} = context) do
+        answer(context, extra[:hook_opt_value])
+      end
+    end
+
+    test "hook receives opts from on_bot_init declaration", context do
+      ExGram.Test.expect(:send_message, fn body ->
+        assert body[:text] == "passed_value"
+        {:ok, %{message_id: 5}}
+      end)
+
+      {bot_name, _} = ExGram.Test.start_bot(context, OptsBot)
+
+      ExGram.Test.push_update(
+        bot_name,
+        build_update(%{message: build_message(%{chat: build_chat(%{id: 1}), text: "/opt"})})
+      )
+
+      calls = ExGram.Test.get_calls()
+      send_calls = Enum.filter(calls, fn {_, action, _} -> action == :send_message end)
+      assert length(send_calls) == 1
+    end
+  end
+
+  # --- GetMe Hook ---
+
+  describe "get_me hook" do
+    defmodule GetMeBot do
+      @moduledoc false
+      use ExGram.Bot, name: :get_me_test_bot
+
+      command("whoami")
+
+      def handle({:command, :whoami, _}, %{bot_info: bot_info} = context) do
+        answer(context, bot_info.username)
+      end
+
+      def handle(_, context), do: context
+    end
+
+    test "get_me: true populates bot_info and does not leak into context.extra", context do
+      ExGram.Test.stub(:get_me, %{
+        id: 99,
+        is_bot: true,
+        username: "my_test_bot",
+        first_name: "TestBot"
+      })
+
+      ExGram.Test.expect(:send_message, fn body ->
+        assert body[:text] == "my_test_bot"
+        {:ok, %{message_id: 1}}
+      end)
+
+      {bot_name, _} = ExGram.Test.start_bot(context, GetMeBot, get_me: true)
+
+      ExGram.Test.push_update(
+        bot_name,
+        build_update(%{message: build_message(%{chat: build_chat(%{id: 1}), text: "/whoami"})})
+      )
+
+      calls = ExGram.Test.get_calls()
+      get_me_calls = Enum.filter(calls, fn {_, action, _} -> action == :get_me end)
+      assert length(get_me_calls) == 1
+    end
+
+    test "get_me: false (test default) does not call get_me and bot_info is nil", context do
+      # No stub for get_me - if it were called the test adapter would raise
+
+      {bot_name, _} = ExGram.Test.start_bot(context, GetMeBot)
+
+      # Verify no get_me call was recorded
+      calls = ExGram.Test.get_calls()
+      get_me_calls = Enum.filter(calls, fn {_, action, _} -> action == :get_me end)
+      assert get_me_calls == []
+
+      _ = bot_name
     end
   end
 end
