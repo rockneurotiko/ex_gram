@@ -172,7 +172,7 @@ ExGram provides two built-in hooks that are automatically injected by the dispat
 
 Calls `ExGram.get_me/1` to fetch the bot's identity from Telegram. Enabled by default (`get_me: true`).
 
-The result is stored as `state.bot_info` in the dispatcher and becomes available as `context.bot_info` in every handler call. It does **not** appear in `context.extra`.
+The result, the bot's information in an `ExGram.Model.User` struct, is stored as `state.bot_info` in the dispatcher and becomes available as `context.bot_info` in every handler call.
 
 Disable it when you don't need the bot's identity or want to avoid the startup API call:
 
@@ -231,7 +231,22 @@ Hooks participate in the normal test adapter lifecycle. Use `ExGram.Test.stub/2`
 
 By default, `ExGram.Test.start_bot/3` sets `get_me: false` and `setup_commands: false` to avoid unnecessary API calls. Your own hooks declared with `on_bot_init/1-2` always run.
 
+If you want to optionally enable/disable your init hooks, you can stop running them if a specific field exists in the extra_info map, and start your bots with that value.
+
 ```elixir
+defmodule MyHook do
+  @behaviour ExGram.BotInit
+  
+  @impl ExGram.BotInit
+  def on_bot_init(opts) do
+    if opts[:extra_info][:my_hook_disable] do
+      :ok
+    else
+      do_init(opts)
+    end
+  end
+end
+
 defmodule MyApp.BotTest do
   use ExUnit.Case, async: true
   use ExGram.Test
@@ -239,21 +254,8 @@ defmodule MyApp.BotTest do
   import ExGram.TestHelpers
 
   setup context do
-    # ConfigHook is defined on the bot module and will run automatically
-    # Stub the external config fetch it performs
-    ExGram.Test.stub(:get_chat, %{id: 1, type: "private"})
-
-    {bot_name, _} = ExGram.Test.start_bot(context, MyApp.Bot)
+    {bot_name, _} = ExGram.Test.start_bot(context, MyApp.Bot, extra_info: %{__my_hook_disable: true})
     {:ok, bot_name: bot_name}
-  end
-
-  test "hook data is available in handler", %{bot_name: bot_name} do
-    ExGram.Test.expect(:send_message, fn body ->
-      assert body[:text] =~ "config"
-      {:ok, %{message_id: 1}}
-    end)
-
-    ExGram.Test.push_update(bot_name, build_update(%{message: build_message(%{text: "/status"})}))
   end
 end
 ```

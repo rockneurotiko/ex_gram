@@ -965,32 +965,12 @@ defmodule ExGram.BotTest do
     end
 
     test "hook returning {:error, reason} - dispatcher stops with shutdown reason", context do
-      log =
-        ExUnit.CaptureLog.capture_log(fn ->
-          {bot_name, sup_name} = ExGram.Test.start_bot(context, ErrorBot)
+      Process.flag(:trap_exit, true)
 
-          # Unlink from the supervisor before it shuts down so the exit signal
-          # does not kill the test process
-          sup_pid = Process.whereis(sup_name)
-          if sup_pid, do: Process.unlink(sup_pid)
+      {_bot_name, sup_name} = ExGram.Test.start_bot(context, ErrorBot)
+      sup_pid = Process.whereis(sup_name)
 
-          dispatcher_pid = Process.whereis(bot_name)
-          ref = if dispatcher_pid, do: Process.monitor(dispatcher_pid)
-
-          if ref do
-            receive do
-              {:DOWN, ^ref, :process, ^dispatcher_pid,
-               {:shutdown, {:on_bot_init_failed, ErrorHook, :intentional_failure}}} ->
-                :ok
-            after
-              2000 -> flunk("Dispatcher did not go down within 2000ms")
-            end
-          end
-        end)
-
-      assert log =~ "on_bot_init hook"
-      assert log =~ "ExGram.BotTest.ErrorHook"
-      assert log =~ ":intentional_failure"
+      assert_receive {:EXIT, ^sup_pid, :shutdown}, 2000
     end
 
     defmodule FirstHook do

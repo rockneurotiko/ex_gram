@@ -19,10 +19,14 @@ defmodule ExGram.BotInit.GetMe do
 
   @behaviour ExGram.BotInit
 
+  @extra_key :__ex_gram_bot_info
+
+  def extra_key, do: @extra_key
+
   @impl ExGram.BotInit
   def on_bot_init(opts) do
     case ExGram.get_me(token: opts[:token]) do
-      {:ok, user} -> {:ok, %{bot_info: user}}
+      {:ok, user} -> {:ok, %{@extra_key => user}}
       {:error, error} -> {:error, {:get_me_failed, error}}
     end
   end

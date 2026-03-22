@@ -33,6 +33,7 @@ defmodule ExGram.Dispatcher do
   use GenServer
 
   alias ExGram.Bot
+  alias ExGram.BotInit.GetMe
   alias ExGram.Cnt
   alias ExGram.Model
   alias OpentelemetryExGram.Propagator
@@ -153,10 +154,40 @@ defmodule ExGram.Dispatcher do
   @impl GenServer
   def handle_continue({:initialize_bot, start_time}, %__MODULE__{} = state) do
     token = ExGram.Token.fetch(bot: state.name)
+    opts = [bot: state.name, token: token, extra_info: state.extra_info]
 
+    case execute_bot_inits(state, opts) do
+      {:ok, state} ->
+        opts = Keyword.put(opts, :extra_info, state.extra_info)
+
+        state.bot_module.init(opts)
+
+        ExGram.Telemetry.stop([:bot, :init], start_time, %{bot: state.name})
+        {:noreply, state}
+
+      {:error, module, reason} ->
+        meta = %{bot: state.name, error_module: module}
+
+        ExGram.Telemetry.exception([:bot, :init], start_time, :error, reason, [], meta)
+
+        {:stop, {:shutdown, {:on_bot_init_failed, module, reason}}, state}
+    end
+  rescue
+    error ->
+      meta = %{bot: state.name, error_module: nil}
+      ExGram.Telemetry.exception([:bot, :init], start_time, :error, error, __STACKTRACE__, meta)
+      reraise error, __STACKTRACE__
+  catch
+    kind, reason ->
+      meta = %{bot: state.name, error_module: nil}
+      ExGram.Telemetry.exception(:update, start_time, kind, reason, __STACKTRACE__, meta)
+      :erlang.raise(kind, reason, __STACKTRACE__)
+  end
+
+  defp execute_bot_inits(state, opts) do
     result =
       Enum.reduce_while(state.bot_inits, {:ok, state.extra_info}, fn {module, hook_opts}, {:ok, acc_extra} ->
-        init_opts = [bot: state.name, token: token, extra_info: acc_extra] ++ hook_opts
+        init_opts = opts |> Keyword.put(:extra_info, acc_extra) |> Keyword.merge(hook_opts)
 
         case module.on_bot_init(init_opts) do
           :ok ->
@@ -171,30 +202,13 @@ defmodule ExGram.Dispatcher do
       end)
 
     case result do
-      {:error, module, reason} ->
-        Logger.error(
-          "ExGram: on_bot_init hook #{inspect(module)} failed for bot " <>
-            "#{inspect(state.name)}: #{inspect(reason)}"
-        )
-
-        ExGram.Telemetry.stop([:bot, :init], start_time, %{
-          bot: state.name,
-          status: :error,
-          error_module: module,
-          error_reason: reason
-        })
-
-        {:stop, {:shutdown, {:on_bot_init_failed, module, reason}}, state}
-
       {:ok, extra_info} ->
         state = %{state | extra_info: extra_info}
+        {bot_info, extra_info} = Map.pop(extra_info, GetMe.extra_key())
+        {:ok, %{state | bot_info: bot_info, extra_info: extra_info}}
 
-        state.bot_module.init(bot: state.name, token: token, extra_info: extra_info)
-
-        {bot_info, clean_extra_info} = Map.pop(extra_info, :bot_info)
-
-        ExGram.Telemetry.stop([:bot, :init], start_time, %{bot: state.name})
-        {:noreply, %{state | bot_info: bot_info, extra_info: clean_extra_info}}
+      error ->
+        error
     end
   end
 
@@ -211,7 +225,7 @@ defmodule ExGram.Dispatcher do
         do: [{ExGram.BotInit.SetupCommands, [bot_module: module]} | inits],
         else: inits
 
-    inits = if Keyword.get(opts, :get_me, true), do: [{ExGram.BotInit.GetMe, []} | inits], else: inits
+    inits = if Keyword.get(opts, :get_me, true), do: [{GetMe, []} | inits], else: inits
     # Result: GetMe first (prepended last), then SetupCommands, then user hooks
     inits
   end
