@@ -139,7 +139,7 @@ defmodule ExGram.Telemetry do
   | Key | Type | Description |
   |-----|------|-------------|
   | `:bot` | atom | Bot name |
-  | `:kind` | atom | `:error` for controlled init hook errors or `:throw` if any init hook raised |
+  | `:kind` | atom | `:error`, `:exit`, or `:throw` |
   | `:reason` | term | The exception or reason |
   | `:stacktrace` | list | Stacktrace |
   | `:error_module` | module | The init hook module that returned an error, if applicable |

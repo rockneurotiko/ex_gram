@@ -180,7 +180,7 @@ defmodule ExGram.Dispatcher do
   catch
     kind, reason ->
       meta = %{bot: state.name, error_module: nil}
-      ExGram.Telemetry.exception(:update, start_time, kind, reason, __STACKTRACE__, meta)
+      ExGram.Telemetry.exception([:bot, :init], start_time, kind, reason, __STACKTRACE__, meta)
       :erlang.raise(kind, reason, __STACKTRACE__)
   end
 
