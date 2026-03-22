@@ -338,7 +338,7 @@ defmodule MyApp.SetupHook do
 
     case MyApp.Config.fetch(token) do
       {:ok, config} -> {:ok, %{app_config: config}}  # merged into context.extra
-      {:error, _} -> :ok                              # no extra data
+      {:error, :not_found} -> :ok                    # non-fatal, no extra data
       {:error, reason} -> {:error, reason}            # stops startup
     end
   end

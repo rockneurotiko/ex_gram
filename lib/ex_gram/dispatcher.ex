@@ -40,7 +40,6 @@ defmodule ExGram.Dispatcher do
   require Logger
 
   @type init_opts() :: [
-          username: String.t() | nil,
           setup_commands: boolean(),
           handler_mode: :sync | :async | nil,
           get_me: boolean()
@@ -80,7 +79,7 @@ defmodule ExGram.Dispatcher do
             bot_module: nil,
             dispatcher_name: __MODULE__,
             extra_info: %{},
-            init_opts: [username: nil, setup_commands: false],
+            init_opts: [setup_commands: false],
             commands: %{},
             regex: [],
             middlewares: [],
@@ -177,6 +176,13 @@ defmodule ExGram.Dispatcher do
           "ExGram: on_bot_init hook #{inspect(module)} failed for bot " <>
             "#{inspect(state.name)}: #{inspect(reason)}"
         )
+
+        ExGram.Telemetry.stop([:bot, :init], start_time, %{
+          bot: state.name,
+          status: :error,
+          error_module: module,
+          error_reason: reason
+        })
 
         {:stop, {:shutdown, {:on_bot_init_failed, module, reason}}, state}
 

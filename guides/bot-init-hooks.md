@@ -116,12 +116,9 @@ defmodule MyApp.AuthHook do
 
   @impl ExGram.BotInit
   def on_bot_init(opts) do
-    # ExGram.BotInit.GetMe runs first by default and puts bot_info into extra_info.
-    # By the time auth hooks run, bot_info has been extracted by the dispatcher.
-    # Use opts[:bot] or opts[:token] for bot identity.
-    token = opts[:token]
+    bot = opts[:bot]
 
-    case MyApp.Auth.validate_token(token) do
+    case MyApp.Auth.validate_bot(bot) do
       {:ok, permissions} -> {:ok, %{bot_permissions: permissions}}
       {:error, :invalid} -> {:error, :invalid_token}
     end

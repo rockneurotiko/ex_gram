@@ -35,7 +35,7 @@ defmodule ExGram.BotInit do
   hooks via the `extra_info:` key in `init_opts`.
   """
 
-  @type init_opts :: [bot: atom(), token: String.t(), extra_info: map()]
+  @type init_opts :: [bot: atom() | String.t(), token: String.t(), extra_info: map()]
 
   @callback on_bot_init(init_opts()) :: :ok | {:ok, map()} | {:error, any()}
 end

@@ -979,7 +979,9 @@ defmodule ExGram.BotTest do
 
           if ref do
             receive do
-              {:DOWN, ^ref, :process, ^dispatcher_pid, _reason} -> :ok
+              {:DOWN, ^ref, :process, ^dispatcher_pid,
+               {:shutdown, {:on_bot_init_failed, ErrorHook, :intentional_failure}}} ->
+                :ok
             after
               2000 -> flunk("Dispatcher did not go down within 2000ms")
             end
