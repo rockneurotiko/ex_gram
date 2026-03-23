@@ -209,7 +209,7 @@ defmodule ExGram.Dispatcher do
     case Map.pop(extra_info, GetMe.extra_key()) do
       {nil, extra_info} -> {:ok, nil, extra_info}
       {%ExGram.Model.User{} = bot_info, extra_info} -> {:ok, bot_info, extra_info}
-      _ -> {:error, ExGram.BotInit.GetMe, :invalid_user_info}
+      _ -> {:error, GetMe, :invalid_user_info}
     end
   end
 
