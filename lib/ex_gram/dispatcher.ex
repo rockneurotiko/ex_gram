@@ -38,8 +38,6 @@ defmodule ExGram.Dispatcher do
   alias ExGram.Model
   alias OpentelemetryExGram.Propagator
 
-  require Logger
-
   @type init_opts() :: [
           setup_commands: boolean(),
           handler_mode: :sync | :async | nil,
