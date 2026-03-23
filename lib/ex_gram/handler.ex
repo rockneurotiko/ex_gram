@@ -12,7 +12,7 @@ defmodule ExGram.Handler do
   @callback handle(ExGram.Dispatcher.parsed_message(), ExGram.Cnt.t()) :: ExGram.Cnt.t()
   @callback handle_error(ExGram.Error.t()) :: any
 
-  @type init_opts :: [bot: atom() | String.t(), token: String.t()]
+  @type init_opts :: [bot: atom() | String.t(), token: String.t(), extra_info: map()]
   @callback init(init_opts) :: :ok
 
   @optional_callbacks handle: 2, handle_error: 1

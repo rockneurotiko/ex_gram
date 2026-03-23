@@ -17,7 +17,7 @@ config :ex_gram,
 config :my_app, MyBot.Bot,
   token: "test_token",
   method: :test,
-  username: "testbot", # Setting a username we skip the get_me call on startup
+  get_me: false, # Setting get_me: false we skip the get_me call on startup
   setup_commands: false # Setting setup_commands: false we skip setting up the commands on startup
 
 ```
@@ -25,7 +25,7 @@ config :my_app, MyBot.Bot,
 This tells ExGram to:
 - Use `ExGram.Adapter.Test` to intercept API calls
 - Use `method` `:test` (which is `ExGram.Updates.Test`) for pushing test updates (instead of polling or webhook)
-- Fake username and disable setup_commands, so starting the application don't fail.
+- Disable get_me and setup_commands, so starting the application doesn't fail.
 
 The bot's options has to be passed on startup, this is how I recommend doing it, a config entry for your bot's module, and then something like this in your `application.ex`:
 
@@ -902,14 +902,14 @@ end
 
 ### Testing the initial calls
 
-Up until now, we skipped the initial `get_me` call and the setup commands calls, because `ExGram.Test.start_bot/3` sets `username: "testbot"` and `setup_commands: false`. If you want to test that your bot registers its commands correctly on startup, you can opt in to those calls.
+By default, `ExGram.Test.start_bot/3` sets `get_me: false` and `setup_commands: false` to avoid making API calls during tests. If you want to test that your bot fetches its identity or registers commands correctly on startup, you can opt in to those calls.
 
 The trick is:
 
-1. Pass `username: nil` so the bot calls `get_me` to fetch its username.
-2. Pass `setup_commands: true` so the bot registers commands.
+1. Pass `get_me: true` so the bot calls `get_me` via the `ExGram.BotInit.GetMe` hook.
+2. Pass `setup_commands: true` so the bot registers commands via the `ExGram.BotInit.SetupCommands` hook.
 3. Set up `:get_me` and/or `:set_my_commands` expectations before calling `ExGram.Test.start_bot/3`.
-4. Start your bot with `ExGram.Test.start_bot/3`
+4. Start your bot with `ExGram.Test.start_bot/3`.
 
 (You can also find a working example in `test/ex_gram/bot_test.exs`, test `"Register commands on startup"`)
 
@@ -943,9 +943,9 @@ test "Register commands on startup", context do
     {:ok, true}
   end)
 
-  # username: nil triggers get_me; setup_commands: true registers commands on start.
+  # get_me: true triggers the GetMe hook; setup_commands: true registers commands on start.
   # start_bot/3 automatically allows the bot processes to use your stubs.
-  ExGram.Test.start_bot(context, SetupCommandBot, username: nil, setup_commands: true)
+  ExGram.Test.start_bot(context, SetupCommandBot, get_me: true, setup_commands: true)
 
   # We wait until this message sent from the expect, because the get_me and set_my_commands
   # are executed after initialization, so we need to wait until the expects are called

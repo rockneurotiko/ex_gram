@@ -17,6 +17,7 @@ defmodule ExGram.Telemetry do
         [
           [:ex_gram, :bot, :init, :start],
           [:ex_gram, :bot, :init, :stop],
+          [:ex_gram, :bot, :init, :exception],
           [:ex_gram, :bot, :shutdown],
           [:ex_gram, :updates, :init, :start],
           [:ex_gram, :updates, :init, :stop],
@@ -90,126 +91,7 @@ defmodule ExGram.Telemetry do
 
   ---
 
-  ### `[:ex_gram, :update, :start | :stop | :exception]`
-
-  Emitted around the processing of each incoming Telegram update - from the
-  moment it arrives at the dispatcher through middleware execution. Handler
-  execution is measured separately by the `[:ex_gram, :handler, ...]` events.
-
-  Note: when using async dispatch (the default), the `:stop` event fires after
-  middlewares complete and the handler process is spawned - not after the handler
-  finishes. Use `[:ex_gram, :handler, ...]` events to measure handler duration.
-
-  #### `:start` metadata
-
-  | Key | Type | Description |
-  |-----|------|-------------|
-  | `:bot` | atom | Bot name |
-  | `:update` | `ExGram.Model.Update.t()` | The incoming Telegram update |
-
-  #### `:stop` metadata
-
-  | Key | Type | Description |
-  |-----|------|-------------|
-  | `:bot` | atom | Bot name |
-  | `:context` | `ExGram.Cnt.t()` | Context after middleware processing |
-  | `:halted` | boolean | Whether middleware halted processing |
-
-  #### `:exception` metadata
-
-  | Key | Type | Description |
-  |-----|------|-------------|
-  | `:bot` | atom | Bot name |
-  | `:update` | `ExGram.Model.Update.t()` | The incoming update |
-  | `:kind` | atom | `:error`, `:exit`, or `:throw` |
-  | `:reason` | term | The exception or reason |
-  | `:stacktrace` | list | Stacktrace |
-
-  ---
-
-  ### `[:ex_gram, :handler, :start | :stop | :exception]`
-
-  Emitted around the invocation of the bot's `handle/2` callback.
-
-  #### `:start` metadata
-
-  | Key | Type | Description |
-  |-----|------|-------------|
-  | `:bot` | atom | Bot name |
-  | `:handler` | module | The handler module (e.g. `MyApp.Bot`) |
-  | `:context` | `ExGram.Cnt.t()` | Context passed to the handler |
-
-  #### `:stop` metadata
-
-  All `:start` metadata, plus:
-
-  | Key | Type | Description |
-  |-----|------|-------------|
-  | `:result_context` | `ExGram.Cnt.t() \| term` | Return value of `handle/2` |
-
-  #### `:exception` metadata
-
-  All `:start` metadata, plus `:kind`, `:reason`, `:stacktrace`.
-
-  ---
-
-  ### `[:ex_gram, :middleware, :start | :stop | :exception]`
-
-  Emitted around the execution of each individual middleware in the pipeline.
-
-  #### `:start` metadata
-
-  | Key | Type | Description |
-  |-----|------|-------------|
-  | `:bot` | atom | Bot name |
-  | `:middleware` | module or function | The middleware being executed |
-  | `:context` | `ExGram.Cnt.t()` | Context entering the middleware |
-
-  #### `:stop` metadata
-
-  | Key | Type | Description |
-  |-----|------|-------------|
-  | `:bot` | atom | Bot name |
-  | `:middleware` | module or function | The middleware that was executed |
-  | `:context` | `ExGram.Cnt.t()` | Context after middleware execution |
-  | `:halted` | boolean | Whether this middleware halted or middleware-halted the pipeline |
-
-  #### `:exception` metadata
-
-  All `:start` metadata, plus `:kind`, `:reason`, `:stacktrace`.
-
-  ---
-
-  ### `[:ex_gram, :polling, :start | :stop | :exception]`
-
-  Emitted around each polling cycle - the fetch-and-dispatch loop that retrieves
-  updates from the Telegram Bot API.
-
-  #### `:start` metadata
-
-  | Key | Type | Description |
-  |-----|------|-------------|
-  | `:bot` | atom | Bot name |
-
-  #### `:stop` metadata
-
-  | Key | Type | Description |
-  |-----|------|-------------|
-  | `:bot` | atom | Bot name |
-  | `:updates_count` | non_neg_integer | Number of updates received in this cycle |
-
-  #### `:exception` metadata
-
-  | Key | Type | Description |
-  |-----|------|-------------|
-  | `:bot` | atom | Bot name |
-  | `:kind` | atom | `:error`, `:exit`, or `:throw` |
-  | `:reason` | term | The exception or reason |
-  | `:stacktrace` | list | Stacktrace |
-
-  ---
-
-  ### `[:ex_gram, :bot, :init, :start | :stop]`
+  ### `[:ex_gram, :bot, :init, :start | :stop | :exception]`
 
   Emitted as a span around the bot dispatcher's initialization phase.
 
@@ -218,6 +100,8 @@ defmodule ExGram.Telemetry do
     `setup_commands`, or the bot module's `init/1`.
   - `:stop` fires at the end of `handle_continue(:initialize_bot, ...)`, after all
     startup work completes and the bot is ready to process updates.
+  - `:exception` fires if any exception is raised during initialization, including in
+    the bot module's `init/1` or any init hook.
 
   #### `:start` measurements
 
@@ -243,6 +127,22 @@ defmodule ExGram.Telemetry do
   | Key | Type | Description |
   |-----|------|-------------|
   | `:bot` | atom | Bot name |
+
+  #### `:exception` measurements
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:duration` | integer | Elapsed time in `:native` units from `:start` to exception |
+
+  #### `:exception` metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+  | `:kind` | atom | `:error`, `:exit`, or `:throw` |
+  | `:reason` | term | The exception or reason |
+  | `:stacktrace` | list | Stacktrace |
+  | `:error_module` | module | The init hook module that returned an error, if applicable |
 
   ---
 
@@ -320,6 +220,126 @@ defmodule ExGram.Telemetry do
   |-----|------|-------------|
   | `:bot` | atom | Bot name |
   | `:method` | atom | Updates method - `:polling`, `:webhook`, `:noup`, or `:test` |
+
+  ---
+
+  ### `[:ex_gram, :polling, :start | :stop | :exception]`
+
+  Emitted around each polling cycle - the fetch-and-dispatch loop that retrieves
+  updates from the Telegram Bot API.
+
+  #### `:start` metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+
+  #### `:stop` metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+  | `:updates_count` | non_neg_integer | Number of updates received in this cycle |
+
+  #### `:exception` metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+  | `:kind` | atom | `:error`, `:exit`, or `:throw` |
+  | `:reason` | term | The exception or reason |
+  | `:stacktrace` | list | Stacktrace |
+
+    ---
+
+  ### `[:ex_gram, :update, :start | :stop | :exception]`
+
+  Emitted around the processing of each incoming Telegram update - from the
+  moment it arrives at the dispatcher through middleware execution. Handler
+  execution is measured separately by the `[:ex_gram, :handler, ...]` events.
+
+  Note: when using async dispatch (the default), the `:stop` event fires after
+  middlewares complete and the handler process is spawned - not after the handler
+  finishes. Use `[:ex_gram, :handler, ...]` events to measure handler duration.
+
+  #### `:start` metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+  | `:update` | `ExGram.Model.Update.t()` | The incoming Telegram update |
+
+  #### `:stop` metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+  | `:context` | `ExGram.Cnt.t()` | Context after middleware processing |
+  | `:halted` | boolean | Whether middleware halted processing |
+
+  #### `:exception` metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+  | `:update` | `ExGram.Model.Update.t()` | The incoming update |
+  | `:kind` | atom | `:error`, `:exit`, or `:throw` |
+  | `:reason` | term | The exception or reason |
+  | `:stacktrace` | list | Stacktrace |
+
+  ---
+
+  ### `[:ex_gram, :middleware, :start | :stop | :exception]`
+
+  Emitted around the execution of each individual middleware in the pipeline.
+
+  #### `:start` metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+  | `:middleware` | module or function | The middleware being executed |
+  | `:context` | `ExGram.Cnt.t()` | Context entering the middleware |
+
+  #### `:stop` metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+  | `:middleware` | module or function | The middleware that was executed |
+  | `:context` | `ExGram.Cnt.t()` | Context after middleware execution |
+  | `:halted` | boolean | Whether this middleware halted or middleware-halted the pipeline |
+
+  #### `:exception` metadata
+
+  All `:start` metadata, plus `:kind`, `:reason`, `:stacktrace`.
+
+  ---
+
+  ### `[:ex_gram, :handler, :start | :stop | :exception]`
+
+  Emitted around the invocation of the bot's `handle/2` callback.
+
+  #### `:start` metadata
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:bot` | atom | Bot name |
+  | `:handler` | module | The handler module (e.g. `MyApp.Bot`) |
+  | `:context` | `ExGram.Cnt.t()` | Context passed to the handler |
+
+  #### `:stop` metadata
+
+  All `:start` metadata, plus:
+
+  | Key | Type | Description |
+  |-----|------|-------------|
+  | `:result_context` | `ExGram.Cnt.t() \| term` | Return value of `handle/2` |
+
+  #### `:exception` metadata
+
+  All `:start` metadata, plus `:kind`, `:reason`, `:stacktrace`.
+
   """
 
   @doc false

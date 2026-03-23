@@ -200,7 +200,7 @@ defmodule ExGram.Test do
 
     * `:method` - Updates source, defaults to `:test` (`ExGram.Updates.Test`)
     * `:token` - Bot token, defaults to `"test_token"`
-    * `:username` - Bot username, defaults to `"test_bot"` (skips the `get_me` call)
+    * `:get_me` - Whether to call `get_me` on startup, defaults to `false` (skips the API call)
     * `:setup_commands` - Whether to register commands on startup, defaults to `false`
     * `:handler_mode` - How the dispatcher executes the handler. `:sync` (default)
       runs the handler inline so `push_update/2` blocks until it completes. `:async`
@@ -252,7 +252,7 @@ defmodule ExGram.Test do
       name: module_name,
       bot_name: bot_name,
       token: "test_token",
-      username: "test_bot",
+      get_me: false,
       setup_commands: false,
       handler_mode: :sync,
       extra_info: extra_info
