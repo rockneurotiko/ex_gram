@@ -967,10 +967,12 @@ defmodule ExGram.BotTest do
     test "hook returning {:error, reason} - dispatcher stops with shutdown reason", context do
       Process.flag(:trap_exit, true)
 
-      {_bot_name, sup_name} = ExGram.Test.start_bot(context, ErrorBot)
-      sup_pid = Process.whereis(sup_name)
+      {bot_name, sup_name} = ExGram.Test.start_bot(context, ErrorBot)
 
-      assert_receive {:EXIT, ^sup_pid, :shutdown}, 2000
+      assert_receive {:EXIT, _, :shutdown}, 2000
+
+      refute Process.whereis(bot_name)
+      refute Process.whereis(sup_name)
     end
 
     defmodule FirstHook do
