@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.64.0]
 - Add Bot init hooks, allow to hook on bot's init to execute custom methods.
 - Add `get_me: boolean()` option to `use ExGram.Bot` to enable/disable initial get_me. It's enabled by default.
 - Breaking: Now to disable initial get_me call, instead of using a hardcoded username it's `get_me: false` 

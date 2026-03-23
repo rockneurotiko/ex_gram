@@ -9,7 +9,7 @@ Add `ex_gram` and `jason` to your `mix.exs` dependencies:
 ```elixir
 def deps do
   [
-    {:ex_gram, "~> 0.63"},
+    {:ex_gram, "~> 0.64"},
     {:jason, ">= 1.0.0"},
     # HTTP Adapter (see below)
   ]
