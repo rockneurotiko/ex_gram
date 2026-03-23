@@ -185,7 +185,7 @@ defmodule ExGram.Dispatcher do
   defp execute_bot_inits(state, opts) do
     result =
       Enum.reduce_while(state.bot_inits, {:ok, state.extra_info}, fn {module, hook_opts}, {:ok, acc_extra} ->
-        init_opts = opts |> Keyword.put(:extra_info, acc_extra) |> Keyword.merge(hook_opts)
+        init_opts = hook_opts |> Keyword.merge(opts) |> Keyword.put(:extra_info, acc_extra)
 
         case module.on_bot_init(init_opts) do
           :ok ->
@@ -199,14 +199,17 @@ defmodule ExGram.Dispatcher do
         end
       end)
 
-    case result do
-      {:ok, extra_info} ->
-        state = %{state | extra_info: extra_info}
-        {bot_info, extra_info} = Map.pop(extra_info, GetMe.extra_key())
-        {:ok, %{state | bot_info: bot_info, extra_info: extra_info}}
+    with {:ok, extra_info} <- result,
+         {:ok, bot_info, extra_info} <- extract_get_me_bot_info(extra_info) do
+      {:ok, %{state | extra_info: extra_info, bot_info: bot_info}}
+    end
+  end
 
-      error ->
-        error
+  defp extract_get_me_bot_info(extra_info) do
+    case Map.pop(extra_info, GetMe.extra_key()) do
+      {nil, extra_info} -> {:ok, nil, extra_info}
+      {%ExGram.Model.User{} = bot_info, extra_info} -> {:ok, bot_info, extra_info}
+      _ -> {:error, ExGram.BotInit.GetMe, :invalid_user_info}
     end
   end
 
