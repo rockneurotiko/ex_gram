@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Update Bot API to 9.6
 
 ## [0.64.0]
 - Add Bot init hooks, allow to hook on bot's init to execute custom methods.
