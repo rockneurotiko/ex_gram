@@ -863,10 +863,20 @@ defmodule ExGram do
       {options, [{:array, InputPollOption}], "A JSON-serialized list of 2-12 answer options"},
       {is_anonymous, [:boolean], "True, if the poll needs to be anonymous, defaults to True", :optional},
       {type, [:string], "Poll type, \"quiz” or \"regular”, defaults to \"regular”", :optional},
-      {allows_multiple_answers, [:boolean],
-       "True, if the poll allows multiple answers, ignored for polls in quiz mode, defaults to False", :optional},
-      {correct_option_id, [:integer],
-       "0-based identifier of the correct answer option, required for polls in quiz mode", :optional},
+      {allows_multiple_answers, [:boolean], "Pass True, if the poll allows multiple answers, defaults to False",
+       :optional},
+      {allows_revoting, [:boolean],
+       "Pass True, if the poll allows to change chosen answer options, defaults to False for quizzes and to True for regular polls",
+       :optional},
+      {shuffle_options, [:boolean], "Pass True, if the poll options must be shown in random order", :optional},
+      {allow_adding_options, [:boolean],
+       "Pass True, if answer options can be added to the poll after creation; not supported for anonymous polls and quizzes",
+       :optional},
+      {hide_results_until_closes, [:boolean], "Pass True, if poll results must be shown only after the poll closes",
+       :optional},
+      {correct_option_ids, [{:array, :integer}],
+       "A JSON-serialized list of monotonically increasing 0-based identifiers of the correct answer options, required for polls in quiz mode",
+       :optional},
       {explanation, [:string],
        "Text that is shown when a user chooses an incorrect answer or taps on the lamp icon in a quiz-style poll, 0-200 characters with at most 2 line feeds after entities parsing",
        :optional},
@@ -876,13 +886,20 @@ defmodule ExGram do
        "A JSON-serialized list of special entities that appear in the poll explanation. It can be specified instead of explanation_parse_mode",
        :optional},
       {open_period, [:integer],
-       "Amount of time in seconds the poll will be active after creation, 5-600. Can't be used together with close_date.",
+       "Amount of time in seconds the poll will be active after creation, 5-2628000. Can't be used together with close_date.",
        :optional},
       {close_date, [:integer],
-       "Point in time (Unix timestamp) when the poll will be automatically closed. Must be at least 5 and no more than 600 seconds in the future. Can't be used together with open_period.",
+       "Point in time (Unix timestamp) when the poll will be automatically closed. Must be at least 5 and no more than 2628000 seconds in the future. Can't be used together with open_period.",
        :optional},
       {is_closed, [:boolean],
        "Pass True if the poll needs to be immediately closed. This can be useful for poll preview.", :optional},
+      {description, [:string], "Description of the poll to be sent, 0-1024 characters after entities parsing",
+       :optional},
+      {description_parse_mode, [:string],
+       "Mode for parsing entities in the poll description. See formatting options for more details.", :optional},
+      {description_entities, [{:array, MessageEntity}],
+       "A JSON-serialized list of special entities that appear in the poll description, which can be specified instead of description_parse_mode",
+       :optional},
       {disable_notification, [:boolean], "Sends the message silently. Users will receive a notification with no sound.",
        :optional},
       {protect_content, [:boolean], "Protects the contents of the sent message from forwarding and saving", :optional},
@@ -1711,6 +1728,22 @@ defmodule ExGram do
   )
 
   method(
+    :get,
+    "getManagedBotToken",
+    [{user_id, [:integer], "User identifier of the managed bot whose token will be returned"}],
+    :string,
+    "Use this method to get the token of a managed bot. Returns the token as String on success."
+  )
+
+  method(
+    :post,
+    "replaceManagedBotToken",
+    [{user_id, [:integer], "User identifier of the managed bot whose token will be replaced"}],
+    :string,
+    "Use this method to revoke the current token of a managed bot and generate a new one. Returns the new token as String on success."
+  )
+
+  method(
     :post,
     "setMyCommands",
     [
@@ -1916,10 +1949,10 @@ defmodule ExGram do
        :optional},
       {text, [:string], "Text that will be shown along with the gift; 0-128 characters", :optional},
       {text_parse_mode, [:string],
-       ~s(Mode for parsing entities in the text. See formatting options for more details. Entities other than "bold”, "italic”, "underline”, "strikethrough”, "spoiler”, and "custom_emoji” are ignored.),
+       ~s(Mode for parsing entities in the text. See formatting options for more details. Entities other than "bold”, "italic”, "underline”, "strikethrough”, "spoiler”, "custom_emoji”, and "date_time” are ignored.),
        :optional},
       {text_entities, [{:array, MessageEntity}],
-       ~s(A JSON-serialized list of special entities that appear in the gift text. It can be specified instead of text_parse_mode. Entities other than "bold”, "italic”, "underline”, "strikethrough”, "spoiler”, and "custom_emoji” are ignored.),
+       ~s(A JSON-serialized list of special entities that appear in the gift text. It can be specified instead of text_parse_mode. Entities other than "bold”, "italic”, "underline”, "strikethrough”, "spoiler”, "custom_emoji”, and "date_time” are ignored.),
        :optional}
     ],
     true,
@@ -1938,10 +1971,10 @@ defmodule ExGram do
       {text, [:string],
        "Text that will be shown along with the service message about the subscription; 0-128 characters", :optional},
       {text_parse_mode, [:string],
-       ~s(Mode for parsing entities in the text. See formatting options for more details. Entities other than "bold”, "italic”, "underline”, "strikethrough”, "spoiler”, and "custom_emoji” are ignored.),
+       ~s(Mode for parsing entities in the text. See formatting options for more details. Entities other than "bold”, "italic”, "underline”, "strikethrough”, "spoiler”, "custom_emoji”, and "date_time” are ignored.),
        :optional},
       {text_entities, [{:array, MessageEntity}],
-       ~s(A JSON-serialized list of special entities that appear in the gift text. It can be specified instead of text_parse_mode. Entities other than "bold”, "italic”, "underline”, "strikethrough”, "spoiler”, and "custom_emoji” are ignored.),
+       ~s(A JSON-serialized list of special entities that appear in the gift text. It can be specified instead of text_parse_mode. Entities other than "bold”, "italic”, "underline”, "strikethrough”, "spoiler”, "custom_emoji”, and "date_time” are ignored.),
        :optional}
     ],
     true,
@@ -2322,6 +2355,44 @@ defmodule ExGram do
     ],
     true,
     "Deletes a story previously posted by the bot on behalf of a managed business account. Requires the can_manage_stories business bot right. Returns True on success."
+  )
+
+  method(
+    :post,
+    "answerWebAppQuery",
+    [
+      {web_app_query_id, [:string], "Unique identifier for the query to be answered"},
+      {result, [InlineQueryResult], "A JSON-serialized object describing the message to be sent"}
+    ],
+    ExGram.Model.SentWebAppMessage,
+    "Use this method to set the result of an interaction with a Web App and send a corresponding message on behalf of the user to the chat from which the query originated. On success, a SentWebAppMessage object is returned."
+  )
+
+  method(
+    :post,
+    "savePreparedInlineMessage",
+    [
+      {user_id, [:integer], "Unique identifier of the target user that can use the prepared message"},
+      {result, [InlineQueryResult], "A JSON-serialized object describing the message to be sent"},
+      {allow_user_chats, [:boolean], "Pass True if the message can be sent to private chats with users", :optional},
+      {allow_bot_chats, [:boolean], "Pass True if the message can be sent to private chats with bots", :optional},
+      {allow_group_chats, [:boolean], "Pass True if the message can be sent to group and supergroup chats", :optional},
+      {allow_channel_chats, [:boolean], "Pass True if the message can be sent to channel chats", :optional}
+    ],
+    ExGram.Model.PreparedInlineMessage,
+    "Stores a message that can be sent by a user of a Mini App. Returns a PreparedInlineMessage object."
+  )
+
+  method(
+    :post,
+    "savePreparedKeyboardButton",
+    [
+      {user_id, [:integer], "Unique identifier of the target user that can use the button"},
+      {button, [KeyboardButton],
+       "A JSON-serialized object describing the button to be saved. The button must be of the type request_users, request_chat, or request_managed_bot"}
+    ],
+    ExGram.Model.PreparedKeyboardButton,
+    "Stores a keyboard button that can be used by a user within a Mini App. Returns a PreparedKeyboardButton object."
   )
 
   method(
@@ -2792,32 +2863,6 @@ defmodule ExGram do
 
   method(
     :post,
-    "answerWebAppQuery",
-    [
-      {web_app_query_id, [:string], "Unique identifier for the query to be answered"},
-      {result, [InlineQueryResult], "A JSON-serialized object describing the message to be sent"}
-    ],
-    ExGram.Model.SentWebAppMessage,
-    "Use this method to set the result of an interaction with a Web App and send a corresponding message on behalf of the user to the chat from which the query originated. On success, a SentWebAppMessage object is returned."
-  )
-
-  method(
-    :post,
-    "savePreparedInlineMessage",
-    [
-      {user_id, [:integer], "Unique identifier of the target user that can use the prepared message"},
-      {result, [InlineQueryResult], "A JSON-serialized object describing the message to be sent"},
-      {allow_user_chats, [:boolean], "Pass True if the message can be sent to private chats with users", :optional},
-      {allow_bot_chats, [:boolean], "Pass True if the message can be sent to private chats with bots", :optional},
-      {allow_group_chats, [:boolean], "Pass True if the message can be sent to group and supergroup chats", :optional},
-      {allow_channel_chats, [:boolean], "Pass True if the message can be sent to channel chats", :optional}
-    ],
-    ExGram.Model.PreparedInlineMessage,
-    "Stores a message that can be sent by a user of a Mini App. Returns a PreparedInlineMessage object."
-  )
-
-  method(
-    :post,
     "sendInvoice",
     [
       {chat_id, [:integer, :string],
@@ -3116,7 +3161,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 166 methods
+  # 169 methods
 
   # ----------MODELS-----------
 
@@ -3187,6 +3232,9 @@ defmodule ExGram do
          :optional},
         {:removed_chat_boost, [ChatBoostRemoved],
          "Optional. A boost was removed from a chat. The bot must be an administrator in the chat to receive these updates.",
+         :optional},
+        {:managed_bot, [ManagedBotUpdated],
+         "Optional. A new bot was created to be managed by the bot, or token or owner of a managed bot was changed",
          :optional}
       ],
       "This object represents an incoming update. At most one of the optional parameters can be present in any given update."
@@ -3248,7 +3296,9 @@ defmodule ExGram do
          :optional},
         {:allows_users_to_create_topics, [:boolean],
          "Optional. True, if the bot allows users to create and delete topics in private chats. Returned only in getMe.",
-         :optional}
+         :optional},
+        {:can_manage_bots, [:boolean],
+         "Optional. True, if other bots can be created to be controlled by the bot. Returned only in getMe.", :optional}
       ],
       "This object represents a Telegram user or bot."
     )
@@ -3432,6 +3482,8 @@ defmodule ExGram do
         {:reply_to_story, [Story], "Optional. For replies to a story, the original story", :optional},
         {:reply_to_checklist_task_id, [:integer],
          "Optional. Identifier of the specific checklist task that is being replied to", :optional},
+        {:reply_to_poll_option_id, [:string],
+         "Optional. Persistent identifier of the specific poll option that is being replied to", :optional},
         {:via_bot, [User], "Optional. Bot through which the message was sent", :optional},
         {:edit_date, [:integer], "Optional. Date the message was last edited in Unix time", :optional},
         {:has_protected_content, [:boolean], "Optional. True, if the message can't be forwarded", :optional},
@@ -3568,8 +3620,14 @@ defmodule ExGram do
         {:giveaway_winners, [GiveawayWinners], "Optional. A giveaway with public winners was completed", :optional},
         {:giveaway_completed, [GiveawayCompleted],
          "Optional. Service message: a giveaway without public winners was completed", :optional},
+        {:managed_bot_created, [ManagedBotCreated],
+         "Optional. Service message: user created a bot that will be managed by the current bot", :optional},
         {:paid_message_price_changed, [PaidMessagePriceChanged],
          "Optional. Service message: the price for paid messages has changed in the chat", :optional},
+        {:poll_option_added, [PollOptionAdded], "Optional. Service message: answer option was added to a poll",
+         :optional},
+        {:poll_option_deleted, [PollOptionDeleted], "Optional. Service message: answer option was deleted from a poll",
+         :optional},
         {:suggested_post_approved, [SuggestedPostApproved], "Optional. Service message: a suggested post was approved",
          :optional},
         {:suggested_post_approval_failed, [SuggestedPostApprovalFailed],
@@ -3640,7 +3698,7 @@ defmodule ExGram do
       [
         {:text, [:string], "Text of the quoted part of a message that is replied to by the given message"},
         {:entities, [{:array, MessageEntity}],
-         "Optional. Special entities that appear in the quote. Currently, only bold, italic, underline, strikethrough, spoiler, and custom_emoji entities are kept in quotes.",
+         "Optional. Special entities that appear in the quote. Currently, only bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time entities are kept in quotes.",
          :optional},
         {:position, [:integer],
          "Approximate quote position in the original message in UTF-16 code units as specified by the sender"},
@@ -3705,7 +3763,7 @@ defmodule ExGram do
          "Optional. Pass True if the message should be sent even if the specified message to be replied to is not found. Always False for replies in another chat or forum topic. Always True for messages sent on behalf of a business account.",
          :optional},
         {:quote, [:string],
-         "Optional. Quoted part of the message to be replied to; 0-1024 characters after entities parsing. The quote must be an exact substring of the message to be replied to, including bold, italic, underline, strikethrough, spoiler, and custom_emoji entities. The message will fail to send if the quote isn't found in the original message.",
+         "Optional. Quoted part of the message to be replied to; 0-1024 characters after entities parsing. The quote must be an exact substring of the message to be replied to, including bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time entities. The message will fail to send if the quote isn't found in the original message.",
          :optional},
         {:quote_parse_mode, [:string],
          "Optional. Mode for parsing entities in the quote. See formatting options for more details.", :optional},
@@ -3715,6 +3773,8 @@ defmodule ExGram do
         {:quote_position, [:integer], "Optional. Position of the quote in the original message in UTF-16 code units",
          :optional},
         {:checklist_task_id, [:integer], "Optional. Identifier of the specific checklist task to be replied to",
+         :optional},
+        {:poll_option_id, [:string], "Optional. Persistent identifier of the specific poll option to be replied to",
          :optional}
       ],
       "Describes reply parameters for the message that is being sent."
@@ -3967,11 +4027,21 @@ defmodule ExGram do
     model(
       PollOption,
       [
+        {:persistent_id, [:string], "Unique identifier of the option, persistent on option addition and deletion"},
         {:text, [:string], "Option text, 1-100 characters"},
         {:text_entities, [{:array, MessageEntity}],
          "Optional. Special entities that appear in the option text. Currently, only custom emoji entities are allowed in poll option texts",
          :optional},
-        {:voter_count, [:integer], "Number of users that voted for this option"}
+        {:voter_count, [:integer], "Number of users who voted for this option; may be 0 if unknown"},
+        {:added_by_user, [User],
+         "Optional. User who added the option; omitted if the option wasn't added by a user after poll creation",
+         :optional},
+        {:added_by_chat, [Chat],
+         "Optional. Chat that added the option; omitted if the option wasn't added by a chat after poll creation",
+         :optional},
+        {:addition_date, [:integer],
+         "Optional. Point in time (Unix timestamp) when the option was added; omitted if the option existed in the original poll",
+         :optional}
       ],
       "This object contains information about one answer option in a poll."
     )
@@ -3999,7 +4069,9 @@ defmodule ExGram do
         {:user, [User], "Optional. The user that changed the answer to the poll, if the voter isn't anonymous",
          :optional},
         {:option_ids, [{:array, :integer}],
-         "0-based identifiers of chosen answer options. May be empty if the vote was retracted."}
+         "0-based identifiers of chosen answer options. May be empty if the vote was retracted."},
+        {:option_persistent_ids, [{:array, :string}],
+         "Persistent identifiers of the chosen answer options. May be empty if the vote was retracted."}
       ],
       "This object represents an answer of a user in a non-anonymous poll."
     )
@@ -4018,8 +4090,9 @@ defmodule ExGram do
         {:is_anonymous, [:boolean], "True, if the poll is anonymous"},
         {:type, [:string], "Poll type, currently can be \"regular” or \"quiz”"},
         {:allows_multiple_answers, [:boolean], "True, if the poll allows multiple answers"},
-        {:correct_option_id, [:integer],
-         "Optional. 0-based identifier of the correct answer option. Available only for polls in the quiz mode, which are closed, or was sent (not forwarded) by the bot or to the private chat with the bot.",
+        {:allows_revoting, [:boolean], "True, if the poll allows to change the chosen answer options"},
+        {:correct_option_ids, [{:array, :integer}],
+         "Optional. Array of 0-based identifiers of the correct answer options. Available only for polls in quiz mode which are closed or were sent (not forwarded) by the bot or to the private chat with the bot.",
          :optional},
         {:explanation, [:string],
          "Optional. Text that is shown when a user chooses an incorrect answer or taps on the lamp icon in a quiz-style poll, 0-200 characters",
@@ -4030,6 +4103,11 @@ defmodule ExGram do
         {:open_period, [:integer], "Optional. Amount of time in seconds the poll will be active after creation",
          :optional},
         {:close_date, [:integer], "Optional. Point in time (Unix timestamp) when the poll will be automatically closed",
+         :optional},
+        {:description, [:string], "Optional. Description of the poll; for polls inside the Message object only",
+         :optional},
+        {:description_entities, [{:array, MessageEntity}],
+         "Optional. Special entities like usernames, URLs, bot commands, etc. that appear in the description",
          :optional}
       ],
       "This object contains information about a poll."
@@ -4077,7 +4155,7 @@ defmodule ExGram do
         {:parse_mode, [:string],
          "Optional. Mode for parsing entities in the text. See formatting options for more details.", :optional},
         {:text_entities, [{:array, MessageEntity}],
-         "Optional. List of special entities that appear in the text, which can be specified instead of parse_mode. Currently, only bold, italic, underline, strikethrough, spoiler, and custom_emoji entities are allowed.",
+         "Optional. List of special entities that appear in the text, which can be specified instead of parse_mode. Currently, only bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time entities are allowed.",
          :optional}
       ],
       "Describes a task to add to a checklist."
@@ -4090,7 +4168,7 @@ defmodule ExGram do
         {:parse_mode, [:string],
          "Optional. Mode for parsing entities in the title. See formatting options for more details.", :optional},
         {:title_entities, [{:array, MessageEntity}],
-         "Optional. List of special entities that appear in the title, which can be specified instead of parse_mode. Currently, only bold, italic, underline, strikethrough, spoiler, and custom_emoji entities are allowed.",
+         "Optional. List of special entities that appear in the title, which can be specified instead of parse_mode. Currently, only bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time entities are allowed.",
          :optional},
         {:tasks, [{:array, InputChecklistTask}], "List of 1-30 tasks in the checklist"},
         {:others_can_add_tasks, [:boolean], "Optional. Pass True if other users can add tasks to the checklist",
@@ -4186,6 +4264,52 @@ defmodule ExGram do
       MessageAutoDeleteTimerChanged,
       [{:message_auto_delete_time, [:integer], "New auto-delete time for messages in the chat; in seconds"}],
       "This object represents a service message about a change in auto-delete timer settings."
+    )
+
+    model(
+      ManagedBotCreated,
+      [
+        {:bot, [User], "Information about the bot. The bot's token can be fetched using the method getManagedBotToken."}
+      ],
+      "This object contains information about the bot that was created to be managed by the current bot."
+    )
+
+    model(
+      ManagedBotUpdated,
+      [
+        {:user, [User], "User that created the bot"},
+        {:bot, [User],
+         "Information about the bot. Token of the bot can be fetched using the method getManagedBotToken."}
+      ],
+      "This object contains information about the creation, token update, or owner update of a bot that is managed by the current bot."
+    )
+
+    model(
+      PollOptionAdded,
+      [
+        {:poll_message, [MaybeInaccessibleMessage],
+         "Optional. Message containing the poll to which the option was added, if known. Note that the Message object in this field will not contain the reply_to_message field even if it itself is a reply.",
+         :optional},
+        {:option_persistent_id, [:string], "Unique identifier of the added option"},
+        {:option_text, [:string], "Option text"},
+        {:option_text_entities, [{:array, MessageEntity}], "Optional. Special entities that appear in the option_text",
+         :optional}
+      ],
+      "Describes a service message about an option added to a poll."
+    )
+
+    model(
+      PollOptionDeleted,
+      [
+        {:poll_message, [MaybeInaccessibleMessage],
+         "Optional. Message containing the poll from which the option was deleted, if known. Note that the Message object in this field will not contain the reply_to_message field even if it itself is a reply.",
+         :optional},
+        {:option_persistent_id, [:string], "Unique identifier of the deleted option"},
+        {:option_text, [:string], "Option text"},
+        {:option_text_entities, [{:array, MessageEntity}], "Optional. Special entities that appear in the option_text",
+         :optional}
+      ],
+      "Describes a service message about an option deleted from a poll."
     )
 
     model(
@@ -4724,6 +4848,9 @@ defmodule ExGram do
         {:request_chat, [KeyboardButtonRequestChat],
          "Optional. If specified, pressing the button will open a list of suitable chats. Tapping on a chat will send its identifier to the bot in a \"chat_shared” service message. Available in private chats only.",
          :optional},
+        {:request_managed_bot, [KeyboardButtonRequestManagedBot],
+         "Optional. If specified, pressing the button will ask the user to create and share a bot that will be managed by the current bot. Available for bots that enabled management of other bots in the @BotFather Mini App. Available in private chats only.",
+         :optional},
         {:request_contact, [:boolean],
          "Optional. If True, the user's phone number will be sent as a contact when the button is pressed. Available in private chats only.",
          :optional},
@@ -4790,6 +4917,16 @@ defmodule ExGram do
         {:request_photo, [:boolean], "Optional. Pass True to request the chat's photo", :optional}
       ],
       "This object defines the criteria used to request a suitable chat. Information about the selected chat will be shared with the bot when the corresponding button is pressed. The bot will be granted requested rights in the chat if appropriate. More about requesting chats »."
+    )
+
+    model(
+      KeyboardButtonRequestManagedBot,
+      [
+        {:request_id, [:integer], "Signed 32-bit identifier of the request. Must be unique within the message"},
+        {:suggested_name, [:string], "Optional. Suggested name for the bot", :optional},
+        {:suggested_username, [:string], "Optional. Suggested username for the bot", :optional}
+      ],
+      "This object defines the parameters for the creation of a managed bot. Information about the created bot will be shared with the bot using the update managed_bot and a Message with the field managed_bot_created."
     )
 
     model(
@@ -5958,6 +6095,32 @@ defmodule ExGram do
     )
 
     model(
+      SentWebAppMessage,
+      [
+        {:inline_message_id, [:string],
+         "Optional. Identifier of the sent inline message. Available only if there is an inline keyboard attached to the message.",
+         :optional}
+      ],
+      "Describes an inline message sent by a Web App on behalf of a user."
+    )
+
+    model(
+      PreparedInlineMessage,
+      [
+        {:id, [:string], "Unique identifier of the prepared message"},
+        {:expiration_date, [:integer],
+         "Expiration date of the prepared message, in Unix time. Expired prepared messages can no longer be used"}
+      ],
+      "Describes an inline message to be sent by a user of a Mini App."
+    )
+
+    model(
+      PreparedKeyboardButton,
+      [{:id, [:string], "Unique identifier of the keyboard button"}],
+      "Describes a keyboard button to be used by a user of a Mini App."
+    )
+
+    model(
       ResponseParameters,
       [
         {:migrate_to_chat_id, [:integer],
@@ -6886,26 +7049,6 @@ defmodule ExGram do
     )
 
     model(
-      SentWebAppMessage,
-      [
-        {:inline_message_id, [:string],
-         "Optional. Identifier of the sent inline message. Available only if there is an inline keyboard attached to the message.",
-         :optional}
-      ],
-      "Describes an inline message sent by a Web App on behalf of a user."
-    )
-
-    model(
-      PreparedInlineMessage,
-      [
-        {:id, [:string], "Unique identifier of the prepared message"},
-        {:expiration_date, [:integer],
-         "Expiration date of the prepared message, in Unix time. Expired prepared messages can no longer be used"}
-      ],
-      "Describes an inline message to be sent by a user of a Mini App."
-    )
-
-    model(
       LabeledPrice,
       [
         {:label, [:string], "Portion label"},
@@ -7404,7 +7547,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 263 models
+    # 269 models
 
     defmodule MaybeInaccessibleMessage do
       @moduledoc """
