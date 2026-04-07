@@ -30,7 +30,7 @@ Add to your `mix.exs`:
 ```elixir
 def deps do
   [
-    {:ex_gram, "~> 0.64"},
+    {:ex_gram, "~> 0.65"},
     {:jason, "~> 1.4"},
     {:req, "~> 0.5"}  # HTTP adapter
   ]
