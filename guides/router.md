@@ -279,7 +279,7 @@ The router ships with two mix tasks for visualizing your bot's routing configura
 
 Prints the full scope tree with indentation:
 
-```
+```text
 $ mix ex_gram.router.tree MyBot
 
 MyBot routing tree:
@@ -303,7 +303,7 @@ MyBot routing tree:
 
 Prints one line per handler with the full accumulated filter chain, similar to `mix phx.routes` in Phoenix:
 
-```
+```text
 $ mix ex_gram.router.flat MyBot
 
 MyBot handlers:

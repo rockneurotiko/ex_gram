@@ -265,7 +265,7 @@ See the [Sending Messages](guides/sending-messages.md) guide for a complete refe
 
 ## Ecosystem
 
-Companion libraries that extend ExGram, if you have a library that extends ExGram feel free to open a conversation to add it here:
+Companion libraries that extend ExGram. If you have a library that extends ExGram feel free to open a discussion to add it here:
 
 - **[ExGram Router](https://hex.pm/packages/ex_gram_router)** — A declarative routing DSL that replaces `handle/2` pattern-match chains with composable `scope`/`filter`/`handle` blocks. Includes built-in filters for commands, text, callback queries, and more, plus mix tasks for inspecting your bot's route tree. See the [Router guide](guides/router.md).
 - **[ExGram FSM](https://hex.pm/packages/ex_gram_fsm)** — Finite state machine conversation management with named flows, validated transitions, pluggable storage backends, and automatic ExGram.Router integration. See the [FSM guide](guides/fsm.md).
