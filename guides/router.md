@@ -193,68 +193,7 @@ Propagation stacks across nesting levels, so you can model arbitrary callback da
 
 ## Custom Filters
 
-When the built-in filters aren't enough, implement the `ExGram.Router.Filter` behaviour:
-
-```elixir
-defmodule MyBot.Filters.AdminOnly do
-  @behaviour ExGram.Router.Filter
-
-  @impl true
-  def call(_update_info, context, _opts) do
-    Map.get(context.extra, :role) == :admin
-  end
-end
-```
-
-The `call/3` function receives the parsed update tuple, the context, and any options passed to the filter. Return `true` to pass, `false` to skip.
-
-> **Filters must be pure.** Never perform database queries, HTTP calls, or side effects inside a filter. If a filter needs external data (user roles, feature flags), load it once in a [middleware](middlewares.md) and store the result in `context.extra`.
-
-### Registering custom filter aliases
-
-Use `alias_filter` at the top of your bot module, or pass aliases as an option to `use ExGram.Router`:
-
-```elixir
-# Option 1: alias_filter macro
-alias_filter MyBot.Filters.AdminOnly, as: :admin
-
-scope do
-  filter :admin
-  handle &MyBot.Handlers.admin_panel/1
-end
-
-# Option 2: use option
-use ExGram.Router,
-  aliases: [
-    admin: MyBot.Filters.AdminOnly,
-    state: MyBot.Filters.State
-  ]
-```
-
-### Enrich filters with `scope_extra/2`
-
-Filters can optionally implement `scope_extra/2` to inject data into `context.extra` for child scopes. This avoids redundant lookups when a parent filter already computed or loaded something:
-
-```elixir
-defmodule MyBot.Filters.Project do
-  @behaviour ExGram.Router.Filter
-
-  @impl true
-  def call(_update_info, context, project_id) do
-    Map.get(context.extra, :project_id) == project_id
-  end
-
-  @impl true
-  def scope_extra(context, _project_id) do
-    # Reuse data already loaded by middleware
-    %{project: Map.get(context.extra, :project)}
-  end
-end
-```
-
-> **Note:** `scope_extra/2` runs on every dispatch, so it's usually better to load data in a [middleware](middlewares.md) and restructure it here rather than performing database queries or HTTP calls directly.
-
-Child scopes of a scope using this filter will have `context.extra.project` available automatically.
+When the built-in filters aren't enough, you can implement the `ExGram.Router.Filter` behaviour to encode any runtime predicate - user roles, conversation state, feature flags, and more. See the [Custom Filters section in the ExGram.Router documentation](https://github.com/rockneurotiko/ex_gram_router#custom-filters) for the full guide including examples and alias registration.
 
 ## Handler Arities
 
