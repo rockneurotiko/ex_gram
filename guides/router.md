@@ -87,12 +87,33 @@ defmodule MyBot.Handlers do
 
   def start(ctx), do: answer(ctx, "Welcome!")
   def help(ctx),  do: answer(ctx, "Here is what I can do…")
-  def echo(ctx),  do: answer(ctx, "You said something!")
+
+  # 2-arity: receives (update_info, context) to extract the message text directly
+  def echo({:text, text, _msg}, ctx), do: answer(ctx, text)
+
   def fallback(ctx), do: ctx
 end
 ```
 
 Notice that handlers live in their own module. This is optional — you can keep them inline — but separating handlers from routing keeps both sides clean as the bot grows.
+
+## Handler Arities
+
+Handlers can be **1-arity** or **2-arity**:
+
+```elixir
+# 1-arity: receives only context
+def start(context) do
+  answer(context, "Welcome!")
+end
+
+# 2-arity: receives (update_info, context)
+def echo({:text, text, _msg}, context) do
+  answer(context, text)
+end
+```
+
+The router detects the arity at compile time. Use 2-arity when you need to extract data from the parsed update tuple directly.
 
 ### How dispatch works
 
@@ -196,24 +217,6 @@ Propagation stacks across nesting levels, so you can model arbitrary callback da
 ## Custom Filters
 
 When the built-in filters aren't enough, you can implement the `ExGram.Router.Filter` behaviour to encode any runtime predicate - user roles, conversation state, feature flags, and more. See the [Custom Filters section in the ExGram.Router documentation](https://github.com/rockneurotiko/ex_gram_router#custom-filters) for the full guide including examples and alias registration.
-
-## Handler Arities
-
-Handlers can be **1-arity** or **2-arity**:
-
-```elixir
-# 1-arity: receives only context
-def start(context) do
-  answer(context, "Welcome!")
-end
-
-# 2-arity: receives (update_info, context)
-def echo({:command, _name, %{text: text}}, context) do
-  answer(context, text)
-end
-```
-
-The router detects the arity at compile time. Use 2-arity when you need to extract data from the parsed update tuple directly.
 
 ## Inspecting Routes
 
