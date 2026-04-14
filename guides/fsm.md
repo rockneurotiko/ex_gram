@@ -10,6 +10,8 @@ Many bots need multi-step conversation flows: registration forms, settings wizar
 - **Key adapters** — scope state per-user, per-chat, or per-topic
 - **Router integration** — automatic `:fsm_flow` and `:fsm_state` filter aliases when used with [ExGram.Router](router.md)
 
+> This guide covers the most common usage. For the full API reference and advanced options, see the [ExGram.FSM HexDocs](https://hexdocs.pm/ex_gram_fsm).
+
 ## Installation
 
 Add `ex_gram_fsm` to your dependencies:
@@ -147,13 +149,13 @@ defmodule MyBot do
     scope do
       filter :fsm_state, :get_name
       filter :text
-      handle &MyBot.Handlers.got_name/1
+      handle &MyBot.Handlers.got_name/2
     end
 
     scope do
       filter :fsm_state, :get_email
       filter :text
-      handle &MyBot.Handlers.got_email/1
+      handle &MyBot.Handlers.got_email/2
     end
   end
 
@@ -173,18 +175,15 @@ defmodule MyBot.Handlers do
     |> answer("What's your name?")
   end
 
-  def got_name(context) do
-    name = context.update.message.text
-
+  def got_name({:text, name, _}, context) do
     context
     |> update_data(%{name: name})
     |> transition(:get_email)
     |> answer("Got it, #{name}! What's your email?")
   end
 
-  def got_email(context) do
+  def got_email({:text, email, _}, context) do
     %{name: name} = get_data(context)
-    email = context.update.message.text
 
     context
     |> update_data(%{email: email})

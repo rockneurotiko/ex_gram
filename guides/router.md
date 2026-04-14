@@ -71,7 +71,7 @@ defmodule MyBot do
 
   scope do
     filter :text
-    handle &MyBot.Handlers.echo/1
+    handle &MyBot.Handlers.echo/2
   end
 
   # Catch-all fallback
