@@ -4,6 +4,8 @@ As your bot grows, the `handle/2` function can become a long chain of pattern-ma
 
 [ExGram.Router](https://hex.pm/packages/ex_gram_router) replaces those hand-written clauses with a declarative **scope / filter / handle** DSL. You describe *what* each handler should match, and the router takes care of dispatching. Everything compiles down to a standard `handle/2` function, so the rest of ExGram (middlewares, DSL, testing) works exactly the same.
 
+> This guide covers the most common usage. For the full API reference and advanced options, see the [ExGram.Router HexDocs](https://hexdocs.pm/ex_gram_router).
+
 ## Installation
 
 Add `ex_gram_router` to your dependencies:
