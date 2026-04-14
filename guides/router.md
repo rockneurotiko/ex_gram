@@ -245,11 +245,14 @@ defmodule MyBot.Filters.Project do
   end
 
   @impl true
-  def scope_extra(_context, project_id) do
-    %{project: MyBot.Projects.get!(project_id)}
+  def scope_extra(context, _project_id) do
+    # Reuse data already loaded by middleware
+    %{project: Map.get(context.extra, :project)}
   end
 end
 ```
+
+> **Note:** `scope_extra/2` runs on every dispatch, so it's usually better to load data in a [middleware](middlewares.md) and restructure it here rather than performing database queries or HTTP calls directly.
 
 Child scopes of a scope using this filter will have `context.extra.project` available automatically.
 
