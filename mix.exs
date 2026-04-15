@@ -119,7 +119,7 @@ defmodule ExGram.Mixfile do
     [
       Cheatsheet: "guides/cheatsheet.md",
       Basic: ~r/guides\/(installation|getting-started|handling-updates|commands|sending-messages)\.md/,
-      Intermediate: ~r/guides\/(polling-and-webhooks|message-entities|middlewares|low-level-api)\.md/,
+      Intermediate: ~r/guides\/(router|fsm|polling-and-webhooks|message-entities|middlewares|low-level-api)\.md/,
       Observability: ~r/guides\/(telemetry|opentelemetry)\.md/,
       Advanced: ~r/guides\/(multiple-bots|flyio|bot-init-hooks)\.md/,
       Testing: "guides/testing.md",

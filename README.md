@@ -238,13 +238,18 @@ See the [Sending Messages](guides/sending-messages.md) guide for a complete refe
 - [Handling Updates](guides/handling-updates.md) - Process commands, messages, and other updates
 - [Sending Messages](guides/sending-messages.md) - DSL philosophy and response building
 - [Define commands](guides/commands.md) - Clearly define you bot's commands, with options for different scopes and languages
+
+### Intermediate
+
+- [Router](guides/router.md) - Declarative routing DSL for organizing complex bots
+- [FSM](guides/fsm.md) - Finite state machine conversation flows
+- [Polling and Webhooks](guides/polling-and-webhooks.md) - Configure update methods
 - [Message Entities](guides/message-entities.md) - Format messages without dealing with MarkdownV2 or HTML
 - [Middlewares](guides/middlewares.md) - Add preprocessing logic
+- [Low-Level API](guides/low-level-api.md) - Direct API calls for complex scenarios
 
 ### Advanced
 
-- [Polling and Webhooks](guides/polling-and-webhooks.md) - Configure update methods
-- [Low-Level API](guides/low-level-api.md) - Direct API calls for complex scenarios
 - [Multiple Bots](guides/multiple-bots.md) - Run multiple bots in one application
 - [Bot Init Hooks](guides/bot-init-hooks.md) - Run custom code during bot startup
 - [Testing](guides/testing.md) - Test your bots
@@ -257,6 +262,13 @@ See the [Sending Messages](guides/sending-messages.md) guide for a complete refe
 
 - [Cheatsheet](guides/cheatsheet.md) - Quick reference for common patterns
 - [HexDocs](https://hexdocs.pm/ex_gram) - Complete API documentation
+
+## Ecosystem
+
+Companion libraries that extend ExGram. If you have a library that extends ExGram feel free to open a discussion to add it here:
+
+- **[ExGram Router](https://hex.pm/packages/ex_gram_router)** — A declarative routing DSL that replaces `handle/2` pattern-match chains with composable `scope`/`filter`/`handle` blocks. Includes built-in filters for commands, text, callback queries, and more, plus mix tasks for inspecting your bot's route tree. See the [Router guide](guides/router.md).
+- **[ExGram FSM](https://hex.pm/packages/ex_gram_fsm)** — Finite state machine conversation management with named flows, validated transitions, pluggable storage backends, and automatic ExGram.Router integration. See the [FSM guide](guides/fsm.md).
 
 ## Contributing
 

@@ -347,9 +347,18 @@ def handle({:callback_query, %{from: user, data: data}}, context) do
 end
 ```
 
+## Beyond `handle/2`
+
+As your bot grows, a single `handle/2` function with many pattern-match clauses can become hard to navigate. Two companion libraries can help:
+
+- **[ExGram.Router](router.md)** — Replace `handle/2` clauses with a declarative `scope`/`filter`/`handle` DSL. The router dispatches updates based on composable filters (commands, text, callback queries, etc.) and lets you nest scopes for hierarchical routing. This is the recommended way to organize larger bots.
+- **[ExGram.FSM](fsm.md)** — Manage multi-step conversation flows (registration, onboarding, wizards) with named flows, validated state transitions, and pluggable storage. Integrates seamlessly with the router via automatic filter aliases.
+
 ## Next Steps
 
 - [Sending Messages](sending-messages.md) - Learn the DSL for building responses
+- [Router](router.md) - Declarative routing for complex bots
+- [FSM](fsm.md) - Finite state machine conversation flows
 - [Message Entities](message-entities.md) - Format messages without Markdown or HTML
 - [Middlewares](middlewares.md) - Add preprocessing logic to your bot
 - [Low-Level API](low-level-api.md) - Direct API calls for complex scenarios
