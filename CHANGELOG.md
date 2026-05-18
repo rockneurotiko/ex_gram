@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Update Bot API to 10.0
 
 ## [0.65.0]
 - Update Bot API to 9.6
