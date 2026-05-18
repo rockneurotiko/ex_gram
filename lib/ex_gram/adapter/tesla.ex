@@ -68,7 +68,7 @@ if Code.ensure_loaded?(Tesla) do
     end
 
     defp handle_result({:error, reason}) do
-      {:error, %ExGram.Error{code: reason}}
+      {:error, %ExGram.Error{code: reason, message: "transport error: #{inspect(reason)}"}}
     end
 
     defp maybe_error_parameters(%{parameters: parameters}) do
