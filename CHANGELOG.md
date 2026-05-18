@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+
+## [0.66.0]
+- Fix #213, adapter errors with message as string always
 - Update Bot API to 10.0
 
 ## [0.65.0]
