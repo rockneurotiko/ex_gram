@@ -515,6 +515,88 @@ defmodule ExGramTest do
     end
   end
 
+  describe "send_rich_message/2" do
+    test "sends a rich message and returns Message struct" do
+      ExGram.Test.expect(:send_rich_message, fn body ->
+        assert body[:chat_id] == 123
+        assert body[:rich_message] == %{html: "<b>Hello</b>"}
+
+        {:ok,
+         %{
+           message_id: 300,
+           date: 1_700_000_000,
+           chat: %{id: 123, type: "private"},
+           from: %{id: 999, is_bot: true, first_name: "Bot"},
+           rich_message: %{
+             blocks: [
+               %{type: "paragraph", text: ["Hello ", %{type: "bold", text: "world"}]}
+             ]
+           }
+         }}
+      end)
+
+      rich_message = %ExGram.Model.InputRichMessage{html: "<b>Hello</b>"}
+      {:ok, message} = ExGram.send_rich_message(123, rich_message)
+
+      assert %Message{message_id: 300} = message
+      assert %ExGram.Model.RichMessage{blocks: [paragraph]} = message.rich_message
+      assert %ExGram.Model.RichBlockParagraph{text: ["Hello ", %ExGram.Model.RichTextBold{text: "world"}]} = paragraph
+    end
+  end
+
+  describe "edit_message_text/1 with rich_message response" do
+    test "edits with rich_message and receives rich content back" do
+      ExGram.Test.expect(:edit_message_text, fn body ->
+        assert body[:chat_id] == 456
+        assert body[:message_id] == 200
+        assert body[:rich_message] == %{html: "<b>Check</b> this"}
+
+        {:ok,
+         %{
+           message_id: 200,
+           date: 1_700_000_000,
+           chat: %{id: 456, type: "private"},
+           from: %{id: 999, is_bot: true, first_name: "Bot"},
+           edit_date: 1_700_000_200,
+           rich_message: %{
+             blocks: [
+               %{
+                 type: "paragraph",
+                 text: [
+                   "Check ",
+                   %{type: "url", text: [%{type: "bold", text: "this link"}], url: "https://example.com"},
+                   " for details"
+                 ]
+               },
+               %{type: "divider"}
+             ]
+           }
+         }}
+      end)
+
+      rich_message = %ExGram.Model.InputRichMessage{html: "<b>Check</b> this"}
+
+      {:ok, message} =
+        ExGram.edit_message_text(rich_message: rich_message, chat_id: 456, message_id: 200)
+
+      assert %Message{edit_date: 1_700_000_200} = message
+      assert %ExGram.Model.RichMessage{blocks: [paragraph, divider]} = message.rich_message
+
+      assert %ExGram.Model.RichBlockParagraph{
+               text: [
+                 "Check ",
+                 %ExGram.Model.RichTextUrl{
+                   text: [%ExGram.Model.RichTextBold{text: "this link"}],
+                   url: "https://example.com"
+                 },
+                 " for details"
+               ]
+             } = paragraph
+
+      assert %ExGram.Model.RichBlockDivider{} = divider
+    end
+  end
+
   describe "delete_message/2" do
     test "deletes message and returns true" do
       ExGram.Test.expect(:delete_message, true)

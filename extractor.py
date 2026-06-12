@@ -113,10 +113,67 @@ def generate_method(method):
     return method_s.format(typ, name, ", ".join(args), clean_returned_type(returned), clean_description(description))
 
 
+def generate_primitive_type_spec(ptype):
+    """Convert a primitive_type from the API JSON to an Elixir type spec."""
+    if ptype == "str":
+        return "String.t()"
+    if ptype == "int":
+        return "integer()"
+    if ptype == "bool":
+        return "boolean()"
+    if ptype == "float":
+        return "float()"
+    if isinstance(ptype, list) and ptype[0] == "array":
+        inner = ptype[1][0] if len(ptype[1]) == 1 else ptype[1]
+        return "[{}]".format(generate_primitive_type_spec(inner))
+    # It's a model reference
+    if isinstance(ptype, str) and ptype[0].isupper():
+        return "{}.t()".format(ptype)
+    return "any()"
+
+
+def generate_primitive_type_elixir(ptype):
+    """Convert a primitive_type from the API JSON to an Elixir value for primitive_types/0."""
+    if ptype == "str":
+        return ":string"
+    if ptype == "int":
+        return ":integer"
+    if ptype == "bool":
+        return ":boolean"
+    if ptype == "float":
+        return ":float"
+    if isinstance(ptype, list) and ptype[0] == "array":
+        inner_types = ptype[1]
+        inner = inner_types[0] if len(inner_types) == 1 else inner_types
+        return "{{:array, {}}}".format(generate_primitive_type_elixir(inner))
+    # It's a model reference (e.g. "RichText")
+    if isinstance(ptype, str) and ptype[0].isupper():
+        return ptype
+    return ":any"
+
+
 def generate_generic(model):
     name = model['name']
     types_s = ", ".join(model['subtypes'])
     types_t = " | ".join(["{}.t()".format(x) for x in model['subtypes']])
+
+    primitive_types = model.get('primitive_types', [])
+
+    # Build type spec including primitive types
+    if primitive_types:
+        primitive_specs = [generate_primitive_type_spec(pt) for pt in primitive_types]
+        all_types = primitive_specs + ["{}.t()".format(x) for x in model['subtypes']]
+        types_t = " | ".join(all_types)
+
+    # Build primitive_types/0 function if needed
+    if primitive_types:
+        primitive_values = ", ".join([generate_primitive_type_elixir(pt) for pt in primitive_types])
+        primitive_fn = """\n  def primitive_types do
+    [{}]
+  end""".format(primitive_values)
+    else:
+        primitive_fn = ""
+
     return """defmodule {} do
   @moduledoc \"\"\"
   {} model. Valid subtypes: {}
@@ -130,8 +187,8 @@ def generate_generic(model):
 
   def subtypes do
     [{}]
-  end
-  end""".format(name, name, types_s, types_t, "{}", types_s)
+  end{}
+  end""".format(name, name, types_s, types_t, "{}", types_s, primitive_fn)
 
 
 def definition_from_web():

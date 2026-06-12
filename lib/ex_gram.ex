@@ -8811,7 +8811,9 @@ defmodule ExGram do
       RichText model. Valid subtypes: RichTextBold, RichTextItalic, RichTextUnderline, RichTextStrikethrough, RichTextSpoiler, RichTextDateTime, RichTextTextMention, RichTextSubscript, RichTextSuperscript, RichTextMarked, RichTextCode, RichTextCustomEmoji, RichTextMathematicalExpression, RichTextUrl, RichTextEmailAddress, RichTextPhoneNumber, RichTextBankCardNumber, RichTextMention, RichTextHashtag, RichTextCashtag, RichTextBotCommand, RichTextAnchor, RichTextAnchorLink, RichTextReference, RichTextReferenceLink
       """
       @type t ::
-              RichTextBold.t()
+              String.t()
+              | [t()]
+              | RichTextBold.t()
               | RichTextItalic.t()
               | RichTextUnderline.t()
               | RichTextStrikethrough.t()
@@ -8869,6 +8871,10 @@ defmodule ExGram do
           RichTextReference,
           RichTextReferenceLink
         ]
+      end
+
+      def primitive_types do
+        [:string, {:array, RichText}]
       end
     end
 

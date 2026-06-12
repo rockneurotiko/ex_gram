@@ -611,4 +611,184 @@ defmodule ExGram.CastTest do
              ] = casted
     end
   end
+
+  # ---------------------------------------------------------------------------
+  # Generics with primitive types (RichText)
+  # ---------------------------------------------------------------------------
+
+  describe "generics with primitive_types" do
+    test "RichText as a plain string" do
+      assert {:ok, "Hello world"} = Cast.cast("Hello world", Model.RichText)
+    end
+
+    test "RichText as a subtype map" do
+      input = %{type: "bold", text: "important"}
+
+      assert {:ok, %Model.RichTextBold{text: "important"}} = Cast.cast(input, Model.RichText)
+    end
+
+    test "RichText as a list of mixed strings and subtypes" do
+      input = [
+        "Hello ",
+        %{type: "bold", text: "world"}
+      ]
+
+      assert {:ok, ["Hello ", %Model.RichTextBold{text: "world"}]} =
+               Cast.cast(input, Model.RichText)
+    end
+
+    test "RichText as a nested list" do
+      input = [
+        "Text ",
+        %{type: "italic", text: ["nested ", %{type: "bold", text: "deep"}]}
+      ]
+
+      assert {:ok, ["Text ", %Model.RichTextItalic{text: ["nested ", %Model.RichTextBold{text: "deep"}]}]} =
+               Cast.cast(input, Model.RichText)
+    end
+
+    test "RichText subtype with text as string" do
+      input = %{type: "code", text: "x = 1"}
+
+      assert {:ok, %Model.RichTextCode{text: "x = 1"}} = Cast.cast(input, Model.RichText)
+    end
+
+    test "RichTextBold model decode_as casts text field as RichText" do
+      input = %{type: "bold", text: ["hello ", %{type: "italic", text: "world"}]}
+
+      assert {:ok, %Model.RichTextBold{text: ["hello ", %Model.RichTextItalic{text: "world"}]}} =
+               Cast.cast(input, Model.RichText)
+    end
+
+    test "RichText errors on invalid type" do
+      assert {:error, _} = Cast.cast(123, Model.RichText)
+    end
+
+    test "RichText list mixing all variants: strings, subtypes with string text, subtypes with list text, and nested subtypes" do
+      input = [
+        "Plain text ",
+        %{type: "bold", text: "bold string"},
+        " middle ",
+        %{type: "italic", text: ["italic with ", %{type: "code", text: "code inside"}]},
+        %{type: "url", text: "click here", url: "https://example.com"},
+        %{type: "spoiler", text: ["hidden ", %{type: "strikethrough", text: "crossed"}]},
+        " end"
+      ]
+
+      assert {:ok, result} = Cast.cast(input, Model.RichText)
+
+      assert [
+               "Plain text ",
+               %Model.RichTextBold{text: "bold string"},
+               " middle ",
+               %Model.RichTextItalic{
+                 text: ["italic with ", %Model.RichTextCode{text: "code inside"}]
+               },
+               %Model.RichTextUrl{text: "click here", url: "https://example.com"},
+               %Model.RichTextSpoiler{
+                 text: ["hidden ", %Model.RichTextStrikethrough{text: "crossed"}]
+               },
+               " end"
+             ] = result
+    end
+
+    test "RichText deeply nested: list inside subtype inside list inside subtype" do
+      input = %{
+        type: "bold",
+        text: [
+          "level1 ",
+          %{
+            type: "italic",
+            text: [
+              "level2 ",
+              %{type: "underline", text: ["level3 ", %{type: "code", text: "leaf"}]}
+            ]
+          }
+        ]
+      }
+
+      assert {:ok, result} = Cast.cast(input, Model.RichText)
+
+      assert %Model.RichTextBold{
+               text: [
+                 "level1 ",
+                 %Model.RichTextItalic{
+                   text: [
+                     "level2 ",
+                     %Model.RichTextUnderline{
+                       text: ["level3 ", %Model.RichTextCode{text: "leaf"}]
+                     }
+                   ]
+                 }
+               ]
+             } = result
+    end
+
+    test "RichText list with custom_emoji, mathematical_expression, and text_mention" do
+      input = [
+        %{type: "custom_emoji", custom_emoji_id: "emoji_123", alternative_text: "star"},
+        " then ",
+        %{type: "mathematical_expression", expression: "E = mc^2"},
+        " by ",
+        %{type: "text_mention", text: "Einstein", user: %{id: 42, is_bot: false, first_name: "Albert"}}
+      ]
+
+      assert {:ok, result} = Cast.cast(input, Model.RichText)
+
+      assert [
+               %Model.RichTextCustomEmoji{
+                 custom_emoji_id: "emoji_123",
+                 alternative_text: "star"
+               },
+               " then ",
+               %Model.RichTextMathematicalExpression{expression: "E = mc^2"},
+               " by ",
+               %Model.RichTextTextMention{
+                 text: "Einstein",
+                 user: %Model.User{id: 42, is_bot: false, first_name: "Albert"}
+               }
+             ] = result
+    end
+
+    test "RichText as array of RichText used in RichBlockParagraph" do
+      input = %{
+        type: "paragraph",
+        text: [
+          "Hello ",
+          %{type: "bold", text: [%{type: "italic", text: "bold-italic"}]},
+          " world ",
+          %{type: "marked", text: "highlighted"},
+          %{type: "subscript", text: "sub"},
+          %{type: "superscript", text: "sup"}
+        ]
+      }
+
+      assert {:ok, result} = Cast.cast(input, Model.RichBlock)
+
+      assert %Model.RichBlockParagraph{
+               text: [
+                 "Hello ",
+                 %Model.RichTextBold{text: [%Model.RichTextItalic{text: "bold-italic"}]},
+                 " world ",
+                 %Model.RichTextMarked{text: "highlighted"},
+                 %Model.RichTextSubscript{text: "sub"},
+                 %Model.RichTextSuperscript{text: "sup"}
+               ]
+             } = result
+    end
+
+    test "RichText empty list" do
+      assert {:ok, []} = Cast.cast([], Model.RichText)
+    end
+
+    test "RichText single-element list with just a string" do
+      assert {:ok, ["just text"]} = Cast.cast(["just text"], Model.RichText)
+    end
+
+    test "RichText single-element list with just a subtype" do
+      input = [%{type: "bold", text: "only bold"}]
+
+      assert {:ok, [%Model.RichTextBold{text: "only bold"}]} = Cast.cast(input, Model.RichText)
+    end
+  end
 end
