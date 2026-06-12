@@ -190,6 +190,38 @@ defmodule ExGram.Cast do
   end
 
   defp apply_subtype(t, params) do
-    {:error, %ExGram.Error{message: "Expected a map for type #{inspect(t)}, got: #{inspect(params)}"}}
+    if function_exported?(t, :primitive_types, 0) do
+      process_primitive_subtype(t.primitive_types(), params)
+    else
+      {:error, %ExGram.Error{message: "Expected a map for type #{inspect(t)}, got: #{inspect(params)}"}}
+    end
+  end
+
+  defp process_primitive_subtype([], params) do
+    {:error, %ExGram.Error{message: "Value #{inspect(params)} does not match any primitive type"}}
+  end
+
+  defp process_primitive_subtype([:string | _rest], params) when is_binary(params) do
+    {:ok, params}
+  end
+
+  defp process_primitive_subtype([{:array, inner_type} | _rest], params) when is_list(params) do
+    process_type(params, {:array, inner_type})
+  end
+
+  defp process_primitive_subtype([:integer | _rest], params) when is_integer(params) do
+    {:ok, params}
+  end
+
+  defp process_primitive_subtype([:boolean | _rest], params) when is_boolean(params) do
+    {:ok, params}
+  end
+
+  defp process_primitive_subtype([:float | _rest], params) when is_float(params) do
+    {:ok, params}
+  end
+
+  defp process_primitive_subtype([_type | rest], params) do
+    process_primitive_subtype(rest, params)
   end
 end
