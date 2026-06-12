@@ -4,9 +4,13 @@ defmodule ExGramTest do
   alias ExGram.Model.BotCommand
   alias ExGram.Model.Chat
   alias ExGram.Model.InputPollOption
+  alias ExGram.Model.InputRichMessage
   alias ExGram.Model.Location
   alias ExGram.Model.Message
   alias ExGram.Model.PhotoSize
+  alias ExGram.Model.RichBlockParagraph
+  alias ExGram.Model.RichMessage
+  alias ExGram.Model.RichTextBold
   alias ExGram.Model.Sticker
   alias ExGram.Model.User
 
@@ -505,7 +509,7 @@ defmodule ExGramTest do
         edit_date: 1_700_000_200
       })
 
-      rich_message = %ExGram.Model.InputRichMessage{html: "<b>Hello</b>"}
+      rich_message = %InputRichMessage{html: "<b>Hello</b>"}
 
       {:ok, message} =
         ExGram.edit_message_text(rich_message: rich_message, chat_id: 456, message_id: 200)
@@ -535,12 +539,12 @@ defmodule ExGramTest do
          }}
       end)
 
-      rich_message = %ExGram.Model.InputRichMessage{html: "<b>Hello</b>"}
+      rich_message = %InputRichMessage{html: "<b>Hello</b>"}
       {:ok, message} = ExGram.send_rich_message(123, rich_message)
 
       assert %Message{message_id: 300} = message
-      assert %ExGram.Model.RichMessage{blocks: [paragraph]} = message.rich_message
-      assert %ExGram.Model.RichBlockParagraph{text: ["Hello ", %ExGram.Model.RichTextBold{text: "world"}]} = paragraph
+      assert %RichMessage{blocks: [paragraph]} = message.rich_message
+      assert %RichBlockParagraph{text: ["Hello ", %RichTextBold{text: "world"}]} = paragraph
     end
   end
 
@@ -574,19 +578,19 @@ defmodule ExGramTest do
          }}
       end)
 
-      rich_message = %ExGram.Model.InputRichMessage{html: "<b>Check</b> this"}
+      rich_message = %InputRichMessage{html: "<b>Check</b> this"}
 
       {:ok, message} =
         ExGram.edit_message_text(rich_message: rich_message, chat_id: 456, message_id: 200)
 
       assert %Message{edit_date: 1_700_000_200} = message
-      assert %ExGram.Model.RichMessage{blocks: [paragraph, divider]} = message.rich_message
+      assert %RichMessage{blocks: [paragraph, divider]} = message.rich_message
 
-      assert %ExGram.Model.RichBlockParagraph{
+      assert %RichBlockParagraph{
                text: [
                  "Check ",
                  %ExGram.Model.RichTextUrl{
-                   text: [%ExGram.Model.RichTextBold{text: "this link"}],
+                   text: [%RichTextBold{text: "this link"}],
                    url: "https://example.com"
                  },
                  " for details"
