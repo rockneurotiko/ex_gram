@@ -1,6 +1,12 @@
 # Changelog
 
 ## Unreleased
+- Update Bot API to 10.1
+- Add `RichText` and `RichBlock` subtype implementations
+- Add `InputMediaLink` subtype to `InputPollOptionMedia`
+- Add `InputRichMessageContent` subtype to `InputMessageContent`
+- Add backward-compatible `edit_message_text/2` wrapper (`text` is now optional in the API)
+- New methods: `answerChatJoinRequestQuery`, `sendChatJoinRequestWebApp`, `sendRichMessage`, `sendRichMessageDraft`
 
 ## [0.66.0]
 - Fix #213, adapter errors with message as string always

@@ -37,6 +37,27 @@ defmodule ExGram do
     ExGram.Config.get(:ex_gram, :test_environment, false)
   end
 
+  # Backward compatibility wrapper for edit_message_text/2.
+  # The Bot API made `text` optional (since you can now send `rich_message` instead),
+  # which changed the auto-generated function from arity/2 to arity/1.
+  # This keeps the old edit_message_text(text, opts) interface working.
+  @doc """
+  Edit text of a message. This is a convenience wrapper that accepts `text` as the
+  first argument for backward compatibility.
+
+  See `edit_message_text/1` for the full list of options.
+
+  ## Examples
+
+      ExGram.edit_message_text("New text", chat_id: chat_id, message_id: msg_id)
+
+  """
+  @spec edit_message_text(text :: String.t(), options :: keyword()) ::
+          {:ok, ExGram.Model.Message.t() | true} | {:error, ExGram.Error.t()}
+  def edit_message_text(text, opts) when is_binary(text) and is_list(opts) do
+    edit_message_text(Keyword.put(opts, :text, text))
+  end
+
   # START AUTO GENERATED
 
   # ----------METHODS-----------
@@ -1419,6 +1440,29 @@ defmodule ExGram do
 
   method(
     :post,
+    "answerChatJoinRequestQuery",
+    [
+      {chat_join_request_query_id, [:string], "Unique identifier of the join request query"},
+      {result, [:string],
+       "Result of the query. Must be either \"approve” to allow the user to join the chat, \"decline” to disallow the user to join the chat, or \"queue” to leave the decision to other administrators."}
+    ],
+    true,
+    "Use this method to process a received chat join request query. Returns True on success."
+  )
+
+  method(
+    :post,
+    "sendChatJoinRequestWebApp",
+    [
+      {chat_join_request_query_id, [:string], "Unique identifier of the join request query"},
+      {web_app_url, [:string], "The URL of the Mini App to be opened"}
+    ],
+    true,
+    "Use this method to process a received chat join request query by showing a Mini App to the user before deciding the outcome. Returns True on success."
+  )
+
+  method(
+    :post,
     "setChatPhoto",
     [
       {chat_id, [:integer, :string],
@@ -2516,17 +2560,21 @@ defmodule ExGram do
        :optional},
       {inline_message_id, [:string],
        "Required if chat_id and message_id are not specified. Identifier of the inline message.", :optional},
-      {text, [:string], "New text of the message, 1-4096 characters after entities parsing"},
+      {text, [:string],
+       "New text of the message, 1-4096 characters after entity parsing; required if rich_message isn't specified",
+       :optional},
       {parse_mode, [:string], "Mode for parsing entities in the message text. See formatting options for more details.",
        :optional},
       {entities, [{:array, MessageEntity}],
        "A JSON-serialized list of special entities that appear in message text, which can be specified instead of parse_mode",
        :optional},
       {link_preview_options, [LinkPreviewOptions], "Link preview generation options for the message", :optional},
+      {rich_message, [InputRichMessage], "New rich content of the message; required if text isn't specified",
+       :optional},
       {reply_markup, [InlineKeyboardMarkup], "A JSON-serialized object for an inline keyboard", :optional}
     ],
     [ExGram.Model.Message, true],
-    "Use this method to edit text and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
+    "Use this method to edit text, rich and game messages. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
   )
 
   method(
@@ -2574,7 +2622,7 @@ defmodule ExGram do
       {reply_markup, [InlineKeyboardMarkup], "A JSON-serialized object for a new inline keyboard", :optional}
     ],
     [ExGram.Model.Message, true],
-    "Use this method to edit animation, audio, document, live photo, photo, or video messages, or to add media to text messages. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
+    "Use this method to edit animation, audio, document, live photo, photo, or video messages, or to replace a text or a rich message with a media. If a message is part of a message album, then it can be edited only to an audio for audio albums, only to a document for document albums and to a photo, a live photo, or a video otherwise. When an inline message is edited, a new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL. On success, if the edited message is not an inline message, the edited Message is returned, otherwise True is returned. Note that business messages that were not sent by the bot and do not contain an inline keyboard can only be edited within 48 hours from the time they were sent."
   )
 
   method(
@@ -2981,6 +3029,55 @@ defmodule ExGram do
 
   method(
     :post,
+    "sendRichMessage",
+    [
+      {business_connection_id, [:string],
+       "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
+      {chat_id, [:integer, :string],
+       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+      {message_thread_id, [:integer],
+       "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
+       :optional},
+      {direct_messages_topic_id, [:integer],
+       "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
+       :optional},
+      {rich_message, [InputRichMessage], "The message to be sent"},
+      {disable_notification, [:boolean], "Sends the message silently. Users will receive a notification with no sound.",
+       :optional},
+      {protect_content, [:boolean], "Protects the contents of the sent message from forwarding and saving", :optional},
+      {allow_paid_broadcast, [:boolean],
+       "Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.",
+       :optional},
+      {message_effect_id, [:string],
+       "Unique identifier of the message effect to be added to the message; for private chats only", :optional},
+      {suggested_post_parameters, [SuggestedPostParameters],
+       "A JSON-serialized object containing the parameters of the suggested post to send; for direct messages chats only. If the message is sent as a reply to another suggested post, then that suggested post is automatically declined.",
+       :optional},
+      {reply_parameters, [ReplyParameters], "Description of the message to reply to", :optional},
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
+       "Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.",
+       :optional}
+    ],
+    ExGram.Model.Message,
+    "Use this method to send rich messages. If the message contains a block with a media element, then the bot must have the right to send the media to the chat. On success, the sent Message is returned."
+  )
+
+  method(
+    :post,
+    "sendRichMessageDraft",
+    [
+      {chat_id, [:integer], "Unique identifier for the target private chat"},
+      {message_thread_id, [:integer], "Unique identifier for the target message thread", :optional},
+      {draft_id, [:integer],
+       "Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated."},
+      {rich_message, [InputRichMessage], "The partial message to be streamed"}
+    ],
+    true,
+    "Use this method to stream a partial rich message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendRichMessage with the complete message to persist it in the user's chat. Returns True on success."
+  )
+
+  method(
+    :post,
     "answerInlineQuery",
     [
       {inline_query_id, [:string], "Unique identifier for the answered query"},
@@ -3301,7 +3398,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 176 methods
+  # 180 methods
 
   # ----------MODELS-----------
 
@@ -3444,7 +3541,11 @@ defmodule ExGram do
          "Optional. True, if the bot allows users to create and delete topics in private chats. Returned only in getMe.",
          :optional},
         {:can_manage_bots, [:boolean],
-         "Optional. True, if other bots can be created to be controlled by the bot. Returned only in getMe.", :optional}
+         "Optional. True, if other bots can be created to be controlled by the bot. Returned only in getMe.",
+         :optional},
+        {:supports_join_request_queries, [:boolean],
+         "Optional. True, if the bot supports join request queries and can be assigned to process them. Returned only in getMe.",
+         :optional}
       ],
       "This object represents a Telegram user or bot."
     )
@@ -3575,7 +3676,10 @@ defmodule ExGram do
          "Optional. The color scheme based on a unique gift that must be used for the chat's name, message replies and link previews",
          :optional},
         {:paid_message_star_count, [:integer],
-         "Optional. The number of Telegram Stars a general user has to pay to send a message to the chat", :optional}
+         "Optional. The number of Telegram Stars a general user has to pay to send a message to the chat", :optional},
+        {:guard_bot, [User],
+         "Optional. The bot that processes join request queries in the chat. The field is only available to chat administrators.",
+         :optional}
       ],
       "This object contains full information about a chat."
     )
@@ -3667,6 +3771,7 @@ defmodule ExGram do
          "Optional. Information about suggested post parameters if the message is a suggested post in a channel direct messages chat. If the message is an approved or declined suggested post, then it can't be edited.",
          :optional},
         {:effect_id, [:string], "Optional. Unique identifier of the message effect added to the message", :optional},
+        {:rich_message, [RichMessage], "Optional. Message is a rich formatted message", :optional},
         {:animation, [Animation],
          "Optional. Message is an animation, information about the animation. For backward compatibility, when this field is set, the document field will also be set.",
          :optional},
@@ -4207,6 +4312,8 @@ defmodule ExGram do
       "This object represents an animated emoji that displays a random value."
     )
 
+    model(Link, [{:url, [:string], "URL of the link"}], "Represents an HTTP link.")
+
     model(
       PollMedia,
       [
@@ -4217,6 +4324,7 @@ defmodule ExGram do
         {:document, [Document],
          "Optional. Media is a general file, information about the file; currently, can't be received in a poll option",
          :optional},
+        {:link, [Link], "Optional. The HTTP link attached to the poll option", :optional},
         {:live_photo, [LivePhoto], "Optional. Media is a live photo, information about the live photo", :optional},
         {:location, [Location], "Optional. Media is a shared location, information about the location", :optional},
         {:photo, [{:array, PhotoSize}], "Optional. Media is a photo, available sizes of the photo", :optional},
@@ -5462,7 +5570,7 @@ defmodule ExGram do
         {:user, [User], "Information about the user"},
         {:is_member, [:boolean], "True, if the user is a member of the chat at the moment of the request"},
         {:can_send_messages, [:boolean],
-         "True, if the user is allowed to send text messages, contacts, giveaways, giveaway winners, invoices, locations and venues"},
+         "True, if the user is allowed to send text messages, rich messages, contacts, giveaways, giveaway winners, invoices, locations and venues"},
         {:can_send_audios, [:boolean], "True, if the user is allowed to send audios"},
         {:can_send_documents, [:boolean], "True, if the user is allowed to send documents"},
         {:can_send_photos, [:boolean], "True, if the user is allowed to send photos"},
@@ -5517,7 +5625,10 @@ defmodule ExGram do
         {:date, [:integer], "Date the request was sent in Unix time"},
         {:bio, [:string], "Optional. Bio of the user", :optional},
         {:invite_link, [ChatInviteLink],
-         "Optional. Chat invite link that was used by the user to send the join request", :optional}
+         "Optional. Chat invite link that was used by the user to send the join request", :optional},
+        {:query_id, [:string],
+         "Optional. Identifier of the join request query. If present, then the bot must call sendChatJoinRequestWebApp or directly call answerChatJoinRequestQuery within 10 seconds.",
+         :optional}
       ],
       "Represents a join request sent to a chat."
     )
@@ -5526,7 +5637,7 @@ defmodule ExGram do
       ChatPermissions,
       [
         {:can_send_messages, [:boolean],
-         "Optional. True, if the user is allowed to send text messages, contacts, giveaways, giveaway winners, invoices, locations and venues",
+         "Optional. True, if the user is allowed to send text messages, rich messages, contacts, giveaways, giveaway winners, invoices, locations and venues",
          :optional},
         {:can_send_audios, [:boolean], "Optional. True, if the user is allowed to send audios", :optional},
         {:can_send_documents, [:boolean], "Optional. True, if the user is allowed to send documents", :optional},
@@ -6447,6 +6558,12 @@ defmodule ExGram do
     )
 
     model(
+      InputMediaLink,
+      [{:type, [:string], "Type of the result, must be link"}, {:url, [:string], "HTTP URL of the link"}],
+      "Represents an HTTP link to be sent."
+    )
+
+    model(
       InputMediaLivePhoto,
       [
         {:type, [:string], "Type of the result, must be live_photo"},
@@ -6730,6 +6847,485 @@ defmodule ExGram do
          :optional}
       ],
       "This object describes a sticker to be added to a sticker set."
+    )
+
+    model(
+      RichMessage,
+      [
+        {:blocks, [{:array, RichBlock}], "Content of the message"},
+        {:is_rtl, [:boolean], "Optional. True, if the rich message must be shown right-to-left", :optional}
+      ],
+      "Rich formatted message."
+    )
+
+    model(
+      InputRichMessage,
+      [
+        {:html, [:string],
+         "Optional. Content of the rich message to send described using HTML formatting. See rich message formatting options for more details.",
+         :optional},
+        {:markdown, [:string],
+         "Optional. Content of the rich message to send described using Markdown formatting. See rich message formatting options for more details.",
+         :optional},
+        {:is_rtl, [:boolean], "Optional. Pass True if the rich message must be shown right-to-left", :optional},
+        {:skip_entity_detection, [:boolean],
+         "Optional. Pass True to skip automatic detection of entities (e.g., URLs, email addresses, username mentions, hashtags, cashtags, bot commands, or phone numbers) in the text",
+         :optional}
+      ],
+      "Describes a rich message to be sent. Exactly one of the fields html or markdown must be used."
+    )
+
+    model(
+      RichTextBold,
+      [{:type, [:string], "Type of the rich text, always \"bold”"}, {:text, [RichText], "The text"}],
+      "A bold text."
+    )
+
+    model(
+      RichTextItalic,
+      [{:type, [:string], "Type of the rich text, always \"italic”"}, {:text, [RichText], "The text"}],
+      "An italicized text."
+    )
+
+    model(
+      RichTextUnderline,
+      [{:type, [:string], "Type of the rich text, always \"underline”"}, {:text, [RichText], "The text"}],
+      "An underlined text."
+    )
+
+    model(
+      RichTextStrikethrough,
+      [{:type, [:string], "Type of the rich text, always \"strikethrough”"}, {:text, [RichText], "The text"}],
+      "A strikethrough text."
+    )
+
+    model(
+      RichTextSpoiler,
+      [{:type, [:string], "Type of the rich text, always \"spoiler”"}, {:text, [RichText], "The text"}],
+      "A text covered by a spoiler."
+    )
+
+    model(
+      RichTextDateTime,
+      [
+        {:type, [:string], "Type of the rich text, always \"date_time”"},
+        {:text, [RichText], "The text"},
+        {:unix_time, [:integer], "The Unix time associated with the entity"},
+        {:date_time_format, [:string],
+         "The string that defines the formatting of the date and time. See date-time entity formatting for more details."}
+      ],
+      "Formatted date and time."
+    )
+
+    model(
+      RichTextTextMention,
+      [
+        {:type, [:string], "Type of the rich text, always \"text_mention”"},
+        {:text, [RichText], "The text"},
+        {:user, [User], "The mentioned user"}
+      ],
+      "A mention of a Telegram user by their identifier."
+    )
+
+    model(
+      RichTextSubscript,
+      [{:type, [:string], "Type of the rich text, always \"subscript”"}, {:text, [RichText], "The text"}],
+      "A subscript text."
+    )
+
+    model(
+      RichTextSuperscript,
+      [{:type, [:string], "Type of the rich text, always \"superscript”"}, {:text, [RichText], "The text"}],
+      "A superscript text."
+    )
+
+    model(
+      RichTextMarked,
+      [{:type, [:string], "Type of the rich text, always \"marked”"}, {:text, [RichText], "The text"}],
+      "A marked text."
+    )
+
+    model(
+      RichTextCode,
+      [{:type, [:string], "Type of the rich text, always \"code”"}, {:text, [RichText], "The text"}],
+      "A monowidth text."
+    )
+
+    model(
+      RichTextCustomEmoji,
+      [
+        {:type, [:string], "Type of the rich text, always \"custom_emoji”"},
+        {:custom_emoji_id, [:string],
+         "Unique identifier of the custom emoji. Use getCustomEmojiStickers to get full information about the sticker."},
+        {:alternative_text, [:string], "Alternative emoji for the custom emoji"}
+      ],
+      "A custom emoji."
+    )
+
+    model(
+      RichTextMathematicalExpression,
+      [
+        {:type, [:string], "Type of the rich text, always \"mathematical_expression”"},
+        {:expression, [:string], "The expression in LaTeX format"}
+      ],
+      "A mathematical expression."
+    )
+
+    model(
+      RichTextUrl,
+      [
+        {:type, [:string], "Type of the rich text, always \"url”"},
+        {:text, [RichText], "The text"},
+        {:url, [:string], "URL of the link"}
+      ],
+      "A text with a link."
+    )
+
+    model(
+      RichTextEmailAddress,
+      [
+        {:type, [:string], "Type of the rich text, always \"email_address”"},
+        {:text, [RichText], "The text"},
+        {:email_address, [:string], "The email address"}
+      ],
+      "A text with an email address."
+    )
+
+    model(
+      RichTextPhoneNumber,
+      [
+        {:type, [:string], "Type of the rich text, always \"phone_number”"},
+        {:text, [RichText], "The text"},
+        {:phone_number, [:string], "The phone number"}
+      ],
+      "A text with a phone number."
+    )
+
+    model(
+      RichTextBankCardNumber,
+      [
+        {:type, [:string], "Type of the rich text, always \"bank_card_number”"},
+        {:text, [RichText], "The text"},
+        {:bank_card_number, [:string], "The bank card number"}
+      ],
+      "A text with a bank card number."
+    )
+
+    model(
+      RichTextMention,
+      [
+        {:type, [:string], "Type of the rich text, always \"mention”"},
+        {:text, [RichText], "The text"},
+        {:username, [:string], "The username"}
+      ],
+      "A mention by a username."
+    )
+
+    model(
+      RichTextHashtag,
+      [
+        {:type, [:string], "Type of the rich text, always \"hashtag”"},
+        {:text, [RichText], "The text"},
+        {:hashtag, [:string], "The hashtag"}
+      ],
+      "A hashtag."
+    )
+
+    model(
+      RichTextCashtag,
+      [
+        {:type, [:string], "Type of the rich text, always \"cashtag”"},
+        {:text, [RichText], "The text"},
+        {:cashtag, [:string], "The cashtag"}
+      ],
+      "A cashtag."
+    )
+
+    model(
+      RichTextBotCommand,
+      [
+        {:type, [:string], "Type of the rich text, always \"bot_command”"},
+        {:text, [RichText], "The text"},
+        {:bot_command, [:string], "The bot command"}
+      ],
+      "A bot command."
+    )
+
+    model(
+      RichTextAnchor,
+      [{:type, [:string], "Type of the rich text, always \"anchor”"}, {:name, [:string], "The name of the anchor"}],
+      "An anchor."
+    )
+
+    model(
+      RichTextAnchorLink,
+      [
+        {:type, [:string], "Type of the rich text, always \"anchor_link”"},
+        {:text, [RichText], "The link text"},
+        {:anchor_name, [:string],
+         "The name of the anchor. If the name is empty, then the link brings back to the top of the message."}
+      ],
+      "A link to an anchor."
+    )
+
+    model(
+      RichTextReference,
+      [
+        {:type, [:string], "Type of the rich text, always \"reference”"},
+        {:text, [RichText], "Text of the reference"},
+        {:name, [:string], "The name of the reference"}
+      ],
+      "A reference."
+    )
+
+    model(
+      RichTextReferenceLink,
+      [
+        {:type, [:string], "Type of the rich text, always \"reference_link”"},
+        {:text, [RichText], "The link text"},
+        {:reference_name, [:string], "The name of the reference"}
+      ],
+      "A link to a reference."
+    )
+
+    model(
+      RichBlockCaption,
+      [
+        {:text, [RichText], "Block caption"},
+        {:credit, [RichText], "Optional. Block credit which corresponds to the HTML tag <cite>", :optional}
+      ],
+      "Caption of a rich formatted block."
+    )
+
+    model(
+      RichBlockTableCell,
+      [
+        {:text, [RichText], "Optional. Text in the cell. If omitted, then the cell is invisible.", :optional},
+        {:is_header, [:boolean], "Optional. True, if the cell is a header cell", :optional},
+        {:colspan, [:integer], "Optional. The number of columns the cell spans if it is bigger than 1", :optional},
+        {:rowspan, [:integer], "Optional. The number of rows the cell spans if it is bigger than 1", :optional},
+        {:align, [:string],
+         "Horizontal cell content alignment. Currently, must be one of \"left”, \"center”, or \"right”."},
+        {:valign, [:string],
+         "Vertical cell content alignment. Currently, must be one of \"top”, \"middle”, or \"bottom”."}
+      ],
+      "Cell in a table."
+    )
+
+    model(
+      RichBlockListItem,
+      [
+        {:label, [:string], "Label of the item"},
+        {:blocks, [{:array, RichBlock}], "The content of the item"},
+        {:has_checkbox, [:boolean], "Optional. True, if the item has a checkbox", :optional},
+        {:is_checked, [:boolean], "Optional. True, if the item has a checked checkbox", :optional},
+        {:value, [:integer], "Optional. For ordered lists, the numeric value of the item label", :optional},
+        {:type, [:string],
+         ~s(Optional. For ordered lists, the type of the item label; must be one of "a” for lowercase letters, "A” for uppercase letters, "i” for lowercase Roman numerals, "I” for uppercase Roman numerals, or "1” for decimal numbers),
+         :optional}
+      ],
+      "An item of a list."
+    )
+
+    model(
+      RichBlockParagraph,
+      [{:type, [:string], "Type of the block, always \"paragraph”"}, {:text, [RichText], "Text of the block"}],
+      "A text paragraph, corresponding to the HTML tag <p>."
+    )
+
+    model(
+      RichBlockSectionHeading,
+      [
+        {:type, [:string], "Type of the block, always \"heading”"},
+        {:text, [RichText], "Text of the block"},
+        {:size, [:integer], "Relative size of the text font; 1-6, 1 is the largest, 6 is the smallest"}
+      ],
+      "A section heading, corresponding to the HTML tags <h1>, <h2>, <h3>, <h4>, <h5>, or <h6>."
+    )
+
+    model(
+      RichBlockPreformatted,
+      [
+        {:type, [:string], "Type of the block, always \"pre”"},
+        {:text, [RichText], "Text of the block"},
+        {:language, [:string], "Optional. The programming language of the text", :optional}
+      ],
+      "A preformatted text block, corresponding to the nested HTML tags <pre> and <code>."
+    )
+
+    model(
+      RichBlockFooter,
+      [{:type, [:string], "Type of the block, always \"footer”"}, {:text, [RichText], "Text of the block"}],
+      "A footer, corresponding to the HTML tag <footer>."
+    )
+
+    model(
+      RichBlockDivider,
+      [{:type, [:string], "Type of the block, always \"divider”"}],
+      "A divider, corresponding to the HTML tag <hr/>."
+    )
+
+    model(
+      RichBlockMathematicalExpression,
+      [
+        {:type, [:string], "Type of the block, always \"mathematical_expression”"},
+        {:expression, [:string], "The mathematical expression in LaTeX format"}
+      ],
+      "A block with a mathematical expression in LaTeX format, corresponding to the custom HTML tag <tg-math-block>."
+    )
+
+    model(
+      RichBlockAnchor,
+      [{:type, [:string], "Type of the block, always \"anchor”"}, {:name, [:string], "The name of the anchor"}],
+      "A block with an anchor, corresponding to the HTML tag <a> with the attribute name."
+    )
+
+    model(
+      RichBlockList,
+      [
+        {:type, [:string], "Type of the block, always \"list”"},
+        {:items, [{:array, RichBlockListItem}], "Items of the list"}
+      ],
+      "A list of blocks, corresponding to the HTML tag <ul> or <ol> with multiple nested tags <li>."
+    )
+
+    model(
+      RichBlockBlockQuotation,
+      [
+        {:type, [:string], "Type of the block, always \"blockquote”"},
+        {:blocks, [{:array, RichBlock}], "Content of the block"},
+        {:credit, [RichText], "Optional. Credit of the block", :optional}
+      ],
+      "A block quotation, corresponding to the HTML tag <blockquote>."
+    )
+
+    model(
+      RichBlockPullQuotation,
+      [
+        {:type, [:string], "Type of the block, always \"pullquote”"},
+        {:text, [RichText], "Text of the block"},
+        {:credit, [RichText], "Optional. Credit of the block", :optional}
+      ],
+      "A quotation with centered text, loosely corresponding to the HTML tag <aside>."
+    )
+
+    model(
+      RichBlockCollage,
+      [
+        {:type, [:string], "Type of the block, always \"collage”"},
+        {:blocks, [{:array, RichBlock}], "Elements of the collage"},
+        {:caption, [RichBlockCaption], "Optional. Caption of the block", :optional}
+      ],
+      "A collage, corresponding to the custom HTML tag <tg-collage>."
+    )
+
+    model(
+      RichBlockSlideshow,
+      [
+        {:type, [:string], "Type of the block, always \"slideshow”"},
+        {:blocks, [{:array, RichBlock}], "Elements of the slideshow"},
+        {:caption, [RichBlockCaption], "Optional. Caption of the block", :optional}
+      ],
+      "A slideshow, corresponding to the custom HTML tag <tg-slideshow>."
+    )
+
+    model(
+      RichBlockTable,
+      [
+        {:type, [:string], "Type of the block, always \"table”"},
+        {:cells, [{:array, {:array, RichBlockTableCell}}], "Cells of the table"},
+        {:is_bordered, [:boolean], "Optional. True, if the table has borders", :optional},
+        {:is_striped, [:boolean], "Optional. True, if the table is striped", :optional},
+        {:caption, [RichText], "Optional. Caption of the table", :optional}
+      ],
+      "A table, corresponding to the HTML tag <table>."
+    )
+
+    model(
+      RichBlockDetails,
+      [
+        {:type, [:string], "Type of the block, always \"details”"},
+        {:summary, [RichText], "Always shown summary of the block"},
+        {:blocks, [{:array, RichBlock}], "Content of the block"},
+        {:is_open, [:boolean], "Optional. True, if the content of the block is visible by default", :optional}
+      ],
+      "An expandable block for details disclosure, corresponding to the HTML tag <details>."
+    )
+
+    model(
+      RichBlockMap,
+      [
+        {:type, [:string], "Type of the block, always \"map”"},
+        {:location, [Location], "Location of the center of the map"},
+        {:zoom, [:integer], "Map zoom level; 13-20"},
+        {:width, [:integer], "Expected width of the map"},
+        {:height, [:integer], "Expected height of the map"},
+        {:caption, [RichBlockCaption], "Optional. Caption of the block", :optional}
+      ],
+      "A block with a map, corresponding to the custom HTML tag <tg-map>."
+    )
+
+    model(
+      RichBlockAnimation,
+      [
+        {:type, [:string], "Type of the block, always \"animation”"},
+        {:animation, [Animation], "The animation"},
+        {:has_spoiler, [:boolean], "Optional. True, if the media preview is covered by a spoiler animation", :optional},
+        {:caption, [RichBlockCaption], "Optional. Caption of the block", :optional}
+      ],
+      "A block with an animation, corresponding to the HTML tag <video>."
+    )
+
+    model(
+      RichBlockAudio,
+      [
+        {:type, [:string], "Type of the block, always \"audio”"},
+        {:audio, [Audio], "The audio"},
+        {:caption, [RichBlockCaption], "Optional. Caption of the block", :optional}
+      ],
+      "A block with a music file, corresponding to the HTML tag <audio>."
+    )
+
+    model(
+      RichBlockPhoto,
+      [
+        {:type, [:string], "Type of the block, always \"photo”"},
+        {:photo, [{:array, PhotoSize}], "Available sizes of the photo"},
+        {:has_spoiler, [:boolean], "Optional. True, if the media preview is covered by a spoiler animation", :optional},
+        {:caption, [RichBlockCaption], "Optional. Caption of the block", :optional}
+      ],
+      "A block with a photo, corresponding to the HTML tag <photo>."
+    )
+
+    model(
+      RichBlockVideo,
+      [
+        {:type, [:string], "Type of the block, always \"video”"},
+        {:video, [Video], "The video"},
+        {:has_spoiler, [:boolean], "Optional. True, if the media preview is covered by a spoiler animation", :optional},
+        {:caption, [RichBlockCaption], "Optional. Caption of the block", :optional}
+      ],
+      "A block with a video, corresponding to the HTML tag <video>."
+    )
+
+    model(
+      RichBlockVoiceNote,
+      [
+        {:type, [:string], "Type of the block, always \"voice_note”"},
+        {:voice_note, [Voice], "The voice note"},
+        {:caption, [RichBlockCaption], "Optional. Caption of the block", :optional}
+      ],
+      "A block with a voice note, corresponding to the HTML tag <audio>."
+    )
+
+    model(
+      RichBlockThinking,
+      [
+        {:type, [:string], "Type of the block, always \"thinking”"},
+        {:text, [RichText],
+         "Text of the block. See https://t.me/addemoji/AIActions for examples of custom emoji, which are recommended for usage in the block."}
+      ],
+      "A block with a \"Thinking…” placeholder, corresponding to the custom HTML tag <tg-thinking>. The block may be used only in sendRichMessageDraft, therefore it can't be received in messages. See https://t.me/addemoji/AIActions for examples of custom emoji, which are recommended for usage in the block."
     )
 
     model(
@@ -7243,6 +7839,12 @@ defmodule ExGram do
          :optional}
       ],
       "Represents the content of a text message to be sent as the result of an inline query."
+    )
+
+    model(
+      InputRichMessageContent,
+      [{:rich_message, [InputRichMessage], "The message to be sent"}],
+      "Represents the content of a rich message to be sent as the result of an inline query."
     )
 
     model(
@@ -7842,7 +8444,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 279 models
+    # 333 models
 
     defmodule MaybeInaccessibleMessage do
       @moduledoc """
@@ -7923,10 +8525,11 @@ defmodule ExGram do
 
     defmodule InputPollOptionMedia do
       @moduledoc """
-      InputPollOptionMedia model. Valid subtypes: InputMediaAnimation, InputMediaLivePhoto, InputMediaLocation, InputMediaPhoto, InputMediaSticker, InputMediaVenue, InputMediaVideo
+      InputPollOptionMedia model. Valid subtypes: InputMediaAnimation, InputMediaLink, InputMediaLivePhoto, InputMediaLocation, InputMediaPhoto, InputMediaSticker, InputMediaVenue, InputMediaVideo
       """
       @type t ::
               InputMediaAnimation.t()
+              | InputMediaLink.t()
               | InputMediaLivePhoto.t()
               | InputMediaLocation.t()
               | InputMediaPhoto.t()
@@ -7941,6 +8544,7 @@ defmodule ExGram do
       def subtypes do
         [
           InputMediaAnimation,
+          InputMediaLink,
           InputMediaLivePhoto,
           InputMediaLocation,
           InputMediaPhoto,
@@ -8202,6 +8806,130 @@ defmodule ExGram do
       end
     end
 
+    defmodule RichText do
+      @moduledoc """
+      RichText model. Valid subtypes: RichTextBold, RichTextItalic, RichTextUnderline, RichTextStrikethrough, RichTextSpoiler, RichTextDateTime, RichTextTextMention, RichTextSubscript, RichTextSuperscript, RichTextMarked, RichTextCode, RichTextCustomEmoji, RichTextMathematicalExpression, RichTextUrl, RichTextEmailAddress, RichTextPhoneNumber, RichTextBankCardNumber, RichTextMention, RichTextHashtag, RichTextCashtag, RichTextBotCommand, RichTextAnchor, RichTextAnchorLink, RichTextReference, RichTextReferenceLink
+      """
+      @type t ::
+              RichTextBold.t()
+              | RichTextItalic.t()
+              | RichTextUnderline.t()
+              | RichTextStrikethrough.t()
+              | RichTextSpoiler.t()
+              | RichTextDateTime.t()
+              | RichTextTextMention.t()
+              | RichTextSubscript.t()
+              | RichTextSuperscript.t()
+              | RichTextMarked.t()
+              | RichTextCode.t()
+              | RichTextCustomEmoji.t()
+              | RichTextMathematicalExpression.t()
+              | RichTextUrl.t()
+              | RichTextEmailAddress.t()
+              | RichTextPhoneNumber.t()
+              | RichTextBankCardNumber.t()
+              | RichTextMention.t()
+              | RichTextHashtag.t()
+              | RichTextCashtag.t()
+              | RichTextBotCommand.t()
+              | RichTextAnchor.t()
+              | RichTextAnchorLink.t()
+              | RichTextReference.t()
+              | RichTextReferenceLink.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [
+          RichTextBold,
+          RichTextItalic,
+          RichTextUnderline,
+          RichTextStrikethrough,
+          RichTextSpoiler,
+          RichTextDateTime,
+          RichTextTextMention,
+          RichTextSubscript,
+          RichTextSuperscript,
+          RichTextMarked,
+          RichTextCode,
+          RichTextCustomEmoji,
+          RichTextMathematicalExpression,
+          RichTextUrl,
+          RichTextEmailAddress,
+          RichTextPhoneNumber,
+          RichTextBankCardNumber,
+          RichTextMention,
+          RichTextHashtag,
+          RichTextCashtag,
+          RichTextBotCommand,
+          RichTextAnchor,
+          RichTextAnchorLink,
+          RichTextReference,
+          RichTextReferenceLink
+        ]
+      end
+    end
+
+    defmodule RichBlock do
+      @moduledoc """
+      RichBlock model. Valid subtypes: RichBlockParagraph, RichBlockSectionHeading, RichBlockPreformatted, RichBlockFooter, RichBlockDivider, RichBlockMathematicalExpression, RichBlockAnchor, RichBlockList, RichBlockBlockQuotation, RichBlockPullQuotation, RichBlockCollage, RichBlockSlideshow, RichBlockTable, RichBlockDetails, RichBlockMap, RichBlockAnimation, RichBlockAudio, RichBlockPhoto, RichBlockVideo, RichBlockVoiceNote, RichBlockThinking
+      """
+      @type t ::
+              RichBlockParagraph.t()
+              | RichBlockSectionHeading.t()
+              | RichBlockPreformatted.t()
+              | RichBlockFooter.t()
+              | RichBlockDivider.t()
+              | RichBlockMathematicalExpression.t()
+              | RichBlockAnchor.t()
+              | RichBlockList.t()
+              | RichBlockBlockQuotation.t()
+              | RichBlockPullQuotation.t()
+              | RichBlockCollage.t()
+              | RichBlockSlideshow.t()
+              | RichBlockTable.t()
+              | RichBlockDetails.t()
+              | RichBlockMap.t()
+              | RichBlockAnimation.t()
+              | RichBlockAudio.t()
+              | RichBlockPhoto.t()
+              | RichBlockVideo.t()
+              | RichBlockVoiceNote.t()
+              | RichBlockThinking.t()
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [
+          RichBlockParagraph,
+          RichBlockSectionHeading,
+          RichBlockPreformatted,
+          RichBlockFooter,
+          RichBlockDivider,
+          RichBlockMathematicalExpression,
+          RichBlockAnchor,
+          RichBlockList,
+          RichBlockBlockQuotation,
+          RichBlockPullQuotation,
+          RichBlockCollage,
+          RichBlockSlideshow,
+          RichBlockTable,
+          RichBlockDetails,
+          RichBlockMap,
+          RichBlockAnimation,
+          RichBlockAudio,
+          RichBlockPhoto,
+          RichBlockVideo,
+          RichBlockVoiceNote,
+          RichBlockThinking
+        ]
+      end
+    end
+
     defmodule InlineQueryResult do
       @moduledoc """
       InlineQueryResult model. Valid subtypes: InlineQueryResultCachedAudio, InlineQueryResultCachedDocument, InlineQueryResultCachedGif, InlineQueryResultCachedMpeg4Gif, InlineQueryResultCachedPhoto, InlineQueryResultCachedSticker, InlineQueryResultCachedVideo, InlineQueryResultCachedVoice, InlineQueryResultArticle, InlineQueryResultAudio, InlineQueryResultContact, InlineQueryResultGame, InlineQueryResultDocument, InlineQueryResultGif, InlineQueryResultLocation, InlineQueryResultMpeg4Gif, InlineQueryResultPhoto, InlineQueryResultVenue, InlineQueryResultVideo, InlineQueryResultVoice
@@ -8260,10 +8988,11 @@ defmodule ExGram do
 
     defmodule InputMessageContent do
       @moduledoc """
-      InputMessageContent model. Valid subtypes: InputTextMessageContent, InputLocationMessageContent, InputVenueMessageContent, InputContactMessageContent, InputInvoiceMessageContent
+      InputMessageContent model. Valid subtypes: InputTextMessageContent, InputRichMessageContent, InputLocationMessageContent, InputVenueMessageContent, InputContactMessageContent, InputInvoiceMessageContent
       """
       @type t ::
               InputTextMessageContent.t()
+              | InputRichMessageContent.t()
               | InputLocationMessageContent.t()
               | InputVenueMessageContent.t()
               | InputContactMessageContent.t()
@@ -8276,6 +9005,7 @@ defmodule ExGram do
       def subtypes do
         [
           InputTextMessageContent,
+          InputRichMessageContent,
           InputLocationMessageContent,
           InputVenueMessageContent,
           InputContactMessageContent,
@@ -8364,7 +9094,7 @@ defmodule ExGram do
       end
     end
 
-    # 23 generics
+    # 25 generics
   end
 
   # END AUTO GENERATED

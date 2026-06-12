@@ -478,6 +478,43 @@ defmodule ExGramTest do
     end
   end
 
+  describe "edit_message_text/1" do
+    test "edits message text using keyword opts" do
+      ExGram.Test.expect(:edit_message_text, %{
+        message_id: 100,
+        date: 1_700_000_000,
+        chat: %{id: 123, type: "private"},
+        from: %{id: 999, is_bot: true, first_name: "Bot"},
+        text: "Edited text",
+        edit_date: 1_700_000_100
+      })
+
+      {:ok, message} = ExGram.edit_message_text(text: "Edited text", chat_id: 123, message_id: 100)
+
+      assert %Message{} = message
+      assert message.text == "Edited text"
+      assert message.edit_date == 1_700_000_100
+    end
+
+    test "edits message with rich_message" do
+      ExGram.Test.expect(:edit_message_text, %{
+        message_id: 200,
+        date: 1_700_000_000,
+        chat: %{id: 456, type: "private"},
+        from: %{id: 999, is_bot: true, first_name: "Bot"},
+        edit_date: 1_700_000_200
+      })
+
+      rich_message = %ExGram.Model.InputRichMessage{html: "<b>Hello</b>"}
+
+      {:ok, message} =
+        ExGram.edit_message_text(rich_message: rich_message, chat_id: 456, message_id: 200)
+
+      assert %Message{} = message
+      assert message.edit_date == 1_700_000_200
+    end
+  end
+
   describe "delete_message/2" do
     test "deletes message and returns true" do
       ExGram.Test.expect(:delete_message, true)

@@ -4,6 +4,7 @@ defimpl ExGram.Model.Subtype, for: ExGram.Model.InputPollOptionMedia do
   end
 
   def subtype(_, "animation"), do: ExGram.Model.InputMediaAnimation
+  def subtype(_, "link"), do: ExGram.Model.InputMediaLink
   def subtype(_, "live_photo"), do: ExGram.Model.InputMediaLivePhoto
   def subtype(_, "location"), do: ExGram.Model.InputMediaLocation
   def subtype(_, "photo"), do: ExGram.Model.InputMediaPhoto
