@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.67.0]
 - Update Bot API to 10.1
 - Add `RichText` and `RichBlock` subtype implementations
 - Add `InputMediaLink` subtype to `InputPollOptionMedia`
