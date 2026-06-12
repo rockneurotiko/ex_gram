@@ -371,7 +371,7 @@ defmodule ExGram.Dsl do
 
   defp extract_msg(%Cnt{update: %Update{} = u}) do
     u = Map.from_struct(u)
-    {_, msg} = Enum.find(u, fn {_, m} -> is_map(m) and not is_nil(m) end)
+    {_, msg} = Enum.find(u, fn {_, m} -> is_map(m) end)
     msg
   end
 

@@ -198,7 +198,6 @@ defmodule ExGram.Macros.Executer do
   end
 
   defp encode(x) when is_map(x) or is_list(x), do: ExGram.Encoder.encode!(x)
-  defp encode(x), do: x
 
   defp clean_body(%{__struct__: _} = m) do
     m |> Map.from_struct() |> clean_body()

@@ -8,6 +8,7 @@
 - Add backward-compatible `edit_message_text/2` wrapper (`text` is now optional in the API)
 - New methods: `answerChatJoinRequestQuery`, `sendChatJoinRequestWebApp`, `sendRichMessage`, `sendRichMessageDraft`
 - Update credo and ex_doc
+- Support for Elixir 1.20 and Erlang 29
 
 ## [0.66.0]
 - Fix #213, adapter errors with message as string always

@@ -17,7 +17,7 @@ defmodule ExGram.Mixfile do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       dialyzer: dialyzer(),
-      xref: [exclude: [EEx]],
+      elixirc_options: [no_warn_undefined: [EEx]],
       docs: docs()
     ]
   end
