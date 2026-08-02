@@ -23,7 +23,7 @@ def deps do
     {:ex_gram, "~> 0.65"},
     {:ex_gram_fsm, "~> 0.1.0"},
     {:jason, ">= 1.0.0"},
-    {:req, "~> 0.5"}
+    {:req, "~> 0.6"}
   ]
 end
 ```
@@ -37,7 +37,7 @@ def deps do
     {:ex_gram_router, "~> 0.1.0"},
     {:ex_gram_fsm, "~> 0.1.0"},
     {:jason, ">= 1.0.0"},
-    {:req, "~> 0.5"}
+    {:req, "~> 0.6"}
   ]
 end
 ```
