@@ -33,7 +33,7 @@ The [Req](https://hexdocs.pm/req) adapter is the simplest to set up and is recom
 **Add to deps:**
 
 ```elixir
-{:req, "~> 0.5"}
+{:req, "~> 0.6"}
 ```
 
 **Add to config:**
