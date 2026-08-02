@@ -32,7 +32,7 @@ def deps do
   [
     {:ex_gram, "~> 0.65"},
     {:jason, "~> 1.4"},
-    {:req, "~> 0.5"}  # HTTP adapter
+    {:req, "~> 1.0"}  # HTTP adapter
   ]
 end
 ```

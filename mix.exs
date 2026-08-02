@@ -60,7 +60,7 @@ defmodule ExGram.Mixfile do
       {:tesla, "~> 1.16", optional: true},
       {:gun, "~> 2.0", optional: true},
       {:hackney, "~> 1.20", optional: true},
-      {:req, "~> 0.5.0", optional: true},
+      {:req, "~> 0.5.10 or ~> 0.6 or ~> 1.0", optional: true},
       # JSON encoders/decoders
       {:jason, ">= 1.0.0", optional: true},
       {:poison, ">= 1.0.0", optional: true},
