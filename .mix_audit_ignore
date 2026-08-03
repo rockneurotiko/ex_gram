@@ -1,0 +1,7 @@
+# gun advisory GHSA-w4f7-4cxr-rv3c: the vulnerability is in cowlib's private
+# function cow_http_struct_hd:escape_string/2. The cowlib maintainer closed
+# both fix PRs (#163, #166) stating this is a private function and gun/cowboy
+# already reject invalid characters at a higher level. The advisory also lists
+# a patched version (2.16.0) that doesn't exist for gun (latest is 2.5.0).
+# Won't-fix upstream.
+GHSA-w4f7-4cxr-rv3c

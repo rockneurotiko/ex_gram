@@ -22,12 +22,17 @@ if Code.ensure_loaded?(Req) do
       req_opts
       |> Req.Request.new()
       |> put_finch_options(opts)
-      |> Req.Request.register_options([:base_url, :json, :form_multipart])
+      |> Req.Request.register_options([:base_url, :json, :form_multipart, :compressed])
+      |> Req.Request.put_new_option(:compressed, true)
       |> Req.Request.put_new_option(:base_url, ExGram.Config.get(:ex_gram, :base_url, @base_url))
       |> put_body_option(body)
       |> Req.Steps.put_base_url()
+      |> Req.Steps.compressed()
       |> Req.Request.append_request_steps(custom_encode: &custom_encode/1)
-      |> Req.Request.append_response_steps(custom_decode: &custom_decode/1)
+      |> Req.Request.append_response_steps(
+        decompress_body: &Req.Steps.decompress_body/1,
+        custom_decode: &custom_decode/1
+      )
       |> Req.Request.run_request()
       |> handle_result()
     end

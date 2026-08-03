@@ -59,6 +59,14 @@ jobs:
         if: ${{ matrix.run_linters }}
         run: mix format --check-formatted
 
+      - name: Audit deps for security vulnerabilities
+        if: ${{ matrix.run_linters }}
+        run: mix deps.audit --ignore-file .mix_audit_ignore
+
+      - name: Audit deps for retired packages
+        if: ${{ matrix.run_linters }}
+        run: mix hex.audit
+
       - name: Run Credo
         if: ${{ matrix.run_linters }}
         run: mix credo
