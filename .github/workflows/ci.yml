@@ -13,7 +13,6 @@ concurrency:
 env:
   FORCE_BUILD: true
   MIX_ENV: test
-  HEX_CACERTS_PATH: /etc/ssl/certs/ca-certificates.crt
 
 jobs:
   test:
@@ -21,8 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - otp_version: "29.0.2"
-            elixir_version: "1.20.1"
+          - otp_version: "29.0.4"
+            elixir_version: "1.20.2"
             run_linters: true
           - otp_version: "28.1.1"
             elixir_version: "1.19.2"
