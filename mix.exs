@@ -18,6 +18,7 @@ defmodule ExGram.Mixfile do
       deps: deps(),
       dialyzer: dialyzer(),
       elixirc_options: [no_warn_undefined: [EEx]],
+      hex: [ignore_advisories: ["GHSA-w4f7-4cxr-rv3c", "EEF-CVE-2026-43969"]],
       docs: docs()
     ]
   end
@@ -59,8 +60,8 @@ defmodule ExGram.Mixfile do
       # Tesla adapter
       {:tesla, "~> 1.16", optional: true},
       {:gun, "~> 2.0", optional: true},
-      {:hackney, "~> 1.20", optional: true},
-      {:req, "~> 0.5.0", optional: true},
+      {:hackney, "~> 1.20 or ~> 4.0.2", optional: true},
+      {:req, "~> 0.6.1 or ~> 0.7", optional: true},
       # JSON encoders/decoders
       {:jason, ">= 1.0.0", optional: true},
       {:poison, ">= 1.0.0", optional: true},
@@ -78,7 +79,8 @@ defmodule ExGram.Mixfile do
       {:credo, "~> 1.7", only: [:dev, :test], runtime: false, warn_if_outdated: true},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
       {:ex_doc, "~> 0.40", only: :dev, runtime: false, warn_if_outdated: true},
-      {:styler, "~> 1.11", only: [:dev, :test], runtime: false, warn_if_outdated: true}
+      {:styler, "~> 1.12", only: [:dev, :test], runtime: false, warn_if_outdated: true},
+      {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
     ]
   end
 

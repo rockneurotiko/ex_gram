@@ -20,8 +20,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - otp_version: "29.0.2"
-            elixir_version: "1.20.1"
+          - otp_version: "29.0.4"
+            elixir_version: "1.20.2"
             run_linters: true
           - otp_version: "28.1.1"
             elixir_version: "1.19.2"
@@ -30,12 +30,6 @@ jobs:
             elixir_version: "1.18"
             run_linters: false
           - otp_version: "26.2"
-            elixir_version: "1.17"
-            run_linters: false
-          - otp_version: "25.3"
-            elixir_version: "1.17"
-            run_linters: false
-          - otp_version: "24.3"
             elixir_version: "1.15"
             run_linters: false
 
@@ -58,6 +52,14 @@ jobs:
       - name: Check format
         if: ${{ matrix.run_linters }}
         run: mix format --check-formatted
+
+      - name: Audit deps for security vulnerabilities
+        if: ${{ matrix.run_linters }}
+        run: mix deps.audit --ignore-file .mix_audit_ignore
+
+      - name: Audit deps for retired packages
+        if: ${{ matrix.run_linters }}
+        run: mix hex.audit
 
       - name: Run Credo
         if: ${{ matrix.run_linters }}
