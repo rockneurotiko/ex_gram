@@ -31,12 +31,6 @@ jobs:
             elixir_version: "1.18"
             run_linters: false
           - otp_version: "26.2"
-            elixir_version: "1.17"
-            run_linters: false
-          - otp_version: "25.3"
-            elixir_version: "1.17"
-            run_linters: false
-          - otp_version: "24.3"
             elixir_version: "1.15"
             run_linters: false
 
