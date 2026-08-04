@@ -13,6 +13,7 @@ concurrency:
 env:
   FORCE_BUILD: true
   MIX_ENV: test
+  HEX_CACERTS_PATH: /etc/ssl/certs/ca-certificates.crt
 
 jobs:
   test:
