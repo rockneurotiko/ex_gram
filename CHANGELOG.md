@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+## [0.68.0]
+- Update dependencies and relax their version requirements
+
 ## [0.67.0]
 - Update Bot API to 10.1
 - Add `RichText` and `RichBlock` subtype implementations
