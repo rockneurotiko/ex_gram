@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.69.0]
 - Update Bot API to 10.2
 
 ## [0.68.0]
