@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Update Bot API to 10.2
 
 ## [0.68.0]
 - Update dependencies and relax their version requirements
