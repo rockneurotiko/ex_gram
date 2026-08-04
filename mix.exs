@@ -18,6 +18,7 @@ defmodule ExGram.Mixfile do
       deps: deps(),
       dialyzer: dialyzer(),
       elixirc_options: [no_warn_undefined: [EEx]],
+      hex: [ignore_advisories: ["GHSA-w4f7-4cxr-rv3c"]],
       docs: docs()
     ]
   end
