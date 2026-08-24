@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Update Bot API to 10.3
+- Add backward-compatible `edit_ephemeral_message_text/5` wrapper (`text` is now optional in the API)
 
 ## [0.69.0]
 - Update Bot API to 10.2
