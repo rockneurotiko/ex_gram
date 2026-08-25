@@ -1,4 +1,8 @@
 name: Elixir CI
+
+permissions:
+  contents: read
+
 on:
   push:
     branches:
