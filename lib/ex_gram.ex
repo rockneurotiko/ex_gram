@@ -91,6 +91,38 @@ defmodule ExGram do
     )
   end
 
+  # Backward compatibility translation for the `receiver_user_id` / `callback_query_id` options.
+  # Bot API 10.3 replaced these two options with the `ephemeral_message_parameters` struct on
+  # sendMessage, sendAnimation, sendAudio, sendDocument, sendLivePhoto, sendPhoto, sendSticker,
+  # sendVideo, sendVideoNote, sendVoice, sendContact, sendLocation and sendVenue. This keeps
+  # callers that still pass the old options working, by moving them into
+  # `ephemeral_message_parameters` before the request is built. Callers already using
+  # `ephemeral_message_parameters` directly are left untouched.
+  @spec translate_ephemeral_legacy_options(keyword()) :: keyword()
+  defp translate_ephemeral_legacy_options(options) do
+    if Keyword.has_key?(options, :ephemeral_message_parameters) do
+      options
+    else
+      {receiver_user_id, options} = Keyword.pop(options, :receiver_user_id)
+      {callback_query_id, options} = Keyword.pop(options, :callback_query_id)
+
+      if is_nil(receiver_user_id) and is_nil(callback_query_id) do
+        options
+      else
+        # `struct!/2` is used (instead of the `%ExGram.Model.EphemeralMessageParameters{}` literal)
+        # so this function does not depend, at compile time, on `ExGram.Model.EphemeralMessageParameters`
+        # being defined earlier in this same file.
+        ephemeral_message_parameters =
+          struct!(ExGram.Model.EphemeralMessageParameters,
+            receiver_user_id: receiver_user_id,
+            callback_query_id: callback_query_id
+          )
+
+        Keyword.put(options, :ephemeral_message_parameters, ephemeral_message_parameters)
+      end
+    end
+  end
+
   # START AUTO GENERATED
 
   # ----------METHODS-----------

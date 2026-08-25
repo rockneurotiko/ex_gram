@@ -60,6 +60,17 @@ defmodule ExGram.Macros do
 
     {opt_par, opt_par_types} = optional_parameters(analyzed)
 
+    # Bot API 10.3 replaced the `receiver_user_id` / `callback_query_id` options with the
+    # `ephemeral_message_parameters` struct on sendMessage and the other affected send* methods.
+    # For those methods only, translate the legacy options into `ephemeral_message_parameters`
+    # before they get filtered by `Keyword.take/2` below, so old callers keep working.
+    ephemeral_legacy_translation =
+      if :ephemeral_message_parameters in opt_par do
+        quote do
+          options = translate_ephemeral_legacy_options(options)
+        end
+      end
+
     returned_type_spec = type_to_spec(returned)
 
     file_parameters = file_parameters(analyzed)
@@ -84,6 +95,7 @@ defmodule ExGram.Macros do
         mandatory_body = unquote(mandatory_body)
         file_parameters = unquote(file_parameters)
         returned = unquote(returned)
+        unquote(ephemeral_legacy_translation)
         method_ops = Keyword.take(options, unquote(opt_par))
         mandatory_types = unquote(types_mand_value)
         optional_types = unquote(opt_par_types)
