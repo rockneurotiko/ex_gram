@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.70.0]
 - Update Bot API to 10.3
 - Bot API 10.3 replaced the `receiver_user_id` and `callback_query_id` options with the
   `ephemeral_message_parameters` struct on `sendMessage`, `sendAnimation`, `sendAudio`,
