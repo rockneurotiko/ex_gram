@@ -519,6 +519,38 @@ defmodule ExGramTest do
     end
   end
 
+  describe "edit_ephemeral_message_text/5" do
+    test "edits ephemeral message text with positional text and returns true" do
+      ExGram.Test.expect(:edit_ephemeral_message_text, true)
+
+      {:ok, result} = ExGram.edit_ephemeral_message_text(123, 456, 789, "Edited text", [])
+
+      assert result == true
+    end
+  end
+
+  describe "edit_ephemeral_message_text/4" do
+    test "edits ephemeral message text using keyword opts and returns true" do
+      ExGram.Test.expect(:edit_ephemeral_message_text, true)
+
+      {:ok, result} =
+        ExGram.edit_ephemeral_message_text(123, 456, 789, text: "Edited text")
+
+      assert result == true
+    end
+
+    test "edits ephemeral message with rich_message" do
+      ExGram.Test.expect(:edit_ephemeral_message_text, true)
+
+      rich_message = %InputRichMessage{html: "<b>Hello</b>"}
+
+      {:ok, result} =
+        ExGram.edit_ephemeral_message_text(123, 456, 789, rich_message: rich_message)
+
+      assert result == true
+    end
+  end
+
   describe "send_rich_message/2" do
     test "sends a rich message and returns Message struct" do
       ExGram.Test.expect(:send_rich_message, fn body ->

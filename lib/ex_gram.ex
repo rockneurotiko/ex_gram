@@ -58,6 +58,71 @@ defmodule ExGram do
     edit_message_text(Keyword.put(opts, :text, text))
   end
 
+  # Backward compatibility wrapper for edit_ephemeral_message_text/5.
+  # The Bot API made `text` optional (since you can now send `rich_message` instead),
+  # which changed the auto-generated function from arity/5 to arity/4.
+  # This keeps the old edit_ephemeral_message_text(chat_id, receiver_user_id, ephemeral_message_id, text, opts)
+  # interface working.
+  @doc """
+  Edit text of an ephemeral message. This is a convenience wrapper that accepts `text` as the
+  fourth argument for backward compatibility.
+
+  See `edit_ephemeral_message_text/4` for the full list of options.
+
+  ## Examples
+
+      ExGram.edit_ephemeral_message_text(chat_id, receiver_user_id, ephemeral_message_id, "New text", [])
+
+  """
+  @spec edit_ephemeral_message_text(
+          chat_id :: integer() | String.t(),
+          receiver_user_id :: integer(),
+          ephemeral_message_id :: integer(),
+          text :: String.t(),
+          options :: keyword()
+        ) :: {:ok, true} | {:error, ExGram.Error.t()}
+  def edit_ephemeral_message_text(chat_id, receiver_user_id, ephemeral_message_id, text, opts)
+      when is_binary(text) and is_list(opts) do
+    edit_ephemeral_message_text(
+      chat_id,
+      receiver_user_id,
+      ephemeral_message_id,
+      Keyword.put(opts, :text, text)
+    )
+  end
+
+  # Backward compatibility translation for the `receiver_user_id` / `callback_query_id` options.
+  # Bot API 10.3 replaced these two options with the `ephemeral_message_parameters` struct on
+  # sendMessage, sendAnimation, sendAudio, sendDocument, sendLivePhoto, sendPhoto, sendSticker,
+  # sendVideo, sendVideoNote, sendVoice, sendContact, sendLocation and sendVenue. This keeps
+  # callers that still pass the old options working, by moving them into
+  # `ephemeral_message_parameters` before the request is built. Callers already using
+  # `ephemeral_message_parameters` directly are left untouched.
+  @spec translate_ephemeral_legacy_options(keyword()) :: keyword()
+  defp translate_ephemeral_legacy_options(options) do
+    if Keyword.has_key?(options, :ephemeral_message_parameters) do
+      options
+    else
+      {receiver_user_id, options} = Keyword.pop(options, :receiver_user_id)
+      {callback_query_id, options} = Keyword.pop(options, :callback_query_id)
+
+      if is_nil(receiver_user_id) and is_nil(callback_query_id) do
+        options
+      else
+        # `struct!/2` is used (instead of the `%ExGram.Model.EphemeralMessageParameters{}` literal)
+        # so this function does not depend, at compile time, on `ExGram.Model.EphemeralMessageParameters`
+        # being defined earlier in this same file.
+        ephemeral_message_parameters =
+          struct!(ExGram.Model.EphemeralMessageParameters,
+            receiver_user_id: receiver_user_id,
+            callback_query_id: callback_query_id
+          )
+
+        Keyword.put(options, :ephemeral_message_parameters, ephemeral_message_parameters)
+      end
+    end
+  end
+
   # START AUTO GENERATED
 
   # ----------METHODS-----------
@@ -164,12 +229,8 @@ defmodule ExGram do
       {direct_messages_topic_id, [:integer],
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
-      {receiver_user_id, [:integer],
-       "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.",
-       :optional},
-      {callback_query_id, [:string],
-       "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any",
-       :optional},
+      {ephemeral_message_parameters, [EphemeralMessageParameters],
+       "A JSON-serialized object containing the parameters of the ephemeral message to send", :optional},
       {text, [:string], "Text of the message to be sent, 1-4096 characters after entities parsing"},
       {parse_mode, [:string], "Mode for parsing entities in the message text. See formatting options for more details.",
        :optional},
@@ -340,12 +401,8 @@ defmodule ExGram do
       {direct_messages_topic_id, [:integer],
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
-      {receiver_user_id, [:integer],
-       "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.",
-       :optional},
-      {callback_query_id, [:string],
-       "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any",
-       :optional},
+      {ephemeral_message_parameters, [EphemeralMessageParameters],
+       "A JSON-serialized object containing the parameters of the ephemeral message to send", :optional},
       {photo, [:file, :string],
        "Photo to send. Pass a file_id as String to send a photo that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a photo from the Internet, or upload a new photo using multipart/form-data. The photo must be at most 10 MB in size. The photo's width and height must not exceed 10000 in total. Width and height ratio must be at most 20. More information on Sending Files »"},
       {caption, [:string],
@@ -393,12 +450,8 @@ defmodule ExGram do
       {direct_messages_topic_id, [:integer],
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
-      {receiver_user_id, [:integer],
-       "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.",
-       :optional},
-      {callback_query_id, [:string],
-       "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any",
-       :optional},
+      {ephemeral_message_parameters, [EphemeralMessageParameters],
+       "A JSON-serialized object containing the parameters of the ephemeral message to send", :optional},
       {live_photo, [:file, :string],
        "Live photo video to send. The video must be no longer than 10 seconds and must not exceed 10 MB in size. Pass a file_id as String to send a video that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. More information on Sending Files ». Sending live photos by a URL is currently unsupported."},
       {photo, [:file, :string],
@@ -448,12 +501,8 @@ defmodule ExGram do
       {direct_messages_topic_id, [:integer],
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
-      {receiver_user_id, [:integer],
-       "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.",
-       :optional},
-      {callback_query_id, [:string],
-       "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any",
-       :optional},
+      {ephemeral_message_parameters, [EphemeralMessageParameters],
+       "A JSON-serialized object containing the parameters of the ephemeral message to send", :optional},
       {audio, [:file, :string],
        "Audio file to send. Pass a file_id as String to send an audio file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an audio file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files »"},
       {caption, [:string], "Audio caption, 0-1024 characters after entities parsing", :optional},
@@ -502,12 +551,8 @@ defmodule ExGram do
       {direct_messages_topic_id, [:integer],
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
-      {receiver_user_id, [:integer],
-       "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.",
-       :optional},
-      {callback_query_id, [:string],
-       "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any",
-       :optional},
+      {ephemeral_message_parameters, [EphemeralMessageParameters],
+       "A JSON-serialized object containing the parameters of the ephemeral message to send", :optional},
       {document, [:file, :string],
        "File to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files »"},
       {thumbnail, [:file, :string],
@@ -557,12 +602,8 @@ defmodule ExGram do
       {direct_messages_topic_id, [:integer],
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
-      {receiver_user_id, [:integer],
-       "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.",
-       :optional},
-      {callback_query_id, [:string],
-       "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any",
-       :optional},
+      {ephemeral_message_parameters, [EphemeralMessageParameters],
+       "A JSON-serialized object containing the parameters of the ephemeral message to send", :optional},
       {video, [:file, :string],
        "Video to send. Pass a file_id as String to send a video that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a video from the Internet, or upload a new video using multipart/form-data. More information on Sending Files »"},
       {duration, [:integer], "Duration of sent video in seconds", :optional},
@@ -621,12 +662,8 @@ defmodule ExGram do
       {direct_messages_topic_id, [:integer],
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
-      {receiver_user_id, [:integer],
-       "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.",
-       :optional},
-      {callback_query_id, [:string],
-       "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any",
-       :optional},
+      {ephemeral_message_parameters, [EphemeralMessageParameters],
+       "A JSON-serialized object containing the parameters of the ephemeral message to send", :optional},
       {animation, [:file, :string],
        "Animation to send. Pass a file_id as String to send an animation that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get an animation from the Internet, or upload a new animation using multipart/form-data. More information on Sending Files »"},
       {duration, [:integer], "Duration of sent animation in seconds", :optional},
@@ -680,12 +717,8 @@ defmodule ExGram do
       {direct_messages_topic_id, [:integer],
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
-      {receiver_user_id, [:integer],
-       "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.",
-       :optional},
-      {callback_query_id, [:string],
-       "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any",
-       :optional},
+      {ephemeral_message_parameters, [EphemeralMessageParameters],
+       "A JSON-serialized object containing the parameters of the ephemeral message to send", :optional},
       {voice, [:file, :string],
        "Audio file to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a file from the Internet, or upload a new one using multipart/form-data. More information on Sending Files »"},
       {caption, [:string], "Voice message caption, 0-1024 characters after entities parsing", :optional},
@@ -729,12 +762,8 @@ defmodule ExGram do
       {direct_messages_topic_id, [:integer],
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
-      {receiver_user_id, [:integer],
-       "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.",
-       :optional},
-      {callback_query_id, [:string],
-       "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any",
-       :optional},
+      {ephemeral_message_parameters, [EphemeralMessageParameters],
+       "A JSON-serialized object containing the parameters of the ephemeral message to send", :optional},
       {video_note, [:file, :string],
        "Video note to send. Pass a file_id as String to send a video note that exists on the Telegram servers (recommended) or upload a new video using multipart/form-data. More information on Sending Files ». Sending video notes by a URL is currently unsupported."},
       {duration, [:integer], "Duration of sent video in seconds", :optional},
@@ -759,7 +788,7 @@ defmodule ExGram do
        :optional}
     ],
     ExGram.Model.Message,
-    "As of v.4.0, Telegram clients support rounded square MPEG4 videos of up to 1 minute long. Use this method to send video messages. On success, the sent Message is returned."
+    "Use this method to send a rounded square MPEG4 video of up to 1 minute long. On success, the sent Message is returned."
   )
 
   method(
@@ -851,12 +880,8 @@ defmodule ExGram do
       {direct_messages_topic_id, [:integer],
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
-      {receiver_user_id, [:integer],
-       "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.",
-       :optional},
-      {callback_query_id, [:string],
-       "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any",
-       :optional},
+      {ephemeral_message_parameters, [EphemeralMessageParameters],
+       "A JSON-serialized object containing the parameters of the ephemeral message to send", :optional},
       {latitude, [:float], "Latitude of the location"},
       {longitude, [:float], "Longitude of the location"},
       {horizontal_accuracy, [:float], "The radius of uncertainty for the location, measured in meters; 0-1500",
@@ -904,12 +929,8 @@ defmodule ExGram do
       {direct_messages_topic_id, [:integer],
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
-      {receiver_user_id, [:integer],
-       "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.",
-       :optional},
-      {callback_query_id, [:string],
-       "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any",
-       :optional},
+      {ephemeral_message_parameters, [EphemeralMessageParameters],
+       "A JSON-serialized object containing the parameters of the ephemeral message to send", :optional},
       {latitude, [:float], "Latitude of the venue"},
       {longitude, [:float], "Longitude of the venue"},
       {title, [:string], "Name of the venue"},
@@ -954,12 +975,8 @@ defmodule ExGram do
       {direct_messages_topic_id, [:integer],
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
-      {receiver_user_id, [:integer],
-       "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.",
-       :optional},
-      {callback_query_id, [:string],
-       "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any",
-       :optional},
+      {ephemeral_message_parameters, [EphemeralMessageParameters],
+       "A JSON-serialized object containing the parameters of the ephemeral message to send", :optional},
       {phone_number, [:string], "Contact's phone number"},
       {first_name, [:string], "Contact's first name"},
       {last_name, [:string], "Contact's last name", :optional},
@@ -1132,7 +1149,7 @@ defmodule ExGram do
       {chat_id, [:integer], "Unique identifier for the target private chat"},
       {message_thread_id, [:integer], "Unique identifier for the target message thread", :optional},
       {draft_id, [:integer],
-       "Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated."},
+       "Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated. Otherwise, the draft is replaced without animation."},
       {text, [:string],
        "Text of the message to be sent, 0-4096 characters after entities parsing. Pass an empty text to show a \"Thinking…” placeholder.",
        :optional},
@@ -1140,6 +1157,12 @@ defmodule ExGram do
        :optional},
       {entities, [{:array, MessageEntity}],
        "A JSON-serialized list of special entities that appear in message text, which can be specified instead of parse_mode",
+       :optional},
+      {can_stop, [:boolean],
+       "Pass True to show the user a button to stop further drafts. The bot will receive an Update \"stopped_message_generation” if the user presses the button.",
+       :optional},
+      {keep_on_stop, [:boolean],
+       "Pass True to keep the draft in the chat when the button is pressed. The draft will still disappear after a short time or if the bot sends a message. To fully preserve the partial draft, the bot should send it as a new message.",
        :optional}
     ],
     true,
@@ -1324,6 +1347,9 @@ defmodule ExGram do
        :optional},
       {can_manage_tags, [:boolean],
        "Pass True if the administrator can edit the tags of regular members; for groups and supergroups only",
+       :optional},
+      {can_send_welcome_messages, [:boolean],
+       "Pass True if the administrator can manage chat welcome messages or directly send them in the case of bots",
        :optional}
     ],
     true,
@@ -1891,7 +1917,7 @@ defmodule ExGram do
        "URL that will be opened by the user's client. If you have created a Game and accepted the conditions via @BotFather, specify the URL that opens your game - note that this will only work if the query comes from a callback_game button.  Otherwise, you may use links like t.me/your_bot?start=XXXX that open your bot with a parameter.",
        :optional},
       {cache_time, [:integer],
-       "The maximum amount of time in seconds that the result of the callback query may be cached client-side. Telegram apps will support caching starting in version 3.14. Defaults to 0.",
+       "The maximum amount of time in seconds that the result of the callback query may be cached client-side. Defaults to 0.",
        :optional}
     ],
     true,
@@ -2643,7 +2669,7 @@ defmodule ExGram do
        :optional},
       {link_preview_options, [LinkPreviewOptions], "Link preview generation options for the message", :optional},
       {rich_message, [InputRichMessage],
-       "New rich content of the message; required if text isn't specified. Direct upload of new files isn't supported when an inline message is edited.",
+       "New rich content of the message; required if text isn't specified. Direct upload of new files and explicit upload of files by a URL isn't supported when an inline message is edited.",
        :optional},
       {reply_markup, [InlineKeyboardMarkup], "A JSON-serialized object for an inline keyboard", :optional}
     ],
@@ -2809,17 +2835,21 @@ defmodule ExGram do
        "Unique identifier for the target chat or username of the target supergroup in the format @username"},
       {receiver_user_id, [:integer], "Identifier of the user who received the message"},
       {ephemeral_message_id, [:integer], "Identifier of the ephemeral message to edit"},
-      {text, [:string], "New text of the message, 1-4096 characters after entity parsing"},
+      {text, [:string],
+       "New text of the message, 1-4096 characters after entity parsing; required if rich_message isn't specified",
+       :optional},
       {parse_mode, [:string], "Mode for parsing entities in the message text. See formatting options for more details.",
        :optional},
       {entities, [{:array, MessageEntity}],
        "A JSON-serialized list of special entities that appear in message text, which can be specified instead of parse_mode",
        :optional},
+      {rich_message, [InputRichMessage], "New rich content of the message; required if text isn't specified",
+       :optional},
       {link_preview_options, [LinkPreviewOptions], "Link preview generation options for the message", :optional},
       {reply_markup, [InlineKeyboardMarkup], "A JSON-serialized object for an inline keyboard", :optional}
     ],
     true,
-    "Use this method to edit an ephemeral text message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned."
+    "Use this method to edit an ephemeral text or rich message. Note that it is not guaranteed that the user will receive the message edit event, especially if they are offline. On success, True is returned."
   )
 
   method(
@@ -2830,8 +2860,7 @@ defmodule ExGram do
        "Unique identifier for the target chat or username of the target supergroup in the format @username"},
       {receiver_user_id, [:integer], "Identifier of the user who received the message"},
       {ephemeral_message_id, [:integer], "Identifier of the ephemeral message to edit"},
-      {media, [InputMedia],
-       "A JSON-serialized object for the new media content of the message. A new file can't be uploaded; use a previously uploaded file via its file_id or specify a URL."},
+      {media, [InputMedia], "A JSON-serialized object for the new media content of the message"},
       {reply_markup, [InlineKeyboardMarkup], "A JSON-serialized object for an inline keyboard", :optional}
     ],
     true,
@@ -2851,6 +2880,9 @@ defmodule ExGram do
        "Mode for parsing entities in the message caption. See formatting options for more details.", :optional},
       {caption_entities, [{:array, MessageEntity}],
        "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode",
+       :optional},
+      {show_caption_above_media, [:boolean],
+       "Pass True if the caption must be shown above the message media. Supported only for animation, photo and video messages.",
        :optional},
       {reply_markup, [InlineKeyboardMarkup], "A JSON-serialized object for an inline keyboard", :optional}
     ],
@@ -2981,12 +3013,8 @@ defmodule ExGram do
       {direct_messages_topic_id, [:integer],
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
-      {receiver_user_id, [:integer],
-       "For outgoing ephemeral messages, unique identifier of the user who will receive the message; for group and supergroup chats only. It is not guaranteed that the user will receive the message, especially if they are offline. See ephemeral message sending for more details.",
-       :optional},
-      {callback_query_id, [:string],
-       "For outgoing ephemeral messages, identifier of the callback query which triggered the message if any",
-       :optional},
+      {ephemeral_message_parameters, [EphemeralMessageParameters],
+       "A JSON-serialized object containing the parameters of the ephemeral message to send", :optional},
       {sticker, [:file, :string],
        "Sticker to send. Pass a file_id as String to send a file that exists on the Telegram servers (recommended), pass an HTTP URL as a String for Telegram to get a .WEBP sticker from the Internet, or upload a new .WEBP, .TGS, or .WEBM sticker using multipart/form-data. More information on Sending Files ». Video and animated stickers can't be sent via an HTTP URL."},
       {emoji, [:string], "Emoji associated with the sticker; only for just uploaded stickers", :optional},
@@ -3206,6 +3234,8 @@ defmodule ExGram do
       {direct_messages_topic_id, [:integer],
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
+      {ephemeral_message_parameters, [EphemeralMessageParameters],
+       "A JSON-serialized object containing the parameters of the ephemeral message to send", :optional},
       {rich_message, [InputRichMessage], "The message to be sent"},
       {disable_notification, [:boolean], "Sends the message silently. Users will receive a notification with no sound.",
        :optional},
@@ -3234,9 +3264,15 @@ defmodule ExGram do
       {chat_id, [:integer], "Unique identifier for the target private chat"},
       {message_thread_id, [:integer], "Unique identifier for the target message thread", :optional},
       {draft_id, [:integer],
-       "Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated."},
+       "Unique identifier of the message draft; must be non-zero. Changes to drafts with the same identifier are animated. Otherwise, the draft is replaced without animation."},
       {rich_message, [InputRichMessage],
-       "The partial message to be streamed. Direct upload of new files isn't supported."}
+       "The partial message to be streamed. Direct upload of new files and explicit upload of files by a URL isn't supported."},
+      {can_stop, [:boolean],
+       "Pass True to show the user a button to stop further drafts. The bot will receive an Update \"stopped_message_generation” if the user presses the button.",
+       :optional},
+      {keep_on_stop, [:boolean],
+       "Pass True to keep the draft in the chat when the button is pressed. The draft will still disappear after a short time or if the bot sends a message. To fully preserve the partial draft, the bot should send it as a new message.",
+       :optional}
     ],
     true,
     "Use this method to stream a partial rich message to a user while the message is being generated. Note that the streamed draft is ephemeral and acts as a temporary 30-second preview - once the output is finalized, you must call sendRichMessage with the complete message to persist it in the user's chat. Returns True on success."
@@ -3642,7 +3678,9 @@ defmodule ExGram do
         {:managed_bot, [ManagedBotUpdated],
          "Optional. A new bot was created to be managed by the bot, or token or owner of a managed bot was changed",
          :optional},
-        {:subscription, [BotSubscriptionUpdated], "Optional. User payment subscription has changed", :optional}
+        {:subscription, [BotSubscriptionUpdated], "Optional. User payment subscription has changed", :optional},
+        {:stopped_message_generation, [MessageGenerationStopped],
+         "Optional. A user asked the bot to stop the generation of a message", :optional}
       ],
       "This object represents an incoming update. At most one of the optional fields can be present in any given update."
     )
@@ -4038,10 +4076,12 @@ defmodule ExGram do
          "Optional. Service message: some tasks in a checklist were marked as done or not done", :optional},
         {:checklist_tasks_added, [ChecklistTasksAdded], "Optional. Service message: tasks were added to a checklist",
          :optional},
-        {:community_chat_added, [CommunityChatAdded], "Optional. Service message: chat added to a Community",
+        {:community_chat_added, [CommunityChatAdded], "Optional. Service message: chat or bot added to a Community",
          :optional},
-        {:community_chat_removed, [CommunityChatRemoved], "Optional. Service message: chat removed from a Community",
-         :optional},
+        {:community_chat_joined, [CommunityChatJoined],
+         "Optional. Service message: chat was joined by a user from a Community", :optional},
+        {:community_chat_removed, [CommunityChatRemoved],
+         "Optional. Service message: chat or bot removed from a Community", :optional},
         {:direct_message_price_changed, [DirectMessagePriceChanged],
          "Optional. Service message: the price for paid messages in the corresponding direct messages chat of a channel has changed",
          :optional},
@@ -4222,6 +4262,20 @@ defmodule ExGram do
          :optional}
       ],
       "Describes reply parameters for the message that is being sent."
+    )
+
+    model(
+      EphemeralMessageParameters,
+      [
+        {:receiver_user_id, [:integer],
+         "Identifier of the user who will receive the message. It is not guaranteed that the user will receive the message, especially if they are offline. See here for more details."},
+        {:callback_query_id, [:string],
+         "Optional. Identifier of the callback query which triggered the message, if any", :optional},
+        {:replace_callback_query_message, [:boolean],
+         "Optional. Pass True if the ephemeral message must be shown in place of the original message. Must be False for callback queries from ephemeral messages, which must be edited using regular editEphemeralMessage… methods.",
+         :optional}
+      ],
+      "No description available."
     )
 
     model(
@@ -4412,7 +4466,7 @@ defmodule ExGram do
         {:thumbnail, [PhotoSize], "Optional. Video thumbnail", :optional},
         {:file_size, [:integer], "Optional. File size in bytes", :optional}
       ],
-      "This object represents a video message (available in Telegram apps as of v.4.0)."
+      "This object represents a video message."
     )
 
     model(
@@ -4773,6 +4827,17 @@ defmodule ExGram do
     )
 
     model(
+      MessageGenerationStopped,
+      [
+        {:chat, [Chat], "Chat in which the message is generated"},
+        {:message_thread_id, [:integer],
+         "Optional. Unique identifier of the message thread in which the message is generated", :optional},
+        {:draft_id, [:integer], "Unique identifier of the message draft which was stopped"}
+      ],
+      "This object describes an update about a user stopping message generation."
+    )
+
+    model(
       PollOptionAdded,
       [
         {:poll_message, [MaybeInaccessibleMessage],
@@ -4919,14 +4984,20 @@ defmodule ExGram do
 
     model(
       CommunityChatAdded,
-      [{:community, [Community], "The new community to which the chat belongs"}],
-      "Describes a service message about a chat being added to a community."
+      [{:community, [Community], "The new community to which the chat or the bot belongs"}],
+      "Describes a service message about a chat or a bot being added to a community."
+    )
+
+    model(
+      CommunityChatJoined,
+      [{:community, [Community], "The community from which the chat was joined"}],
+      "Describes a service message about a chat being joined by a user from a community."
     )
 
     model(
       CommunityChatRemoved,
       [],
-      "Describes a service message about a chat being removed from a community. Currently holds no information."
+      "Describes a service message about a chat or a bot being removed from a community. Currently holds no information."
     )
 
     model(
@@ -5351,6 +5422,9 @@ defmodule ExGram do
          :optional},
         {:selective, [:boolean],
          "Optional. Use this parameter if you want to show the keyboard to specific users only. Targets: 1) users that are @mentioned in the text of the Message object; 2) if the bot's message is a reply to a message in the same chat and forum topic, sender of the original message.  Example: A user requests to change the bot's language, bot replies to the request with a keyboard to select the new language. Other users in the group don't see the keyboard.",
+         :optional},
+        {:force_reply, [:boolean],
+         "Optional. Pass True if the reply interface must be shown to the user, as if they had manually selected the bot's message and tapped 'Reply'",
          :optional}
       ],
       "This object represents a custom keyboard with reply options (see Introduction to bots for details and examples). Not supported in channels and for messages sent on behalf of a business account."
@@ -5480,7 +5554,10 @@ defmodule ExGram do
       InlineKeyboardMarkup,
       [
         {:inline_keyboard, [{:array, {:array, InlineKeyboardButton}}],
-         "Array of button rows, each represented by an Array of InlineKeyboardButton objects"}
+         "Array of button rows, each represented by an Array of InlineKeyboardButton objects"},
+        {:force_reply, [:boolean],
+         "Optional. Pass True if the reply interface must be shown to the user, as if they had manually selected the bot's message and tapped 'Reply'. The value of the field can't be changed when the inline keyboard is edited.",
+         :optional}
       ],
       "This object represents an inline keyboard that appears right next to the message it belongs to."
     )
@@ -5504,7 +5581,7 @@ defmodule ExGram do
          "Optional. Description of the Web App that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method answerWebAppQuery. Available only in private chats between a user and the bot. Not supported for messages sent on behalf of a business account.",
          :optional},
         {:login_url, [LoginUrl],
-         "Optional. An HTTPS URL used to automatically authorize the user. Can be used as a replacement for the Telegram Login Widget.",
+         "Optional. An HTTPS URL used to automatically authorize the user. Can be used as a replacement for the Telegram Login Widget. Not supported for ephemeral messages.",
          :optional},
         {:switch_inline_query, [:string],
          "Optional. If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot's username and the specified inline query in the input field. May be empty, in which case just the bot's username will be inserted. Not supported for messages sent in channel direct messages chats and on behalf of a business account.",
@@ -5522,7 +5599,8 @@ defmodule ExGram do
          :optional},
         {:pay, [:boolean],
          "Optional. Specify True, to send a Pay button. Substrings \"” and \"XTR” in the buttons's text will be replaced with a Telegram Star icon.  NOTE: This type of button must always be the first button in the first row and can only be used in invoice messages.",
-         :optional}
+         :optional},
+        {:disabled, [DisabledButton], "Optional. If set, then the button is disabled and does nothing", :optional}
       ],
       "This object represents one button of an inline keyboard. Exactly one of the fields other than text, icon_custom_emoji_id, and style must be used to specify the type of the button."
     )
@@ -5534,12 +5612,12 @@ defmodule ExGram do
          "An HTTPS URL to be opened with user authorization data added to the query string when the button is pressed. If the user refuses to provide authorization data, the original URL without information about the user will be opened. The data added is the same as described in Receiving authorization data.  NOTE: You must always check the hash of the received data to verify the authentication and the integrity of the data as described in Checking authorization."},
         {:forward_text, [:string], "Optional. New text of the button in forwarded messages", :optional},
         {:bot_username, [:string],
-         "Optional. Username of a bot, which will be used for user authorization. See Setting up a bot for more details. If not specified, the current bot's username will be assumed. The url's domain must be the same as the domain linked with the bot. See Linking your domain to the bot for more details.",
+         "Optional. Username of a bot, which will be used for user authorization; not supported in RichMessageButton. See Setting up a bot for more details. If not specified, the current bot's username will be assumed. The url's domain must be the same as the domain linked with the bot. See Linking your domain to the bot for more details.",
          :optional},
         {:request_write_access, [:boolean],
          "Optional. Pass True to request the permission for your bot to send messages to the user", :optional}
       ],
-      "This object represents a parameter of the inline keyboard button used to automatically authorize a user. Serves as a great replacement for the Telegram Login Widget when the user is coming from Telegram. All the user needs to do is tap/click a button and confirm that they want to log in:"
+      "This object represents a parameter of the inline keyboard button used to automatically authorize a user. It serves as a great replacement for the Telegram Login Widget when the user is coming from Telegram. All the user needs to do is tap/click a button and confirm that they want to log in:"
     )
 
     model(
@@ -5560,6 +5638,12 @@ defmodule ExGram do
       CopyTextButton,
       [{:text, [:string], "The text to be copied to the clipboard; 1-256 characters"}],
       "This object represents an inline keyboard button that copies specified text to the clipboard."
+    )
+
+    model(
+      DisabledButton,
+      [],
+      "This object represents a disabled button which does nothing. Currently holds no information."
     )
 
     model(
@@ -5586,7 +5670,7 @@ defmodule ExGram do
       ForceReply,
       [
         {:force_reply, [:boolean],
-         "Shows reply interface to the user, as if they manually selected the bot's message and tapped 'Reply'"},
+         "Shows reply interface to the user, as if they had manually selected the bot's message and tapped 'Reply'"},
         {:input_field_placeholder, [:string],
          "Optional. The placeholder to be shown in the input field when the reply is active; 1-64 characters",
          :optional},
@@ -5683,8 +5767,10 @@ defmodule ExGram do
          "Optional. True, if the administrator can manage direct messages of the channel and decline suggested posts; for channels only",
          :optional},
         {:can_manage_tags, [:boolean],
-         "Optional. True, if the administrator can edit the tags of regular members; for groups and supergroups only. If omitted, defaults to the value of can_pin_messages.",
-         :optional}
+         "Optional. True, if the administrator can edit the tags of regular members; for groups and supergroups only",
+         :optional},
+        {:can_send_welcome_messages, [:boolean],
+         "True, if the administrator can manage chat welcome messages or directly send them in the case of bots"}
       ],
       "Represents the rights of an administrator in a chat."
     )
@@ -5757,8 +5843,10 @@ defmodule ExGram do
          "Optional. True, if the administrator can manage direct messages of the channel and decline suggested posts; for channels only",
          :optional},
         {:can_manage_tags, [:boolean],
-         "Optional. True, if the administrator can edit the tags of regular members; for groups and supergroups only. If omitted, defaults to the value of can_pin_messages.",
+         "Optional. True, if the administrator can edit the tags of regular members; for groups and supergroups only",
          :optional},
+        {:can_send_welcome_messages, [:boolean],
+         "True, if the administrator can manage chat welcome messages or directly send them in the case of bots"},
         {:custom_title, [:string], "Optional. Custom title for this user", :optional}
       ],
       "Represents a chat member that has some additional privileges."
@@ -6272,6 +6360,11 @@ defmodule ExGram do
         {:gift, [UniqueGift], "Information about the gift"},
         {:origin, [:string],
          ~s(Origin of the gift. Currently, either "upgrade” for gifts upgraded from regular gifts, "transfer” for gifts transferred from other users or channels, "resale” for gifts bought from other users, "gifted_upgrade” for upgrades purchased after the gift was sent, or "offer” for gifts bought or sold through gift purchase offers.)},
+        {:text, [:string], "Optional. Text of the message that was added to the gift", :optional},
+        {:entities, [{:array, MessageEntity}], "Optional. Special entities that appear in the text", :optional},
+        {:is_private, [:boolean],
+         "Optional. True, if the sender and gift text are shown only to the gift receiver; otherwise, everyone will be able to see them",
+         :optional},
         {:last_resale_currency, [:string],
          "Optional. For gifts bought from other users, the currency in which the payment for the gift was done. Currently, one of \"XTR” for Telegram Stars or \"TON” for TON grams.",
          :optional},
@@ -7105,7 +7198,7 @@ defmodule ExGram do
          "Optional. Content of the rich message to send described using Markdown formatting. See rich message formatting options for more details. Use media field to specify the media used in the message.",
          :optional},
         {:media, [{:array, InputRichMessageMedia}],
-         "Optional. List of media that are specified in the markdown or html fields using tg://photo?id=, tg://video?id=, and tg://audio?id= links",
+         "Optional. List of media that are specified in the markdown or html fields using tg://photo?id=, tg://video?id=, tg://document?id=, and tg://audio?id= links",
          :optional},
         {:is_rtl, [:boolean], "Optional. Pass True if the rich message must be shown right-to-left", :optional},
         {:skip_entity_detection, [:boolean],
@@ -7119,11 +7212,52 @@ defmodule ExGram do
       InputRichMessageMedia,
       [
         {:id, [:string],
-         "Unique identifier of the media used in a tg://photo?id=, tg://video?id=, or tg://audio?id= link. 1-64 characters, only A-Z, a-z, 0-9, _ and - are allowed."},
-        {:media, [InputMediaAnimation, InputMediaAudio, InputMediaPhoto, InputMediaVideo, InputMediaVoiceNote],
-         "The media to be sent. Everything except the media itself and its properties is ignored."}
+         "Unique identifier of the media used in a tg://photo?id=, tg://video?id=, tg://document?id=, or tg://audio?id= link. 1-64 characters, only A-Z, a-z, 0-9, _ and - are allowed."},
+        {:media,
+         [
+           InputMediaAnimation,
+           InputMediaAudio,
+           InputMediaDocument,
+           InputMediaPhoto,
+           InputMediaVideo,
+           InputMediaVoiceNote
+         ], "The media to be sent. Everything except the media itself and its properties is ignored."}
       ],
       "Describes a media element embedded in an outgoing rich message."
+    )
+
+    model(
+      RichMessageButton,
+      [
+        {:text, [RichText],
+         "Text of the button. May contain only plain text, RichTextCustomEmoji and RichTextDateTime entities."},
+        {:style, [:string],
+         ~s{Optional. Style of the button. Must be one of "danger” (red), "success” (green), "primary” (blue) or "link” (the button is shown as a regular link without borders). If omitted, then an app-specific style is used. The style "link” is allowed only for callback buttons.},
+         :optional},
+        {:url, [:string],
+         "Optional. HTTP or tg:// URL to be opened when the button is pressed. Links tg://user?id=<user_id> can be used to mention a user by their identifier without using a username, if this is allowed by their privacy settings.",
+         :optional},
+        {:callback_data, [:string],
+         "Optional. Data to be sent in a callback query to the bot when the button is pressed, 1-64 bytes", :optional},
+        {:web_app, [WebAppInfo],
+         "Optional. Description of the Web App that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method answerWebAppQuery. Available only in private chats between a user and the bot. Not supported for messages sent on behalf of a business account.",
+         :optional},
+        {:login_url, [LoginUrl],
+         "Optional. An HTTPS URL used to automatically authorize the user. Can be used as a replacement for the Telegram Login Widget. Not supported for ephemeral messages.",
+         :optional},
+        {:switch_inline_query, [:string],
+         "Optional. If set, pressing the button will prompt the user to select one of their chats, open that chat and insert the bot's username and the specified inline query in the input field. May be empty, in which case just the bot's username will be inserted. Not supported for messages sent in channel direct messages chats and on behalf of a business account.",
+         :optional},
+        {:switch_inline_query_current_chat, [:string],
+         "Optional. If set, pressing the button will insert the bot's username and the specified inline query in the current chat's input field. May be empty, in which case only the bot's username will be inserted. Not supported in channels and for messages sent in channel direct messages chats and on behalf of a business account.",
+         :optional},
+        {:switch_inline_query_chosen_chat, [SwitchInlineQueryChosenChat],
+         "Optional. If set, pressing the button will prompt the user to select one of their chats of the specified type, open that chat and insert the bot's username and the specified inline query in the input field. Not supported for messages sent in channel direct messages chats and on behalf of a business account.",
+         :optional},
+        {:copy_text, [CopyTextButton], "Optional. A button that copies the specified text to the clipboard", :optional},
+        {:disabled, [DisabledButton], "Optional. If set, then the button is disabled and does nothing", :optional}
+      ],
+      "This object represents a button in a RichMessage. Exactly one of the fields other than text and style must be used to specify the type of the button."
     )
 
     model(
@@ -7303,6 +7437,12 @@ defmodule ExGram do
     )
 
     model(
+      RichTextButton,
+      [{:type, [:string], "Type of the rich text, always \"button”"}, {:button, [RichMessageButton], "The button"}],
+      "A button."
+    )
+
+    model(
       RichTextAnchor,
       [{:type, [:string], "Type of the rich text, always \"anchor”"}, {:name, [:string], "The name of the anchor"}],
       "An anchor."
@@ -7451,6 +7591,16 @@ defmodule ExGram do
     )
 
     model(
+      RichBlockExpandableBlockQuotation,
+      [
+        {:type, [:string], "Type of the block, always \"expandable_blockquote”"},
+        {:text, [RichText], "Content of the block"},
+        {:credit, [RichText], "Optional. Credit of the block", :optional}
+      ],
+      "A block quotation, corresponding to the HTML tag <blockquote> with custom attribute \"collapsed\"."
+    )
+
+    model(
       RichBlockPullQuotation,
       [
         {:type, [:string], "Type of the block, always \"pullquote”"},
@@ -7487,6 +7637,7 @@ defmodule ExGram do
         {:cells, [{:array, {:array, RichBlockTableCell}}], "Cells of the table"},
         {:is_bordered, [:boolean], "Optional. True, if the table has borders", :optional},
         {:is_striped, [:boolean], "Optional. True, if the table is striped", :optional},
+        {:is_compact, [:boolean], "Optional. True, if table cells have smaller indents", :optional},
         {:caption, [RichText], "Optional. Caption of the table", :optional}
       ],
       "A table, corresponding to the HTML tag <table>."
@@ -7508,12 +7659,24 @@ defmodule ExGram do
       [
         {:type, [:string], "Type of the block, always \"map”"},
         {:location, [Location], "Location of the center of the map"},
-        {:zoom, [:integer], "Map zoom level; 13-20"},
+        {:zoom, [:integer], "Map zoom level"},
         {:width, [:integer], "Expected width of the map"},
         {:height, [:integer], "Expected height of the map"},
         {:caption, [RichBlockCaption], "Optional. Caption of the block", :optional}
       ],
       "A block with a map, corresponding to the custom HTML tag <tg-map>."
+    )
+
+    model(
+      RichBlockButtons,
+      [
+        {:type, [:string], "Type of the block, always \"buttons”"},
+        {:buttons, [{:array, RichMessageButton}], "The buttons"},
+        {:align, [:string],
+         "Optional. Horizontal alignment of the buttons. Currently, must be one of \"left”, \"center”, or \"right”.",
+         :optional}
+      ],
+      "A block containing a list of buttons that are shown in one row, corresponding to the custom HTML tag <tg-button-row>."
     )
 
     model(
@@ -7535,6 +7698,16 @@ defmodule ExGram do
         {:caption, [RichBlockCaption], "Optional. Caption of the block", :optional}
       ],
       "A block with a music file, corresponding to the HTML tag <audio>."
+    )
+
+    model(
+      RichBlockDocument,
+      [
+        {:type, [:string], "Type of the block, always \"document”"},
+        {:document, [Document], "The document"},
+        {:caption, [RichBlockCaption], "Optional. Caption of the block", :optional}
+      ],
+      "A block with a general file, corresponding to the custom HTML tag <tg-document>."
     )
 
     model(
@@ -7666,6 +7839,16 @@ defmodule ExGram do
     )
 
     model(
+      InputRichBlockExpandableBlockQuotation,
+      [
+        {:type, [:string], "Type of the block, always \"expandable_blockquote”"},
+        {:text, [RichText], "Content of the block"},
+        {:credit, [RichText], "Optional. Credit of the block", :optional}
+      ],
+      "A block quotation, corresponding to the HTML tag <blockquote> with custom attribute \"collapsed\"."
+    )
+
+    model(
       InputRichBlockPullQuotation,
       [
         {:type, [:string], "Type of the block, always \"pullquote”"},
@@ -7702,6 +7885,7 @@ defmodule ExGram do
         {:cells, [{:array, {:array, RichBlockTableCell}}], "Cells of the table"},
         {:is_bordered, [:boolean], "Optional. Pass True if the table has borders", :optional},
         {:is_striped, [:boolean], "Optional. Pass True if the table is striped", :optional},
+        {:is_compact, [:boolean], "Optional. Pass True if table cells must have smaller indents", :optional},
         {:caption, [RichText], "Optional. Caption of the table", :optional}
       ],
       "A table, corresponding to the HTML tag <table>."
@@ -7723,12 +7907,24 @@ defmodule ExGram do
       [
         {:type, [:string], "Type of the block, always \"map”"},
         {:location, [Location], "Location of the center of the map"},
-        {:zoom, [:integer], "Map zoom level; 0-24"},
-        {:width, [:integer], "Map width; 0-10000"},
-        {:height, [:integer], "Map height; 0-10000"},
+        {:zoom, [:integer], "Optional. Map zoom level; 0-24", :optional},
+        {:width, [:integer], "Optional. Map width; 0-10000", :optional},
+        {:height, [:integer], "Optional. Map height; 0-10000", :optional},
         {:caption, [RichBlockCaption], "Optional. Caption of the block", :optional}
       ],
       "A block with a map, corresponding to the custom HTML tag <tg-map>. The map's width and height must not exceed 10000 in total. The width and height ratio must be at most 20."
+    )
+
+    model(
+      InputRichBlockButtons,
+      [
+        {:type, [:string], "Type of the block, always \"buttons”"},
+        {:buttons, [{:array, RichMessageButton}], "List of 1-8 buttons to send"},
+        {:align, [:string],
+         "Optional. Horizontal alignment of the buttons. Currently, must be one of \"left”, \"center”, or \"right”.",
+         :optional}
+      ],
+      "A block containing a list of buttons that are shown in one row, corresponding to the custom HTML tag <tg-button-row>."
     )
 
     model(
@@ -7749,6 +7945,16 @@ defmodule ExGram do
         {:caption, [RichBlockCaption], "Optional. Caption of the block", :optional}
       ],
       "A block with a music file, corresponding to the HTML tag <audio>."
+    )
+
+    model(
+      InputRichBlockDocument,
+      [
+        {:type, [:string], "Type of the block, always \"document”"},
+        {:document, [InputMediaDocument], "The document. Caption is ignored."},
+        {:caption, [RichBlockCaption], "Optional. Caption of the block", :optional}
+      ],
+      "A block with a general file, corresponding to the custom HTML tag <tg-document>."
     )
 
     model(
@@ -8306,7 +8512,10 @@ defmodule ExGram do
 
     model(
       InputRichMessageContent,
-      [{:rich_message, [InputRichMessage], "The message to be sent"}],
+      [
+        {:rich_message, [InputRichMessage],
+         "The message to be sent. Only previously uploaded files may be used in the message."}
+      ],
       "Represents the content of a rich message to be sent as the result of an inline query."
     )
 
@@ -8907,7 +9116,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 361 models
+    # 373 models
 
     defmodule MaybeInaccessibleMessage do
       @moduledoc """
@@ -9271,7 +9480,7 @@ defmodule ExGram do
 
     defmodule RichText do
       @moduledoc """
-      RichText model. Valid subtypes: RichTextBold, RichTextItalic, RichTextUnderline, RichTextStrikethrough, RichTextSpoiler, RichTextDateTime, RichTextTextMention, RichTextSubscript, RichTextSuperscript, RichTextMarked, RichTextCode, RichTextCustomEmoji, RichTextMathematicalExpression, RichTextUrl, RichTextEmailAddress, RichTextPhoneNumber, RichTextBankCardNumber, RichTextMention, RichTextHashtag, RichTextCashtag, RichTextBotCommand, RichTextAnchor, RichTextAnchorLink, RichTextReference, RichTextReferenceLink
+      RichText model. Valid subtypes: RichTextBold, RichTextItalic, RichTextUnderline, RichTextStrikethrough, RichTextSpoiler, RichTextDateTime, RichTextTextMention, RichTextSubscript, RichTextSuperscript, RichTextMarked, RichTextCode, RichTextCustomEmoji, RichTextMathematicalExpression, RichTextUrl, RichTextEmailAddress, RichTextPhoneNumber, RichTextBankCardNumber, RichTextMention, RichTextHashtag, RichTextCashtag, RichTextBotCommand, RichTextButton, RichTextAnchor, RichTextAnchorLink, RichTextReference, RichTextReferenceLink
       """
       @type t ::
               String.t()
@@ -9297,6 +9506,7 @@ defmodule ExGram do
               | RichTextHashtag.t()
               | RichTextCashtag.t()
               | RichTextBotCommand.t()
+              | RichTextButton.t()
               | RichTextAnchor.t()
               | RichTextAnchorLink.t()
               | RichTextReference.t()
@@ -9329,6 +9539,7 @@ defmodule ExGram do
           RichTextHashtag,
           RichTextCashtag,
           RichTextBotCommand,
+          RichTextButton,
           RichTextAnchor,
           RichTextAnchorLink,
           RichTextReference,
@@ -9343,7 +9554,7 @@ defmodule ExGram do
 
     defmodule RichBlock do
       @moduledoc """
-      RichBlock model. Valid subtypes: RichBlockParagraph, RichBlockSectionHeading, RichBlockPreformatted, RichBlockFooter, RichBlockDivider, RichBlockMathematicalExpression, RichBlockAnchor, RichBlockList, RichBlockBlockQuotation, RichBlockPullQuotation, RichBlockCollage, RichBlockSlideshow, RichBlockTable, RichBlockDetails, RichBlockMap, RichBlockAnimation, RichBlockAudio, RichBlockPhoto, RichBlockVideo, RichBlockVoiceNote, RichBlockThinking
+      RichBlock model. Valid subtypes: RichBlockParagraph, RichBlockSectionHeading, RichBlockPreformatted, RichBlockFooter, RichBlockDivider, RichBlockMathematicalExpression, RichBlockAnchor, RichBlockList, RichBlockBlockQuotation, RichBlockExpandableBlockQuotation, RichBlockPullQuotation, RichBlockCollage, RichBlockSlideshow, RichBlockTable, RichBlockDetails, RichBlockMap, RichBlockButtons, RichBlockAnimation, RichBlockAudio, RichBlockDocument, RichBlockPhoto, RichBlockVideo, RichBlockVoiceNote, RichBlockThinking
       """
       @type t ::
               RichBlockParagraph.t()
@@ -9355,14 +9566,17 @@ defmodule ExGram do
               | RichBlockAnchor.t()
               | RichBlockList.t()
               | RichBlockBlockQuotation.t()
+              | RichBlockExpandableBlockQuotation.t()
               | RichBlockPullQuotation.t()
               | RichBlockCollage.t()
               | RichBlockSlideshow.t()
               | RichBlockTable.t()
               | RichBlockDetails.t()
               | RichBlockMap.t()
+              | RichBlockButtons.t()
               | RichBlockAnimation.t()
               | RichBlockAudio.t()
+              | RichBlockDocument.t()
               | RichBlockPhoto.t()
               | RichBlockVideo.t()
               | RichBlockVoiceNote.t()
@@ -9383,14 +9597,17 @@ defmodule ExGram do
           RichBlockAnchor,
           RichBlockList,
           RichBlockBlockQuotation,
+          RichBlockExpandableBlockQuotation,
           RichBlockPullQuotation,
           RichBlockCollage,
           RichBlockSlideshow,
           RichBlockTable,
           RichBlockDetails,
           RichBlockMap,
+          RichBlockButtons,
           RichBlockAnimation,
           RichBlockAudio,
+          RichBlockDocument,
           RichBlockPhoto,
           RichBlockVideo,
           RichBlockVoiceNote,
@@ -9401,7 +9618,7 @@ defmodule ExGram do
 
     defmodule InputRichBlock do
       @moduledoc """
-      InputRichBlock model. Valid subtypes: InputRichBlockParagraph, InputRichBlockSectionHeading, InputRichBlockPreformatted, InputRichBlockFooter, InputRichBlockDivider, InputRichBlockMathematicalExpression, InputRichBlockAnchor, InputRichBlockList, InputRichBlockBlockQuotation, InputRichBlockPullQuotation, InputRichBlockCollage, InputRichBlockSlideshow, InputRichBlockTable, InputRichBlockDetails, InputRichBlockMap, InputRichBlockAnimation, InputRichBlockAudio, InputRichBlockPhoto, InputRichBlockVideo, InputRichBlockVoiceNote, InputRichBlockThinking
+      InputRichBlock model. Valid subtypes: InputRichBlockParagraph, InputRichBlockSectionHeading, InputRichBlockPreformatted, InputRichBlockFooter, InputRichBlockDivider, InputRichBlockMathematicalExpression, InputRichBlockAnchor, InputRichBlockList, InputRichBlockBlockQuotation, InputRichBlockExpandableBlockQuotation, InputRichBlockPullQuotation, InputRichBlockCollage, InputRichBlockSlideshow, InputRichBlockTable, InputRichBlockDetails, InputRichBlockMap, InputRichBlockButtons, InputRichBlockAnimation, InputRichBlockAudio, InputRichBlockDocument, InputRichBlockPhoto, InputRichBlockVideo, InputRichBlockVoiceNote, InputRichBlockThinking
       """
       @type t ::
               InputRichBlockParagraph.t()
@@ -9413,14 +9630,17 @@ defmodule ExGram do
               | InputRichBlockAnchor.t()
               | InputRichBlockList.t()
               | InputRichBlockBlockQuotation.t()
+              | InputRichBlockExpandableBlockQuotation.t()
               | InputRichBlockPullQuotation.t()
               | InputRichBlockCollage.t()
               | InputRichBlockSlideshow.t()
               | InputRichBlockTable.t()
               | InputRichBlockDetails.t()
               | InputRichBlockMap.t()
+              | InputRichBlockButtons.t()
               | InputRichBlockAnimation.t()
               | InputRichBlockAudio.t()
+              | InputRichBlockDocument.t()
               | InputRichBlockPhoto.t()
               | InputRichBlockVideo.t()
               | InputRichBlockVoiceNote.t()
@@ -9441,14 +9661,17 @@ defmodule ExGram do
           InputRichBlockAnchor,
           InputRichBlockList,
           InputRichBlockBlockQuotation,
+          InputRichBlockExpandableBlockQuotation,
           InputRichBlockPullQuotation,
           InputRichBlockCollage,
           InputRichBlockSlideshow,
           InputRichBlockTable,
           InputRichBlockDetails,
           InputRichBlockMap,
+          InputRichBlockButtons,
           InputRichBlockAnimation,
           InputRichBlockAudio,
+          InputRichBlockDocument,
           InputRichBlockPhoto,
           InputRichBlockVideo,
           InputRichBlockVoiceNote,

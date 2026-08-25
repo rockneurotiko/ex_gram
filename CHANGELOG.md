@@ -1,6 +1,15 @@
 # Changelog
 
 ## Unreleased
+- Update Bot API to 10.3
+- Bot API 10.3 replaced the `receiver_user_id` and `callback_query_id` options with the
+  `ephemeral_message_parameters` struct on `sendMessage`, `sendAnimation`, `sendAudio`,
+  `sendDocument`, `sendLivePhoto`, `sendPhoto`, `sendSticker`, `sendVideo`, `sendVideoNote`,
+  `sendVoice`, `sendContact`, `sendLocation` and `sendVenue`. This is handled in a
+  backward-compatible way: calls still using `receiver_user_id:`/`callback_query_id:` are
+  automatically translated into `ephemeral_message_parameters`; calls already using
+  `ephemeral_message_parameters` are unaffected.
+- Add backward-compatible `edit_ephemeral_message_text/5` wrapper (`text` is now optional in the API)
 
 ## [0.69.0]
 - Update Bot API to 10.2
