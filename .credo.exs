@@ -121,7 +121,22 @@
           #
           ## Custom Checks
           #
-          {ExGram.Credo.SubtypeImplemented, []}
+          {ExGram.Credo.SubtypeImplemented,
+           [
+             # The cached inline query results share a `type` value with their non-cached
+             # counterparts, so the selector alone cannot tell them apart. See the TODO in
+             # lib/ex_gram/model/subtype/inline_query_result.ex.
+             ignore: [
+               ExGram.Model.InlineQueryResultCachedAudio,
+               ExGram.Model.InlineQueryResultCachedDocument,
+               ExGram.Model.InlineQueryResultCachedGif,
+               ExGram.Model.InlineQueryResultCachedMpeg4Gif,
+               ExGram.Model.InlineQueryResultCachedPhoto,
+               ExGram.Model.InlineQueryResultCachedSticker,
+               ExGram.Model.InlineQueryResultCachedVideo,
+               ExGram.Model.InlineQueryResultCachedVoice
+             ]
+           ]}
         ],
         disabled: [
           #
