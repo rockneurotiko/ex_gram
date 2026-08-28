@@ -1,6 +1,11 @@
 # Changelog
 
 ## Unreleased
+- Resolve the rich message subtypes added in Bot API 10.3. The `buttons`, `document` and
+  `expandable_blockquote` blocks (`RichBlock` and `InputRichBlock`) and the `button` rich text
+  (`RichText`) had no `ExGram.Model.Subtype` clause, so casting any response containing one
+  failed with a `FunctionClauseError`. This affected every rich message with a button, however
+  it was built, since Telegram echoes the parsed blocks back in the response.
 
 ## [0.70.0]
 - Update Bot API to 10.3

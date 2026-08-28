@@ -612,6 +612,62 @@ defmodule ExGram.CastTest do
     end
   end
 
+  describe "subtype: RichBlock" do
+    test "resolves to RichBlockButtons" do
+      input = %{
+        type: "buttons",
+        align: "center",
+        buttons: [%{text: "Yes", style: "success", callback_data: "yes"}]
+      }
+
+      assert {:ok,
+              %Model.RichBlockButtons{
+                type: "buttons",
+                align: "center",
+                buttons: [%Model.RichMessageButton{text: "Yes", style: "success", callback_data: "yes"}]
+              }} = Cast.cast(input, Model.RichBlock)
+    end
+
+    test "resolves to RichBlockExpandableBlockQuotation" do
+      input = %{type: "expandable_blockquote", text: "collapsed content"}
+
+      assert {:ok, %Model.RichBlockExpandableBlockQuotation{text: "collapsed content"}} =
+               Cast.cast(input, Model.RichBlock)
+    end
+
+    test "resolves to RichBlockDocument" do
+      input = %{type: "document", document: %{file_id: "file", file_unique_id: "unique"}}
+
+      assert {:ok, %Model.RichBlockDocument{document: %Model.Document{file_id: "file"}}} =
+               Cast.cast(input, Model.RichBlock)
+    end
+  end
+
+  describe "subtype: InputRichBlock" do
+    test "resolves to InputRichBlockButtons" do
+      input = %{type: "buttons", buttons: [%{text: "Copy", copy_text: %{text: "abc"}}]}
+
+      assert {:ok,
+              %Model.InputRichBlockButtons{
+                buttons: [%Model.RichMessageButton{text: "Copy", copy_text: %Model.CopyTextButton{text: "abc"}}]
+              }} = Cast.cast(input, Model.InputRichBlock)
+    end
+
+    test "resolves to InputRichBlockExpandableBlockQuotation" do
+      input = %{type: "expandable_blockquote", text: "collapsed content"}
+
+      assert {:ok, %Model.InputRichBlockExpandableBlockQuotation{text: "collapsed content"}} =
+               Cast.cast(input, Model.InputRichBlock)
+    end
+
+    test "resolves to InputRichBlockDocument" do
+      input = %{type: "document", document: %{type: "document", media: "file"}}
+
+      assert {:ok, %Model.InputRichBlockDocument{document: %Model.InputMediaDocument{media: "file"}}} =
+               Cast.cast(input, Model.InputRichBlock)
+    end
+  end
+
   # ---------------------------------------------------------------------------
   # Generics with primitive types (RichText)
   # ---------------------------------------------------------------------------
@@ -625,6 +681,13 @@ defmodule ExGram.CastTest do
       input = %{type: "bold", text: "important"}
 
       assert {:ok, %Model.RichTextBold{text: "important"}} = Cast.cast(input, Model.RichText)
+    end
+
+    test "RichText resolves to RichTextButton" do
+      input = %{type: "button", button: %{text: "Press", callback_data: "press"}}
+
+      assert {:ok, %Model.RichTextButton{button: %Model.RichMessageButton{text: "Press", callback_data: "press"}}} =
+               Cast.cast(input, Model.RichText)
     end
 
     test "RichText as a list of mixed strings and subtypes" do

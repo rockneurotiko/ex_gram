@@ -8,6 +8,7 @@ defimpl ExGram.Model.Subtype, for: ExGram.Model.RichText do
   def subtype(_, "bank_card_number"), do: ExGram.Model.RichTextBankCardNumber
   def subtype(_, "bold"), do: ExGram.Model.RichTextBold
   def subtype(_, "bot_command"), do: ExGram.Model.RichTextBotCommand
+  def subtype(_, "button"), do: ExGram.Model.RichTextButton
   def subtype(_, "cashtag"), do: ExGram.Model.RichTextCashtag
   def subtype(_, "code"), do: ExGram.Model.RichTextCode
   def subtype(_, "custom_emoji"), do: ExGram.Model.RichTextCustomEmoji
