@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.70.1]
 - Resolve the rich message subtypes added in Bot API 10.3. The `buttons`, `document` and
   `expandable_blockquote` blocks (`RichBlock` and `InputRichBlock`) and the `button` rich text
   (`RichText`) had no `ExGram.Model.Subtype` clause, so casting any response containing one
