@@ -7,9 +7,12 @@ defimpl ExGram.Model.Subtype, for: ExGram.Model.InputRichBlock do
   def subtype(_, "animation"), do: ExGram.Model.InputRichBlockAnimation
   def subtype(_, "audio"), do: ExGram.Model.InputRichBlockAudio
   def subtype(_, "blockquote"), do: ExGram.Model.InputRichBlockBlockQuotation
+  def subtype(_, "buttons"), do: ExGram.Model.InputRichBlockButtons
   def subtype(_, "collage"), do: ExGram.Model.InputRichBlockCollage
   def subtype(_, "details"), do: ExGram.Model.InputRichBlockDetails
   def subtype(_, "divider"), do: ExGram.Model.InputRichBlockDivider
+  def subtype(_, "document"), do: ExGram.Model.InputRichBlockDocument
+  def subtype(_, "expandable_blockquote"), do: ExGram.Model.InputRichBlockExpandableBlockQuotation
   def subtype(_, "footer"), do: ExGram.Model.InputRichBlockFooter
   def subtype(_, "heading"), do: ExGram.Model.InputRichBlockSectionHeading
   def subtype(_, "list"), do: ExGram.Model.InputRichBlockList
