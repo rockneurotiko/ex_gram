@@ -82,8 +82,15 @@ defmodule ExGram.Macros.Helpers do
         [n, _t, _d, :optional] -> {:input_media, n}
       end)
 
-    direct_files ++ media_files
+    rich_message_files =
+      analyzed
+      |> Enum.filter(fn [_n, t | _] -> Enum.any?(t, &input_rich_message_alias?/1) end)
+      |> Enum.map(fn [n | _] -> {:input_rich_message, n} end)
+
+    direct_files ++ media_files ++ rich_message_files
   end
+
+  defp input_rich_message_alias?(type), do: alias_name(type) == "InputRichMessage"
 
   defp has_input_media_type?({:array, types}) when is_list(types) do
     Enum.any?(types, &input_media_alias?/1)
@@ -93,12 +100,13 @@ defmodule ExGram.Macros.Helpers do
 
   defp has_input_media_type?(type), do: input_media_alias?(type)
 
-  defp input_media_alias?({:__aliases__, _, parts}) do
-    name = parts |> List.last() |> Atom.to_string()
-    String.starts_with?(name, "InputMedia") or String.starts_with?(name, "InputPaidMedia")
+  defp input_media_alias?(type) do
+    name = alias_name(type)
+    is_binary(name) and (String.starts_with?(name, "InputMedia") or String.starts_with?(name, "InputPaidMedia"))
   end
 
-  defp input_media_alias?(_), do: false
+  defp alias_name({:__aliases__, _, parts}), do: parts |> List.last() |> Atom.to_string()
+  defp alias_name(_), do: nil
 
   def type_to_spec(:string), do: {{:., [], [{:__aliases__, [alias: false], [:String]}, :t]}, [], []}
 

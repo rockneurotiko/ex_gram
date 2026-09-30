@@ -1,6 +1,11 @@
 # Changelog
 
 ## Unreleased
+- Upload files placed inside an `InputRichMessage` (`sendRichMessage`, `sendRichMessageDraft`,
+  `editMessageText`, `editEphemeralMessageText`). `{:file, path}` and
+  `{:file_content, content, filename}` in the `media` list, in media blocks and in blocks nested
+  into collages, slideshows, details and other containers are sent as multipart parts and
+  referenced with `attach://`. Before, they were JSON-encoded as-is and the request failed.
 
 ## [0.70.1]
 - Resolve the rich message subtypes added in Bot API 10.3. The `buttons`, `document` and
