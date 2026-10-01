@@ -101,6 +101,7 @@ defmodule ExGram.Macros.Executer do
     {input_media_params, direct_params} =
       Enum.split_with(file_parts, fn
         {:input_media, _name} -> true
+        {:input_rich_message, _name} -> true
         _ -> false
       end)
 
@@ -123,19 +124,51 @@ defmodule ExGram.Macros.Executer do
       end)
 
     {body, media_file_parts} =
-      Enum.reduce(input_media_params, {body, []}, fn {:input_media, name}, {body, files} ->
+      Enum.reduce(input_media_params, {body, []}, fn {kind, name}, {body, files} ->
         case Map.get(body, name) do
           nil ->
             {body, files}
 
           media_value ->
-            {updated_media, extracted_files} = extract_media_files(media_value, name)
+            {updated_media, extracted_files} = extract_param_files(kind, media_value, name)
             {Map.put(body, name, updated_media), files ++ extracted_files}
         end
       end)
 
     create_multipart(body, direct_file_parts ++ media_file_parts)
   end
+
+  defp extract_param_files(:input_media, value, name), do: extract_media_files(value, name)
+  defp extract_param_files(:input_rich_message, value, name), do: extract_rich_message_files(value, name)
+
+  # Media can sit at any depth of a rich message: in the media list, in media blocks and in
+  # blocks nested into collages, slideshows, details, quotations and list items.
+  defp extract_rich_message_files(value, param_name) do
+    {updated_value, {files, _next_index}} = walk_rich_message(value, param_name, {[], 0})
+    {updated_value, files}
+  end
+
+  defp walk_rich_message(list, param_name, acc) when is_list(list) do
+    Enum.map_reduce(list, acc, &walk_rich_message(&1, param_name, &2))
+  end
+
+  defp walk_rich_message(map, param_name, {files, index}) when is_map(map) do
+    {map, item_files} = extract_files_from_media_item(map, param_name, index)
+    acc = if item_files == [], do: {files, index}, else: {files ++ item_files, index + 1}
+
+    map
+    |> Map.to_list()
+    |> Enum.reduce({map, acc}, fn
+      {key, nested}, {map, acc} when is_map(nested) or is_list(nested) ->
+        {nested, acc} = walk_rich_message(nested, param_name, acc)
+        {Map.put(map, key, nested), acc}
+
+      _field, map_acc ->
+        map_acc
+    end)
+  end
+
+  defp walk_rich_message(other, _param_name, acc), do: {other, acc}
 
   @input_media_file_fields [:media, :thumbnail, :cover]
 

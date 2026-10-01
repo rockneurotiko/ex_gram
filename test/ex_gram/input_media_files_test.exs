@@ -8,6 +8,12 @@ defmodule ExGram.InputMediaFilesTest do
   alias ExGram.Model.InputMediaDocument
   alias ExGram.Model.InputMediaPhoto
   alias ExGram.Model.InputMediaVideo
+  alias ExGram.Model.InputRichBlockCollage
+  alias ExGram.Model.InputRichBlockDetails
+  alias ExGram.Model.InputRichBlockPhoto
+  alias ExGram.Model.InputRichBlockVideo
+  alias ExGram.Model.InputRichMessage
+  alias ExGram.Model.InputRichMessageMedia
 
   @token "test_token_123"
 
@@ -45,6 +51,23 @@ defmodule ExGram.InputMediaFilesTest do
     ExGram.Test.get_calls()
     |> List.last()
     |> elem(2)
+  end
+
+  defp execute_send_rich_message(rich_message) do
+    ExGram.Test.expect(:send_rich_message, %{
+      "result" => %{"message_id" => 1, "date" => 0, "chat" => %{"id" => 123, "type" => "private"}}
+    })
+
+    ExGram.send_rich_message!(123, rich_message, token: @token)
+
+    ExGram.Test.get_calls()
+    |> List.last()
+    |> elem(2)
+  end
+
+  defp rich_message_part(parts) do
+    {"rich_message", json} = Enum.find(parts, &match?({"rich_message", _}, &1))
+    Jason.decode!(json)
   end
 
   describe "send_media_group with file uploads" do
@@ -240,6 +263,95 @@ defmodule ExGram.InputMediaFilesTest do
         end)
 
       assert {"chat_id", "123"} = chat_id_part
+    end
+  end
+
+  describe "send_rich_message with file uploads" do
+    test "uploads files from media blocks nested at any depth" do
+      rich_message = %InputRichMessage{
+        blocks: [
+          %InputRichBlockVideo{type: "video", video: %InputMediaVideo{type: "video", media: {:file, "/tmp/video.mp4"}}},
+          %InputRichBlockCollage{
+            type: "collage",
+            blocks: [
+              %InputRichBlockPhoto{
+                type: "photo",
+                photo: %InputMediaPhoto{type: "photo", media: {:file_content, "data", "a.jpg"}}
+              },
+              %InputRichBlockPhoto{type: "photo", photo: %InputMediaPhoto{type: "photo", media: "AgACAgIAA_file_id"}}
+            ]
+          },
+          %InputRichBlockDetails{
+            type: "details",
+            summary: "More",
+            blocks: [
+              %InputRichBlockPhoto{type: "photo", photo: %InputMediaPhoto{type: "photo", media: {:file, "/tmp/b.jpg"}}}
+            ]
+          }
+        ]
+      }
+
+      assert {:multipart, parts} = execute_send_rich_message(rich_message)
+
+      assert {:file, "rich_message_0_media", "/tmp/video.mp4"} in parts
+      assert {:file_content, "rich_message_1_media", "data", "a.jpg"} in parts
+      assert {:file, "rich_message_2_media", "/tmp/b.jpg"} in parts
+
+      assert %{"blocks" => [video, collage, details]} = rich_message_part(parts)
+      assert video["video"]["media"] == "attach://rich_message_0_media"
+
+      assert [
+               %{"photo" => %{"media" => "attach://rich_message_1_media"}},
+               %{"photo" => %{"media" => "AgACAgIAA_file_id"}}
+             ] =
+               collage["blocks"]
+
+      assert [%{"photo" => %{"media" => "attach://rich_message_2_media"}}] = details["blocks"]
+    end
+
+    test "uploads files from the media list and its thumbnails" do
+      rich_message = %InputRichMessage{
+        html: ~s(<video src="tg://video?id=clip"/>),
+        media: [
+          %InputRichMessageMedia{
+            id: "clip",
+            media: %InputMediaVideo{
+              type: "video",
+              media: {:file, "/tmp/clip.mp4"},
+              thumbnail: {:file, "/tmp/thumb.jpg"}
+            }
+          }
+        ]
+      }
+
+      assert {:multipart, parts} = execute_send_rich_message(rich_message)
+
+      assert {:file, "rich_message_0_media", "/tmp/clip.mp4"} in parts
+      assert {:file, "rich_message_0_thumbnail", "/tmp/thumb.jpg"} in parts
+
+      assert %{"media" => [%{"id" => "clip", "media" => media}]} = rich_message_part(parts)
+      assert media["media"] == "attach://rich_message_0_media"
+      assert media["thumbnail"] == "attach://rich_message_0_thumbnail"
+    end
+
+    test "returns plain body when rich message media are file_ids or URLs" do
+      rich_message = %InputRichMessage{
+        blocks: [
+          %InputRichBlockPhoto{type: "photo", photo: %InputMediaPhoto{type: "photo", media: "AgACAgIAA_file_id"}},
+          %InputRichBlockVideo{
+            type: "video",
+            video: %InputMediaVideo{type: "video", media: "https://example.com/v.mp4"}
+          }
+        ]
+      }
+
+      body = execute_send_rich_message(rich_message)
+
+      assert is_map(body)
+      refute match?({:multipart, _}, body)
+
+      assert %{blocks: [%{photo: %{media: "AgACAgIAA_file_id"}}, %{video: %{media: "https://example.com/v.mp4"}}]} =
+               body[:rich_message]
     end
   end
 
