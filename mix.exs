@@ -18,7 +18,7 @@ defmodule ExGram.Mixfile do
       deps: deps(),
       dialyzer: dialyzer(),
       elixirc_options: [no_warn_undefined: [EEx]],
-      hex: [ignore_advisories: ["GHSA-w4f7-4cxr-rv3c", "EEF-CVE-2026-43969"]],
+      hex: hex(),
       docs: docs()
     ]
   end
@@ -29,6 +29,19 @@ defmodule ExGram.Mixfile do
   def application do
     # Don't need to write all applications thanks of new feature on elixir 1.4
     [extra_applications: [:logger]]
+  end
+
+  defp hex do
+    # cowlib's won't fix: https://github.com/ninenines/cowlib/issues/152
+    [
+      ignore_advisories: [
+        "GHSA-w4f7-4cxr-rv3c",
+        "EEF-CVE-2026-43969",
+        "CVE-2026-43966",
+        "CVE-2026-43969",
+        "CVE-2026-43971"
+      ]
+    ]
   end
 
   defp dialyzer do
