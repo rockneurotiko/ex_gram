@@ -28,6 +28,18 @@ credo:
 dialyzer:
     mix dialyzer
 
+[group('lint')]
+deps-audit:
+    mix deps.audit --ignore-file .mix_audit_ignore
+
+[group('lint')]
+hex-audit:
+    mix hex.audit
+
+[group('lint')]
+[parallel]
+audit: deps-audit hex-audit
+
 [private]
 [parallel]
 [group('lint')]

@@ -18,7 +18,7 @@ defmodule ExGram.Mixfile do
       deps: deps(),
       dialyzer: dialyzer(),
       elixirc_options: [no_warn_undefined: [EEx]],
-      hex: [ignore_advisories: ["GHSA-w4f7-4cxr-rv3c", "EEF-CVE-2026-43969"]],
+      hex: hex(),
       docs: docs()
     ]
   end
@@ -29,6 +29,19 @@ defmodule ExGram.Mixfile do
   def application do
     # Don't need to write all applications thanks of new feature on elixir 1.4
     [extra_applications: [:logger]]
+  end
+
+  defp hex do
+    # cowlib's won't fix: https://github.com/ninenines/cowlib/issues/152
+    [
+      ignore_advisories: [
+        "GHSA-w4f7-4cxr-rv3c",
+        "EEF-CVE-2026-43969",
+        "CVE-2026-43966",
+        "CVE-2026-43969",
+        "CVE-2026-43971"
+      ]
+    ]
   end
 
   defp dialyzer do
@@ -56,32 +69,46 @@ defmodule ExGram.Mixfile do
   defp elixirc_paths(_), do: ["lib"]
 
   defp deps do
-    [
-      # Tesla adapter
-      {:tesla, "~> 1.16", optional: true},
-      {:gun, "~> 2.0", optional: true},
-      {:hackney, "~> 1.20 or ~> 4.0.2", optional: true},
-      {:req, "~> 0.6.1 or ~> 0.7", optional: true},
-      # JSON encoders/decoders
-      {:jason, ">= 1.0.0", optional: true},
-      {:poison, ">= 1.0.0", optional: true},
-      # Webhook adapter
-      {:plug, "~> 1.14", optional: true},
-      # For Markdown to MessageEntity convert
-      {:mdex, "~> 0.11", optional: true},
-      # Telemetry
-      {:telemetry, "~> 0.4.3 or ~> 1.0"},
-      # For opentelemetry
-      {:opentelemetry_api, "~> 1.2", optional: true},
-      # Test adapter uses NimbleOwnership for per-process isolation
-      {:nimble_ownership, "~> 1.0"},
-      # Development
-      {:credo, "~> 1.7", only: [:dev, :test], runtime: false, warn_if_outdated: true},
-      {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
-      {:ex_doc, "~> 0.40", only: :dev, runtime: false, warn_if_outdated: true},
-      {:styler, "~> 1.12", only: [:dev, :test], runtime: false, warn_if_outdated: true},
-      {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
-    ]
+    gun_deps() ++
+      [
+        # Tesla adapter
+        {:tesla, "~> 1.16", optional: true},
+        {:hackney, "~> 1.20 or ~> 4.0.2", optional: true},
+        {:req, "~> 0.6.1 or ~> 0.7", optional: true},
+        # JSON encoders/decoders
+        {:jason, ">= 1.0.0", optional: true},
+        {:poison, ">= 1.0.0", optional: true},
+        # Webhook adapter
+        {:plug, "~> 1.14", optional: true},
+        # For Markdown to MessageEntity convert
+        {:mdex, "~> 0.11", optional: true},
+        # Telemetry
+        {:telemetry, "~> 0.4.3 or ~> 1.0"},
+        # For opentelemetry
+        {:opentelemetry_api, "~> 1.2", optional: true},
+        # Test adapter uses NimbleOwnership for per-process isolation
+        {:nimble_ownership, "~> 1.0"},
+        # Development
+        {:credo, "~> 1.7", only: [:dev, :test], runtime: false, warn_if_outdated: true},
+        {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
+        {:ex_doc, "~> 0.40", only: :dev, runtime: false, warn_if_outdated: true},
+        {:styler, "~> 1.12", only: [:dev, :test], runtime: false, warn_if_outdated: true},
+        {:mix_audit, "~> 2.1", only: [:dev, :test], runtime: false}
+      ]
+  end
+
+  # cowlib 2.20.0 (pulled by gun 2.6.0) requires OTP-27+ because cow_capsule
+  # uses maybe expressions; on older OTP it fails to compile. Keep OTP-26
+  # installs on the last compatible pair instead of failing the build.
+  defp gun_deps do
+    if String.to_integer(System.otp_release()) >= 27 do
+      [{:gun, "~> 2.0", optional: true}]
+    else
+      [
+        {:gun, ">= 2.0.0 and < 2.6.0", optional: true},
+        {:cowlib, ">= 2.0.0 and < 2.20.0", optional: true}
+      ]
+    end
   end
 
   defp docs do
