@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+- Update the dependencies with published security advisories: `hackney` 4.9.1 (the requirement
+  was `~> 4.0.2`, which kept it on 4.0.3 with five advisories; it is now `~> 4.0`), `cowlib`
+  2.21.0, `gun` 2.7.0, `plug_crypto` 2.2.1 and `ssl_verify_fun` 1.1.9. `mix deps.audit` was
+  failing in CI because of them.
 
 ## [0.71.0]
 - Upload files placed inside an `InputRichMessage` (`sendRichMessage`, `sendRichMessageDraft`,
