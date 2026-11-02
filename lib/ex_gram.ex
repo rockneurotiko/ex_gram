@@ -9122,7 +9122,7 @@ defmodule ExGram do
       @moduledoc """
       MaybeInaccessibleMessage model. Valid subtypes: Message, InaccessibleMessage
       """
-      @type t :: Message.t() | InaccessibleMessage.t()
+      union_type([], [Message, InaccessibleMessage])
 
       defstruct []
 
@@ -9137,7 +9137,7 @@ defmodule ExGram do
       @moduledoc """
       MessageOrigin model. Valid subtypes: MessageOriginUser, MessageOriginHiddenUser, MessageOriginChat, MessageOriginChannel
       """
-      @type t :: MessageOriginUser.t() | MessageOriginHiddenUser.t() | MessageOriginChat.t() | MessageOriginChannel.t()
+      union_type([], [MessageOriginUser, MessageOriginHiddenUser, MessageOriginChat, MessageOriginChannel])
 
       defstruct []
 
@@ -9152,7 +9152,7 @@ defmodule ExGram do
       @moduledoc """
       PaidMedia model. Valid subtypes: PaidMediaLivePhoto, PaidMediaPhoto, PaidMediaPreview, PaidMediaVideo
       """
-      @type t :: PaidMediaLivePhoto.t() | PaidMediaPhoto.t() | PaidMediaPreview.t() | PaidMediaVideo.t()
+      union_type([], [PaidMediaLivePhoto, PaidMediaPhoto, PaidMediaPreview, PaidMediaVideo])
 
       defstruct []
 
@@ -9167,15 +9167,16 @@ defmodule ExGram do
       @moduledoc """
       InputPollMedia model. Valid subtypes: InputMediaAnimation, InputMediaAudio, InputMediaDocument, InputMediaLivePhoto, InputMediaLocation, InputMediaPhoto, InputMediaVenue, InputMediaVideo
       """
-      @type t ::
-              InputMediaAnimation.t()
-              | InputMediaAudio.t()
-              | InputMediaDocument.t()
-              | InputMediaLivePhoto.t()
-              | InputMediaLocation.t()
-              | InputMediaPhoto.t()
-              | InputMediaVenue.t()
-              | InputMediaVideo.t()
+      union_type([], [
+        InputMediaAnimation,
+        InputMediaAudio,
+        InputMediaDocument,
+        InputMediaLivePhoto,
+        InputMediaLocation,
+        InputMediaPhoto,
+        InputMediaVenue,
+        InputMediaVideo
+      ])
 
       defstruct []
 
@@ -9199,15 +9200,16 @@ defmodule ExGram do
       @moduledoc """
       InputPollOptionMedia model. Valid subtypes: InputMediaAnimation, InputMediaLink, InputMediaLivePhoto, InputMediaLocation, InputMediaPhoto, InputMediaSticker, InputMediaVenue, InputMediaVideo
       """
-      @type t ::
-              InputMediaAnimation.t()
-              | InputMediaLink.t()
-              | InputMediaLivePhoto.t()
-              | InputMediaLocation.t()
-              | InputMediaPhoto.t()
-              | InputMediaSticker.t()
-              | InputMediaVenue.t()
-              | InputMediaVideo.t()
+      union_type([], [
+        InputMediaAnimation,
+        InputMediaLink,
+        InputMediaLivePhoto,
+        InputMediaLocation,
+        InputMediaPhoto,
+        InputMediaSticker,
+        InputMediaVenue,
+        InputMediaVideo
+      ])
 
       defstruct []
 
@@ -9231,7 +9233,7 @@ defmodule ExGram do
       @moduledoc """
       BackgroundFill model. Valid subtypes: BackgroundFillSolid, BackgroundFillGradient, BackgroundFillFreeformGradient
       """
-      @type t :: BackgroundFillSolid.t() | BackgroundFillGradient.t() | BackgroundFillFreeformGradient.t()
+      union_type([], [BackgroundFillSolid, BackgroundFillGradient, BackgroundFillFreeformGradient])
 
       defstruct []
 
@@ -9246,11 +9248,7 @@ defmodule ExGram do
       @moduledoc """
       BackgroundType model. Valid subtypes: BackgroundTypeFill, BackgroundTypeWallpaper, BackgroundTypePattern, BackgroundTypeChatTheme
       """
-      @type t ::
-              BackgroundTypeFill.t()
-              | BackgroundTypeWallpaper.t()
-              | BackgroundTypePattern.t()
-              | BackgroundTypeChatTheme.t()
+      union_type([], [BackgroundTypeFill, BackgroundTypeWallpaper, BackgroundTypePattern, BackgroundTypeChatTheme])
 
       defstruct []
 
@@ -9265,13 +9263,14 @@ defmodule ExGram do
       @moduledoc """
       ChatMember model. Valid subtypes: ChatMemberOwner, ChatMemberAdministrator, ChatMemberMember, ChatMemberRestricted, ChatMemberLeft, ChatMemberBanned
       """
-      @type t ::
-              ChatMemberOwner.t()
-              | ChatMemberAdministrator.t()
-              | ChatMemberMember.t()
-              | ChatMemberRestricted.t()
-              | ChatMemberLeft.t()
-              | ChatMemberBanned.t()
+      union_type([], [
+        ChatMemberOwner,
+        ChatMemberAdministrator,
+        ChatMemberMember,
+        ChatMemberRestricted,
+        ChatMemberLeft,
+        ChatMemberBanned
+      ])
 
       defstruct []
 
@@ -9293,12 +9292,13 @@ defmodule ExGram do
       @moduledoc """
       StoryAreaType model. Valid subtypes: StoryAreaTypeLocation, StoryAreaTypeSuggestedReaction, StoryAreaTypeLink, StoryAreaTypeWeather, StoryAreaTypeUniqueGift
       """
-      @type t ::
-              StoryAreaTypeLocation.t()
-              | StoryAreaTypeSuggestedReaction.t()
-              | StoryAreaTypeLink.t()
-              | StoryAreaTypeWeather.t()
-              | StoryAreaTypeUniqueGift.t()
+      union_type([], [
+        StoryAreaTypeLocation,
+        StoryAreaTypeSuggestedReaction,
+        StoryAreaTypeLink,
+        StoryAreaTypeWeather,
+        StoryAreaTypeUniqueGift
+      ])
 
       defstruct []
 
@@ -9319,7 +9319,7 @@ defmodule ExGram do
       @moduledoc """
       ReactionType model. Valid subtypes: ReactionTypeEmoji, ReactionTypeCustomEmoji, ReactionTypePaid
       """
-      @type t :: ReactionTypeEmoji.t() | ReactionTypeCustomEmoji.t() | ReactionTypePaid.t()
+      union_type([], [ReactionTypeEmoji, ReactionTypeCustomEmoji, ReactionTypePaid])
 
       defstruct []
 
@@ -9334,7 +9334,7 @@ defmodule ExGram do
       @moduledoc """
       OwnedGift model. Valid subtypes: OwnedGiftRegular, OwnedGiftUnique
       """
-      @type t :: OwnedGiftRegular.t() | OwnedGiftUnique.t()
+      union_type([], [OwnedGiftRegular, OwnedGiftUnique])
 
       defstruct []
 
@@ -9349,14 +9349,15 @@ defmodule ExGram do
       @moduledoc """
       BotCommandScope model. Valid subtypes: BotCommandScopeDefault, BotCommandScopeAllPrivateChats, BotCommandScopeAllGroupChats, BotCommandScopeAllChatAdministrators, BotCommandScopeChat, BotCommandScopeChatAdministrators, BotCommandScopeChatMember
       """
-      @type t ::
-              BotCommandScopeDefault.t()
-              | BotCommandScopeAllPrivateChats.t()
-              | BotCommandScopeAllGroupChats.t()
-              | BotCommandScopeAllChatAdministrators.t()
-              | BotCommandScopeChat.t()
-              | BotCommandScopeChatAdministrators.t()
-              | BotCommandScopeChatMember.t()
+      union_type([], [
+        BotCommandScopeDefault,
+        BotCommandScopeAllPrivateChats,
+        BotCommandScopeAllGroupChats,
+        BotCommandScopeAllChatAdministrators,
+        BotCommandScopeChat,
+        BotCommandScopeChatAdministrators,
+        BotCommandScopeChatMember
+      ])
 
       defstruct []
 
@@ -9379,7 +9380,7 @@ defmodule ExGram do
       @moduledoc """
       MenuButton model. Valid subtypes: MenuButtonCommands, MenuButtonWebApp, MenuButtonDefault
       """
-      @type t :: MenuButtonCommands.t() | MenuButtonWebApp.t() | MenuButtonDefault.t()
+      union_type([], [MenuButtonCommands, MenuButtonWebApp, MenuButtonDefault])
 
       defstruct []
 
@@ -9394,7 +9395,7 @@ defmodule ExGram do
       @moduledoc """
       ChatBoostSource model. Valid subtypes: ChatBoostSourcePremium, ChatBoostSourceGiftCode, ChatBoostSourceGiveaway
       """
-      @type t :: ChatBoostSourcePremium.t() | ChatBoostSourceGiftCode.t() | ChatBoostSourceGiveaway.t()
+      union_type([], [ChatBoostSourcePremium, ChatBoostSourceGiftCode, ChatBoostSourceGiveaway])
 
       defstruct []
 
@@ -9409,13 +9410,14 @@ defmodule ExGram do
       @moduledoc """
       InputMedia model. Valid subtypes: InputMediaAnimation, InputMediaAudio, InputMediaDocument, InputMediaLivePhoto, InputMediaPhoto, InputMediaVideo
       """
-      @type t ::
-              InputMediaAnimation.t()
-              | InputMediaAudio.t()
-              | InputMediaDocument.t()
-              | InputMediaLivePhoto.t()
-              | InputMediaPhoto.t()
-              | InputMediaVideo.t()
+      union_type([], [
+        InputMediaAnimation,
+        InputMediaAudio,
+        InputMediaDocument,
+        InputMediaLivePhoto,
+        InputMediaPhoto,
+        InputMediaVideo
+      ])
 
       defstruct []
 
@@ -9437,7 +9439,7 @@ defmodule ExGram do
       @moduledoc """
       InputPaidMedia model. Valid subtypes: InputPaidMediaLivePhoto, InputPaidMediaPhoto, InputPaidMediaVideo
       """
-      @type t :: InputPaidMediaLivePhoto.t() | InputPaidMediaPhoto.t() | InputPaidMediaVideo.t()
+      union_type([], [InputPaidMediaLivePhoto, InputPaidMediaPhoto, InputPaidMediaVideo])
 
       defstruct []
 
@@ -9452,7 +9454,7 @@ defmodule ExGram do
       @moduledoc """
       InputProfilePhoto model. Valid subtypes: InputProfilePhotoStatic, InputProfilePhotoAnimated
       """
-      @type t :: InputProfilePhotoStatic.t() | InputProfilePhotoAnimated.t()
+      union_type([], [InputProfilePhotoStatic, InputProfilePhotoAnimated])
 
       defstruct []
 
@@ -9467,7 +9469,7 @@ defmodule ExGram do
       @moduledoc """
       InputStoryContent model. Valid subtypes: InputStoryContentPhoto, InputStoryContentVideo
       """
-      @type t :: InputStoryContentPhoto.t() | InputStoryContentVideo.t()
+      union_type([], [InputStoryContentPhoto, InputStoryContentVideo])
 
       defstruct []
 
@@ -9482,35 +9484,34 @@ defmodule ExGram do
       @moduledoc """
       RichText model. Valid subtypes: RichTextBold, RichTextItalic, RichTextUnderline, RichTextStrikethrough, RichTextSpoiler, RichTextDateTime, RichTextTextMention, RichTextSubscript, RichTextSuperscript, RichTextMarked, RichTextCode, RichTextCustomEmoji, RichTextMathematicalExpression, RichTextUrl, RichTextEmailAddress, RichTextPhoneNumber, RichTextBankCardNumber, RichTextMention, RichTextHashtag, RichTextCashtag, RichTextBotCommand, RichTextButton, RichTextAnchor, RichTextAnchorLink, RichTextReference, RichTextReferenceLink
       """
-      @type t ::
-              String.t()
-              | [RichText.t()]
-              | RichTextBold.t()
-              | RichTextItalic.t()
-              | RichTextUnderline.t()
-              | RichTextStrikethrough.t()
-              | RichTextSpoiler.t()
-              | RichTextDateTime.t()
-              | RichTextTextMention.t()
-              | RichTextSubscript.t()
-              | RichTextSuperscript.t()
-              | RichTextMarked.t()
-              | RichTextCode.t()
-              | RichTextCustomEmoji.t()
-              | RichTextMathematicalExpression.t()
-              | RichTextUrl.t()
-              | RichTextEmailAddress.t()
-              | RichTextPhoneNumber.t()
-              | RichTextBankCardNumber.t()
-              | RichTextMention.t()
-              | RichTextHashtag.t()
-              | RichTextCashtag.t()
-              | RichTextBotCommand.t()
-              | RichTextButton.t()
-              | RichTextAnchor.t()
-              | RichTextAnchorLink.t()
-              | RichTextReference.t()
-              | RichTextReferenceLink.t()
+      union_type([String.t(), [RichText.t()]], [
+        RichTextBold,
+        RichTextItalic,
+        RichTextUnderline,
+        RichTextStrikethrough,
+        RichTextSpoiler,
+        RichTextDateTime,
+        RichTextTextMention,
+        RichTextSubscript,
+        RichTextSuperscript,
+        RichTextMarked,
+        RichTextCode,
+        RichTextCustomEmoji,
+        RichTextMathematicalExpression,
+        RichTextUrl,
+        RichTextEmailAddress,
+        RichTextPhoneNumber,
+        RichTextBankCardNumber,
+        RichTextMention,
+        RichTextHashtag,
+        RichTextCashtag,
+        RichTextBotCommand,
+        RichTextButton,
+        RichTextAnchor,
+        RichTextAnchorLink,
+        RichTextReference,
+        RichTextReferenceLink
+      ])
 
       defstruct []
 
@@ -9556,31 +9557,32 @@ defmodule ExGram do
       @moduledoc """
       RichBlock model. Valid subtypes: RichBlockParagraph, RichBlockSectionHeading, RichBlockPreformatted, RichBlockFooter, RichBlockDivider, RichBlockMathematicalExpression, RichBlockAnchor, RichBlockList, RichBlockBlockQuotation, RichBlockExpandableBlockQuotation, RichBlockPullQuotation, RichBlockCollage, RichBlockSlideshow, RichBlockTable, RichBlockDetails, RichBlockMap, RichBlockButtons, RichBlockAnimation, RichBlockAudio, RichBlockDocument, RichBlockPhoto, RichBlockVideo, RichBlockVoiceNote, RichBlockThinking
       """
-      @type t ::
-              RichBlockParagraph.t()
-              | RichBlockSectionHeading.t()
-              | RichBlockPreformatted.t()
-              | RichBlockFooter.t()
-              | RichBlockDivider.t()
-              | RichBlockMathematicalExpression.t()
-              | RichBlockAnchor.t()
-              | RichBlockList.t()
-              | RichBlockBlockQuotation.t()
-              | RichBlockExpandableBlockQuotation.t()
-              | RichBlockPullQuotation.t()
-              | RichBlockCollage.t()
-              | RichBlockSlideshow.t()
-              | RichBlockTable.t()
-              | RichBlockDetails.t()
-              | RichBlockMap.t()
-              | RichBlockButtons.t()
-              | RichBlockAnimation.t()
-              | RichBlockAudio.t()
-              | RichBlockDocument.t()
-              | RichBlockPhoto.t()
-              | RichBlockVideo.t()
-              | RichBlockVoiceNote.t()
-              | RichBlockThinking.t()
+      union_type([], [
+        RichBlockParagraph,
+        RichBlockSectionHeading,
+        RichBlockPreformatted,
+        RichBlockFooter,
+        RichBlockDivider,
+        RichBlockMathematicalExpression,
+        RichBlockAnchor,
+        RichBlockList,
+        RichBlockBlockQuotation,
+        RichBlockExpandableBlockQuotation,
+        RichBlockPullQuotation,
+        RichBlockCollage,
+        RichBlockSlideshow,
+        RichBlockTable,
+        RichBlockDetails,
+        RichBlockMap,
+        RichBlockButtons,
+        RichBlockAnimation,
+        RichBlockAudio,
+        RichBlockDocument,
+        RichBlockPhoto,
+        RichBlockVideo,
+        RichBlockVoiceNote,
+        RichBlockThinking
+      ])
 
       defstruct []
 
@@ -9620,31 +9622,32 @@ defmodule ExGram do
       @moduledoc """
       InputRichBlock model. Valid subtypes: InputRichBlockParagraph, InputRichBlockSectionHeading, InputRichBlockPreformatted, InputRichBlockFooter, InputRichBlockDivider, InputRichBlockMathematicalExpression, InputRichBlockAnchor, InputRichBlockList, InputRichBlockBlockQuotation, InputRichBlockExpandableBlockQuotation, InputRichBlockPullQuotation, InputRichBlockCollage, InputRichBlockSlideshow, InputRichBlockTable, InputRichBlockDetails, InputRichBlockMap, InputRichBlockButtons, InputRichBlockAnimation, InputRichBlockAudio, InputRichBlockDocument, InputRichBlockPhoto, InputRichBlockVideo, InputRichBlockVoiceNote, InputRichBlockThinking
       """
-      @type t ::
-              InputRichBlockParagraph.t()
-              | InputRichBlockSectionHeading.t()
-              | InputRichBlockPreformatted.t()
-              | InputRichBlockFooter.t()
-              | InputRichBlockDivider.t()
-              | InputRichBlockMathematicalExpression.t()
-              | InputRichBlockAnchor.t()
-              | InputRichBlockList.t()
-              | InputRichBlockBlockQuotation.t()
-              | InputRichBlockExpandableBlockQuotation.t()
-              | InputRichBlockPullQuotation.t()
-              | InputRichBlockCollage.t()
-              | InputRichBlockSlideshow.t()
-              | InputRichBlockTable.t()
-              | InputRichBlockDetails.t()
-              | InputRichBlockMap.t()
-              | InputRichBlockButtons.t()
-              | InputRichBlockAnimation.t()
-              | InputRichBlockAudio.t()
-              | InputRichBlockDocument.t()
-              | InputRichBlockPhoto.t()
-              | InputRichBlockVideo.t()
-              | InputRichBlockVoiceNote.t()
-              | InputRichBlockThinking.t()
+      union_type([], [
+        InputRichBlockParagraph,
+        InputRichBlockSectionHeading,
+        InputRichBlockPreformatted,
+        InputRichBlockFooter,
+        InputRichBlockDivider,
+        InputRichBlockMathematicalExpression,
+        InputRichBlockAnchor,
+        InputRichBlockList,
+        InputRichBlockBlockQuotation,
+        InputRichBlockExpandableBlockQuotation,
+        InputRichBlockPullQuotation,
+        InputRichBlockCollage,
+        InputRichBlockSlideshow,
+        InputRichBlockTable,
+        InputRichBlockDetails,
+        InputRichBlockMap,
+        InputRichBlockButtons,
+        InputRichBlockAnimation,
+        InputRichBlockAudio,
+        InputRichBlockDocument,
+        InputRichBlockPhoto,
+        InputRichBlockVideo,
+        InputRichBlockVoiceNote,
+        InputRichBlockThinking
+      ])
 
       defstruct []
 
@@ -9684,27 +9687,28 @@ defmodule ExGram do
       @moduledoc """
       InlineQueryResult model. Valid subtypes: InlineQueryResultCachedAudio, InlineQueryResultCachedDocument, InlineQueryResultCachedGif, InlineQueryResultCachedMpeg4Gif, InlineQueryResultCachedPhoto, InlineQueryResultCachedSticker, InlineQueryResultCachedVideo, InlineQueryResultCachedVoice, InlineQueryResultArticle, InlineQueryResultAudio, InlineQueryResultContact, InlineQueryResultGame, InlineQueryResultDocument, InlineQueryResultGif, InlineQueryResultLocation, InlineQueryResultMpeg4Gif, InlineQueryResultPhoto, InlineQueryResultVenue, InlineQueryResultVideo, InlineQueryResultVoice
       """
-      @type t ::
-              InlineQueryResultCachedAudio.t()
-              | InlineQueryResultCachedDocument.t()
-              | InlineQueryResultCachedGif.t()
-              | InlineQueryResultCachedMpeg4Gif.t()
-              | InlineQueryResultCachedPhoto.t()
-              | InlineQueryResultCachedSticker.t()
-              | InlineQueryResultCachedVideo.t()
-              | InlineQueryResultCachedVoice.t()
-              | InlineQueryResultArticle.t()
-              | InlineQueryResultAudio.t()
-              | InlineQueryResultContact.t()
-              | InlineQueryResultGame.t()
-              | InlineQueryResultDocument.t()
-              | InlineQueryResultGif.t()
-              | InlineQueryResultLocation.t()
-              | InlineQueryResultMpeg4Gif.t()
-              | InlineQueryResultPhoto.t()
-              | InlineQueryResultVenue.t()
-              | InlineQueryResultVideo.t()
-              | InlineQueryResultVoice.t()
+      union_type([], [
+        InlineQueryResultCachedAudio,
+        InlineQueryResultCachedDocument,
+        InlineQueryResultCachedGif,
+        InlineQueryResultCachedMpeg4Gif,
+        InlineQueryResultCachedPhoto,
+        InlineQueryResultCachedSticker,
+        InlineQueryResultCachedVideo,
+        InlineQueryResultCachedVoice,
+        InlineQueryResultArticle,
+        InlineQueryResultAudio,
+        InlineQueryResultContact,
+        InlineQueryResultGame,
+        InlineQueryResultDocument,
+        InlineQueryResultGif,
+        InlineQueryResultLocation,
+        InlineQueryResultMpeg4Gif,
+        InlineQueryResultPhoto,
+        InlineQueryResultVenue,
+        InlineQueryResultVideo,
+        InlineQueryResultVoice
+      ])
 
       defstruct []
 
@@ -9740,13 +9744,14 @@ defmodule ExGram do
       @moduledoc """
       InputMessageContent model. Valid subtypes: InputTextMessageContent, InputRichMessageContent, InputLocationMessageContent, InputVenueMessageContent, InputContactMessageContent, InputInvoiceMessageContent
       """
-      @type t ::
-              InputTextMessageContent.t()
-              | InputRichMessageContent.t()
-              | InputLocationMessageContent.t()
-              | InputVenueMessageContent.t()
-              | InputContactMessageContent.t()
-              | InputInvoiceMessageContent.t()
+      union_type([], [
+        InputTextMessageContent,
+        InputRichMessageContent,
+        InputLocationMessageContent,
+        InputVenueMessageContent,
+        InputContactMessageContent,
+        InputInvoiceMessageContent
+      ])
 
       defstruct []
 
@@ -9768,8 +9773,7 @@ defmodule ExGram do
       @moduledoc """
       RevenueWithdrawalState model. Valid subtypes: RevenueWithdrawalStatePending, RevenueWithdrawalStateSucceeded, RevenueWithdrawalStateFailed
       """
-      @type t ::
-              RevenueWithdrawalStatePending.t() | RevenueWithdrawalStateSucceeded.t() | RevenueWithdrawalStateFailed.t()
+      union_type([], [RevenueWithdrawalStatePending, RevenueWithdrawalStateSucceeded, RevenueWithdrawalStateFailed])
 
       defstruct []
 
@@ -9784,14 +9788,15 @@ defmodule ExGram do
       @moduledoc """
       TransactionPartner model. Valid subtypes: TransactionPartnerUser, TransactionPartnerChat, TransactionPartnerAffiliateProgram, TransactionPartnerFragment, TransactionPartnerTelegramAds, TransactionPartnerTelegramApi, TransactionPartnerOther
       """
-      @type t ::
-              TransactionPartnerUser.t()
-              | TransactionPartnerChat.t()
-              | TransactionPartnerAffiliateProgram.t()
-              | TransactionPartnerFragment.t()
-              | TransactionPartnerTelegramAds.t()
-              | TransactionPartnerTelegramApi.t()
-              | TransactionPartnerOther.t()
+      union_type([], [
+        TransactionPartnerUser,
+        TransactionPartnerChat,
+        TransactionPartnerAffiliateProgram,
+        TransactionPartnerFragment,
+        TransactionPartnerTelegramAds,
+        TransactionPartnerTelegramApi,
+        TransactionPartnerOther
+      ])
 
       defstruct []
 
@@ -9814,16 +9819,17 @@ defmodule ExGram do
       @moduledoc """
       PassportElementError model. Valid subtypes: PassportElementErrorDataField, PassportElementErrorFrontSide, PassportElementErrorReverseSide, PassportElementErrorSelfie, PassportElementErrorFile, PassportElementErrorFiles, PassportElementErrorTranslationFile, PassportElementErrorTranslationFiles, PassportElementErrorUnspecified
       """
-      @type t ::
-              PassportElementErrorDataField.t()
-              | PassportElementErrorFrontSide.t()
-              | PassportElementErrorReverseSide.t()
-              | PassportElementErrorSelfie.t()
-              | PassportElementErrorFile.t()
-              | PassportElementErrorFiles.t()
-              | PassportElementErrorTranslationFile.t()
-              | PassportElementErrorTranslationFiles.t()
-              | PassportElementErrorUnspecified.t()
+      union_type([], [
+        PassportElementErrorDataField,
+        PassportElementErrorFrontSide,
+        PassportElementErrorReverseSide,
+        PassportElementErrorSelfie,
+        PassportElementErrorFile,
+        PassportElementErrorFiles,
+        PassportElementErrorTranslationFile,
+        PassportElementErrorTranslationFiles,
+        PassportElementErrorUnspecified
+      ])
 
       defstruct []
 

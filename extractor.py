@@ -155,15 +155,13 @@ def generate_primitive_type_elixir(ptype):
 def generate_generic(model):
     name = model['name']
     types_s = ", ".join(model['subtypes'])
-    types_t = " | ".join(["{}.t()".format(x) for x in model['subtypes']])
 
     primitive_types = model.get('primitive_types', [])
 
-    # Build type spec including primitive types
-    if primitive_types:
-        primitive_specs = [generate_primitive_type_spec(pt) for pt in primitive_types]
-        all_types = primitive_specs + ["{}.t()".format(x) for x in model['subtypes']]
-        types_t = " | ".join(all_types)
+    # Types that are not models, they are added to the union by union_type/2, which also
+    # groups the subtypes with the same fields to keep the specs small for Dialyzer.
+    primitive_specs = [generate_primitive_type_spec(pt) for pt in primitive_types]
+    types_t = "union_type([{}], [{}])".format(", ".join(primitive_specs), types_s)
 
     # Build primitive_types/0 function if needed
     if primitive_types:
@@ -178,8 +176,7 @@ def generate_generic(model):
   @moduledoc \"\"\"
   {} model. Valid subtypes: {}
   \"\"\"
-  @type t :: {}
-
+  {}
 
   defstruct []
 

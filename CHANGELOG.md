@@ -1,6 +1,11 @@
 # Changelog
 
 ## Unreleased
+- Reduce the memory Dialyzer needs to build a PLT that includes ExGram (about 3.7 GB down to
+  1.4 GB when building the PLT with ExGram and a few dependencies, and the build takes half the
+  time). The union models (`RichText`, `RichBlock`, `MessageOrigin`...) now write the subtypes
+  with the same fields as one map type, `%{__struct__: A | B, ...}`, instead of one remote
+  type each. The set of accepted values is the same.
 - Update the dependencies with published security advisories: `hackney` 4.9.1 (the requirement
   was `~> 4.0.2`, which kept it on 4.0.3 with five advisories; it is now `~> 4.0`), `cowlib`
   2.21.0, `gun` 2.7.0, `plug_crypto` 2.2.1 and `ssl_verify_fun` 1.1.9. `mix deps.audit` was
