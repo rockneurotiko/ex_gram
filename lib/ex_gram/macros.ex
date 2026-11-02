@@ -1,6 +1,6 @@
 defmodule ExGram.Macros do
   @moduledoc """
-  `model/3` and `method/5` macros to build the API
+  `model/3`, `union_type/2` and `method/5` macros to build the API
   """
 
   import __MODULE__.Helpers
@@ -16,7 +16,11 @@ defmodule ExGram.Macros do
 
     params_descriptions = params_descriptions(analyzed)
 
+    short_name = name |> Macro.to_string() |> String.split(".") |> List.last() |> String.to_atom()
+
     quote do
+      ExGram.Macros.register_shape(__MODULE__, unquote(short_name), unquote(Macro.escape(tps)))
+
       defmodule unquote(name) do
         @moduledoc """
         #{unquote(description)}
@@ -33,6 +37,58 @@ defmodule ExGram.Macros do
         end
       end
     end
+  end
+
+  @doc false
+  def register_shape(module, name, fields) do
+    shapes = Module.get_attribute(module, :ex_gram_shapes, %{})
+    Module.put_attribute(module, :ex_gram_shapes, Map.put(shapes, name, fields))
+  end
+
+  @doc """
+  Defines `@type t` of a model that is the union of other models (its subtypes)
+  plus some extra types.
+
+  Subtypes with exactly the same fields (names and types) are written as a single
+  map type with the union of their struct names, instead of one remote type each:
+
+      %{__struct__: Bold | Italic, type: String.t(), text: RichText.t()}
+
+  It is the same set of values as `Bold.t() | Italic.t()`, but Dialyzer keeps in
+  memory a fully expanded copy of every remote type used in a spec, so the
+  alternatives that repeat the same fields make the contracts much bigger.
+  """
+  defmacro union_type(extra, subtypes) do
+    parent = __CALLER__.module |> Module.split() |> Enum.drop(-1) |> Module.concat()
+    shapes = Module.get_attribute(parent, :ex_gram_shapes, %{})
+    names = for {:__aliases__, _, [name]} <- subtypes, do: name
+    groups = Enum.group_by(names, fn name -> shapes |> Map.get(name) |> strip_meta() end)
+
+    subtype_types =
+      Enum.flat_map(names, fn name ->
+        case {Map.get(shapes, name), Map.fetch!(groups, strip_meta(Map.get(shapes, name)))} do
+          {nil, _} -> [quote(do: unquote(subtype_alias(name)).t())]
+          {_, [^name]} -> [quote(do: unquote(subtype_alias(name)).t())]
+          {fields, [^name | _] = group} -> [shared_shape_type(group, fields)]
+          {_, _} -> []
+        end
+      end)
+
+    type = union(extra ++ subtype_types)
+
+    quote do
+      @type t :: unquote(type)
+    end
+  end
+
+  defp union(types), do: types |> Enum.reverse() |> Enum.reduce(&{:|, [], [&1, &2]})
+
+  defp strip_meta(ast), do: Macro.prewalk(ast, &Macro.update_meta(&1, fn _ -> [] end))
+
+  defp subtype_alias(name), do: {:__aliases__, [], [:ExGram, :Model, name]}
+
+  defp shared_shape_type(group, fields) do
+    {:%{}, [], [{:__struct__, group |> Enum.map(&subtype_alias/1) |> union()} | fields]}
   end
 
   defmacro method(verb, name, params, returned, description) do

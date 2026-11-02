@@ -1,6 +1,11 @@
 # Changelog
 
 ## Unreleased
+- Reduce the memory Dialyzer needs to build a PLT that includes ExGram (about 3.7 GB down to
+  1.4 GB when building the PLT with ExGram and a few dependencies, and the build takes half the
+  time). The union models (`RichText`, `RichBlock`, `MessageOrigin`...) now write the subtypes
+  with the same fields as one map type, `%{__struct__: A | B, ...}`, instead of one remote
+  type each. The set of accepted values is the same.
 
 ## [0.71.0]
 - Upload files placed inside an `InputRichMessage` (`sendRichMessage`, `sendRichMessageDraft`,
