@@ -73,7 +73,7 @@ defmodule ExGram.Mixfile do
       [
         # Tesla adapter
         {:tesla, "~> 1.16", optional: true},
-        {:hackney, "~> 1.20 or ~> 4.0.2", optional: true},
+        {:hackney, "~> 1.20 or ~> 4.0", optional: true},
         {:req, "~> 0.6.1 or ~> 0.7", optional: true},
         # JSON encoders/decoders
         {:jason, ">= 1.0.0", optional: true},
