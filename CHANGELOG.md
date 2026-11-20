@@ -26,6 +26,10 @@
   was `~> 4.0.2`, which kept it on 4.0.3 with five advisories; it is now `~> 4.0`), `cowlib`
   2.21.0, `gun` 2.7.0, `plug_crypto` 2.2.1 and `ssl_verify_fun` 1.1.9. `mix deps.audit` was
   failing in CI because of them.
+- Update `plug` to 1.20.4, which charges part and header framing against the multipart
+  `:length` limit, and `hackney` to 4.12.2, which brings `idna` 8.0.0 and no longer decodes
+  punycode labels before checking their length. `hackney` 4.12 depends on `quic` 3, which needs
+  OTP 27 or later, so OTP 26 is no longer supported and no longer tested in CI.
 
 ## [0.71.0]
 - Upload files placed inside an `InputRichMessage` (`sendRichMessage`, `sendRichMessageDraft`,

@@ -28,6 +28,16 @@ defmodule ExGram.TelemetryTest do
     handler_id
   end
 
+  # The bot supervisor is linked to the test process, so an exit signal makes the
+  # supervisor and the test die together and the shutdown event is only delivered
+  # if the test process happens to outlive it. Unlinking leaves the event as the
+  # only message the test process gets.
+  defp stop_bot(sup_name) do
+    sup = Process.whereis(sup_name)
+    Process.unlink(sup)
+    Process.exit(sup, :shutdown)
+  end
+
   # ---------------------------------------------------------------------------
   # Request events
   # ---------------------------------------------------------------------------
@@ -635,7 +645,7 @@ defmodule ExGram.TelemetryTest do
 
       {bot_name, sup_name} = ExGram.Test.start_bot(context, LifecycleBot)
 
-      Process.exit(Process.whereis(sup_name), :shutdown)
+      stop_bot(sup_name)
 
       assert_receive {:telemetry, [:ex_gram, :bot, :shutdown], measurements, meta}, 500
 
@@ -693,7 +703,7 @@ defmodule ExGram.TelemetryTest do
 
       {bot_name, sup_name} = ExGram.Test.start_bot(context, UpdatesLifecycleBot)
 
-      Process.exit(Process.whereis(sup_name), :shutdown)
+      stop_bot(sup_name)
 
       assert_receive {:telemetry, [:ex_gram, :updates, :shutdown], measurements, meta}, 500
 
