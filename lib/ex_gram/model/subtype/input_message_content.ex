@@ -7,6 +7,8 @@ defimpl ExGram.Model.Subtype, for: ExGram.Model.InputMessageContent do
       params[:latitude] -> "location"
       params[:first_name] -> "contact"
       params[:currency] -> "invoice"
+      params[:html] -> "widget"
+      params[:widget_id] -> "shared_widget"
     end
   end
 
@@ -16,4 +18,6 @@ defimpl ExGram.Model.Subtype, for: ExGram.Model.InputMessageContent do
   def subtype(_, "venue"), do: ExGram.Model.InputVenueMessageContent
   def subtype(_, "contact"), do: ExGram.Model.InputContactMessageContent
   def subtype(_, "invoice"), do: ExGram.Model.InputInvoiceMessageContent
+  def subtype(_, "widget"), do: ExGram.Model.InputWidgetMessageContent
+  def subtype(_, "shared_widget"), do: ExGram.Model.InputSharedWidgetMessageContent
 end

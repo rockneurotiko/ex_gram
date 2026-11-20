@@ -70,6 +70,9 @@ defmodule ExGram.Macros.Checker do
   # defp check_type(t1, %{__struct__: t2}), do: t1 == t2
   defp check_type(%{}, x), do: is_map(x)
 
+  # A nil literal in the parameter types means the caller can leave the value out.
+  defp check_type(nil, nil), do: true
+
   defp check_type(_, _), do: false
 
   defp check_same_struct(t1, t2) do

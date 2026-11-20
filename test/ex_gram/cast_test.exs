@@ -422,6 +422,48 @@ defmodule ExGram.CastTest do
     end
   end
 
+  describe "subtype: EmojiType" do
+    test "resolves to EmojiTypeEmoji" do
+      assert {:ok, %Model.EmojiTypeEmoji{emoji: "\u{1F389}"}} =
+               Cast.cast(%{type: "emoji", emoji: "\u{1F389}"}, Model.EmojiType)
+    end
+
+    test "resolves to EmojiTypeCustomEmoji" do
+      assert {:ok, %Model.EmojiTypeCustomEmoji{custom_emoji_id: "5368324170671202286"}} =
+               Cast.cast(%{type: "custom_emoji", custom_emoji_id: "5368324170671202286"}, Model.EmojiType)
+    end
+  end
+
+  describe "subtype: ChatShareTheme" do
+    test "resolves to ChatShareThemeEmoji and casts the nested emoji" do
+      input = %{type: "emoji", emojis: [%{type: "emoji", emoji: "\u{1F389}"}]}
+
+      assert {:ok, %Model.ChatShareThemeEmoji{emojis: [%Model.EmojiTypeEmoji{emoji: "\u{1F389}"}]}} =
+               Cast.cast(input, Model.ChatShareTheme)
+    end
+  end
+
+  describe "subtype: WidgetQueryType" do
+    test "resolves to WidgetQueryTypeData" do
+      assert {:ok, %Model.WidgetQueryTypeData{type: "data"}} =
+               Cast.cast(%{type: "data"}, Model.WidgetQueryType)
+    end
+
+    test "resolves to WidgetQueryTypeSignData" do
+      input = %{type: "sign_data", wallet: %{address: "UQ", amount: "1"}, sign_data: "{}"}
+
+      assert {:ok, %Model.WidgetQueryTypeSignData{wallet: %Model.WidgetQueryWallet{address: "UQ"}, sign_data: "{}"}} =
+               Cast.cast(input, Model.WidgetQueryType)
+    end
+
+    test "resolves to WidgetQueryTypeSentTransaction" do
+      input = %{type: "sent_transaction", wallet: %{address: "UQ", amount: "1"}, msg_hash: "abc"}
+
+      assert {:ok, %Model.WidgetQueryTypeSentTransaction{msg_hash: "abc"}} =
+               Cast.cast(input, Model.WidgetQueryType)
+    end
+  end
+
   describe "subtype: MessageOrigin" do
     test "resolves to MessageOriginUser" do
       input = %{type: "user", date: 1_700_000_000, sender_user: %{id: 1, is_bot: false, first_name: "Alice"}}
@@ -687,6 +729,13 @@ defmodule ExGram.CastTest do
       input = %{type: "button", button: %{text: "Press", callback_data: "press"}}
 
       assert {:ok, %Model.RichTextButton{button: %Model.RichMessageButton{text: "Press", callback_data: "press"}}} =
+               Cast.cast(input, Model.RichText)
+    end
+
+    test "RichText resolves to RichTextTonAddress" do
+      input = %{type: "ton_address", text: "EQCkwxfyhAkim3wa8", address: "UQCkwxfyhAkim3wa8"}
+
+      assert {:ok, %Model.RichTextTonAddress{text: "EQCkwxfyhAkim3wa8", address: "UQCkwxfyhAkim3wa8"}} =
                Cast.cast(input, Model.RichText)
     end
 

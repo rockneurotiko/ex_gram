@@ -170,6 +170,31 @@ defmodule ExGramTest do
 
       {:ok, _message} = ExGram.send_message(123, "Test", parse_mode: "HTML")
     end
+
+    test "leaves chat_id out of the body for an ephemeral reply" do
+      ExGram.Test.expect(:send_message, fn body ->
+        refute Map.has_key?(body, :chat_id)
+        assert body[:text] == "Hi"
+        assert body[:ephemeral_message_parameters][:receiver_user_id] == 456
+
+        {:ok,
+         %{
+           message_id: 102,
+           date: 1_700_000_000,
+           chat: %{id: 123, type: "private"},
+           from: %{id: 999, is_bot: true, first_name: "Bot"},
+           text: "Hi"
+         }}
+      end)
+
+      ephemeral_message_parameters = %ExGram.Model.EphemeralMessageParameters{receiver_user_id: 456}
+
+      {:ok, _message} = ExGram.send_message(nil, "Hi", ephemeral_message_parameters: ephemeral_message_parameters)
+    end
+
+    test "rejects nil chat_id on the methods that still require it" do
+      assert {:error, %ExGram.Error{message: "Mandatory parameter types don't match" <> _}} = ExGram.get_chat(nil)
+    end
   end
 
   describe "forward_message/3" do

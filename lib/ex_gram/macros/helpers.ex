@@ -145,6 +145,7 @@ defmodule ExGram.Macros.Helpers do
     end
   end
 
+  def type_to_spec(nil), do: nil
   def type_to_spec(t) when is_atom(t), do: {t, [], Elixir}
   def type_to_spec(l) when is_list(l), do: types_list_to_spec(l)
 

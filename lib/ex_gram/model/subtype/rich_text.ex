@@ -27,6 +27,7 @@ defimpl ExGram.Model.Subtype, for: ExGram.Model.RichText do
   def subtype(_, "subscript"), do: ExGram.Model.RichTextSubscript
   def subtype(_, "superscript"), do: ExGram.Model.RichTextSuperscript
   def subtype(_, "text_mention"), do: ExGram.Model.RichTextTextMention
+  def subtype(_, "ton_address"), do: ExGram.Model.RichTextTonAddress
   def subtype(_, "underline"), do: ExGram.Model.RichTextUnderline
   def subtype(_, "url"), do: ExGram.Model.RichTextUrl
 end

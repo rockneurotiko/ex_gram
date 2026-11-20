@@ -1,6 +1,22 @@
 # Changelog
 
 ## Unreleased
+- Update the Bot API models. New methods: `sendWidget`, `sendSharedWidget`, `editMessageWidgetData`,
+  `editSharedWidgetData`, `answerWidgetQuery`, `getChatShareThemeBackdrops`, `getUniqueGift` and
+  `deleteBusinessAccountGift`, together with the widget, TON and chat share theme models they use.
+  `verifyChat` and `verifyUser` also take `custom_description_parse_mode` and `custom_description_entities`.
+- `StoryAreaPosition` is now `AreaPosition`, because it describes the position on a TON wallet card as well
+  as on a story: pattern matches on `ExGram.Model.StoryAreaPosition` need to use `ExGram.Model.AreaPosition`.
+  Story areas are unchanged apart from that field type.
+- Telegram no longer requires `chat_id` on the send methods that accept `ephemeral_message_parameters`
+  (`sendMessage`, `sendPhoto`, `sendAudio`, `sendDocument`, `sendVideo`, `sendAnimation`, `sendVoice`,
+  `sendVideoNote`, `sendLocation`, `sendVenue`, `sendContact`, `sendSticker`, `sendLivePhoto` and
+  `sendRichMessage`), so it can be left out on an ephemeral reply. ExGram keeps it as the first positional
+  argument there, so existing calls keep working, and it accepts `nil`, which leaves `chat_id` out of the
+  request body:
+  `ExGram.send_message(nil, "Hi", ephemeral_message_parameters: %ExGram.Model.EphemeralMessageParameters{receiver_user_id: user_id})`.
+  The methods that already took it as an option (`editMessageText`, `editMessageCaption`,
+  `setChatMenuButton`, `sendGift`...) are unchanged, and every other method still requires it.
 - Reduce the memory Dialyzer needs to build a PLT that includes ExGram (about 3.7 GB down to
   1.4 GB when building the PLT with ExGram and a few dependencies, and the build takes half the
   time). The union models (`RichText`, `RichBlock`, `MessageOrigin`...) now write the subtypes

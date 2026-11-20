@@ -221,8 +221,8 @@ defmodule ExGram do
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
-      {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+      {chat_id, [:integer, :string, nil],
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -263,7 +263,7 @@ defmodule ExGram do
     "forwardMessage",
     [
       {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -271,7 +271,7 @@ defmodule ExGram do
        "Identifier of the direct messages topic to which the message will be forwarded; required if the message is forwarded to a direct messages chat",
        :optional},
       {from_chat_id, [:integer, :string],
-       "Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup or channel in the format @username)"},
+       "Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup, or channel in the format @username)"},
       {video_start_timestamp, [:integer], "New start timestamp for the forwarded video in the message", :optional},
       {disable_notification, [:boolean], "Sends the message silently. Users will receive a notification with no sound.",
        :optional},
@@ -294,7 +294,7 @@ defmodule ExGram do
     "forwardMessages",
     [
       {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -302,7 +302,7 @@ defmodule ExGram do
        "Identifier of the direct messages topic to which the messages will be forwarded; required if the messages are forwarded to a direct messages chat",
        :optional},
       {from_chat_id, [:integer, :string],
-       "Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup or channel in the format @username)"},
+       "Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup, or channel in the format @username)"},
       {message_ids, [{:array, :integer}],
        "A JSON-serialized list of 1-100 identifiers of messages in the chat from_chat_id to forward. The identifiers must be specified in a strictly increasing order."},
       {disable_notification, [:boolean],
@@ -319,7 +319,7 @@ defmodule ExGram do
     "copyMessage",
     [
       {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -327,7 +327,7 @@ defmodule ExGram do
        "Identifier of the direct messages topic to which the message will be sent; required if the message is sent to a direct messages chat",
        :optional},
       {from_chat_id, [:integer, :string],
-       "Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup or channel in the format @username)"},
+       "Unique identifier for the chat where the original message was sent (or username of the target bot, supergroup, or channel in the format @username)"},
       {message_id, [:integer], "Message identifier in the chat specified in from_chat_id"},
       {video_start_timestamp, [:integer], "New start timestamp for the copied video in the message", :optional},
       {caption, [:string],
@@ -359,7 +359,7 @@ defmodule ExGram do
        :optional}
     ],
     ExGram.Model.MessageId,
-    "Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success."
+    "Use this method to copy messages of any kind. Service messages, paid media messages, giveaway messages, giveaway winners messages, invoice messages, and widget messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessage, but the copied message doesn't have a link to the original message. Returns the MessageId of the sent message on success."
   )
 
   method(
@@ -367,7 +367,7 @@ defmodule ExGram do
     "copyMessages",
     [
       {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -375,7 +375,7 @@ defmodule ExGram do
        "Identifier of the direct messages topic to which the messages will be sent; required if the messages are sent to a direct messages chat",
        :optional},
       {from_chat_id, [:integer, :string],
-       "Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup or channel in the format @username)"},
+       "Unique identifier for the chat where the original messages were sent (or username of the target bot, supergroup, or channel in the format @username)"},
       {message_ids, [{:array, :integer}],
        "A JSON-serialized list of 1-100 identifiers of messages in the chat from_chat_id to copy. The identifiers must be specified in a strictly increasing order."},
       {disable_notification, [:boolean],
@@ -384,7 +384,7 @@ defmodule ExGram do
       {remove_caption, [:boolean], "Pass True to copy the messages without their captions", :optional}
     ],
     {:array, ExGram.Model.MessageId},
-    "Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, and invoice messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of MessageId of the sent messages is returned."
+    "Use this method to copy messages of any kind. If some of the specified messages can't be found or copied, they are skipped. Service messages, paid media messages, giveaway messages, giveaway winners messages, invoice messages, and widget messages can't be copied. A quiz poll can be copied only if the value of the field correct_option_ids is known to the bot. The method is analogous to the method forwardMessages, but the copied messages don't have a link to the original message. Album grouping is kept for copied messages. On success, an Array of MessageId of the sent messages is returned."
   )
 
   method(
@@ -393,8 +393,8 @@ defmodule ExGram do
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
-      {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+      {chat_id, [:integer, :string, nil],
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -442,8 +442,8 @@ defmodule ExGram do
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
-      {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target channel (in the format @channelusername)"},
+      {chat_id, [:integer, :string, nil],
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -493,8 +493,8 @@ defmodule ExGram do
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
-      {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+      {chat_id, [:integer, :string, nil],
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -543,8 +543,8 @@ defmodule ExGram do
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
-      {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+      {chat_id, [:integer, :string, nil],
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -594,8 +594,8 @@ defmodule ExGram do
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
-      {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+      {chat_id, [:integer, :string, nil],
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -654,8 +654,8 @@ defmodule ExGram do
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
-      {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+      {chat_id, [:integer, :string, nil],
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -709,8 +709,8 @@ defmodule ExGram do
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
-      {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+      {chat_id, [:integer, :string, nil],
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -754,8 +754,8 @@ defmodule ExGram do
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
-      {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+      {chat_id, [:integer, :string, nil],
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -793,12 +793,95 @@ defmodule ExGram do
 
   method(
     :post,
+    "sendWidget",
+    [
+      {chat_id, [:integer, :string],
+       "Unique identifier for the target chat or username of the target supergroup in the format @username"},
+      {message_thread_id, [:integer],
+       "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
+       :optional},
+      {html, [:string],
+       "HTML code of the widget, 1-32768 bytes. The code must not exceed 4096 bytes when compressed by zlib with the maximum compression level."},
+      {width, [:integer],
+       "Width of the widget in logical pixels; omit if the widget must occupy the whole width of the message bubble. The width is clamped by the app to the range from 200 to the maximum width of the message bubble.",
+       :optional},
+      {height, [:integer],
+       "Height of the widget in logical pixels; omit if the height of the widget isn't fixed. The height is clamped by the app to the range 50-600.",
+       :optional},
+      {public_data, [:string],
+       "Public data of the widget, 0-1024 bytes, which will be available wherever the widget is shown. If the widget is shared, then all messages with it will have the same public data.",
+       :optional},
+      {chat_data, [:string], "Data of the widget, which is specific to the message, 0-1024 bytes", :optional},
+      {caption, [:string], "Widget caption, 0-1024 characters after entities parsing", :optional},
+      {parse_mode, [:string],
+       "Mode for parsing entities in the widget caption. See formatting options for more details.", :optional},
+      {caption_entities, [{:array, MessageEntity}],
+       "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode",
+       :optional},
+      {show_caption_above_media, [:boolean], "Pass True if the caption must be shown above the widget", :optional},
+      {allow_queries, [:boolean], "Pass True to allow the widget to send queries to the bot", :optional},
+      {is_shared, [:boolean],
+       "Pass True to create a shared widget, which can be sent again using the method sendSharedWidget", :optional},
+      {disable_notification, [:boolean], "Sends the message silently. Users will receive a notification with no sound.",
+       :optional},
+      {protect_content, [:boolean], "Protects the contents of the sent message from forwarding and saving", :optional},
+      {allow_paid_broadcast, [:boolean],
+       "Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.",
+       :optional},
+      {message_effect_id, [:string],
+       "Unique identifier of the message effect to be added to the message; for private chats only", :optional},
+      {reply_parameters, [ReplyParameters], "Description of the message to reply to", :optional},
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
+       "Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.",
+       :optional}
+    ],
+    ExGram.Model.Message,
+    "Use this method to send a message with an HTML widget. Currently, in the production environment, widgets can be sent only to private chats, and sent widgets automatically have protected content and therefore can't be forwarded. On success, the sent Message is returned."
+  )
+
+  method(
+    :post,
+    "sendSharedWidget",
+    [
+      {chat_id, [:integer, :string],
+       "Unique identifier for the target chat or username of the target supergroup in the format @username"},
+      {message_thread_id, [:integer],
+       "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
+       :optional},
+      {widget_id, [:string], "Unique identifier of the shared widget"},
+      {chat_data, [:string], "Data of the widget, which is specific to the message, 0-1024 bytes", :optional},
+      {caption, [:string], "Widget caption, 0-1024 characters after entities parsing", :optional},
+      {parse_mode, [:string],
+       "Mode for parsing entities in the widget caption. See formatting options for more details.", :optional},
+      {caption_entities, [{:array, MessageEntity}],
+       "A JSON-serialized list of special entities that appear in the caption, which can be specified instead of parse_mode",
+       :optional},
+      {show_caption_above_media, [:boolean], "Pass True if the caption must be shown above the widget", :optional},
+      {disable_notification, [:boolean], "Sends the message silently. Users will receive a notification with no sound.",
+       :optional},
+      {protect_content, [:boolean], "Protects the contents of the sent message from forwarding and saving", :optional},
+      {allow_paid_broadcast, [:boolean],
+       "Pass True to allow up to 1000 messages per second, ignoring broadcasting limits for a fee of 0.1 Telegram Stars per message. The relevant Stars will be withdrawn from the bot's balance.",
+       :optional},
+      {message_effect_id, [:string],
+       "Unique identifier of the message effect to be added to the message; for private chats only", :optional},
+      {reply_parameters, [ReplyParameters], "Description of the message to reply to", :optional},
+      {reply_markup, [InlineKeyboardMarkup, ReplyKeyboardMarkup, ReplyKeyboardRemove, ForceReply],
+       "Additional interface options. A JSON-serialized object for an inline keyboard, custom reply keyboard, instructions to remove a reply keyboard or to force a reply from the user.",
+       :optional}
+    ],
+    ExGram.Model.Message,
+    "Use this method to send again a shared widget created by the bot. Currently, in the production environment, widgets can be sent only to private chats, and sent widgets automatically have protected content and therefore can't be forwarded. On success, the sent Message is returned."
+  )
+
+  method(
+    :post,
     "sendPaidMedia",
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
       {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username. If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's balance. Otherwise, they will be credited to the bot's balance."},
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username. If the chat is a channel, all Telegram Star proceeds from this media will be credited to the chat's balance. Otherwise, they will be credited to the bot's balance."},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -843,7 +926,7 @@ defmodule ExGram do
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
       {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -872,8 +955,8 @@ defmodule ExGram do
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
-      {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+      {chat_id, [:integer, :string, nil],
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -921,8 +1004,8 @@ defmodule ExGram do
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
-      {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+      {chat_id, [:integer, :string, nil],
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -967,8 +1050,8 @@ defmodule ExGram do
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
-      {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+      {chat_id, [:integer, :string, nil],
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -1008,7 +1091,7 @@ defmodule ExGram do
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
       {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username. Polls can't be sent to channel direct messages chats."},
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username. Polls can't be sent to channel direct messages chats."},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -1112,7 +1195,7 @@ defmodule ExGram do
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
       {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -1192,7 +1275,7 @@ defmodule ExGram do
     "setMessageReaction",
     [
       {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username"},
       {message_id, [:integer],
        "Identifier of the target message. If the message belongs to a media group, the reaction is set to the first non-deleted message in the group instead."},
       {reaction, [{:array, ReactionType}],
@@ -1712,6 +1795,14 @@ defmodule ExGram do
 
   method(
     :get,
+    "getChatShareThemeBackdrops",
+    [],
+    ExGram.Model.ChatShareThemeBackdrops,
+    "Use this method to get the list of backdrops, which can be used as the background of a theme of the screen for sharing a link to a user or a chat. Requires no parameters. Returns a ChatShareThemeBackdrops object."
+  )
+
+  method(
+    :get,
     "getUserPersonalChatMessages",
     [
       {user_id, [:integer], "Unique identifier for the target user"},
@@ -1767,7 +1858,7 @@ defmodule ExGram do
        :optional}
     ],
     ExGram.Model.ForumTopic,
-    "Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator right. Returns information about the created topic as a ForumTopic object."
+    "Use this method to create a topic in a forum supergroup chat or a private chat with a user. In the case of a supergroup chat the bot must be an administrator in the chat for this to work and must have the can_manage_topics administrator right. In the case of a private chat, a link to the topic can be created in the format https://t.me/<bot_username>/<message_thread_id>; the link opens the topic only for the user. Returns information about the created topic as a ForumTopic object."
   )
 
   method(
@@ -1922,6 +2013,17 @@ defmodule ExGram do
     ],
     true,
     "Use this method to send answers to callback queries sent from inline keyboards. The answer will be displayed to the user as a notification at the top of the chat screen or as an alert. On success, True is returned."
+  )
+
+  method(
+    :post,
+    "answerWidgetQuery",
+    [
+      {widget_query_id, [:string], "Unique identifier for the query to be answered"},
+      {data, [:string], "Data to be returned to the widget, 0-1024 bytes", :optional}
+    ],
+    true,
+    "Use this method to send an answer to a query from a widget. The query must be answered within 15 seconds. The answer is received only by the widget that sent the query and doesn't change data of the widget; use editMessageWidgetData or editSharedWidgetData to change it. On success, True is returned."
   )
 
   method(
@@ -2192,7 +2294,7 @@ defmodule ExGram do
        "Required if chat_id is not specified. Unique identifier of the target user who will receive the gift.",
        :optional},
       {chat_id, [:integer, :string],
-       "Required if user_id is not specified. Unique identifier for the chat or username of the channel (in the format @username) that will receive the gift.",
+       "Required if user_id is not specified. Unique identifier for the chat that will receive the gift or username of the channel in the format @username.",
        :optional},
       {gift_id, [:string], "Identifier of the gift; limited gifts can't be sent to channel chats"},
       {pay_for_upgrade, [:boolean],
@@ -2239,6 +2341,12 @@ defmodule ExGram do
       {user_id, [:integer], "Unique identifier of the target user"},
       {custom_description, [:string],
        "Custom description for the verification; 0-70 characters. Must be empty if the organization isn't allowed to provide a custom verification description.",
+       :optional},
+      {custom_description_parse_mode, [:string],
+       "Mode for parsing entities in the custom description. See formatting options for more details. Only \"text_link” entities are supported.",
+       :optional},
+      {custom_description_entities, [{:array, MessageEntity}],
+       "A JSON-serialized list of special entities that appear in the custom description, which can be specified instead of custom_description_parse_mode. Only \"text_link” entities are supported.",
        :optional}
     ],
     true,
@@ -2250,9 +2358,15 @@ defmodule ExGram do
     "verifyChat",
     [
       {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username. Channel direct messages chats can't be verified."},
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username. Channel direct messages chats can't be verified."},
       {custom_description, [:string],
        "Custom description for the verification; 0-70 characters. Must be empty if the organization isn't allowed to provide a custom verification description.",
+       :optional},
+      {custom_description_parse_mode, [:string],
+       "Mode for parsing entities in the custom description. See formatting options for more details. Only \"text_link” entities are supported.",
+       :optional},
+      {custom_description_entities, [{:array, MessageEntity}],
+       "A JSON-serialized list of special entities that appear in the custom description, which can be specified instead of custom_description_parse_mode. Only \"text_link” entities are supported.",
        :optional}
     ],
     true,
@@ -2496,6 +2610,14 @@ defmodule ExGram do
   )
 
   method(
+    :get,
+    "getUniqueGift",
+    [{name, [:string], "Unique name of the gift"}],
+    ExGram.Model.UniqueGift,
+    "Use this method to get information about a unique gift by its name. Returns a UniqueGift object on success."
+  )
+
+  method(
     :post,
     "convertGiftToStars",
     [
@@ -2536,6 +2658,17 @@ defmodule ExGram do
     ],
     true,
     "Transfers an owned unique gift to another user. Requires the can_transfer_and_upgrade_gifts business bot right. Requires can_transfer_stars business bot right if the transfer is paid. Returns True on success."
+  )
+
+  method(
+    :post,
+    "deleteBusinessAccountGift",
+    [
+      {business_connection_id, [:string], "Unique identifier of the business connection"},
+      {owned_gift_id, [:string], "Unique identifier of the regular gift that should be deleted"}
+    ],
+    true,
+    "Deletes a regular gift owned by a managed business account without receiving Telegram Stars for it. Requires the can_convert_gifts_to_stars business bot right. The gift can be deleted only if it isn't limited (the field total_count of the Gift is omitted) and wasn't refunded. Returns True on success."
   )
 
   method(
@@ -2653,7 +2786,7 @@ defmodule ExGram do
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message to be edited was sent", :optional},
       {chat_id, [:integer, :string],
-       "Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.",
+       "Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username.",
        :optional},
       {message_id, [:integer], "Required if inline_message_id is not specified. Identifier of the message to edit.",
        :optional},
@@ -2684,7 +2817,7 @@ defmodule ExGram do
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message to be edited was sent", :optional},
       {chat_id, [:integer, :string],
-       "Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.",
+       "Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username.",
        :optional},
       {message_id, [:integer], "Required if inline_message_id is not specified. Identifier of the message to edit.",
        :optional},
@@ -2712,7 +2845,7 @@ defmodule ExGram do
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message to be edited was sent", :optional},
       {chat_id, [:integer, :string],
-       "Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.",
+       "Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username.",
        :optional},
       {message_id, [:integer], "Required if inline_message_id is not specified. Identifier of the message to edit.",
        :optional},
@@ -2732,7 +2865,7 @@ defmodule ExGram do
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message to be edited was sent", :optional},
       {chat_id, [:integer, :string],
-       "Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.",
+       "Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username.",
        :optional},
       {message_id, [:integer], "Required if inline_message_id is not specified. Identifier of the message to edit.",
        :optional},
@@ -2763,7 +2896,7 @@ defmodule ExGram do
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message to be edited was sent", :optional},
       {chat_id, [:integer, :string],
-       "Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.",
+       "Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username.",
        :optional},
       {message_id, [:integer],
        "Required if inline_message_id is not specified. Identifier of the message with live location to stop.",
@@ -2795,12 +2928,49 @@ defmodule ExGram do
 
   method(
     :post,
+    "editMessageWidgetData",
+    [
+      {chat_id, [:integer, :string],
+       "Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target supergroup in the format @username.",
+       :optional},
+      {message_id, [:integer],
+       "Required if inline_message_id is not specified. Identifier of the message with the widget.", :optional},
+      {inline_message_id, [:string],
+       "Required if chat_id and message_id are not specified. Identifier of the inline message.", :optional},
+      {public_data, [:string],
+       "New public data of the widget, 0-1024 bytes; pass an empty string to remove the public data. If omitted, then the public data isn't changed.",
+       :optional},
+      {chat_data, [:string],
+       "New data of the widget, which is specific to the message, 0-1024 bytes; pass an empty string to remove the data. If omitted, then the data isn't changed.",
+       :optional}
+    ],
+    true,
+    "Use this method to edit data of a widget in a message sent by the bot or via the bot (for inline bots). Public data of a shared widget can be changed at most once per second. On success, True is returned."
+  )
+
+  method(
+    :post,
+    "editSharedWidgetData",
+    [
+      {widget_id, [:string], "Unique identifier of the shared widget"},
+      {public_data, [:string],
+       "New public data of the widget, 0-1024 bytes; pass an empty string to remove the public data"},
+      {cache_time, [:integer],
+       "The maximum amount of time in seconds that the public data of the widget may be cached client-side; 5-3600. If omitted, then the current value is kept, which is 30 by default.",
+       :optional}
+    ],
+    true,
+    "Use this method to edit public data of a shared widget created by the bot. A shared widget can be edited at most once per second. On success, True is returned."
+  )
+
+  method(
+    :post,
     "editMessageReplyMarkup",
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message to be edited was sent", :optional},
       {chat_id, [:integer, :string],
-       "Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username.",
+       "Required if inline_message_id is not specified. Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username.",
        :optional},
       {message_id, [:integer], "Required if inline_message_id is not specified. Identifier of the message to edit.",
        :optional},
@@ -2819,7 +2989,7 @@ defmodule ExGram do
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message to be edited was sent", :optional},
       {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username"},
       {message_id, [:integer], "Identifier of the original message with the poll"},
       {reply_markup, [InlineKeyboardMarkup], "A JSON-serialized object for a new message inline keyboard", :optional}
     ],
@@ -2935,7 +3105,7 @@ defmodule ExGram do
     "deleteMessage",
     [
       {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username"},
       {message_id, [:integer], "Identifier of the message to delete"}
     ],
     true,
@@ -2947,7 +3117,7 @@ defmodule ExGram do
     "deleteMessages",
     [
       {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username"},
       {message_ids, [{:array, :integer}],
        "A JSON-serialized list of 1-100 identifiers of messages to delete. See deleteMessage for limitations on which messages can be deleted."}
     ],
@@ -3005,8 +3175,8 @@ defmodule ExGram do
     [
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent", :optional},
-      {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+      {chat_id, [:integer, :string, nil],
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -3226,8 +3396,8 @@ defmodule ExGram do
       {business_connection_id, [:string],
        "Unique identifier of the business connection on behalf of which the message will be sent. Bot can send rich messages on behalf of a business account only if the corresponding user can send rich messages.",
        :optional},
-      {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+      {chat_id, [:integer, :string, nil],
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username; required unless the message is sent as an ephemeral reply to a callback query"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -3305,7 +3475,7 @@ defmodule ExGram do
     "sendInvoice",
     [
       {chat_id, [:integer, :string],
-       "Unique identifier for the target chat or username of the target bot, supergroup or channel in the format @username"},
+       "Unique identifier for the target chat or username of the target bot, supergroup, or channel in the format @username"},
       {message_thread_id, [:integer],
        "Unique identifier for the target message thread (topic) of a forum; for forum supergroups and private chats of bots with forum topic mode enabled only",
        :optional},
@@ -3600,7 +3770,7 @@ defmodule ExGram do
     "Use this method to get data for high score tables. Will return the score of the specified user and several of their neighbors in a game. Returns an Array of GameHighScore objects."
   )
 
-  # 185 methods
+  # 193 methods
 
   # ----------MODELS-----------
 
@@ -3647,6 +3817,10 @@ defmodule ExGram do
          "Optional. The result of an inline query that was chosen by a user and sent to their chat partner. Please see our documentation on the feedback collecting for details on how to enable these updates for your bot.",
          :optional},
         {:callback_query, [CallbackQuery], "Optional. New incoming callback query", :optional},
+        {:widget_query, [WidgetQuery],
+         "Optional. New incoming query from a widget in a message sent by the bot or via the bot", :optional},
+        {:shared_widget_query, [SharedWidgetQuery],
+         "Optional. New incoming query from a forwarded message with a shared widget", :optional},
         {:shipping_query, [ShippingQuery],
          "Optional. New incoming shipping query. Only for invoices with flexible price.", :optional},
         {:pre_checkout_query, [PreCheckoutQuery],
@@ -3885,7 +4059,13 @@ defmodule ExGram do
         {:guard_bot, [User],
          "Optional. The bot that processes join request queries in the chat. The field is only available to chat administrators.",
          :optional},
-        {:community, [Community], "Optional. The Community to which the chat belongs", :optional}
+        {:community, [Community], "Optional. The Community to which the chat belongs", :optional},
+        {:ton_wallet_card, [TonWalletCard],
+         "Optional. For private chats, the TON wallet card of the user, which is shown on their profile page",
+         :optional},
+        {:share_theme, [ChatShareTheme],
+         "Optional. For private chats, supergroups and channels, the theme of the screen for sharing a link to the user or the chat; omitted if the default theme is used",
+         :optional}
       ],
       "This object contains full information about a chat."
     )
@@ -3998,13 +4178,15 @@ defmodule ExGram do
         {:video, [Video], "Optional. Message is a video, information about the video", :optional},
         {:video_note, [VideoNote], "Optional. Message is a video note, information about the video message", :optional},
         {:voice, [Voice], "Optional. Message is a voice message, information about the file", :optional},
-        {:caption, [:string], "Optional. Caption for the animation, audio, document, paid media, photo, video or voice",
+        {:widget, [Widget], "Optional. Message is an HTML widget, information about the widget", :optional},
+        {:caption, [:string],
+         "Optional. Caption for the animation, audio, document, live photo, paid media, photo, video, voice, or widget",
          :optional},
         {:caption_entities, [{:array, MessageEntity}],
          "Optional. For messages with a caption, special entities like usernames, URLs, bot commands, etc. that appear in the caption",
          :optional},
-        {:show_caption_above_media, [:boolean], "Optional. True, if the caption must be shown above the message media",
-         :optional},
+        {:show_caption_above_media, [:boolean],
+         "Optional. True, if the caption must be shown above the message media or the widget", :optional},
         {:has_media_spoiler, [:boolean], "Optional. True, if the message media is covered by a spoiler animation",
          :optional},
         {:checklist, [Checklist], "Optional. Message is a checklist", :optional},
@@ -4103,6 +4285,9 @@ defmodule ExGram do
          "Optional. Service message: user created a bot that will be managed by the current bot", :optional},
         {:paid_message_price_changed, [PaidMessagePriceChanged],
          "Optional. Service message: the price for paid messages has changed in the chat", :optional},
+        {:paid_messages_waived, [PaidMessagesWaived],
+         "Optional. Service message: the sender of the message used a link of the other user, which allows sending messages to the user without paying Telegram Stars",
+         :optional},
         {:poll_option_added, [PollOptionAdded], "Optional. Service message: answer option was added to a poll",
          :optional},
         {:poll_option_deleted, [PollOptionDeleted], "Optional. Service message: answer option was deleted from a poll",
@@ -4117,6 +4302,8 @@ defmodule ExGram do
          "Optional. Service message: payment for a suggested post was received", :optional},
         {:suggested_post_refunded, [SuggestedPostRefunded],
          "Optional. Service message: payment for a suggested post was refunded", :optional},
+        {:ton_wallet_transfer, [TonWalletTransfer], "Optional. Service message: a transfer with a TON wallet",
+         :optional},
         {:video_chat_scheduled, [VideoChatScheduled], "Optional. Service message: video chat scheduled", :optional},
         {:video_chat_started, [VideoChatStarted], "Optional. Service message: video chat started", :optional},
         {:video_chat_ended, [VideoChatEnded], "Optional. Service message: video chat ended", :optional},
@@ -4153,7 +4340,7 @@ defmodule ExGram do
       MessageEntity,
       [
         {:type, [:string],
-         ~s{Type of the entity. Currently, can be "mention” (@username), "hashtag” (#hashtag or #hashtag@chatusername), "cashtag” ($USD or $USD@chatusername), "bot_command” (/start@jobs_bot), "url” (https://telegram.org), "email” (do-not-reply@telegram.org), "phone_number” (+1-212-555-0123), "bold” (bold text), "italic” (italic text), "underline” (underlined text), "strikethrough” (strikethrough text), "spoiler” (spoiler message), "blockquote” (block quotation), "expandable_blockquote” (collapsed-by-default block quotation), "code” (monowidth string), "pre” (monowidth block), "text_link” (for clickable text URLs), "text_mention” (for users without usernames), "custom_emoji” (for inline custom emoji stickers), or "date_time” (for formatted date and time).}},
+         ~s{Type of the entity. Currently, can be "mention” (@username), "hashtag” (#hashtag or #hashtag@chatusername), "cashtag” ($USD or $USD@chatusername), "bot_command” (/start@jobs_bot), "url” (https://telegram.org), "email” (do-not-reply@telegram.org), "phone_number” (+1-212-555-0123), "bank_card_number” (bank card number), "ton_address” (address in the TON blockchain), "bold” (bold text), "italic” (italic text), "underline” (underlined text), "strikethrough” (strikethrough text), "spoiler” (spoiler message), "blockquote” (block quotation), "expandable_blockquote” (collapsed-by-default block quotation), "code” (monowidth string), "pre” (monowidth block), "text_link” (for clickable text URLs), "text_mention” (for users without usernames), "custom_emoji” (for inline custom emoji stickers), or "date_time” (for formatted date and time).}},
         {:offset, [:integer], "Offset in UTF-16 code units to the start of the entity"},
         {:length, [:integer], "Length of the entity in UTF-16 code units"},
         {:url, [:string], "Optional. For \"text_link” only, URL that will be opened after user taps on the text",
@@ -4175,12 +4362,16 @@ defmodule ExGram do
     model(
       TextQuote,
       [
-        {:text, [:string], "Text of the quoted part of a message that is replied to by the given message"},
+        {:text, [:string],
+         "Text of the quoted part of a message that is replied to by the given message; may be empty if the quote was chosen from a rich message"},
         {:entities, [{:array, MessageEntity}],
          "Optional. Special entities that appear in the quote. Currently, only bold, italic, underline, strikethrough, spoiler, custom_emoji, and date_time entities are kept in quotes.",
          :optional},
+        {:rich_texts, [{:array, RichText}],
+         "Optional. Rich text of the quote if it was chosen from a rich message. May contain only plain text, RichTextBold, RichTextItalic, RichTextUnderline, RichTextStrikethrough, RichTextSpoiler, RichTextSubscript, RichTextSuperscript, RichTextDateTime, RichTextCustomEmoji, RichTextMathematicalExpression, and arrays of them.",
+         :optional},
         {:position, [:integer],
-         "Approximate quote position in the original message in UTF-16 code units as specified by the sender"},
+         "Approximate quote position in the original message in UTF-16 code units as specified by the sender. For quotes from rich messages, it is the position in the text formed by joining plain texts of all quotable texts of the message, separated by line feeds."},
         {:is_manual, [:boolean],
          "Optional. True, if the quote was chosen manually by the message sender. Otherwise, the quote was added automatically by the server.",
          :optional}
@@ -4213,6 +4404,7 @@ defmodule ExGram do
         {:video, [Video], "Optional. Message is a video, information about the video", :optional},
         {:video_note, [VideoNote], "Optional. Message is a video note, information about the video message", :optional},
         {:voice, [Voice], "Optional. Message is a voice message, information about the file", :optional},
+        {:widget, [Widget], "Optional. Message is an HTML widget, information about the widget", :optional},
         {:has_media_spoiler, [:boolean], "Optional. True, if the message media is covered by a spoiler animation",
          :optional},
         {:checklist, [Checklist], "Optional. Message is a checklist", :optional},
@@ -4238,7 +4430,7 @@ defmodule ExGram do
          "Optional. Identifier of the message that will be replied to in the current chat, or in the chat chat_id if it is specified. Required if ephemeral_message_id isn't specified.",
          :optional},
         {:chat_id, [:integer, :string],
-         "Optional. If the message to be replied to is from a different chat, unique identifier for the chat or username of the bot, supergroup or channel in the format @username. Not supported for messages sent on behalf of a business account, messages from channel direct messages chats and ephemeral messages.",
+         "Optional. If the message to be replied to is from a different chat, unique identifier for the chat or username of the bot, supergroup, or channel in the format @username. Not supported for messages sent on behalf of a business account, messages from channel direct messages chats and ephemeral messages.",
          :optional},
         {:ephemeral_message_id, [:integer],
          "Optional. Identifier of the incoming ephemeral message that will be replied to in the current chat. A reply to an ephemeral message must itself be an ephemeral message. An ephemeral message may only be replied to within 15 seconds of being sent. Required if message_id isn't specified.",
@@ -4254,7 +4446,11 @@ defmodule ExGram do
         {:quote_entities, [{:array, MessageEntity}],
          "Optional. A JSON-serialized list of special entities that appear in the quote. It can be specified instead of quote_parse_mode.",
          :optional},
-        {:quote_position, [:integer], "Optional. Position of the quote in the original message in UTF-16 code units",
+        {:quote_rich_texts, [{:array, RichText}],
+         "Optional. A JSON-serialized list of quoted parts of the rich message to be replied to. Must contain one element for each quoted text of the message in the order of their appearance. Each of the following is a separate quoted text: the text of a paragraph, a heading, a preformatted block, a footer, or a mathematical expression; the text and the credit of a block quotation or a pull quotation; the summary of a details block; the caption and each cell of a table; the text and the credit of a caption of a media block, a collage, a slideshow, or a map. Texts of blocks nested in lists, block quotations, details, collages, and slideshows are separate quoted texts too. The first and the last elements can contain only a part of the corresponding text; all other elements must contain the whole text. Formatting of the quoted parts must be kept, and rich texts must be nested in the same way as in the message received from the server. Mathematical expressions must be quoted entirely. Buttons in RichBlockButtons, anchors and dividers can't be quoted. Up to 32 quoted texts with total length up to 1024 characters can be specified. Only plain text, RichTextBold, RichTextItalic, RichTextUnderline, RichTextStrikethrough, RichTextSpoiler, RichTextSubscript, RichTextSuperscript, RichTextDateTime, RichTextCustomEmoji, RichTextMathematicalExpression, and arrays of them are kept in the quote; other rich text types are replaced with their text. If non-empty, then quote, quote_parse_mode and quote_entities are ignored.",
+         :optional},
+        {:quote_position, [:integer],
+         "Optional. Position of the quote in the original message in UTF-16 code units. For quotes from rich messages, it is the position in the text formed by joining plain texts of all quotable texts of the message, separated by line feeds.",
          :optional},
         {:checklist_task_id, [:integer], "Optional. Identifier of the specific checklist task to be replied to",
          :optional},
@@ -4268,9 +4464,11 @@ defmodule ExGram do
       EphemeralMessageParameters,
       [
         {:receiver_user_id, [:integer],
-         "Identifier of the user who will receive the message. It is not guaranteed that the user will receive the message, especially if they are offline. See here for more details."},
+         "Optional. Identifier of the user who will receive the message; required unless the message is sent as an ephemeral reply to a callback query. If omitted, then the parameter chat_id of the method is ignored. If specified together with callback_query_id, then it must be the identifier of the user who pressed the button. Must be omitted for messages sent in chats where the bot isn't a member, unless the message is a reply to an ephemeral message. It is not guaranteed that the user will receive the message, especially if they are offline. See here for more details.",
+         :optional},
         {:callback_query_id, [:string],
-         "Optional. Identifier of the callback query which triggered the message, if any", :optional},
+         "Optional. Identifier of the callback query which triggered the message, if any. If specified and receiver_user_id is omitted, then the message is sent as an ephemeral reply to the callback query and will be shown only to the user who pressed the button. Ephemeral replies can't be sent to callback queries from messages in channel direct messages chats. The bot must still answer the callback query using answerCallbackQuery.",
+         :optional},
         {:replace_callback_query_message, [:boolean],
          "Optional. Pass True if the ephemeral message must be shown in place of the original message. Must be False for callback queries from ephemeral messages, which must be edited using regular editEphemeralMessage… methods.",
          :optional}
@@ -4482,6 +4680,27 @@ defmodule ExGram do
          :optional}
       ],
       "This object represents a voice note."
+    )
+
+    model(
+      Widget,
+      [
+        {:id, [:string],
+         "Optional. Unique identifier of the shared widget, which can be used to send the widget again using the method sendSharedWidget; omitted if the widget isn't shared",
+         :optional},
+        {:width, [:integer],
+         "Optional. Width of the widget in logical pixels; omitted if the widget must occupy the whole width of the message bubble",
+         :optional},
+        {:height, [:integer],
+         "Optional. Height of the widget in logical pixels; omitted if the height of the widget isn't fixed",
+         :optional},
+        {:html, [:string], "HTML code of the widget"},
+        {:public_data, [:string],
+         "Optional. Public data of the widget, which is available wherever the widget is shown. All messages with a shared widget have the same public data.",
+         :optional},
+        {:chat_data, [:string], "Optional. Data of the widget, which is specific to the message", :optional}
+      ],
+      "This object describes an HTML widget."
     )
 
     model(
@@ -5215,6 +5434,25 @@ defmodule ExGram do
     )
 
     model(
+      PaidMessagesWaived,
+      [],
+      "Describes a service message about the sender of the message using a link of the other user, which allows sending messages to the user without paying Telegram Stars. Currently holds no information."
+    )
+
+    model(
+      TonWalletTransfer,
+      [
+        {:transaction_id, [:string],
+         "Unique identifier of the transaction; may be empty if the transfer hasn't been sent yet"},
+        {:peer_address, [:string], "Address of the transfer peer in the TON blockchain"},
+        {:amount, [:string],
+         "The amount of transferred cryptocurrency, in the smallest units of the cryptocurrency, as a decimal number; negative for outgoing transfers"},
+        {:comment, [:string], "Optional. Comment added to the transfer; omitted if the comment is encrypted", :optional}
+      ],
+      "Describes a service message about a transfer with a TON wallet."
+    )
+
+    model(
       GiveawayCreated,
       [
         {:prize_star_count, [:integer],
@@ -5523,7 +5761,9 @@ defmodule ExGram do
       [
         {:request_id, [:integer], "Signed 32-bit identifier of the request. Must be unique within the message."},
         {:suggested_name, [:string], "Optional. Suggested name for the bot", :optional},
-        {:suggested_username, [:string], "Optional. Suggested username for the bot", :optional}
+        {:suggested_username, [:string],
+         ~s(Optional. Suggested username for the bot. The username must end with "bot”. If the user creating the bot has a Telegram Premium subscription, then the username can also end with "agent”, "ai”, "app”, "game”, or "gay”; in this case, the username will be assigned to the bot as a secondary username, and a regular username ending with "bot” will be assigned to the bot automatically.),
+         :optional}
       ],
       "This object defines the parameters for the creation of a managed bot. Information about the created bot will be shared with the bot using the update managed_bot and a Message with the field managed_bot_created."
     )
@@ -5578,7 +5818,7 @@ defmodule ExGram do
         {:callback_data, [:string],
          "Optional. Data to be sent in a callback query to the bot when the button is pressed, 1-64 bytes", :optional},
         {:web_app, [WebAppInfo],
-         "Optional. Description of the Web App that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method answerWebAppQuery. Available only in private chats between a user and the bot. Not supported for messages sent on behalf of a business account.",
+         "Optional. Description of the Web App that will be launched when the user presses the button. The Web App will be able to send an arbitrary message on behalf of the user using the method answerWebAppQuery. Available only in private chats between a user and the bot. Not supported for messages sent on behalf of a business account and ephemeral messages.",
          :optional},
         {:login_url, [LoginUrl],
          "Optional. An HTTPS URL used to automatically authorize the user. Can be used as a replacement for the Telegram Login Widget. Not supported for ephemeral messages.",
@@ -5664,6 +5904,88 @@ defmodule ExGram do
          "Optional. Short name of a Game to be returned, serves as the unique identifier for the game", :optional}
       ],
       "This object represents an incoming callback query from a callback button in an inline keyboard. If the button that originated the query was attached to a message sent by the bot, the field message will be present. If the button was attached to a message sent via the bot (in inline mode), the field inline_message_id will be present. Exactly one of the fields data or game_short_name will be present."
+    )
+
+    model(
+      WidgetQueryTypeData,
+      [
+        {:type, [:string], "Type of the query, always \"data”"},
+        {:wallet_card, [TonWalletCard],
+         "Optional. TON wallet card of the user who sent the query, if it was sent to the bot along with the query",
+         :optional}
+      ],
+      "The query contains data for the bot."
+    )
+
+    model(
+      WidgetQueryTypeSignData,
+      [
+        {:type, [:string], "Type of the query, always \"sign_data”"},
+        {:wallet, [WidgetQueryWallet], "The wallet that signed the data"},
+        {:sign_data, [:string], "JSON-serialized signed data"}
+      ],
+      "The query contains data signed by a TON wallet of the user who sent the query. The data is signed for the domain bot<bot_id>, where <bot_id> is the identifier of the bot."
+    )
+
+    model(
+      WidgetQueryTypeSentTransaction,
+      [
+        {:type, [:string], "Type of the query, always \"sent_transaction”"},
+        {:wallet, [WidgetQueryWallet], "The wallet from which the transaction was sent"},
+        {:msg_hash, [:string], "Value of msg_hash of the transaction"}
+      ],
+      "The query notifies the bot about a transaction sent from a TON wallet of the user who sent the query."
+    )
+
+    model(
+      WidgetQueryWallet,
+      [
+        {:address, [:string], "Address of the wallet"},
+        {:amount, [:string], "Balance of the wallet, in the smallest units of the cryptocurrency, as a decimal number"},
+        {:public_key, [:string], "Optional. Hex-encoded public key of the wallet; omitted if unknown", :optional},
+        {:state_init, [:string],
+         "Optional. Base64-encoded serialized StateInit of the wallet contract; omitted if and only if public_key is omitted",
+         :optional}
+      ],
+      "This object describes a TON wallet of the user, which is used in a query from a widget."
+    )
+
+    model(
+      WidgetQuery,
+      [
+        {:id, [:string], "Unique identifier for this query"},
+        {:from, [User], "Sender"},
+        {:chat, [Chat],
+         "Optional. Chat with the message containing the widget; omitted if the widget is in an inline message",
+         :optional},
+        {:message_id, [:integer],
+         "Optional. Identifier of the message containing the widget; omitted if the widget is in an inline message",
+         :optional},
+        {:inline_message_id, [:string], "Optional. Identifier of the inline message containing the widget", :optional},
+        {:chat_instance, [:string],
+         "Global identifier, uniquely corresponding to the chat to which the message with the widget was sent"},
+        {:chat_type, [:string],
+         ~s(Optional. For widgets in inline messages, type of the chat to which the message was sent. Can be either "sender” for a private chat with the inline query sender, "private”, "group”, "supergroup”, or "channel”.),
+         :optional},
+        {:type, [WidgetQueryType], "Type of the query"},
+        {:data, [:string], "Data of the query, 1-64 bytes"},
+        {:widget_id, [:string],
+         "Optional. Unique identifier of the shared widget, which sent the query; omitted if the widget isn't shared",
+         :optional}
+      ],
+      "This object represents an incoming query from a widget in a message sent by the bot or via the bot. Use answerWidgetQuery to answer the query. Each user can send at most 5 queries per 5 seconds to the bot from all its widgets."
+    )
+
+    model(
+      SharedWidgetQuery,
+      [
+        {:id, [:string], "Unique identifier for this query"},
+        {:from, [User], "Sender"},
+        {:type, [WidgetQueryType], "Type of the query"},
+        {:data, [:string], "Data of the query, 1-64 bytes"},
+        {:widget_id, [:string], "Unique identifier of the shared widget, which sent the query"}
+      ],
+      "This object represents an incoming query from a forwarded message with a shared widget created by the bot. Use answerWidgetQuery to answer the query. Each user can send at most 5 queries per 5 seconds to the bot from all its widgets."
     )
 
     model(
@@ -5880,7 +6202,7 @@ defmodule ExGram do
         {:can_send_voice_notes, [:boolean], "True, if the user is allowed to send voice notes"},
         {:can_send_polls, [:boolean], "True, if the user is allowed to send polls and checklists"},
         {:can_send_other_messages, [:boolean],
-         "True, if the user is allowed to send animations, games, stickers and use inline bots"},
+         "True, if the user is allowed to send animations, games, stickers, widgets and use inline bots"},
         {:can_add_web_page_previews, [:boolean],
          "True, if the user is allowed to add web page previews to their messages"},
         {:can_react_to_messages, [:boolean], "True, if the user is allowed to react to messages"},
@@ -5948,7 +6270,8 @@ defmodule ExGram do
         {:can_send_voice_notes, [:boolean], "Optional. True, if the user is allowed to send voice notes", :optional},
         {:can_send_polls, [:boolean], "Optional. True, if the user is allowed to send polls and checklists", :optional},
         {:can_send_other_messages, [:boolean],
-         "Optional. True, if the user is allowed to send animations, games, stickers and use inline bots", :optional},
+         "Optional. True, if the user is allowed to send animations, games, stickers, widgets and use inline bots",
+         :optional},
         {:can_add_web_page_previews, [:boolean],
          "Optional. True, if the user is allowed to add web page previews to their messages", :optional},
         {:can_react_to_messages, [:boolean],
@@ -6036,17 +6359,112 @@ defmodule ExGram do
     )
 
     model(
-      StoryAreaPosition,
+      AreaPosition,
       [
-        {:x_percentage, [:float], "The abscissa of the area's center, as a percentage of the media width"},
-        {:y_percentage, [:float], "The ordinate of the area's center, as a percentage of the media height"},
-        {:width_percentage, [:float], "The width of the area's rectangle, as a percentage of the media width"},
-        {:height_percentage, [:float], "The height of the area's rectangle, as a percentage of the media height"},
+        {:x_percentage, [:float], "The abscissa of the area's center, as a percentage of the media or the card width"},
+        {:y_percentage, [:float], "The ordinate of the area's center, as a percentage of the media or the card height"},
+        {:width_percentage, [:float],
+         "The width of the area's rectangle, as a percentage of the media or the card width"},
+        {:height_percentage, [:float],
+         "The height of the area's rectangle, as a percentage of the media or the card height"},
         {:rotation_angle, [:float], "The clockwise rotation angle of the rectangle, in degrees; 0-360"},
         {:corner_radius_percentage, [:float],
-         "The radius of the rectangle corner rounding, as a percentage of the media width"}
+         "The radius of the rectangle corner rounding, as a percentage of the media or the card width"}
       ],
-      "Describes the position of a clickable area within a story."
+      "Describes the position of a rectangle area on a story media or a TON wallet card."
+    )
+
+    model(
+      TonNft,
+      [
+        {:address, [:string], "Address of the NFT"},
+        {:collection_address, [:string],
+         "Optional. Address of the collection to which the NFT belongs; omitted if unknown", :optional},
+        {:index, [:string], "Index of the NFT among all NFTs from the collection as a decimal number"},
+        {:name, [:string], "Name of the NFT"},
+        {:description, [:string], "Description of the NFT"},
+        {:attributes, [{:array, TonNftAttribute}], "Optional. Attributes of the NFT", :optional},
+        {:gift, [UniqueGift], "Optional. The unique gift corresponding to the NFT", :optional}
+      ],
+      "This object represents an NFT in the TON blockchain."
+    )
+
+    model(
+      TonNftAttribute,
+      [{:trait_type, [:string], "Trait type of the attribute"}, {:value, [:string], "Value of the attribute"}],
+      "This object represents an attribute of an NFT in the TON blockchain."
+    )
+
+    model(
+      TonWalletCardSticker,
+      [
+        {:position, [AreaPosition], "Position of the sticker on the card"},
+        {:nft, [TonNft], "The NFT shown as the sticker"}
+      ],
+      "This object describes a sticker on a TON wallet card."
+    )
+
+    model(
+      TonWalletCard,
+      [
+        {:address, [:string], "Address of the wallet"},
+        {:amount, [:string], "Balance of the wallet, in the smallest units of the cryptocurrency, as a decimal number"},
+        {:stickers, [{:array, TonWalletCardSticker}], "Stickers placed on the card"},
+        {:background_nft_address, [:string],
+         "Optional. Address of the NFT of one of the stickers, whose colors must be used for the card background; omitted if the default background must be used",
+         :optional}
+      ],
+      "This object describes a TON wallet card, which is shown on the profile page of a user to everyone."
+    )
+
+    model(
+      EmojiTypeEmoji,
+      [{:type, [:string], "Type of the emoji, always \"emoji”"}, {:emoji, [:string], "The emoji"}],
+      "A regular emoji."
+    )
+
+    model(
+      EmojiTypeCustomEmoji,
+      [
+        {:type, [:string], "Type of the emoji, always \"custom_emoji”"},
+        {:custom_emoji_id, [:string],
+         "Identifier of the custom emoji. Use getCustomEmojiStickers to get full information about the sticker."}
+      ],
+      "A custom emoji."
+    )
+
+    model(
+      ChatShareThemeEmoji,
+      [
+        {:type, [:string], "Type of the theme, always \"emoji”"},
+        {:emojis, [{:array, EmojiType}], "The emoji; 0-6 regular or custom emoji"},
+        {:background_backdrop_id, [:integer],
+         "Optional. Identifier of the backdrop used as the background; omitted if the default background is used. Use getChatShareThemeBackdrops to get details about the backdrop.",
+         :optional}
+      ],
+      "The theme with emoji placed on a background."
+    )
+
+    model(
+      ChatShareThemeUniqueGift,
+      [{:type, [:string], "Type of the theme, always \"unique_gift”"}, {:gift, [UniqueGift], "The gift"}],
+      "The theme based on a unique gift owned by the user or the chat."
+    )
+
+    model(
+      ChatShareThemeBackdrops,
+      [{:backdrops, [{:array, ChatShareThemeBackdrop}], "The list of backdrops"}],
+      "This object contains a list of backdrops, which can be used as the background of a theme of the screen for sharing a link to a user or a chat."
+    )
+
+    model(
+      ChatShareThemeBackdrop,
+      [
+        {:id, [:integer], "Unique identifier of the backdrop"},
+        {:name, [:string], "Name of the backdrop"},
+        {:colors, [UniqueGiftBackdropColors], "Colors of the backdrop"}
+      ],
+      "This object describes a backdrop, which can be used as the background of a theme of the screen for sharing a link to a user or a chat."
     )
 
     model(
@@ -6111,7 +6529,7 @@ defmodule ExGram do
 
     model(
       StoryArea,
-      [{:position, [StoryAreaPosition], "Position of the area"}, {:type, [StoryAreaType], "Type of the area"}],
+      [{:position, [AreaPosition], "Position of the area"}, {:type, [StoryAreaType], "Type of the area"}],
       "Describes a clickable area on a story media."
     )
 
@@ -7232,7 +7650,7 @@ defmodule ExGram do
         {:text, [RichText],
          "Text of the button. May contain only plain text, RichTextCustomEmoji and RichTextDateTime entities."},
         {:style, [:string],
-         ~s{Optional. Style of the button. Must be one of "danger” (red), "success” (green), "primary” (blue) or "link” (the button is shown as a regular link without borders). If omitted, then an app-specific style is used. The style "link” is allowed only for callback buttons.},
+         ~s{Optional. Style of the button. Must be one of "danger”, "success”, "primary”, or "link” (the button is shown as a regular link without borders). Apps may use theme-specific colors for the button background and text based on the style. The style "link” is allowed only for callback buttons.},
          :optional},
         {:url, [:string],
          "Optional. HTTP or tg:// URL to be opened when the button is pressed. Links tg://user?id=<user_id> can be used to mention a user by their identifier without using a username, if this is allowed by their privacy settings.",
@@ -7394,6 +7812,16 @@ defmodule ExGram do
         {:bank_card_number, [:string], "The bank card number"}
       ],
       "A text with a bank card number."
+    )
+
+    model(
+      RichTextTonAddress,
+      [
+        {:type, [:string], "Type of the rich text, always \"ton_address”"},
+        {:text, [RichText], "Text of the address"},
+        {:address, [:string], "The address"}
+      ],
+      "An address in the TON blockchain."
     )
 
     model(
@@ -7597,7 +8025,7 @@ defmodule ExGram do
         {:text, [RichText], "Content of the block"},
         {:credit, [RichText], "Optional. Credit of the block", :optional}
       ],
-      "A block quotation, corresponding to the HTML tag <blockquote> with custom attribute \"collapsed\"."
+      "A block quotation, corresponding to the HTML tag <blockquote> with custom attribute \"expandable\"."
     )
 
     model(
@@ -7845,7 +8273,7 @@ defmodule ExGram do
         {:text, [RichText], "Content of the block"},
         {:credit, [RichText], "Optional. Credit of the block", :optional}
       ],
-      "A block quotation, corresponding to the HTML tag <blockquote> with custom attribute \"collapsed\"."
+      "A block quotation, corresponding to the HTML tag <blockquote> with custom attribute \"expandable\"."
     )
 
     model(
@@ -8623,6 +9051,58 @@ defmodule ExGram do
     )
 
     model(
+      InputWidgetMessageContent,
+      [
+        {:html, [:string],
+         "HTML code of the widget, 1-32768 bytes. The code must not exceed 4096 bytes when compressed by zlib with the maximum compression level."},
+        {:width, [:integer],
+         "Optional. Width of the widget in logical pixels; omit if the widget must occupy the whole width of the message bubble. The width is clamped by the app to the range from 200 to the maximum width of the message bubble.",
+         :optional},
+        {:height, [:integer],
+         "Optional. Height of the widget in logical pixels; omit if the height of the widget isn't fixed. The height is clamped by the app to the range 50-600.",
+         :optional},
+        {:public_data, [:string],
+         "Optional. Public data of the widget, 0-1024 bytes, which will be available wherever the widget is shown. If the widget is shared, then all messages with it will have the same public data.",
+         :optional},
+        {:chat_data, [:string], "Optional. Data of the widget, which is specific to the message, 0-1024 bytes",
+         :optional},
+        {:caption, [:string], "Optional. Widget caption, 0-1024 characters after entities parsing", :optional},
+        {:parse_mode, [:string],
+         "Optional. Mode for parsing entities in the widget caption. See formatting options for more details.",
+         :optional},
+        {:caption_entities, [{:array, MessageEntity}],
+         "Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode",
+         :optional},
+        {:show_caption_above_media, [:boolean], "Optional. Pass True if the caption must be shown above the widget",
+         :optional},
+        {:allow_queries, [:boolean], "Optional. Pass True to allow the widget to send queries to the bot", :optional},
+        {:is_shared, [:boolean],
+         "Optional. Pass True to create a shared widget. Each message sent from the result creates a separate shared widget, whose identifier is received by the bot only in the field widget_id of queries from the widget. To send an existing shared widget in response to an inline query, use InputSharedWidgetMessageContent instead.",
+         :optional}
+      ],
+      "Represents the content of a message with an HTML widget to be sent as the result of an inline query. Currently, widgets can't be sent in response to inline queries in the production environment."
+    )
+
+    model(
+      InputSharedWidgetMessageContent,
+      [
+        {:widget_id, [:string], "Unique identifier of the shared widget created by the bot"},
+        {:chat_data, [:string], "Optional. Data of the widget, which is specific to the message, 0-1024 bytes",
+         :optional},
+        {:caption, [:string], "Optional. Widget caption, 0-1024 characters after entities parsing", :optional},
+        {:parse_mode, [:string],
+         "Optional. Mode for parsing entities in the widget caption. See formatting options for more details.",
+         :optional},
+        {:caption_entities, [{:array, MessageEntity}],
+         "Optional. List of special entities that appear in the caption, which can be specified instead of parse_mode",
+         :optional},
+        {:show_caption_above_media, [:boolean], "Optional. Pass True if the caption must be shown above the widget",
+         :optional}
+      ],
+      "Represents the content of a message with a shared widget to be sent as the result of an inline query. Currently, widgets can't be sent in response to inline queries in the production environment."
+    )
+
+    model(
       ChosenInlineResult,
       [
         {:result_id, [:string], "The unique identifier for the result that was chosen"},
@@ -9116,7 +9596,7 @@ defmodule ExGram do
       "This object represents one row of the high scores table for a game."
     )
 
-    # 373 models
+    # 395 models
 
     defmodule MaybeInaccessibleMessage do
       @moduledoc """
@@ -9259,6 +9739,21 @@ defmodule ExGram do
       end
     end
 
+    defmodule WidgetQueryType do
+      @moduledoc """
+      WidgetQueryType model. Valid subtypes: WidgetQueryTypeData, WidgetQueryTypeSignData, WidgetQueryTypeSentTransaction
+      """
+      union_type([], [WidgetQueryTypeData, WidgetQueryTypeSignData, WidgetQueryTypeSentTransaction])
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [WidgetQueryTypeData, WidgetQueryTypeSignData, WidgetQueryTypeSentTransaction]
+      end
+    end
+
     defmodule ChatMember do
       @moduledoc """
       ChatMember model. Valid subtypes: ChatMemberOwner, ChatMemberAdministrator, ChatMemberMember, ChatMemberRestricted, ChatMemberLeft, ChatMemberBanned
@@ -9285,6 +9780,36 @@ defmodule ExGram do
           ChatMemberLeft,
           ChatMemberBanned
         ]
+      end
+    end
+
+    defmodule EmojiType do
+      @moduledoc """
+      EmojiType model. Valid subtypes: EmojiTypeEmoji, EmojiTypeCustomEmoji
+      """
+      union_type([], [EmojiTypeEmoji, EmojiTypeCustomEmoji])
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [EmojiTypeEmoji, EmojiTypeCustomEmoji]
+      end
+    end
+
+    defmodule ChatShareTheme do
+      @moduledoc """
+      ChatShareTheme model. Valid subtypes: ChatShareThemeEmoji, ChatShareThemeUniqueGift
+      """
+      union_type([], [ChatShareThemeEmoji, ChatShareThemeUniqueGift])
+
+      defstruct []
+
+      def decode_as, do: %{}
+
+      def subtypes do
+        [ChatShareThemeEmoji, ChatShareThemeUniqueGift]
       end
     end
 
@@ -9482,7 +10007,7 @@ defmodule ExGram do
 
     defmodule RichText do
       @moduledoc """
-      RichText model. Valid subtypes: RichTextBold, RichTextItalic, RichTextUnderline, RichTextStrikethrough, RichTextSpoiler, RichTextDateTime, RichTextTextMention, RichTextSubscript, RichTextSuperscript, RichTextMarked, RichTextCode, RichTextCustomEmoji, RichTextMathematicalExpression, RichTextUrl, RichTextEmailAddress, RichTextPhoneNumber, RichTextBankCardNumber, RichTextMention, RichTextHashtag, RichTextCashtag, RichTextBotCommand, RichTextButton, RichTextAnchor, RichTextAnchorLink, RichTextReference, RichTextReferenceLink
+      RichText model. Valid subtypes: RichTextBold, RichTextItalic, RichTextUnderline, RichTextStrikethrough, RichTextSpoiler, RichTextDateTime, RichTextTextMention, RichTextSubscript, RichTextSuperscript, RichTextMarked, RichTextCode, RichTextCustomEmoji, RichTextMathematicalExpression, RichTextUrl, RichTextEmailAddress, RichTextPhoneNumber, RichTextBankCardNumber, RichTextTonAddress, RichTextMention, RichTextHashtag, RichTextCashtag, RichTextBotCommand, RichTextButton, RichTextAnchor, RichTextAnchorLink, RichTextReference, RichTextReferenceLink
       """
       union_type([String.t(), [RichText.t()]], [
         RichTextBold,
@@ -9502,6 +10027,7 @@ defmodule ExGram do
         RichTextEmailAddress,
         RichTextPhoneNumber,
         RichTextBankCardNumber,
+        RichTextTonAddress,
         RichTextMention,
         RichTextHashtag,
         RichTextCashtag,
@@ -9536,6 +10062,7 @@ defmodule ExGram do
           RichTextEmailAddress,
           RichTextPhoneNumber,
           RichTextBankCardNumber,
+          RichTextTonAddress,
           RichTextMention,
           RichTextHashtag,
           RichTextCashtag,
@@ -9742,7 +10269,7 @@ defmodule ExGram do
 
     defmodule InputMessageContent do
       @moduledoc """
-      InputMessageContent model. Valid subtypes: InputTextMessageContent, InputRichMessageContent, InputLocationMessageContent, InputVenueMessageContent, InputContactMessageContent, InputInvoiceMessageContent
+      InputMessageContent model. Valid subtypes: InputTextMessageContent, InputRichMessageContent, InputLocationMessageContent, InputVenueMessageContent, InputContactMessageContent, InputInvoiceMessageContent, InputWidgetMessageContent, InputSharedWidgetMessageContent
       """
       union_type([], [
         InputTextMessageContent,
@@ -9750,7 +10277,9 @@ defmodule ExGram do
         InputLocationMessageContent,
         InputVenueMessageContent,
         InputContactMessageContent,
-        InputInvoiceMessageContent
+        InputInvoiceMessageContent,
+        InputWidgetMessageContent,
+        InputSharedWidgetMessageContent
       ])
 
       defstruct []
@@ -9764,7 +10293,9 @@ defmodule ExGram do
           InputLocationMessageContent,
           InputVenueMessageContent,
           InputContactMessageContent,
-          InputInvoiceMessageContent
+          InputInvoiceMessageContent,
+          InputWidgetMessageContent,
+          InputSharedWidgetMessageContent
         ]
       end
     end
@@ -9850,7 +10381,7 @@ defmodule ExGram do
       end
     end
 
-    # 26 generics
+    # 29 generics
   end
 
   # END AUTO GENERATED
