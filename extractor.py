@@ -10,6 +10,25 @@ import pyperclip
 DEBUG = True
 REPLACE = True
 WEB = True
+
+# Telegram made chat_id optional on the methods that can send an ephemeral reply, so it can be
+# left out there. ExGram keeps it as the first positional argument and allows nil, which leaves
+# it out of the request body. These are the methods that take it as a keyword option instead:
+# the ones that accept an inline_message_id, plus the chat menu button and sendGift.
+CHAT_ID_OPTION_METHODS = {
+    "editMessageCaption",
+    "editMessageLiveLocation",
+    "editMessageMedia",
+    "editMessageReplyMarkup",
+    "editMessageText",
+    "editMessageWidgetData",
+    "getChatMenuButton",
+    "getGameHighScores",
+    "sendGift",
+    "setChatMenuButton",
+    "setGameScore",
+    "stopMessageLiveLocation",
+}
 # Sometimes when fixing things on the API json, the CDN don't refresh fast, so change between this URLs to
 # get a more recent one
 URL = "https://raw.githubusercontent.com/rockneurotiko/telegram_api_json/master/exports/tg_api.json"
@@ -66,15 +85,18 @@ def generate_type(typ, is_return):
     return [parse_type_name(x, is_return) for x in typ]
 
 
-def generate_param(param, model):
+def generate_param(param, model, nullable=()):
     param_s = "{{{}, {}, \"{}\"{}}}"
 
     name = ":{}".format(param['name']) if model else param['name']
     debug("Extracting type: " + name)
     ts = generate_type(param['type'], False)
+    if param['name'] in nullable:
+        ts.append("nil")
     t = "[{}]".format(', '.join(ts))
     description = clean_description(param['description'] or "")
-    extra = "" if not param['optional'] else ", :optional"
+    optional = param['optional'] and param['name'] not in nullable
+    extra = ", :optional" if optional else ""
 
     return param_s.format(name, t, description, extra)
 
@@ -107,7 +129,13 @@ def generate_method(method):
     debug("Generating method: " + name)
     typ = ":get" if method['type'] == 'get' else ':post'
 
-    args = [generate_param(param, False) for param in method['params']]
+    params = method['params']
+    # chat_id stays positional on these methods, and nil leaves it out of the request body for
+    # an ephemeral reply (see CHAT_ID_OPTION_METHODS). Only the methods where the API itself no
+    # longer requires it accept nil.
+    chat_id_optional = any(p['name'] == 'chat_id' and p['optional'] for p in params)
+    nullable_chat_id = ("chat_id",) if chat_id_optional and name not in CHAT_ID_OPTION_METHODS else ()
+    args = [generate_param(param, False, nullable_chat_id) for param in params]
     returned = generate_type(method['return'], True)
 
     return method_s.format(typ, name, ", ".join(args), clean_returned_type(returned), clean_description(description))

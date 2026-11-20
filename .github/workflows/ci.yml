@@ -33,9 +33,6 @@ jobs:
           - otp_version: "27.3"
             elixir_version: "1.18"
             run_linters: false
-          - otp_version: "26.2"
-            elixir_version: "1.15"
-            run_linters: false
 
     runs-on: ubuntu-latest
     name: test
