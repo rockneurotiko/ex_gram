@@ -234,7 +234,7 @@ The context struct contains:
 %ExGram.Cnt{
   update: %ExGram.Model.Update{},  # Full Telegram update, useful to get more information about the update in specific handlers
   name: :my_bot,                    # Your bot's name (the one from "use ExGram.Bot, name: :my_bot")
-  bot_info: %ExGram.Model.User{} | nil, # The bot's information, extracted with ExGram.get_me at bot's startup
+  bot_info: %ExGram.Model.BotFullInfo{} | nil, # The bot's information, extracted with ExGram.get_me at bot's startup
   extra: %{}                        # Custom data from middlewares
   # More fields used internally
 }

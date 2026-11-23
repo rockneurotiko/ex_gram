@@ -216,7 +216,7 @@ ExGram.pin_chat_message(chat_id, msg_id)
 ### Getting Bot Info
 
 ```elixir
-{:ok, %ExGram.Model.User{username: username}} = ExGram.get_me(bot: :my_bot)
+{:ok, %ExGram.Model.BotFullInfo{username: username}} = ExGram.get_me(bot: :my_bot)
 IO.puts("Bot username: @#{username}")
 ```
 

@@ -671,9 +671,9 @@ defmodule ExGram.CastTest do
     end
 
     test "resolves to RichBlockExpandableBlockQuotation" do
-      input = %{type: "expandable_blockquote", text: "collapsed content"}
+      input = %{type: "expandable_blockquote", blocks: [%{type: "divider"}]}
 
-      assert {:ok, %Model.RichBlockExpandableBlockQuotation{text: "collapsed content"}} =
+      assert {:ok, %Model.RichBlockExpandableBlockQuotation{blocks: [%Model.RichBlockDivider{}]}} =
                Cast.cast(input, Model.RichBlock)
     end
 
@@ -696,9 +696,9 @@ defmodule ExGram.CastTest do
     end
 
     test "resolves to InputRichBlockExpandableBlockQuotation" do
-      input = %{type: "expandable_blockquote", text: "collapsed content"}
+      input = %{type: "expandable_blockquote", blocks: [%{type: "divider"}]}
 
-      assert {:ok, %Model.InputRichBlockExpandableBlockQuotation{text: "collapsed content"}} =
+      assert {:ok, %Model.InputRichBlockExpandableBlockQuotation{blocks: [%Model.InputRichBlockDivider{}]}} =
                Cast.cast(input, Model.InputRichBlock)
     end
 
