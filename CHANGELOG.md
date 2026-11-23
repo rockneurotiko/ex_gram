@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+
+## [0.72.0]
 - Update the Bot API models. The new method `setMySettings` changes the bot settings that used to be
   exclusive to @BotFather (inline mode and its placeholder, location requests, privacy mode, managed bots,
   topics in private chats, guest and join request queries, `callback_query_mode`...). `WriteAccessAllowed`
