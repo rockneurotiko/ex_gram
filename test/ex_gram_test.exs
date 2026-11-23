@@ -2,6 +2,7 @@ defmodule ExGramTest do
   use ExUnit.Case, async: true
 
   alias ExGram.Model.BotCommand
+  alias ExGram.Model.BotFullInfo
   alias ExGram.Model.Chat
   alias ExGram.Model.InputPollOption
   alias ExGram.Model.InputRichMessage
@@ -21,7 +22,7 @@ defmodule ExGramTest do
   # --- Basic Methods ---
 
   describe "get_me/0" do
-    test "returns User struct with correct fields" do
+    test "returns BotFullInfo struct with correct fields" do
       ExGram.Test.expect(:get_me, %{
         id: 123_456_789,
         is_bot: true,
@@ -34,7 +35,7 @@ defmodule ExGramTest do
 
       {:ok, user} = ExGram.get_me()
 
-      assert %User{} = user
+      assert %BotFullInfo{} = user
       assert user.id == 123_456_789
       assert user.is_bot == true
       assert user.first_name == "TestBot"

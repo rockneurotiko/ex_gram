@@ -13,7 +13,7 @@ defmodule ExGram.Cnt do
   ## Fields
 
     * `:name` - Bot name (atom or binary)
-    * `:bot_info` - Bot user info (`t:ExGram.Model.User.t/0`)
+    * `:bot_info` - Bot full info (`t:ExGram.Model.BotFullInfo.t/0`)
     * `:update` - Incoming update (`t:ExGram.Model.Update.t/0`)
     * `:message` - Parsed message data (varies by handler)
     * `:halted` - Whether the request pipeline is halted
@@ -31,7 +31,7 @@ defmodule ExGram.Cnt do
 
   @type t :: %__MODULE__{
           name: name,
-          bot_info: ExGram.Model.User.t() | nil,
+          bot_info: ExGram.Model.BotFullInfo.t() | nil,
           update: ExGram.Model.Update.t() | nil,
           message: any | nil,
           halted: boolean,

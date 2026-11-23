@@ -1,13 +1,30 @@
 # Changelog
 
 ## Unreleased
+- Update the Bot API models. The new method `setMySettings` changes the bot settings that used to be
+  exclusive to @BotFather (inline mode and its placeholder, location requests, privacy mode, managed bots,
+  topics in private chats, guest and join request queries, `callback_query_mode`...). `WriteAccessAllowed`
+  takes `inviter`, and the descriptions of `CallbackQuery`, `InlineQuery`, `ChosenInlineResult`,
+  `KeyboardButton` and `Message` cover the settings of the new method.
+- Breaking changes from the API:
+  - `getMe` now returns the new `ExGram.Model.BotFullInfo` model instead of `ExGram.Model.User`. The
+    bot-specific fields that used to live on `User` (`can_join_groups`, `can_read_all_group_messages`,
+    `supports_guest_queries`, `supports_inline_queries`, `can_connect_to_business`, `has_main_web_app`,
+    `has_topics_enabled`, `allows_users_to_create_topics`, `can_manage_bots` and
+    `supports_join_request_queries`) are only on `BotFullInfo` now, which also adds `active_usernames`,
+    `inline_query_placeholder`, `needs_inline_query_location` and `has_topic_sidebar`. Reading those fields
+    from a `User`, or matching `%ExGram.Model.User{}` against the result of `ExGram.get_me/1`, needs
+    `ExGram.Model.BotFullInfo`. `cnt.bot_info` is now a `BotFullInfo` too.
+  - `ExGram.Model.RichBlockExpandableBlockQuotation` and
+    `ExGram.Model.InputRichBlockExpandableBlockQuotation` take `blocks` (a list of nested blocks) instead
+    of `text`, so both the quotes you build and any pattern match reading `text` from them need updating.
+  - `StoryAreaPosition` is now `AreaPosition`, because it describes the position on a TON wallet card as
+    well as on a story: pattern matches on `ExGram.Model.StoryAreaPosition` need to use
+    `ExGram.Model.AreaPosition`. Story areas are unchanged apart from that field type.
 - Update the Bot API models. New methods: `sendWidget`, `sendSharedWidget`, `editMessageWidgetData`,
   `editSharedWidgetData`, `answerWidgetQuery`, `getChatShareThemeBackdrops`, `getUniqueGift` and
   `deleteBusinessAccountGift`, together with the widget, TON and chat share theme models they use.
   `verifyChat` and `verifyUser` also take `custom_description_parse_mode` and `custom_description_entities`.
-- `StoryAreaPosition` is now `AreaPosition`, because it describes the position on a TON wallet card as well
-  as on a story: pattern matches on `ExGram.Model.StoryAreaPosition` need to use `ExGram.Model.AreaPosition`.
-  Story areas are unchanged apart from that field type.
 - Telegram no longer requires `chat_id` on the send methods that accept `ephemeral_message_parameters`
   (`sendMessage`, `sendPhoto`, `sendAudio`, `sendDocument`, `sendVideo`, `sendAnimation`, `sendVoice`,
   `sendVideoNote`, `sendLocation`, `sendVenue`, `sendContact`, `sendSticker`, `sendLivePhoto` and

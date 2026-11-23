@@ -20,7 +20,7 @@ defmodule ExGram.BotTest do
     test "Register commands on startup", context do
       test_pid = self()
 
-      ExGram.Test.expect(:get_me, build_user(%{id: 999, is_bot: true, first_name: "TestBot", username: "test_bot"}))
+      ExGram.Test.expect(:get_me, %{id: 999, is_bot: true, first_name: "TestBot", username: "test_bot"})
 
       ExGram.Test.expect(:set_my_commands, fn body ->
         assert body[:scope] == %{type: "default"}

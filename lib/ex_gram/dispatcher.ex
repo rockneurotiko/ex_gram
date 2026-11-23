@@ -59,7 +59,7 @@ defmodule ExGram.Dispatcher do
 
   @type t() :: %__MODULE__{
           name: atom(),
-          bot_info: Model.User.t() | nil,
+          bot_info: Model.BotFullInfo.t() | nil,
           bot_module: module() | nil,
           dispatcher_name: atom(),
           extra_info: map(),
@@ -208,7 +208,7 @@ defmodule ExGram.Dispatcher do
   defp extract_get_me_bot_info(extra_info) do
     case Map.pop(extra_info, GetMe.extra_key()) do
       {nil, extra_info} -> {:ok, nil, extra_info}
-      {%ExGram.Model.User{} = bot_info, extra_info} -> {:ok, bot_info, extra_info}
+      {%ExGram.Model.BotFullInfo{} = bot_info, extra_info} -> {:ok, bot_info, extra_info}
       _ -> {:error, GetMe, :invalid_user_info}
     end
   end
